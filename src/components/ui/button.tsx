@@ -19,6 +19,11 @@ const button = tv({
         label: 'text-white dark:text-black',
         indicator: 'text-white dark:text-black',
       },
+      brand: {
+        container: 'bg-[#5D5FEF]',
+        label: 'text-white',
+        indicator: 'text-white',
+      },
       secondary: {
         container: 'bg-primary-600',
         label: 'text-secondary-600',

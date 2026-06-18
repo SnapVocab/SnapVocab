@@ -1,33 +1,39 @@
 {
   "onboarding": {
-    "message": "Welcome to obytes app site"
+    "message": "Chào mừng bạn đến với ứng dụng Obytes"
   },
   "settings": {
-    "about": "About",
-    "app_name": "App Name",
-    "arabic": "Arabic",
-    "english": "English",
-    "generale": "General",
+    "about": "Giới thiệu",
+    "app_name": "Tên ứng dụng",
+    "arabic": "Tiếng Ả Rập",
+    "english": "Tiếng Anh",
+    "generale": "Chung",
     "github": "Github",
-    "language": "Language",
-    "links": "Links",
-    "logout": "Logout",
-    "more": "More",
-    "privacy": "Privacy Policy",
-    "rate": "Rate",
-    "share": "Share",
-    "support": "Support",
-    "support_us": "Support Us",
-    "terms": "Terms of Service",
+    "language": "Ngôn ngữ",
+    "links": "Liên kết",
+    "logout": "Đăng xuất",
+    "more": "Khác",
+    "privacy": "Chính sách bảo mật",
+    "rate": "Đánh giá ứng dụng",
+    "share": "Chia sẻ",
+    "support": "Hỗ trợ",
+    "support_us": "Hỗ trợ chúng tôi",
+    "terms": "Điều khoản dịch vụ",
     "theme": {
-      "dark": "Dark",
-      "light": "Light",
-      "system": "System",
-      "title": "Theme"
+      "dark": "Tối",
+      "light": "Sáng",
+      "system": "Hệ thống",
+      "title": "Giao diện"
     },
-    "title": "Settings",
-    "version": "Version",
-    "website": "Website"
+    "title": "Cài đặt",
+    "version": "Phiên bản",
+    "vietnamese": "Tiếng Việt",
+    "website": "Trang web"
   },
-  "welcome": "Welcome to obytes app site"
+  "welcome": {
+    "get_started": "Bắt đầu",
+    "scanned": "Quét",
+    "subtitle": "Quét vật thể, nhận thẻ từ vựng và học cùng AI.",
+    "title": "Học tiếng Anh từ thế giới xung quanh bạn"
+  }
 }
