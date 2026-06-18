@@ -27,7 +27,13 @@
     },
     "title": "Settings",
     "version": "Version",
+    "vietnamese": "Vietnamese",
     "website": "Website"
   },
-  "welcome": "Welcome to obytes app site"
+  "welcome": {
+    "get_started": "Get Started",
+    "scanned": "Scanned",
+    "subtitle": "Scan objects, get vocabulary cards, and learn with AI.",
+    "title": "Learn English from the world around you"
+  }
 }

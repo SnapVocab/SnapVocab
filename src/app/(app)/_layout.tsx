@@ -27,10 +27,10 @@ export default function TabLayout() {
   }, [hideSplash, status]);
 
   if (isFirstTime) {
-    return <Redirect href="/onboarding" />;
+    return <Redirect href="/welcome" />;
   }
   if (status === 'signOut') {
-    return <Redirect href="/login" />;
+    return <Redirect href="/welcome" />;
   }
   return (
     <Tabs>
