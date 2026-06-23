@@ -45,6 +45,7 @@ __mocks__/expo-localization.ts
 __mocks__/moti.ts
 __mocks__/react-native-gesture-handler.ts
 __mocks__/react-native-keyboard-controller.ts
+.gitattributes
 .github/actions/eas-build/action.yml
 .github/actions/setup-jdk-generate-apk/action.yml
 .github/actions/setup-node-pnpm-install/action.yml
@@ -81,10 +82,12 @@ __mocks__/react-native-keyboard-controller.ts
 .maestro/utils/login.yaml
 .maestro/utils/onboarding-and-login.yaml
 .maestro/utils/onboarding.yaml
+.mvn/wrapper/maven-wrapper.properties
 .npmrc
 app.config.ts
 assets/adaptive-icon.png
 assets/favicon.png
+assets/fox.png
 assets/icon.png
 assets/splash-icon.png
 babel.config.js
@@ -93,12 +96,16 @@ commitlint.config.js
 eas.json
 env.ts
 eslint.config.mjs
+HELP.md
 jest-setup.ts
 jest.config.js
 lint-staged.config.js
 metro.config.js
+mvnw
+mvnw.cmd
 nativewind-env.d.ts
 package.json
+pom.xml
 README.md
 scripts/genrate-apk-and-install
 scripts/i18next-syntax-validation.js
@@ -113,6 +120,7 @@ src/app/feed/[id].tsx
 src/app/feed/add-post.tsx
 src/app/login.tsx
 src/app/onboarding.tsx
+src/app/welcome.tsx
 src/components/ui/button.test.tsx
 src/components/ui/button.tsx
 src/components/ui/checkbox.test.tsx
@@ -146,10 +154,11 @@ src/components/ui/select.tsx
 src/components/ui/text.tsx
 src/components/ui/use-theme-config.tsx
 src/components/ui/utils.tsx
-src/features/auth/components/login-form.test.tsx
+src/features/auth/api.ts
+src/features/auth/auth-screen.tsx
 src/features/auth/components/login-form.tsx
-src/features/auth/login-screen.tsx
-src/features/auth/use-auth-store.tsx
+src/features/auth/components/register-form.tsx
+src/features/auth/use-auth-store.ts
 src/features/feed/add-post-screen.tsx
 src/features/feed/api.ts
 src/features/feed/components/post-card.tsx
@@ -168,6 +177,7 @@ src/features/style-demo/components/inputs-demo.tsx
 src/features/style-demo/components/title.tsx
 src/features/style-demo/components/typography-demo.tsx
 src/features/style-demo/style-screen.tsx
+src/features/welcome/welcome-screen.tsx
 src/global.css
 src/lib/api/client.tsx
 src/lib/api/index.ts
@@ -185,6 +195,9 @@ src/lib/i18n/utils.tsx
 src/lib/storage.tsx
 src/lib/test-utils.tsx
 src/lib/utils.ts
+src/main/java/vn/ptit/snapvocab/SnapvocabApplication.java
+src/main/resources/application.yaml
+src/test/java/vn/ptit/snapvocab/SnapvocabApplicationTests.java
 src/translations/ar.json
 src/translations/en.json
 src/translations/vi.json
@@ -194,6 +207,860 @@ uniwind-types.d.ts
 
 <files>
 This section contains the contents of the repository's files.
+
+<file path=".gitattributes">
+/mvnw text eol=lf
+*.cmd text eol=crlf
+</file>
+
+<file path=".mvn/wrapper/maven-wrapper.properties">
+wrapperVersion=3.3.4
+distributionType=only-script
+distributionUrl=https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/3.9.16/apache-maven-3.9.16-bin.zip
+</file>
+
+<file path="HELP.md">
+# Getting Started
+
+### Reference Documentation
+For further reference, please consider the following sections:
+
+* [Official Apache Maven documentation](https://maven.apache.org/guides/index.html)
+* [Spring Boot Maven Plugin Reference Guide](https://docs.spring.io/spring-boot/3.5.15/maven-plugin)
+* [Create an OCI image](https://docs.spring.io/spring-boot/3.5.15/maven-plugin/build-image.html)
+* [Spring Web](https://docs.spring.io/spring-boot/3.5.15/reference/web/servlet.html)
+* [SpringDoc OpenAPI](https://springdoc.org/)
+* [Thymeleaf](https://docs.spring.io/spring-boot/3.5.15/reference/web/servlet.html#web.servlet.spring-mvc.template-engines)
+* [Spring Security](https://docs.spring.io/spring-boot/3.5.15/reference/web/spring-security.html)
+* [Java Mail Sender](https://docs.spring.io/spring-boot/3.5.15/reference/io/email.html)
+* [OAuth2 Resource Server](https://docs.spring.io/spring-boot/3.5.15/reference/web/spring-security.html#web.security.oauth2.server)
+* [Validation](https://docs.spring.io/spring-boot/3.5.15/reference/io/validation.html)
+* [Spring Data JPA](https://docs.spring.io/spring-boot/3.5.15/reference/data/sql.html#data.sql.jpa-and-spring-data)
+
+### Guides
+The following guides illustrate how to use some features concretely:
+
+* [Building a RESTful Web Service](https://spring.io/guides/gs/rest-service/)
+* [Serving Web Content with Spring MVC](https://spring.io/guides/gs/serving-web-content/)
+* [Building REST services with Spring](https://spring.io/guides/tutorials/rest/)
+* [SpringDoc OpenAPI](https://github.com/springdoc/springdoc-openapi-demos/)
+* [Handling Form Submission](https://spring.io/guides/gs/handling-form-submission/)
+* [Securing a Web Application](https://spring.io/guides/gs/securing-web/)
+* [Spring Boot and OAuth2](https://spring.io/guides/tutorials/spring-boot-oauth2/)
+* [Authenticating a User with LDAP](https://spring.io/guides/gs/authenticating-ldap/)
+* [Validation](https://spring.io/guides/gs/validating-form-input/)
+* [Accessing Data with JPA](https://spring.io/guides/gs/accessing-data-jpa/)
+
+### Maven Parent overrides
+
+Due to Maven's design, elements are inherited from the parent POM to the project POM.
+While most of the inheritance is fine, it also inherits unwanted elements like `<license>` and `<developers>` from the parent.
+To prevent this, the project POM contains empty overrides for these elements.
+If you manually switch to a different parent and actually want the inheritance, you need to remove those overrides.
+</file>
+
+<file path="mvnw">
+#!/bin/sh
+# ----------------------------------------------------------------------------
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+# ----------------------------------------------------------------------------
+
+# ----------------------------------------------------------------------------
+# Apache Maven Wrapper startup batch script, version 3.3.4
+#
+# Optional ENV vars
+# -----------------
+#   JAVA_HOME - location of a JDK home dir, required when download maven via java source
+#   MVNW_REPOURL - repo url base for downloading maven distribution
+#   MVNW_USERNAME/MVNW_PASSWORD - user and password for downloading maven
+#   MVNW_VERBOSE - true: enable verbose log; debug: trace the mvnw script; others: silence the output
+# ----------------------------------------------------------------------------
+
+set -euf
+[ "${MVNW_VERBOSE-}" != debug ] || set -x
+
+# OS specific support.
+native_path() { printf %s\\n "$1"; }
+case "$(uname)" in
+CYGWIN* | MINGW*)
+  [ -z "${JAVA_HOME-}" ] || JAVA_HOME="$(cygpath --unix "$JAVA_HOME")"
+  native_path() { cygpath --path --windows "$1"; }
+  ;;
+esac
+
+# set JAVACMD and JAVACCMD
+set_java_home() {
+  # For Cygwin and MinGW, ensure paths are in Unix format before anything is touched
+  if [ -n "${JAVA_HOME-}" ]; then
+    if [ -x "$JAVA_HOME/jre/sh/java" ]; then
+      # IBM's JDK on AIX uses strange locations for the executables
+      JAVACMD="$JAVA_HOME/jre/sh/java"
+      JAVACCMD="$JAVA_HOME/jre/sh/javac"
+    else
+      JAVACMD="$JAVA_HOME/bin/java"
+      JAVACCMD="$JAVA_HOME/bin/javac"
+
+      if [ ! -x "$JAVACMD" ] || [ ! -x "$JAVACCMD" ]; then
+        echo "The JAVA_HOME environment variable is not defined correctly, so mvnw cannot run." >&2
+        echo "JAVA_HOME is set to \"$JAVA_HOME\", but \"\$JAVA_HOME/bin/java\" or \"\$JAVA_HOME/bin/javac\" does not exist." >&2
+        return 1
+      fi
+    fi
+  else
+    JAVACMD="$(
+      'set' +e
+      'unset' -f command 2>/dev/null
+      'command' -v java
+    )" || :
+    JAVACCMD="$(
+      'set' +e
+      'unset' -f command 2>/dev/null
+      'command' -v javac
+    )" || :
+
+    if [ ! -x "${JAVACMD-}" ] || [ ! -x "${JAVACCMD-}" ]; then
+      echo "The java/javac command does not exist in PATH nor is JAVA_HOME set, so mvnw cannot run." >&2
+      return 1
+    fi
+  fi
+}
+
+# hash string like Java String::hashCode
+hash_string() {
+  str="${1:-}" h=0
+  while [ -n "$str" ]; do
+    char="${str%"${str#?}"}"
+    h=$(((h * 31 + $(LC_CTYPE=C printf %d "'$char")) % 4294967296))
+    str="${str#?}"
+  done
+  printf %x\\n $h
+}
+
+verbose() { :; }
+[ "${MVNW_VERBOSE-}" != true ] || verbose() { printf %s\\n "${1-}"; }
+
+die() {
+  printf %s\\n "$1" >&2
+  exit 1
+}
+
+trim() {
+  # MWRAPPER-139:
+  #   Trims trailing and leading whitespace, carriage returns, tabs, and linefeeds.
+  #   Needed for removing poorly interpreted newline sequences when running in more
+  #   exotic environments such as mingw bash on Windows.
+  printf "%s" "${1}" | tr -d '[:space:]'
+}
+
+scriptDir="$(dirname "$0")"
+scriptName="$(basename "$0")"
+
+# parse distributionUrl and optional distributionSha256Sum, requires .mvn/wrapper/maven-wrapper.properties
+while IFS="=" read -r key value; do
+  case "${key-}" in
+  distributionUrl) distributionUrl=$(trim "${value-}") ;;
+  distributionSha256Sum) distributionSha256Sum=$(trim "${value-}") ;;
+  esac
+done <"$scriptDir/.mvn/wrapper/maven-wrapper.properties"
+[ -n "${distributionUrl-}" ] || die "cannot read distributionUrl property in $scriptDir/.mvn/wrapper/maven-wrapper.properties"
+
+case "${distributionUrl##*/}" in
+maven-mvnd-*bin.*)
+  MVN_CMD=mvnd.sh _MVNW_REPO_PATTERN=/maven/mvnd/
+  case "${PROCESSOR_ARCHITECTURE-}${PROCESSOR_ARCHITEW6432-}:$(uname -a)" in
+  *AMD64:CYGWIN* | *AMD64:MINGW*) distributionPlatform=windows-amd64 ;;
+  :Darwin*x86_64) distributionPlatform=darwin-amd64 ;;
+  :Darwin*arm64) distributionPlatform=darwin-aarch64 ;;
+  :Linux*x86_64*) distributionPlatform=linux-amd64 ;;
+  *)
+    echo "Cannot detect native platform for mvnd on $(uname)-$(uname -m), use pure java version" >&2
+    distributionPlatform=linux-amd64
+    ;;
+  esac
+  distributionUrl="${distributionUrl%-bin.*}-$distributionPlatform.zip"
+  ;;
+maven-mvnd-*) MVN_CMD=mvnd.sh _MVNW_REPO_PATTERN=/maven/mvnd/ ;;
+*) MVN_CMD="mvn${scriptName#mvnw}" _MVNW_REPO_PATTERN=/org/apache/maven/ ;;
+esac
+
+# apply MVNW_REPOURL and calculate MAVEN_HOME
+# maven home pattern: ~/.m2/wrapper/dists/{apache-maven-<version>,maven-mvnd-<version>-<platform>}/<hash>
+[ -z "${MVNW_REPOURL-}" ] || distributionUrl="$MVNW_REPOURL$_MVNW_REPO_PATTERN${distributionUrl#*"$_MVNW_REPO_PATTERN"}"
+distributionUrlName="${distributionUrl##*/}"
+distributionUrlNameMain="${distributionUrlName%.*}"
+distributionUrlNameMain="${distributionUrlNameMain%-bin}"
+MAVEN_USER_HOME="${MAVEN_USER_HOME:-${HOME}/.m2}"
+MAVEN_HOME="${MAVEN_USER_HOME}/wrapper/dists/${distributionUrlNameMain-}/$(hash_string "$distributionUrl")"
+
+exec_maven() {
+  unset MVNW_VERBOSE MVNW_USERNAME MVNW_PASSWORD MVNW_REPOURL || :
+  exec "$MAVEN_HOME/bin/$MVN_CMD" "$@" || die "cannot exec $MAVEN_HOME/bin/$MVN_CMD"
+}
+
+if [ -d "$MAVEN_HOME" ]; then
+  verbose "found existing MAVEN_HOME at $MAVEN_HOME"
+  exec_maven "$@"
+fi
+
+case "${distributionUrl-}" in
+*?-bin.zip | *?maven-mvnd-?*-?*.zip) ;;
+*) die "distributionUrl is not valid, must match *-bin.zip or maven-mvnd-*.zip, but found '${distributionUrl-}'" ;;
+esac
+
+# prepare tmp dir
+if TMP_DOWNLOAD_DIR="$(mktemp -d)" && [ -d "$TMP_DOWNLOAD_DIR" ]; then
+  clean() { rm -rf -- "$TMP_DOWNLOAD_DIR"; }
+  trap clean HUP INT TERM EXIT
+else
+  die "cannot create temp dir"
+fi
+
+mkdir -p -- "${MAVEN_HOME%/*}"
+
+# Download and Install Apache Maven
+verbose "Couldn't find MAVEN_HOME, downloading and installing it ..."
+verbose "Downloading from: $distributionUrl"
+verbose "Downloading to: $TMP_DOWNLOAD_DIR/$distributionUrlName"
+
+# select .zip or .tar.gz
+if ! command -v unzip >/dev/null; then
+  distributionUrl="${distributionUrl%.zip}.tar.gz"
+  distributionUrlName="${distributionUrl##*/}"
+fi
+
+# verbose opt
+__MVNW_QUIET_WGET=--quiet __MVNW_QUIET_CURL=--silent __MVNW_QUIET_UNZIP=-q __MVNW_QUIET_TAR=''
+[ "${MVNW_VERBOSE-}" != true ] || __MVNW_QUIET_WGET='' __MVNW_QUIET_CURL='' __MVNW_QUIET_UNZIP='' __MVNW_QUIET_TAR=v
+
+# normalize http auth
+case "${MVNW_PASSWORD:+has-password}" in
+'') MVNW_USERNAME='' MVNW_PASSWORD='' ;;
+has-password) [ -n "${MVNW_USERNAME-}" ] || MVNW_USERNAME='' MVNW_PASSWORD='' ;;
+esac
+
+if [ -z "${MVNW_USERNAME-}" ] && command -v wget >/dev/null; then
+  verbose "Found wget ... using wget"
+  wget ${__MVNW_QUIET_WGET:+"$__MVNW_QUIET_WGET"} "$distributionUrl" -O "$TMP_DOWNLOAD_DIR/$distributionUrlName" || die "wget: Failed to fetch $distributionUrl"
+elif [ -z "${MVNW_USERNAME-}" ] && command -v curl >/dev/null; then
+  verbose "Found curl ... using curl"
+  curl ${__MVNW_QUIET_CURL:+"$__MVNW_QUIET_CURL"} -f -L -o "$TMP_DOWNLOAD_DIR/$distributionUrlName" "$distributionUrl" || die "curl: Failed to fetch $distributionUrl"
+elif set_java_home; then
+  verbose "Falling back to use Java to download"
+  javaSource="$TMP_DOWNLOAD_DIR/Downloader.java"
+  targetZip="$TMP_DOWNLOAD_DIR/$distributionUrlName"
+  cat >"$javaSource" <<-END
+	public class Downloader extends java.net.Authenticator
+	{
+	  protected java.net.PasswordAuthentication getPasswordAuthentication()
+	  {
+	    return new java.net.PasswordAuthentication( System.getenv( "MVNW_USERNAME" ), System.getenv( "MVNW_PASSWORD" ).toCharArray() );
+	  }
+	  public static void main( String[] args ) throws Exception
+	  {
+	    setDefault( new Downloader() );
+	    java.nio.file.Files.copy( java.net.URI.create( args[0] ).toURL().openStream(), java.nio.file.Paths.get( args[1] ).toAbsolutePath().normalize() );
+	  }
+	}
+	END
+  # For Cygwin/MinGW, switch paths to Windows format before running javac and java
+  verbose " - Compiling Downloader.java ..."
+  "$(native_path "$JAVACCMD")" "$(native_path "$javaSource")" || die "Failed to compile Downloader.java"
+  verbose " - Running Downloader.java ..."
+  "$(native_path "$JAVACMD")" -cp "$(native_path "$TMP_DOWNLOAD_DIR")" Downloader "$distributionUrl" "$(native_path "$targetZip")"
+fi
+
+# If specified, validate the SHA-256 sum of the Maven distribution zip file
+if [ -n "${distributionSha256Sum-}" ]; then
+  distributionSha256Result=false
+  if [ "$MVN_CMD" = mvnd.sh ]; then
+    echo "Checksum validation is not supported for maven-mvnd." >&2
+    echo "Please disable validation by removing 'distributionSha256Sum' from your maven-wrapper.properties." >&2
+    exit 1
+  elif command -v sha256sum >/dev/null; then
+    if echo "$distributionSha256Sum  $TMP_DOWNLOAD_DIR/$distributionUrlName" | sha256sum -c - >/dev/null 2>&1; then
+      distributionSha256Result=true
+    fi
+  elif command -v shasum >/dev/null; then
+    if echo "$distributionSha256Sum  $TMP_DOWNLOAD_DIR/$distributionUrlName" | shasum -a 256 -c >/dev/null 2>&1; then
+      distributionSha256Result=true
+    fi
+  else
+    echo "Checksum validation was requested but neither 'sha256sum' or 'shasum' are available." >&2
+    echo "Please install either command, or disable validation by removing 'distributionSha256Sum' from your maven-wrapper.properties." >&2
+    exit 1
+  fi
+  if [ $distributionSha256Result = false ]; then
+    echo "Error: Failed to validate Maven distribution SHA-256, your Maven distribution might be compromised." >&2
+    echo "If you updated your Maven version, you need to update the specified distributionSha256Sum property." >&2
+    exit 1
+  fi
+fi
+
+# unzip and move
+if command -v unzip >/dev/null; then
+  unzip ${__MVNW_QUIET_UNZIP:+"$__MVNW_QUIET_UNZIP"} "$TMP_DOWNLOAD_DIR/$distributionUrlName" -d "$TMP_DOWNLOAD_DIR" || die "failed to unzip"
+else
+  tar xzf${__MVNW_QUIET_TAR:+"$__MVNW_QUIET_TAR"} "$TMP_DOWNLOAD_DIR/$distributionUrlName" -C "$TMP_DOWNLOAD_DIR" || die "failed to untar"
+fi
+
+# Find the actual extracted directory name (handles snapshots where filename != directory name)
+actualDistributionDir=""
+
+# First try the expected directory name (for regular distributions)
+if [ -d "$TMP_DOWNLOAD_DIR/$distributionUrlNameMain" ]; then
+  if [ -f "$TMP_DOWNLOAD_DIR/$distributionUrlNameMain/bin/$MVN_CMD" ]; then
+    actualDistributionDir="$distributionUrlNameMain"
+  fi
+fi
+
+# If not found, search for any directory with the Maven executable (for snapshots)
+if [ -z "$actualDistributionDir" ]; then
+  # enable globbing to iterate over items
+  set +f
+  for dir in "$TMP_DOWNLOAD_DIR"/*; do
+    if [ -d "$dir" ]; then
+      if [ -f "$dir/bin/$MVN_CMD" ]; then
+        actualDistributionDir="$(basename "$dir")"
+        break
+      fi
+    fi
+  done
+  set -f
+fi
+
+if [ -z "$actualDistributionDir" ]; then
+  verbose "Contents of $TMP_DOWNLOAD_DIR:"
+  verbose "$(ls -la "$TMP_DOWNLOAD_DIR")"
+  die "Could not find Maven distribution directory in extracted archive"
+fi
+
+verbose "Found extracted Maven distribution directory: $actualDistributionDir"
+printf %s\\n "$distributionUrl" >"$TMP_DOWNLOAD_DIR/$actualDistributionDir/mvnw.url"
+mv -- "$TMP_DOWNLOAD_DIR/$actualDistributionDir" "$MAVEN_HOME" || [ -d "$MAVEN_HOME" ] || die "fail to move MAVEN_HOME"
+
+clean || :
+exec_maven "$@"
+</file>
+
+<file path="mvnw.cmd">
+<# : batch portion
+@REM ----------------------------------------------------------------------------
+@REM Licensed to the Apache Software Foundation (ASF) under one
+@REM or more contributor license agreements.  See the NOTICE file
+@REM distributed with this work for additional information
+@REM regarding copyright ownership.  The ASF licenses this file
+@REM to you under the Apache License, Version 2.0 (the
+@REM "License"); you may not use this file except in compliance
+@REM with the License.  You may obtain a copy of the License at
+@REM
+@REM    http://www.apache.org/licenses/LICENSE-2.0
+@REM
+@REM Unless required by applicable law or agreed to in writing,
+@REM software distributed under the License is distributed on an
+@REM "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+@REM KIND, either express or implied.  See the License for the
+@REM specific language governing permissions and limitations
+@REM under the License.
+@REM ----------------------------------------------------------------------------
+
+@REM ----------------------------------------------------------------------------
+@REM Apache Maven Wrapper startup batch script, version 3.3.4
+@REM
+@REM Optional ENV vars
+@REM   MVNW_REPOURL - repo url base for downloading maven distribution
+@REM   MVNW_USERNAME/MVNW_PASSWORD - user and password for downloading maven
+@REM   MVNW_VERBOSE - true: enable verbose log; others: silence the output
+@REM ----------------------------------------------------------------------------
+
+@IF "%__MVNW_ARG0_NAME__%"=="" (SET __MVNW_ARG0_NAME__=%~nx0)
+@SET __MVNW_CMD__=
+@SET __MVNW_ERROR__=
+@SET __MVNW_PSMODULEP_SAVE=%PSModulePath%
+@SET PSModulePath=
+@FOR /F "usebackq tokens=1* delims==" %%A IN (`powershell -noprofile "& {$scriptDir='%~dp0'; $script='%__MVNW_ARG0_NAME__%'; icm -ScriptBlock ([Scriptblock]::Create((Get-Content -Raw '%~f0'))) -NoNewScope}"`) DO @(
+  IF "%%A"=="MVN_CMD" (set __MVNW_CMD__=%%B) ELSE IF "%%B"=="" (echo %%A) ELSE (echo %%A=%%B)
+)
+@SET PSModulePath=%__MVNW_PSMODULEP_SAVE%
+@SET __MVNW_PSMODULEP_SAVE=
+@SET __MVNW_ARG0_NAME__=
+@SET MVNW_USERNAME=
+@SET MVNW_PASSWORD=
+@IF NOT "%__MVNW_CMD__%"=="" ("%__MVNW_CMD__%" %*)
+@echo Cannot start maven from wrapper >&2 && exit /b 1
+@GOTO :EOF
+: end batch / begin powershell #>
+
+$ErrorActionPreference = "Stop"
+if ($env:MVNW_VERBOSE -eq "true") {
+  $VerbosePreference = "Continue"
+}
+
+# calculate distributionUrl, requires .mvn/wrapper/maven-wrapper.properties
+$distributionUrl = (Get-Content -Raw "$scriptDir/.mvn/wrapper/maven-wrapper.properties" | ConvertFrom-StringData).distributionUrl
+if (!$distributionUrl) {
+  Write-Error "cannot read distributionUrl property in $scriptDir/.mvn/wrapper/maven-wrapper.properties"
+}
+
+switch -wildcard -casesensitive ( $($distributionUrl -replace '^.*/','') ) {
+  "maven-mvnd-*" {
+    $USE_MVND = $true
+    $distributionUrl = $distributionUrl -replace '-bin\.[^.]*$',"-windows-amd64.zip"
+    $MVN_CMD = "mvnd.cmd"
+    break
+  }
+  default {
+    $USE_MVND = $false
+    $MVN_CMD = $script -replace '^mvnw','mvn'
+    break
+  }
+}
+
+# apply MVNW_REPOURL and calculate MAVEN_HOME
+# maven home pattern: ~/.m2/wrapper/dists/{apache-maven-<version>,maven-mvnd-<version>-<platform>}/<hash>
+if ($env:MVNW_REPOURL) {
+  $MVNW_REPO_PATTERN = if ($USE_MVND -eq $False) { "/org/apache/maven/" } else { "/maven/mvnd/" }
+  $distributionUrl = "$env:MVNW_REPOURL$MVNW_REPO_PATTERN$($distributionUrl -replace "^.*$MVNW_REPO_PATTERN",'')"
+}
+$distributionUrlName = $distributionUrl -replace '^.*/',''
+$distributionUrlNameMain = $distributionUrlName -replace '\.[^.]*$','' -replace '-bin$',''
+
+$MAVEN_M2_PATH = "$HOME/.m2"
+if ($env:MAVEN_USER_HOME) {
+  $MAVEN_M2_PATH = "$env:MAVEN_USER_HOME"
+}
+
+if (-not (Test-Path -Path $MAVEN_M2_PATH)) {
+    New-Item -Path $MAVEN_M2_PATH -ItemType Directory | Out-Null
+}
+
+$MAVEN_WRAPPER_DISTS = $null
+if ((Get-Item $MAVEN_M2_PATH).Target[0] -eq $null) {
+  $MAVEN_WRAPPER_DISTS = "$MAVEN_M2_PATH/wrapper/dists"
+} else {
+  $MAVEN_WRAPPER_DISTS = (Get-Item $MAVEN_M2_PATH).Target[0] + "/wrapper/dists"
+}
+
+$MAVEN_HOME_PARENT = "$MAVEN_WRAPPER_DISTS/$distributionUrlNameMain"
+$MAVEN_HOME_NAME = ([System.Security.Cryptography.SHA256]::Create().ComputeHash([byte[]][char[]]$distributionUrl) | ForEach-Object {$_.ToString("x2")}) -join ''
+$MAVEN_HOME = "$MAVEN_HOME_PARENT/$MAVEN_HOME_NAME"
+
+if (Test-Path -Path "$MAVEN_HOME" -PathType Container) {
+  Write-Verbose "found existing MAVEN_HOME at $MAVEN_HOME"
+  Write-Output "MVN_CMD=$MAVEN_HOME/bin/$MVN_CMD"
+  exit $?
+}
+
+if (! $distributionUrlNameMain -or ($distributionUrlName -eq $distributionUrlNameMain)) {
+  Write-Error "distributionUrl is not valid, must end with *-bin.zip, but found $distributionUrl"
+}
+
+# prepare tmp dir
+$TMP_DOWNLOAD_DIR_HOLDER = New-TemporaryFile
+$TMP_DOWNLOAD_DIR = New-Item -Itemtype Directory -Path "$TMP_DOWNLOAD_DIR_HOLDER.dir"
+$TMP_DOWNLOAD_DIR_HOLDER.Delete() | Out-Null
+trap {
+  if ($TMP_DOWNLOAD_DIR.Exists) {
+    try { Remove-Item $TMP_DOWNLOAD_DIR -Recurse -Force | Out-Null }
+    catch { Write-Warning "Cannot remove $TMP_DOWNLOAD_DIR" }
+  }
+}
+
+New-Item -Itemtype Directory -Path "$MAVEN_HOME_PARENT" -Force | Out-Null
+
+# Download and Install Apache Maven
+Write-Verbose "Couldn't find MAVEN_HOME, downloading and installing it ..."
+Write-Verbose "Downloading from: $distributionUrl"
+Write-Verbose "Downloading to: $TMP_DOWNLOAD_DIR/$distributionUrlName"
+
+$webclient = New-Object System.Net.WebClient
+if ($env:MVNW_USERNAME -and $env:MVNW_PASSWORD) {
+  $webclient.Credentials = New-Object System.Net.NetworkCredential($env:MVNW_USERNAME, $env:MVNW_PASSWORD)
+}
+[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+$webclient.DownloadFile($distributionUrl, "$TMP_DOWNLOAD_DIR/$distributionUrlName") | Out-Null
+
+# If specified, validate the SHA-256 sum of the Maven distribution zip file
+$distributionSha256Sum = (Get-Content -Raw "$scriptDir/.mvn/wrapper/maven-wrapper.properties" | ConvertFrom-StringData).distributionSha256Sum
+if ($distributionSha256Sum) {
+  if ($USE_MVND) {
+    Write-Error "Checksum validation is not supported for maven-mvnd. `nPlease disable validation by removing 'distributionSha256Sum' from your maven-wrapper.properties."
+  }
+  Import-Module $PSHOME\Modules\Microsoft.PowerShell.Utility -Function Get-FileHash
+  if ((Get-FileHash "$TMP_DOWNLOAD_DIR/$distributionUrlName" -Algorithm SHA256).Hash.ToLower() -ne $distributionSha256Sum) {
+    Write-Error "Error: Failed to validate Maven distribution SHA-256, your Maven distribution might be compromised. If you updated your Maven version, you need to update the specified distributionSha256Sum property."
+  }
+}
+
+# unzip and move
+Expand-Archive "$TMP_DOWNLOAD_DIR/$distributionUrlName" -DestinationPath "$TMP_DOWNLOAD_DIR" | Out-Null
+
+# Find the actual extracted directory name (handles snapshots where filename != directory name)
+$actualDistributionDir = ""
+
+# First try the expected directory name (for regular distributions)
+$expectedPath = Join-Path "$TMP_DOWNLOAD_DIR" "$distributionUrlNameMain"
+$expectedMvnPath = Join-Path "$expectedPath" "bin/$MVN_CMD"
+if ((Test-Path -Path $expectedPath -PathType Container) -and (Test-Path -Path $expectedMvnPath -PathType Leaf)) {
+  $actualDistributionDir = $distributionUrlNameMain
+}
+
+# If not found, search for any directory with the Maven executable (for snapshots)
+if (!$actualDistributionDir) {
+  Get-ChildItem -Path "$TMP_DOWNLOAD_DIR" -Directory | ForEach-Object {
+    $testPath = Join-Path $_.FullName "bin/$MVN_CMD"
+    if (Test-Path -Path $testPath -PathType Leaf) {
+      $actualDistributionDir = $_.Name
+    }
+  }
+}
+
+if (!$actualDistributionDir) {
+  Write-Error "Could not find Maven distribution directory in extracted archive"
+}
+
+Write-Verbose "Found extracted Maven distribution directory: $actualDistributionDir"
+Rename-Item -Path "$TMP_DOWNLOAD_DIR/$actualDistributionDir" -NewName $MAVEN_HOME_NAME | Out-Null
+try {
+  Move-Item -Path "$TMP_DOWNLOAD_DIR/$MAVEN_HOME_NAME" -Destination $MAVEN_HOME_PARENT | Out-Null
+} catch {
+  if (! (Test-Path -Path "$MAVEN_HOME" -PathType Container)) {
+    Write-Error "fail to move MAVEN_HOME"
+  }
+} finally {
+  try { Remove-Item $TMP_DOWNLOAD_DIR -Recurse -Force | Out-Null }
+  catch { Write-Warning "Cannot remove $TMP_DOWNLOAD_DIR" }
+}
+
+Write-Output "MVN_CMD=$MAVEN_HOME/bin/$MVN_CMD"
+</file>
+
+<file path="pom.xml">
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-parent</artifactId>
+		<version>3.5.15</version>
+		<relativePath/> <!-- lookup parent from repository -->
+	</parent>
+	<groupId>vn.ptit</groupId>
+	<artifactId>snapvocab</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<name/>
+	<description/>
+	<url/>
+	<licenses>
+		<license/>
+	</licenses>
+	<developers>
+		<developer/>
+	</developers>
+	<scm>
+		<connection/>
+		<developerConnection/>
+		<tag/>
+		<url/>
+	</scm>
+	<properties>
+		<java.version>17</java.version>
+	</properties>
+	<dependencies>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-jpa</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-mail</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-oauth2-resource-server</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-security</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-thymeleaf</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-validation</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-web</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springdoc</groupId>
+			<artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+			<version>2.8.16</version>
+		</dependency>
+		<dependency>
+			<groupId>org.thymeleaf.extras</groupId>
+			<artifactId>thymeleaf-extras-springsecurity6</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.mariadb.jdbc</groupId>
+			<artifactId>mariadb-java-client</artifactId>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+			<optional>true</optional>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.security</groupId>
+			<artifactId>spring-security-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+				<configuration>
+					<excludes>
+						<exclude>
+							<groupId>org.projectlombok</groupId>
+							<artifactId>lombok</artifactId>
+						</exclude>
+					</excludes>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>default-compile</id>
+						<phase>compile</phase>
+						<goals>
+							<goal>compile</goal>
+						</goals>
+						<configuration>
+							<annotationProcessorPaths>
+								<path>
+									<groupId>org.projectlombok</groupId>
+									<artifactId>lombok</artifactId>
+								</path>
+							</annotationProcessorPaths>
+						</configuration>
+					</execution>
+					<execution>
+						<id>default-testCompile</id>
+						<phase>test-compile</phase>
+						<goals>
+							<goal>testCompile</goal>
+						</goals>
+						<configuration>
+							<annotationProcessorPaths>
+								<path>
+									<groupId>org.projectlombok</groupId>
+									<artifactId>lombok</artifactId>
+								</path>
+							</annotationProcessorPaths>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+
+</project>
+</file>
+
+<file path="src/features/auth/api.ts">
+
+</file>
+
+<file path="src/features/auth/auth-screen.tsx">
+import { Text, View } from 'react-native';
+
+
+export function AuthScreen() {
+  return (
+    <View>
+      <Text>Auth Screen</Text>
+    </View>
+  );
+}
+</file>
+
+<file path="src/features/auth/components/register-form.tsx">
+import { Text, View } from 'react-native';
+
+export function RegisterForm() {
+  return (
+    <View>
+      <Text>Register Form</Text>
+    </View>
+  );
+}
+</file>
+
+<file path="src/features/auth/use-auth-store.ts">
+import type { StateStorage } from 'zustand/middleware';
+import type { TokenType } from '@/lib/auth/utils';
+import { create } from 'zustand';
+import { createJSONStorage, persist } from 'zustand/middleware';
+import { client } from '@/lib/api/client';
+import { getToken, removeToken, setToken } from '@/lib/auth/utils';
+import { storage } from '@/lib/storage';
+import { createSelectors } from '@/lib/utils';
+
+export type User = {
+  id: number;
+  nativeLanguage: string;
+  avatarUrl: string;
+  exp: number;
+  coin: number;
+  streakDays: number;
+  lastStudiedAt: string;
+  imageUrl: string;
+  email: string;
+};
+
+export type AuthResponse = {
+  access_token: string;
+  refresh_token: string;
+  user: User;
+};
+
+type AuthState = {
+  user: User | null;
+  accessToken: string | null;
+  refreshToken: string | null;
+  isAuthenticated: boolean;
+
+  // actions
+  login: (data: AuthResponse) => void;
+  logout: () => void;
+  updateTokens: (accessToken: string, refreshToken: string) => void;
+  updateUser: (userData: Partial<User>) => void;
+};
+
+const mmkvStorage: StateStorage = {
+  setItem: (name, value) => {
+    return storage.set(name, value);
+  },
+  getItem: (name) => {
+    const value = storage.getString(name);
+    return value ?? null;
+  },
+  removeItem: (name) => {
+    return storage.remove(name);
+  },
+};
+
+export const useAuthStore = create<AuthState>()(
+  persist(
+    set => ({
+      // initial state
+      user: null,
+      accessToken: null,
+      refreshToken: null,
+      isAuthenticated: false,
+
+      // after login success
+      login: data => set({
+        user: data.user,
+        accessToken: data.access_token,
+        refreshToken: data.refresh_token,
+        isAuthenticated: true,
+      }),
+
+      // logout
+      logout: () => set({
+        user: null,
+        accessToken: null,
+        refreshToken: null,
+        isAuthenticated: false,
+      }),
+
+      // refresh
+      updateTokens: (accessToken, refreshToken) => set({
+        accessToken,
+        refreshToken,
+      }),
+
+      updateUser: userData => set(state => ({
+        user: state.user ? { ...state.user, ...userData } : null,
+      })),
+    }),
+    {
+      name: 'auth-storage',
+      storage: createJSONStorage(() => mmkvStorage),
+    },
+  ),
+);
+</file>
+
+<file path="src/main/java/vn/ptit/snapvocab/SnapvocabApplication.java">
+package vn.ptit.snapvocab;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication
+public class SnapvocabApplication {
+
+	public static void main(String[] args) {
+		SpringApplication.run(SnapvocabApplication.class, args);
+	}
+
+}
+</file>
+
+<file path="src/main/resources/application.yaml">
+spring:
+  application:
+    name: snapvocab
+</file>
+
+<file path="src/test/java/vn/ptit/snapvocab/SnapvocabApplicationTests.java">
+package vn.ptit.snapvocab;
+
+import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.context.SpringBootTest;
+
+@SpringBootTest
+class SnapvocabApplicationTests {
+
+	@Test
+	void contextLoads() {
+	}
+
+}
+</file>
 
 <file path="__mocks__/@gorhom/bottom-sheet.ts">
 module.exports = require('@gorhom/bottom-sheet/mock');
@@ -467,57 +1334,6 @@ echo "$output"
 
 # Return the original exit code
 exit $exit_code
-</file>
-
-<file path=".github/workflows/compress-images.yml">
-# 🔗 Links:
-# Source file: https://github.com/obytes/react-native-template-obytes/blob/master/.github/workflows/compress-images.yml
-
-# ✍️ Description:
-# This workflow is used to compress images in the repo.
-# This workflow will trigger on a push to the "master" or "main" branch and only run when a new image is added or updated.
-# If it's the case, it will compress those images and create a pull request with the compressed images.
-
-# 🚨 GITHUB SECRETS REQUIRED: None
-
-name: Compress images
-on:
-  push:
-    branches:
-      - master
-      - main
-    paths:
-      - '**.jpg'
-      - '**.jpeg'
-      - '**.png'
-      - '**.webp'
-  workflow_dispatch:
-
-jobs:
-  build:
-    name: calibreapp/image-actions
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Branch
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - name: Compress Images
-        id: calibre
-        uses: calibreapp/image-actions@main
-        with:
-          githubToken: ${{ secrets.GITHUB_TOKEN }}
-          compressOnly: true
-          ignorePaths: 'node_modules/**,ios/**,android/**'
-
-      - name: Create Pull Request
-        if: steps.calibre.outputs.markdown != ''
-        uses: peter-evans/create-pull-request@v3
-        with:
-          title: Auto Compress Images
-          branch-suffix: timestamp
-          commit-message: Compress Images
-          body: ${{ steps.calibre.outputs.markdown }}
 </file>
 
 <file path=".github/workflows/e2e-android-eas-build.yml">
@@ -968,58 +1784,6 @@ jobs:
         with:
           header: expo-doctor
           path: .expo/expo-doctor.md
-</file>
-
-<file path=".github/workflows/lint-ts.yml">
-# 🔗 Links:
-# Source file: https://github.com/obytes/react-native-template-obytes/blob/master/.github/workflows/lint-ts.yml
-
-# ✍️ Description:
-# This action is used to run eslint checks
-# Runs on pull requests and pushes to  the main/master branches
-# Based on the event type:
-#   - If it's a pull request, it will run eslint, then add the check to the PR as well as annotate the code with the errors and warnings.
-#   - If it's a push to main/master, it will run the type checking and fail if there are any errors.
-
-# 🚨 GITHUB SECRETS REQUIRED: NONE
-
-name: Lint TS (eslint, prettier)
-
-on:
-  push:
-    branches: [main, master]
-  pull_request:
-    branches: [main, master]
-
-permissions:
-  contents: read
-  pull-requests: write
-
-jobs:
-  lint:
-    name: Lint TS (eslint, prettier)
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: 📦 Checkout project repo
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: 📦 Setup Node + PNPM + install deps
-        uses: ./.github/actions/setup-node-pnpm-install
-
-      - name: 🏃‍♂️ Run ESLint PR
-        if: github.event_name == 'pull_request'
-        uses: reviewdog/action-eslint@v1
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          reporter: github-pr-review
-          eslint_flags: '. --ext .js,.jsx,.ts,.tsx'
-
-      - name: 🏃‍♂️ Run ESLint PR
-        if: github.event_name != 'pull_request'
-        run: pnpm run lint
 </file>
 
 <file path=".github/workflows/new-app-version.yml">
@@ -1685,41 +2449,6 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     },
   },
 });
-</file>
-
-<file path="babel.config.js">
-module.exports = function (api) {
-  api.cache(true);
-  return {
-    presets: [
-      'babel-preset-expo',
-    ],
-    plugins: [
-      [
-        'module-resolver',
-        {
-          root: ['./'],
-          alias: {
-            '@': './src',
-            '@env': './src/lib/env.js',
-          },
-          extensions: [
-            '.ios.ts',
-            '.android.ts',
-            '.ts',
-            '.ios.tsx',
-            '.android.tsx',
-            '.tsx',
-            '.jsx',
-            '.js',
-            '.json',
-          ],
-        },
-      ],
-      'react-native-reanimated/plugin',
-    ],
-  };
-};
 </file>
 
 <file path="claude.md">
@@ -2555,163 +3284,6 @@ function validate(message = '') {
 module.exports = validate;
 </file>
 
-<file path="src/app/_layout.tsx">
-import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
-
-import { ThemeProvider } from '@react-navigation/native';
-import { Stack } from 'expo-router';
-import * as SplashScreen from 'expo-splash-screen';
-import * as React from 'react';
-import { StyleSheet } from 'react-native';
-import FlashMessage from 'react-native-flash-message';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { KeyboardProvider } from 'react-native-keyboard-controller';
-import { useThemeConfig } from '@/components/ui/use-theme-config';
-import { hydrateAuth } from '@/features/auth/use-auth-store';
-
-import { APIProvider } from '@/lib/api';
-import { loadSelectedTheme } from '@/lib/hooks/use-selected-theme';
-// Import  global CSS file
-import '../global.css';
-
-export { ErrorBoundary } from 'expo-router';
-
-// eslint-disable-next-line react-refresh/only-export-components
-export const unstable_settings = {
-  initialRouteName: '(app)',
-};
-
-hydrateAuth();
-loadSelectedTheme();
-// Prevent the splash screen from auto-hiding before asset loading is complete.
-SplashScreen.preventAutoHideAsync();
-// Set the animation options. This is optional.
-SplashScreen.setOptions({
-  duration: 500,
-  fade: true,
-});
-
-export default function RootLayout() {
-  return (
-    <Providers>
-      <Stack>
-        <Stack.Screen name="(app)" options={{ headerShown: false }} />
-        <Stack.Screen name="onboarding" options={{ headerShown: false }} />
-        <Stack.Screen name="login" options={{ headerShown: false }} />
-      </Stack>
-    </Providers>
-  );
-}
-
-function Providers({ children }: { children: React.ReactNode }) {
-  const theme = useThemeConfig();
-  return (
-    <GestureHandlerRootView
-      style={styles.container}
-      // eslint-disable-next-line better-tailwindcss/no-unknown-classes
-      className={theme.dark ? `dark` : undefined}
-    >
-      <KeyboardProvider>
-        <ThemeProvider value={theme}>
-          <APIProvider>
-            <BottomSheetModalProvider>
-              {children}
-              <FlashMessage position="top" />
-            </BottomSheetModalProvider>
-          </APIProvider>
-        </ThemeProvider>
-      </KeyboardProvider>
-    </GestureHandlerRootView>
-  );
-}
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-});
-</file>
-
-<file path="src/app/(app)/_layout.tsx">
-import { Link, Redirect, SplashScreen, Tabs } from 'expo-router';
-import * as React from 'react';
-import { useCallback, useEffect } from 'react';
-
-import { Pressable, Text } from '@/components/ui';
-import {
-  Feed as FeedIcon,
-  Settings as SettingsIcon,
-  Style as StyleIcon,
-} from '@/components/ui/icons';
-import { useAuthStore as useAuth } from '@/features/auth/use-auth-store';
-import { useIsFirstTime } from '@/lib/hooks/use-is-first-time';
-
-export default function TabLayout() {
-  const status = useAuth.use.status();
-  const [isFirstTime] = useIsFirstTime();
-  const hideSplash = useCallback(async () => {
-    await SplashScreen.hideAsync();
-  }, []);
-  useEffect(() => {
-    if (status !== 'idle') {
-      const timer = setTimeout(() => {
-        hideSplash();
-      }, 1000);
-      return () => clearTimeout(timer);
-    }
-  }, [hideSplash, status]);
-
-  if (isFirstTime) {
-    return <Redirect href="/onboarding" />;
-  }
-  if (status === 'signOut') {
-    return <Redirect href="/login" />;
-  }
-  return (
-    <Tabs>
-      <Tabs.Screen
-        name="index"
-        options={{
-          title: 'Feed',
-          tabBarIcon: ({ color }) => <FeedIcon color={color} />,
-          headerRight: () => <CreateNewPostLink />,
-          tabBarButtonTestID: 'feed-tab',
-        }}
-      />
-
-      <Tabs.Screen
-        name="style"
-        options={{
-          title: 'Style',
-          headerShown: false,
-          tabBarIcon: ({ color }) => <StyleIcon color={color} />,
-          tabBarButtonTestID: 'style-tab',
-        }}
-      />
-      <Tabs.Screen
-        name="settings"
-        options={{
-          title: 'Settings',
-          headerShown: false,
-          tabBarIcon: ({ color }) => <SettingsIcon color={color} />,
-          tabBarButtonTestID: 'settings-tab',
-        }}
-      />
-    </Tabs>
-  );
-}
-
-function CreateNewPostLink() {
-  return (
-    <Link href="/feed/add-post" asChild>
-      <Pressable>
-        <Text className="px-3 text-primary-300">Create</Text>
-      </Pressable>
-    </Link>
-  );
-}
-</file>
-
 <file path="src/app/(app)/index.tsx">
 export { FeedScreen as default } from '@/features/feed/feed-screen';
 </file>
@@ -2811,6 +3383,10 @@ export { LoginScreen as default } from '@/features/auth/login-screen';
 
 <file path="src/app/onboarding.tsx">
 export { OnboardingScreen as default } from '@/features/onboarding/onboarding-screen';
+</file>
+
+<file path="src/app/welcome.tsx">
+export { WelcomeScreen as default } from '@/features/welcome/welcome-screen';
 </file>
 
 <file path="src/components/ui/button.test.tsx">
@@ -2924,145 +3500,6 @@ describe('button component ', () => {
     expect(receivedStyle).toContain(expectedStyle);
   });
 });
-</file>
-
-<file path="src/components/ui/button.tsx">
-/* eslint-disable better-tailwindcss/no-unknown-classes */
-import type { PressableProps, View } from 'react-native';
-import type { VariantProps } from 'tailwind-variants';
-import * as React from 'react';
-import { ActivityIndicator, Pressable, Text } from 'react-native';
-import { tv } from 'tailwind-variants';
-
-const button = tv({
-  slots: {
-    container: 'my-2 flex flex-row items-center justify-center rounded-md px-4',
-    label: 'font-inter text-base font-semibold',
-    indicator: 'h-6 text-white',
-  },
-
-  variants: {
-    variant: {
-      default: {
-        container: 'bg-black dark:bg-white',
-        label: 'text-white dark:text-black',
-        indicator: 'text-white dark:text-black',
-      },
-      secondary: {
-        container: 'bg-primary-600',
-        label: 'text-secondary-600',
-        indicator: 'text-white',
-      },
-      outline: {
-        container: 'border border-neutral-400',
-        label: 'text-black dark:text-neutral-100',
-        indicator: 'text-black dark:text-neutral-100',
-      },
-      destructive: {
-        container: 'bg-red-600',
-        label: 'text-white',
-        indicator: 'text-white',
-      },
-      ghost: {
-        container: 'bg-transparent',
-        label: 'text-black underline dark:text-white',
-        indicator: 'text-black dark:text-white',
-      },
-      link: {
-        container: 'bg-transparent',
-        label: 'text-black',
-        indicator: 'text-black',
-      },
-    },
-    size: {
-      default: {
-        container: 'h-10 px-4',
-        label: 'text-base',
-      },
-      lg: {
-        container: 'h-12 px-8',
-        label: 'text-xl',
-      },
-      sm: {
-        container: 'h-8 px-3',
-        label: 'text-sm',
-        indicator: 'h-2',
-      },
-      icon: { container: 'size-9' },
-    },
-    disabled: {
-      true: {
-        container: 'bg-neutral-300 dark:bg-neutral-300',
-        label: 'text-neutral-600 dark:text-neutral-600',
-        indicator: 'text-neutral-400 dark:text-neutral-400',
-      },
-    },
-    fullWidth: {
-      true: {
-        container: '',
-      },
-      false: {
-        container: 'self-center',
-      },
-    },
-  },
-  defaultVariants: {
-    variant: 'default',
-    disabled: false,
-    fullWidth: true,
-    size: 'default',
-  },
-});
-
-type ButtonVariants = VariantProps<typeof button>;
-type Props = {
-  label?: string;
-  loading?: boolean;
-  className?: string;
-  textClassName?: string;
-} & ButtonVariants & Omit<PressableProps, 'disabled'>;
-
-export function Button({ ref, label: text, loading = false, variant = 'default', disabled = false, size = 'default', className = '', testID, textClassName = '', ...props }: Props & { ref?: React.RefObject<View | null> }) {
-  const styles = React.useMemo(
-    () => button({ variant, disabled, size }),
-    [variant, disabled, size],
-  );
-
-  return (
-    <Pressable
-      disabled={disabled || loading}
-      className={styles.container({ className })}
-      {...props}
-      ref={ref}
-      testID={testID}
-    >
-      {props.children
-        ? (
-            props.children
-          )
-        : (
-            <>
-              {loading
-                ? (
-                    <ActivityIndicator
-                      size="small"
-                      className={styles.indicator()}
-                      testID={testID ? `${testID}-activity-indicator` : undefined}
-                    />
-                  )
-                : (
-                    <Text
-                      testID={testID ? `${testID}-label` : undefined}
-                      className={styles.label({ className: textClassName })}
-                    >
-                      {text}
-                    </Text>
-                  )}
-            </>
-          )}
-    </Pressable>
-  );
-}
 </file>
 
 <file path="src/components/ui/checkbox.test.tsx">
@@ -5159,282 +5596,19 @@ export function extractError(data: unknown): string {
 }
 </file>
 
-<file path="src/features/auth/components/login-form.test.tsx">
-import type { LoginFormProps } from './login-form';
-
-import * as React from 'react';
-
-import { cleanup, screen, setup, waitFor } from '@/lib/test-utils';
-import { LoginForm } from './login-form';
-
-afterEach(cleanup);
-
-const onSubmitMock: jest.Mock<LoginFormProps['onSubmit']> = jest.fn();
-
-describe('loginForm Form ', () => {
-  it('renders correctly', async () => {
-    setup(<LoginForm />);
-    expect(await screen.findByTestId('form-title')).toBeOnTheScreen();
-  });
-
-  it('should display required error when values are empty', async () => {
-    const { user } = setup(<LoginForm />);
-
-    const button = screen.getByTestId('login-button');
-    expect(screen.queryByText(/Email is required/i)).not.toBeOnTheScreen();
-    await user.press(button);
-    expect(await screen.findByText(/Email is required/i)).toBeOnTheScreen();
-    expect(screen.getByText(/Password is required/i)).toBeOnTheScreen();
-  });
-
-  it('should display matching error when email is invalid', async () => {
-    const { user } = setup(<LoginForm />);
-
-    const button = screen.getByTestId('login-button');
-    const emailInput = screen.getByTestId('email-input');
-    const passwordInput = screen.getByTestId('password-input');
-
-    await user.type(emailInput, 'yyyyy');
-    emailInput.props.onBlur(); // Manually trigger blur to set touched state
-    await user.type(passwordInput, 'test');
-    await user.press(button);
-
-    expect(await screen.findByText(/Invalid Email Format/i)).toBeOnTheScreen();
-    expect(screen.queryByText(/Email is required/i)).not.toBeOnTheScreen();
-  });
-
-  it('should call LoginForm with correct values when values are valid', async () => {
-    const { user } = setup(<LoginForm onSubmit={onSubmitMock} />);
-
-    const button = screen.getByTestId('login-button');
-    const emailInput = screen.getByTestId('email-input');
-    const passwordInput = screen.getByTestId('password-input');
-
-    await user.type(emailInput, 'youssef@gmail.com');
-    await user.type(passwordInput, 'password');
-    await user.press(button);
-    await waitFor(() => {
-      expect(onSubmitMock).toHaveBeenCalledTimes(1);
-    });
-    // expect.objectContaining({}) because we don't want to test the target event we are receiving from the onSubmit function
-    expect(onSubmitMock).toHaveBeenCalledWith(
-      expect.objectContaining({
-        email: 'youssef@gmail.com',
-        password: 'password',
-      }),
-    );
-  });
-});
-</file>
-
 <file path="src/features/auth/components/login-form.tsx">
 import { useForm } from '@tanstack/react-form';
+import { Text, View } from 'react-native';
 
-import * as React from 'react';
-import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
-import * as z from 'zod';
-
-import { Button, Input, Text, View } from '@/components/ui';
-import { getFieldError } from '@/components/ui/form-utils';
-
-const schema = z.object({
-  name: z.string().optional(),
-  email: z
-    .string({
-      message: 'Email is required',
-    })
-    .min(1, 'Email is required')
-    .email('Invalid email format'),
-  password: z
-    .string({
-      message: 'Password is required',
-    })
-    .min(1, 'Password is required')
-    .min(6, 'Password must be at least 6 characters'),
-});
-
-export type FormType = z.infer<typeof schema>;
-
-export type LoginFormProps = {
-  onSubmit?: (data: FormType) => void;
-};
-
-export function LoginForm({ onSubmit = () => {} }: LoginFormProps) {
+export function LoginForm() {
   const form = useForm({
     defaultValues: {
-      name: '',
       email: '',
       password: '',
     },
-
-    validators: {
-      onChange: schema as any,
-    },
-    onSubmit: async ({ value }) => {
-      onSubmit(value);
-    },
+    onSubmit:
   });
-
-  return (
-    <KeyboardAvoidingView
-      style={{ flex: 1 }}
-      behavior="padding"
-      keyboardVerticalOffset={10}
-    >
-      <View className="flex-1 justify-center p-4">
-        <View className="items-center justify-center">
-          <Text
-            testID="form-title"
-            className="pb-6 text-center text-4xl font-bold"
-          >
-            Sign In
-          </Text>
-
-          <Text className="mb-6 max-w-xs text-center text-gray-500">
-            Welcome! 👋 This is a demo login screen! Feel free to use any email
-            and password to sign in and try it out.
-          </Text>
-        </View>
-
-        <form.Field
-          name="name"
-          children={field => (
-            <Input
-              testID="name"
-              label="Name"
-              value={field.state.value}
-              onBlur={field.handleBlur}
-              onChangeText={field.handleChange}
-              error={getFieldError(field)}
-            />
-          )}
-        />
-
-        <form.Field
-          name="email"
-          children={field => (
-            <Input
-              testID="email-input"
-              label="Email"
-              value={field.state.value}
-              onBlur={field.handleBlur}
-              onChangeText={field.handleChange}
-              error={getFieldError(field)}
-            />
-          )}
-        />
-
-        <form.Field
-          name="password"
-          children={field => (
-            <Input
-              testID="password-input"
-              label="Password"
-              placeholder="***"
-              secureTextEntry={true}
-              value={field.state.value}
-              onBlur={field.handleBlur}
-              onChangeText={field.handleChange}
-              error={getFieldError(field)}
-            />
-          )}
-        />
-
-        <form.Subscribe
-          selector={state => [state.isSubmitting]}
-          children={([isSubmitting]) => (
-            <Button
-              testID="login-button"
-              label="Login"
-              onPress={form.handleSubmit}
-              loading={isSubmitting}
-            />
-          )}
-        />
-      </View>
-    </KeyboardAvoidingView>
-  );
 }
-</file>
-
-<file path="src/features/auth/login-screen.tsx">
-import type { LoginFormProps } from './components/login-form';
-import { useRouter } from 'expo-router';
-
-import * as React from 'react';
-import { FocusAwareStatusBar } from '@/components/ui';
-import { LoginForm } from './components/login-form';
-import { useAuthStore } from './use-auth-store';
-
-export function LoginScreen() {
-  const router = useRouter();
-  const signIn = useAuthStore.use.signIn();
-
-  const onSubmit: LoginFormProps['onSubmit'] = (data) => {
-    console.log(data);
-    signIn({ access: 'access-token', refresh: 'refresh-token' });
-    router.push('/');
-  };
-
-  return (
-    <>
-      <FocusAwareStatusBar />
-      <LoginForm onSubmit={onSubmit} />
-    </>
-  );
-}
-</file>
-
-<file path="src/features/auth/use-auth-store.tsx">
-import type { TokenType } from '@/lib/auth/utils';
-
-import { create } from 'zustand';
-import { getToken, removeToken, setToken } from '@/lib/auth/utils';
-import { createSelectors } from '@/lib/utils';
-
-type AuthState = {
-  token: TokenType | null;
-  status: 'idle' | 'signOut' | 'signIn';
-  signIn: (data: TokenType) => void;
-  signOut: () => void;
-  hydrate: () => void;
-};
-
-const _useAuthStore = create<AuthState>((set, get) => ({
-  status: 'idle',
-  token: null,
-  signIn: (token) => {
-    setToken(token);
-    set({ status: 'signIn', token });
-  },
-  signOut: () => {
-    removeToken();
-    set({ status: 'signOut', token: null });
-  },
-  hydrate: () => {
-    try {
-      const userToken = getToken();
-      if (userToken !== null) {
-        get().signIn(userToken);
-      }
-      else {
-        get().signOut();
-      }
-    }
-    catch (e) {
-      // only to remove eslint error, handle the error properly
-      console.error(e);
-      // catch error here
-      // Maybe sign_out user!
-    }
-  },
-}));
-
-export const useAuthStore = createSelectors(_useAuthStore);
-
-export const signOut = () => _useAuthStore.getState().signOut();
-export const signIn = (token: TokenType) => _useAuthStore.getState().signIn(token);
-export const hydrateAuth = () => _useAuthStore.getState().hydrate();
 </file>
 
 <file path="src/features/feed/add-post-screen.tsx">
@@ -6009,58 +6183,6 @@ export function OnboardingScreen() {
 }
 </file>
 
-<file path="src/features/settings/components/language-item.tsx">
-import type { OptionType } from '@/components/ui';
-
-import type { Language } from '@/lib/i18n/resources';
-import * as React from 'react';
-import { Options, useModal } from '@/components/ui';
-import { translate, useSelectedLanguage } from '@/lib/i18n';
-
-import { SettingsItem } from './settings-item';
-
-export function LanguageItem() {
-  const { language, setLanguage } = useSelectedLanguage();
-  const modal = useModal();
-  const onSelect = React.useCallback(
-    (option: OptionType) => {
-      setLanguage(option.value as Language);
-      modal.dismiss();
-    },
-    [setLanguage, modal],
-  );
-
-  const langs = React.useMemo(
-    () => [
-      { label: translate('settings.english'), value: 'en' },
-      { label: translate('settings.arabic'), value: 'ar' },
-    ],
-    [],
-  );
-
-  const selectedLanguage = React.useMemo(
-    () => langs.find(lang => lang.value === language),
-    [language, langs],
-  );
-
-  return (
-    <>
-      <SettingsItem
-        text="settings.language"
-        value={selectedLanguage?.label}
-        onPress={modal.present}
-      />
-      <Options
-        ref={modal.ref}
-        options={langs}
-        onSelect={onSelect}
-        value={selectedLanguage?.value}
-      />
-    </>
-  );
-}
-</file>
-
 <file path="src/features/settings/components/settings-container.tsx">
 import type { TxKeyPath } from '@/lib/i18n';
 
@@ -6538,6 +6660,69 @@ export function StyleScreen() {
 }
 </file>
 
+<file path="src/features/welcome/welcome-screen.tsx">
+import { useRouter } from 'expo-router';
+import * as React from 'react';
+import { View } from 'react-native';
+
+import {
+  Button,
+  FocusAwareStatusBar,
+  Image,
+  SafeAreaView,
+  Text,
+} from '@/components/ui';
+import { translate } from '@/lib/i18n/utils';
+
+export function WelcomeScreen() {
+  const router = useRouter();
+
+  return (
+    <SafeAreaView style={{ flex: 1 }} className="flex-1 bg-[#F4F6FC] dark:bg-neutral-900">
+      <FocusAwareStatusBar />
+
+      <View className="flex-1 items-center justify-center px-6">
+        {/* Avatar / Image Container */}
+        <View className="relative mb-12 items-center justify-center">
+          {/* Main Circle */}
+          <View className="size-72 items-center justify-center rounded-full bg-white shadow-xl shadow-neutral-200 dark:bg-neutral-800 dark:shadow-none">
+            <Image
+              source={require('@assets/fox.png')}
+              className="size-56 rounded-full"
+              contentFit="contain"
+            />
+          </View>
+
+          {/* "Scanned" Badge */}
+          <View className="absolute top-6 -right-2 flex-row items-center rounded-xl border border-neutral-100 bg-white px-4 py-2 shadow-sm dark:border-neutral-700 dark:bg-neutral-800">
+            <View className="mr-2 size-2 rounded-full bg-green-700" />
+            <Text tx="welcome.scanned" className="text-sm font-medium text-neutral-800 dark:text-neutral-200" />
+
+          </View>
+        </View>
+
+        {/* Typography */}
+        <View className="w-full items-center">
+          <Text tx="welcome.title" className="mb-4 text-center text-[28px] leading-tight font-bold text-neutral-900 dark:text-white" />
+          <Text tx="welcome.subtitle" className="px-4 text-center text-base/relaxed text-neutral-500 dark:text-neutral-400" />
+        </View>
+      </View>
+
+      {/* Bottom Action Button */}
+      <View className="w-full px-6 pt-4 pb-8">
+        <Button
+          label={translate('welcome.get_started')}
+          size="lg"
+          variant="brand"
+          className="w-full rounded-full"
+          onPress={() => router.replace('/login')}
+        />
+      </View>
+    </SafeAreaView>
+  );
+}
+</file>
+
 <file path="src/global.css">
 /* Import Tailwind base styles */
 @import 'tailwindcss';
@@ -6883,22 +7068,6 @@ declare module 'react-i18next' {
 }
 </file>
 
-<file path="src/lib/i18n/resources.ts">
-import ar from '@/translations/ar.json';
-import en from '@/translations/en.json';
-
-export const resources = {
-  en: {
-    translation: en,
-  },
-  ar: {
-    translation: ar,
-  },
-};
-
-export type Language = keyof typeof resources;
-</file>
-
 <file path="src/lib/i18n/types.ts">
 //  https://github.com/infinitered/ignite/blob/master/boilerplate/app/i18n/i18n.ts
 export type RecursiveKeyOf<TObj extends object> = {
@@ -7065,6 +7234,522 @@ export function createSelectors<S extends UseBoundStore<StoreApi<object>>>(_stor
 }
 </file>
 
+<file path=".github/workflows/compress-images.yml">
+# 🔗 Links:
+# Source file: https://github.com/obytes/react-native-template-obytes/blob/master/.github/workflows/compress-images.yml
+
+# ✍️ Description:
+# This workflow is used to compress images in the repo.
+# This workflow will trigger on a push to the "master" or "main" branch and only run when a new image is added or updated.
+# If it's the case, it will compress those images and create a pull request with the compressed images.
+
+# 🚨 GITHUB SECRETS REQUIRED: None
+
+name: Compress images
+on:
+  push:
+    branches:
+      - master
+      - main
+    paths:
+      - '**.jpg'
+      - '**.jpeg'
+      - '**.png'
+      - '**.webp'
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: calibreapp/image-actions
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Branch
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Compress Images
+        id: calibre
+        uses: calibreapp/image-actions@main
+        with:
+          githubToken: ${{ secrets.GITHUB_TOKEN }}
+          compressOnly: true
+          ignorePaths: 'node_modules/**,ios/**,android/**'
+
+      - name: Create Pull Request
+        if: steps.calibre.outputs.markdown != ''
+        uses: peter-evans/create-pull-request@v7
+        with:
+          title: Auto Compress Images
+          branch-suffix: timestamp
+          commit-message: Compress Images
+          body: ${{ steps.calibre.outputs.markdown }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+</file>
+
+<file path=".github/workflows/lint-ts.yml">
+# 🔗 Links:
+# Source file: https://github.com/obytes/react-native-template-obytes/blob/master/.github/workflows/lint-ts.yml
+
+# ✍️ Description:
+# This action is used to run eslint checks
+# Runs on pull requests and pushes to  the main/master branches
+# Based on the event type:
+#   - If it's a pull request, it will run eslint, then add the check to the PR as well as annotate the code with the errors and warnings.
+#   - If it's a push to main/master, it will run the type checking and fail if there are any errors.
+
+# 🚨 GITHUB SECRETS REQUIRED: NONE
+
+name: Lint TS (eslint, prettier)
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  lint:
+    name: Lint TS (eslint, prettier)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📦 Checkout project repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 📦 Setup Node + PNPM + install deps
+        uses: ./.github/actions/setup-node-pnpm-install
+
+      - name: 🏃‍♂️ Run ESLint PR
+        if: github.event_name == 'pull_request'
+        uses: reviewdog/action-eslint@v1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          reporter: github-pr-review
+          eslint_flags: .
+
+      - name: 🏃‍♂️ Run ESLint PR
+        if: github.event_name != 'pull_request'
+        run: pnpm run lint
+</file>
+
+<file path="babel.config.js">
+module.exports = function (api) {
+  api.cache(true);
+  return {
+    presets: [
+      'babel-preset-expo',
+    ],
+    plugins: [
+      [
+        'module-resolver',
+        {
+          root: ['./'],
+          alias: {
+            '@': './src',
+            '@env': './src/lib/env.js',
+            '@assets': './assets',
+          },
+          extensions: [
+            '.ios.ts',
+            '.android.ts',
+            '.ts',
+            '.ios.tsx',
+            '.android.tsx',
+            '.tsx',
+            '.jsx',
+            '.js',
+            '.json',
+          ],
+        },
+      ],
+      'react-native-reanimated/plugin',
+    ],
+  };
+};
+</file>
+
+<file path="src/app/_layout.tsx">
+import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
+
+import { ThemeProvider } from '@react-navigation/native';
+import { Stack } from 'expo-router';
+import * as SplashScreen from 'expo-splash-screen';
+import * as React from 'react';
+import { StyleSheet } from 'react-native';
+import FlashMessage from 'react-native-flash-message';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { KeyboardProvider } from 'react-native-keyboard-controller';
+import { useThemeConfig } from '@/components/ui/use-theme-config';
+import { hydrateAuth } from '@/features/auth/use-auth-store';
+
+import { APIProvider } from '@/lib/api';
+import { loadSelectedTheme } from '@/lib/hooks/use-selected-theme';
+// Import  global CSS file
+import '../global.css';
+
+export { ErrorBoundary } from 'expo-router';
+
+// eslint-disable-next-line react-refresh/only-export-components
+export const unstable_settings = {
+  initialRouteName: '(app)',
+};
+
+hydrateAuth();
+loadSelectedTheme();
+// Prevent the splash screen from auto-hiding before asset loading is complete.
+SplashScreen.preventAutoHideAsync();
+// Set the animation options. This is optional.
+SplashScreen.setOptions({
+  duration: 500,
+  fade: true,
+});
+
+export default function RootLayout() {
+  return (
+    <Providers>
+      <Stack>
+        <Stack.Screen name="(app)" options={{ headerShown: false }} />
+        <Stack.Screen name="onboarding" options={{ headerShown: false }} />
+        <Stack.Screen name="login" options={{ headerShown: false }} />
+        <Stack.Screen name="welcome" options={{ headerShown: false }} />
+      </Stack>
+    </Providers>
+  );
+}
+
+function Providers({ children }: { children: React.ReactNode }) {
+  const theme = useThemeConfig();
+  return (
+    <GestureHandlerRootView
+      style={styles.container}
+      // eslint-disable-next-line better-tailwindcss/no-unknown-classes
+      className={theme.dark ? `dark` : undefined}
+    >
+      <KeyboardProvider>
+        <ThemeProvider value={theme}>
+          <APIProvider>
+            <BottomSheetModalProvider>
+              {children}
+              <FlashMessage position="top" />
+            </BottomSheetModalProvider>
+          </APIProvider>
+        </ThemeProvider>
+      </KeyboardProvider>
+    </GestureHandlerRootView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+});
+</file>
+
+<file path="src/app/(app)/_layout.tsx">
+import { Link, Redirect, SplashScreen, Tabs } from 'expo-router';
+import * as React from 'react';
+import { useCallback, useEffect } from 'react';
+
+import { Pressable, Text } from '@/components/ui';
+import {
+  Feed as FeedIcon,
+  Settings as SettingsIcon,
+  Style as StyleIcon,
+} from '@/components/ui/icons';
+import { useAuthStore as useAuth } from '@/features/auth/use-auth-store';
+import { useIsFirstTime } from '@/lib/hooks/use-is-first-time';
+
+export default function TabLayout() {
+  const status = useAuth.use.status();
+  const [isFirstTime] = useIsFirstTime();
+  const hideSplash = useCallback(async () => {
+    await SplashScreen.hideAsync();
+  }, []);
+  useEffect(() => {
+    if (status !== 'idle') {
+      const timer = setTimeout(() => {
+        hideSplash();
+      }, 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [hideSplash, status]);
+
+  if (isFirstTime) {
+    return <Redirect href="/welcome" />;
+  }
+  if (status === 'signOut') {
+    return <Redirect href="/welcome" />;
+  }
+  return (
+    <Tabs>
+      <Tabs.Screen
+        name="index"
+        options={{
+          title: 'Feed',
+          tabBarIcon: ({ color }) => <FeedIcon color={color} />,
+          headerRight: () => <CreateNewPostLink />,
+          tabBarButtonTestID: 'feed-tab',
+        }}
+      />
+
+      <Tabs.Screen
+        name="style"
+        options={{
+          title: 'Style',
+          headerShown: false,
+          tabBarIcon: ({ color }) => <StyleIcon color={color} />,
+          tabBarButtonTestID: 'style-tab',
+        }}
+      />
+      <Tabs.Screen
+        name="settings"
+        options={{
+          title: 'Settings',
+          headerShown: false,
+          tabBarIcon: ({ color }) => <SettingsIcon color={color} />,
+          tabBarButtonTestID: 'settings-tab',
+        }}
+      />
+    </Tabs>
+  );
+}
+
+function CreateNewPostLink() {
+  return (
+    <Link href="/feed/add-post" asChild>
+      <Pressable>
+        <Text className="px-3 text-primary-300">Create</Text>
+      </Pressable>
+    </Link>
+  );
+}
+</file>
+
+<file path="src/components/ui/button.tsx">
+/* eslint-disable better-tailwindcss/no-unknown-classes */
+import type { PressableProps, View } from 'react-native';
+import type { VariantProps } from 'tailwind-variants';
+import * as React from 'react';
+import { ActivityIndicator, Pressable, Text } from 'react-native';
+import { tv } from 'tailwind-variants';
+
+const button = tv({
+  slots: {
+    container: 'my-2 flex flex-row items-center justify-center rounded-md px-4',
+    label: 'font-inter text-base font-semibold',
+    indicator: 'h-6 text-white',
+  },
+
+  variants: {
+    variant: {
+      default: {
+        container: 'bg-black dark:bg-white',
+        label: 'text-white dark:text-black',
+        indicator: 'text-white dark:text-black',
+      },
+      brand: {
+        container: 'bg-[#5D5FEF]',
+        label: 'text-white',
+        indicator: 'text-white',
+      },
+      secondary: {
+        container: 'bg-primary-600',
+        label: 'text-secondary-600',
+        indicator: 'text-white',
+      },
+      outline: {
+        container: 'border border-neutral-400',
+        label: 'text-black dark:text-neutral-100',
+        indicator: 'text-black dark:text-neutral-100',
+      },
+      destructive: {
+        container: 'bg-red-600',
+        label: 'text-white',
+        indicator: 'text-white',
+      },
+      ghost: {
+        container: 'bg-transparent',
+        label: 'text-black underline dark:text-white',
+        indicator: 'text-black dark:text-white',
+      },
+      link: {
+        container: 'bg-transparent',
+        label: 'text-black',
+        indicator: 'text-black',
+      },
+    },
+    size: {
+      default: {
+        container: 'h-10 px-4',
+        label: 'text-base',
+      },
+      lg: {
+        container: 'h-12 px-8',
+        label: 'text-xl',
+      },
+      sm: {
+        container: 'h-8 px-3',
+        label: 'text-sm',
+        indicator: 'h-2',
+      },
+      icon: { container: 'size-9' },
+    },
+    disabled: {
+      true: {
+        container: 'bg-neutral-300 dark:bg-neutral-300',
+        label: 'text-neutral-600 dark:text-neutral-600',
+        indicator: 'text-neutral-400 dark:text-neutral-400',
+      },
+    },
+    fullWidth: {
+      true: {
+        container: '',
+      },
+      false: {
+        container: 'self-center',
+      },
+    },
+  },
+  defaultVariants: {
+    variant: 'default',
+    disabled: false,
+    fullWidth: true,
+    size: 'default',
+  },
+});
+
+type ButtonVariants = VariantProps<typeof button>;
+type Props = {
+  label?: string;
+  loading?: boolean;
+  className?: string;
+  textClassName?: string;
+} & ButtonVariants & Omit<PressableProps, 'disabled'>;
+
+export function Button({ ref, label: text, loading = false, variant = 'default', disabled = false, size = 'default', className = '', testID, textClassName = '', ...props }: Props & { ref?: React.RefObject<View | null> }) {
+  const styles = React.useMemo(
+    () => button({ variant, disabled, size }),
+    [variant, disabled, size],
+  );
+
+  return (
+    <Pressable
+      disabled={disabled || loading}
+      className={styles.container({ className })}
+      {...props}
+      ref={ref}
+      testID={testID}
+    >
+      {props.children
+        ? (
+            props.children
+          )
+        : (
+            <>
+              {loading
+                ? (
+                    <ActivityIndicator
+                      size="small"
+                      className={styles.indicator()}
+                      testID={testID ? `${testID}-activity-indicator` : undefined}
+                    />
+                  )
+                : (
+                    <Text
+                      testID={testID ? `${testID}-label` : undefined}
+                      className={styles.label({ className: textClassName })}
+                    >
+                      {text}
+                    </Text>
+                  )}
+            </>
+          )}
+    </Pressable>
+  );
+}
+</file>
+
+<file path="src/features/settings/components/language-item.tsx">
+import type { OptionType } from '@/components/ui';
+
+import type { Language } from '@/lib/i18n/resources';
+import * as React from 'react';
+import { Options, useModal } from '@/components/ui';
+import { translate, useSelectedLanguage } from '@/lib/i18n';
+
+import { SettingsItem } from './settings-item';
+
+export function LanguageItem() {
+  const { language, setLanguage } = useSelectedLanguage();
+  const modal = useModal();
+  const onSelect = React.useCallback(
+    (option: OptionType) => {
+      setLanguage(option.value as Language);
+      modal.dismiss();
+    },
+    [setLanguage, modal],
+  );
+
+  const langs = React.useMemo(
+    () => [
+      { label: translate('settings.english'), value: 'en' },
+      { label: translate('settings.arabic'), value: 'ar' },
+      { label: translate('settings.vietnamese'), value: 'vi' },
+    ],
+    [],
+  );
+
+  const selectedLanguage = React.useMemo(
+    () => langs.find(lang => lang.value === language),
+    [language, langs],
+  );
+
+  return (
+    <>
+      <SettingsItem
+        text="settings.language"
+        value={selectedLanguage?.label}
+        onPress={modal.present}
+      />
+      <Options
+        ref={modal.ref}
+        options={langs}
+        onSelect={onSelect}
+        value={selectedLanguage?.value}
+      />
+    </>
+  );
+}
+</file>
+
+<file path="src/lib/i18n/resources.ts">
+import ar from '@/translations/ar.json';
+import en from '@/translations/en.json';
+import vi from '@/translations/vi.json';
+
+export const resources = {
+  en: {
+    translation: en,
+  },
+  ar: {
+    translation: ar,
+  },
+  vi: {
+    translation: vi,
+  },
+};
+
+export type Language = keyof typeof resources;
+</file>
+
 <file path="src/translations/ar.json">
 {
   "onboarding": {
@@ -7095,9 +7780,15 @@ export function createSelectors<S extends UseBoundStore<StoreApi<object>>>(_stor
     },
     "title": "إعدادات",
     "version": "إصدار",
+    "vietnamese": "الفيتنامية",
     "website": "موقع الكتروني"
   },
-  "welcome": "test arabic"
+  "welcome": {
+    "get_started": "ابدأ الآن",
+    "scanned": "تم المسح",
+    "subtitle": "امسح الأشياء ضوئيًا، واحصل على بطاقات المفردات، وتعلم باستخدام الذكاء الاصطناعي.",
+    "title": "تعلم اللغة الإنجليزية من العالم من حولك"
+  }
 }
 </file>
 
@@ -7131,45 +7822,57 @@ export function createSelectors<S extends UseBoundStore<StoreApi<object>>>(_stor
     },
     "title": "Settings",
     "version": "Version",
+    "vietnamese": "Vietnamese",
     "website": "Website"
   },
-  "welcome": "Welcome to obytes app site"
+  "welcome": {
+    "get_started": "Get Started",
+    "scanned": "Scanned",
+    "subtitle": "Scan objects, get vocabulary cards, and learn with AI.",
+    "title": "Learn English from the world around you"
+  }
 }
 </file>
 
 <file path="src/translations/vi.json">
 {
   "onboarding": {
-    "message": "Welcome to obytes app site"
+    "message": "Chào mừng bạn đến với ứng dụng Obytes"
   },
   "settings": {
-    "about": "About",
-    "app_name": "App Name",
-    "arabic": "Arabic",
-    "english": "English",
-    "generale": "General",
+    "about": "Giới thiệu",
+    "app_name": "Tên ứng dụng",
+    "arabic": "Tiếng Ả Rập",
+    "english": "Tiếng Anh",
+    "generale": "Chung",
     "github": "Github",
-    "language": "Language",
-    "links": "Links",
-    "logout": "Logout",
-    "more": "More",
-    "privacy": "Privacy Policy",
-    "rate": "Rate",
-    "share": "Share",
-    "support": "Support",
-    "support_us": "Support Us",
-    "terms": "Terms of Service",
+    "language": "Ngôn ngữ",
+    "links": "Liên kết",
+    "logout": "Đăng xuất",
+    "more": "Khác",
+    "privacy": "Chính sách bảo mật",
+    "rate": "Đánh giá ứng dụng",
+    "share": "Chia sẻ",
+    "support": "Hỗ trợ",
+    "support_us": "Hỗ trợ chúng tôi",
+    "terms": "Điều khoản dịch vụ",
     "theme": {
-      "dark": "Dark",
-      "light": "Light",
-      "system": "System",
-      "title": "Theme"
+      "dark": "Tối",
+      "light": "Sáng",
+      "system": "Hệ thống",
+      "title": "Giao diện"
     },
-    "title": "Settings",
-    "version": "Version",
-    "website": "Website"
+    "title": "Cài đặt",
+    "version": "Phiên bản",
+    "vietnamese": "Tiếng Việt",
+    "website": "Trang web"
   },
-  "welcome": "Welcome to obytes app site"
+  "welcome": {
+    "get_started": "Bắt đầu",
+    "scanned": "Quét",
+    "subtitle": "Quét vật thể, nhận thẻ từ vựng và học cùng AI.",
+    "title": "Học tiếng Anh từ thế giới xung quanh bạn"
+  }
 }
 </file>
 
@@ -7180,7 +7883,8 @@ export function createSelectors<S extends UseBoundStore<StoreApi<object>>>(_stor
     "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"],
-      "@env": ["env.ts"]
+      "@env": ["env.ts"],
+      "@assets/*": ["./assets/*"]
     },
     "checkJs": true,
     "strict": true,
@@ -7212,12 +7916,12 @@ export function createSelectors<S extends UseBoundStore<StoreApi<object>>>(_stor
 /// <reference types="uniwind/types" />
 
 declare module 'uniwind' {
-    export interface UniwindConfig {
-        themes: readonly ['light', 'dark']
-    }
+  export type UniwindConfig = {
+    themes: readonly ['light', 'dark'];
+  };
 }
 
-export {}
+export {};
 </file>
 
 </files>

@@ -1,70 +1,74 @@
-> This project was generated from the [Obytes React Native Template](https://github.com/obytes/react-native-template-obytes), a production-ready React Native starter with modern tooling and best practices.
+# SnapVocab
 
-## What: Technology Stack
+**Problem:** Learn English vocabulary by scanning real-world objects with your camera.
+**Solution:** SnapVocab uses AI-powered object detection to identify items and instantly generate vocabulary flashcards in your native language.
 
-- **Expo SDK 54** with React Native 0.81.5 - Managed React Native development
-- **TypeScript** - Strict type safety throughout
-- **Expo Router 6** - File-based routing (like Next.js)
-- **TailwindCSS** via Uniwind/Nativewind - Utility-first styling for React Native
-- **Zustand** - Lightweight global state management
-- **React Query** - Server state and data fetching
-- **TanStack Form + Zod** - Type-safe form handling and validation
-- **MMKV** - Encrypted local storage
-- **Jest + React Testing Library** - Unit testing
+## Currently Implemented
 
-## What: Project Structure
+- **Welcome Screen** (`src/features/welcome/`) — Onboarding landing page with app introduction, sign-in and sign-up CTAs.
+- **Auth Flow** (`src/features/auth/`) — Login, Register, Email Verification screens using TanStack Form + Zod, backed by REST API calls via React Query mutations.
+
+## Technology Stack
+
+| Category | Library |
+|----------|---------|
+| Framework | Expo SDK 54 + React Native 0.81 |
+| Routing | Expo Router 6 (file-based) |
+| Styling | TailwindCSS via Uniwind |
+| Forms | TanStack Form + Zod |
+| Data Fetching | React Query (TanStack Query) + axios |
+| State | Zustand (with MMKV persistence) |
+| Storage | react-native-mmkv |
+| i18n | i18next + react-i18next |
+| Testing | Jest + React Testing Library |
+
+## Project Structure
 
 ```
 src/
-├── app/              # Expo Router file-based routes (add new routes here)
-├── features/         # Feature modules - auth, feed, settings are EXAMPLES
-├── components/ui/    # Pre-built UI components (button, input, modal, etc.)
-├── lib/              # Pre-configured utilities (api, auth, i18n, storage)
-├── translations/     # i18n files (en.json, ar.json - add more languages)
-└── global.css        # TailwindCSS configuration
-
-Root Files:
-├── env.ts           # Environment config (CUSTOMIZE bundle IDs, API URLs)
-├── app.config.ts    # Expo configuration
-└── README.md        # Project-specific documentation
+├── app/              # Expo Router file-based routes
+│   ├── _layout.tsx   # Root layout (providers, stack screens)
+│   ├── (app)/        # Authenticated app group
+│   │   ├── _layout.tsx  # Auth gate (redirect to welcome if not signed in)
+│   │   └── index.tsx    # Post-login home screen
+│   ├── welcome.tsx   # Welcome screen route
+│   ├── login.tsx     # Login screen route
+│   ├── register.tsx  # Register screen route
+│   └── verify.tsx    # Email verification route
+├── features/         # Feature modules
+│   ├── auth/         # Auth screens, forms, API, store
+│   ├── welcome/      # Welcome/onboarding screen
+│   └── home/         # Post-login home screen
+├── components/ui/    # Reusable UI primitives (Button, Input, Text, Image, etc.)
+├── lib/              # Shared utilities
+│   ├── api/          # Axios client, React Query provider
+│   ├── auth/         # Token management helpers
+│   ├── hooks/        # Shared hooks (first-time, theme)
+│   ├── i18n/         # i18next setup, translate helper
+│   └── storage.tsx   # MMKV storage wrapper
+└── translations/     # i18n JSON files (en.json, vi.json)
 ```
 
-## How: Development Workflow
+## Commands
 
-**Essential Commands:**
 ```bash
-pnpm start              # Start dev server
-pnpm ios/android        # Run on platform
-pnpm lint               # ESLint check
-pnpm type-check         # TypeScript validation
-pnpm test               # Run Jest tests
-pnpm check-all          # All quality checks
+pnpm start          # Start dev server
+pnpm android/ios    # Run on device/simulator
+pnpm lint           # ESLint
+pnpm type-check     # TypeScript validation
+pnpm test           # Jest tests
+pnpm check-all      # All quality checks
 ```
 
-**Environment-Specific:**
-```bash
-pnpm start:preview              # Preview environment
-pnpm ios:production             # Production iOS
-pnpm build:production:ios       # EAS production build
-```
+## Key Patterns
 
-## How: Key Patterns
+- **Imports:** Always use `@/` prefix (e.g., `@/components/ui/button`), never relative imports.
+- **Forms:** Use TanStack Form + Zod (see `src/features/auth/components/login-form.tsx`).
+- **API calls:** Use React Query mutations via `react-query-kit` (see `src/features/auth/api.ts`).
+- **State:** Use Zustand with MMKV persistence (see `src/features/auth/use-auth-store.ts`).
+- **Styling:** Use Tailwind class strings (NativeWind/Uniwind). Do not use inline styles.
+- **i18n:** Use `translate('key.path')` from `@/lib/i18n/utils`. Add keys to `src/translations/`.
 
-- **Create features**: New folder in `src/features/[your-feature]/` with screens, components, API hooks
-- **Add routes**: Create files in `src/app/` (file-based routing)
-- **Forms**: Use TanStack Form + Zod (see `src/features/auth/components/login-form.tsx`)
-- **Data fetching**: Use React Query (see `src/features/feed/api.ts`)
-- **Global state**: Use Zustand (see `src/features/auth/use-auth-store.tsx`)
-- **Styling**: NativeWind/Tailwind classes (see `src/components/ui/button.tsx`)
-- **Storage**: Use MMKV via `src/lib/storage.tsx` for sensitive data
-- **Imports**: Always use `@/` prefix, never relative imports
+## Environment Variables
 
-## How: Essential Rules
-
-- ✅ **DO** use absolute imports: `@/components/ui/button`
-- ✅ **DO** follow feature-based structure: `src/features/[name]/`
-- ✅ **DO** use TanStack Form for forms (not react-hook-form)
-- ✅ **DO** use MMKV storage for sensitive data (not AsyncStorage)
-- ✅ **DO** use EAS Build for production: `pnpm build:production:ios`
-- ✅ **DO** prefix env vars with `EXPO_PUBLIC_*` for app access
-- ❌ **DO NOT** modify `android/` or `ios/` directly (use Expo config plugins)
+Prefix with `EXPO_PUBLIC_*` to access in app code. See `env.ts` for schema definition and `.env` for values.

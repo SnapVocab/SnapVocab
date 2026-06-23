@@ -1,37 +1,60 @@
 {
-  "onboarding": {
-    "message": "Chào mừng bạn đến với ứng dụng Obytes"
+  "home": {
+    "welcome": "Chào mừng đến với SnapVocab"
   },
-  "settings": {
-    "about": "Giới thiệu",
-    "app_name": "Tên ứng dụng",
-    "arabic": "Tiếng Ả Rập",
-    "english": "Tiếng Anh",
-    "generale": "Chung",
-    "github": "Github",
-    "language": "Ngôn ngữ",
-    "links": "Liên kết",
-    "logout": "Đăng xuất",
-    "more": "Khác",
-    "privacy": "Chính sách bảo mật",
-    "rate": "Đánh giá ứng dụng",
-    "share": "Chia sẻ",
-    "support": "Hỗ trợ",
-    "support_us": "Hỗ trợ chúng tôi",
-    "terms": "Điều khoản dịch vụ",
-    "theme": {
-      "dark": "Tối",
-      "light": "Sáng",
-      "system": "Hệ thống",
-      "title": "Giao diện"
-    },
-    "title": "Cài đặt",
-    "version": "Phiên bản",
-    "vietnamese": "Tiếng Việt",
-    "website": "Trang web"
+  "login": {
+    "email": "Email",
+    "email_placeholder": "Nhập email của bạn",
+    "error": "Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin.",
+    "forgot_password": "Quên mật khẩu?",
+    "no_account": "Chưa có tài khoản?",
+    "password": "Mật khẩu",
+    "password_placeholder": "Nhập mật khẩu",
+    "register": "Đăng ký",
+    "sign_in": "Đăng nhập",
+    "subtitle": "Đăng nhập để tiếp tục học tập",
+    "title": "Chào mừng trở lại"
+  },
+  "register": {
+    "email": "Email",
+    "email_placeholder": "Nhập email của bạn",
+    "error": "Đăng ký thất bại. Vui lòng thử lại.",
+    "first_name": "Tên",
+    "first_name_placeholder": "Nhập tên của bạn",
+    "have_account": "Đã có tài khoản?",
+    "last_name": "Họ",
+    "last_name_placeholder": "Nhập họ của bạn",
+    "login": "Đăng nhập",
+    "password": "Mật khẩu",
+    "password_placeholder": "Nhập mật khẩu",
+    "sign_up": "Đăng ký",
+    "subtitle": "Tạo tài khoản để bắt đầu",
+    "title": "Tạo tài khoản"
+  },
+  "validation": {
+    "email_invalid": "Email không hợp lệ",
+    "email_required": "Email là bắt buộc",
+    "first_name_required": "Tên là bắt buộc",
+    "last_name_required": "Họ là bắt buộc",
+    "password_min": "Mật khẩu phải có ít nhất 5 ký tự",
+    "password_required": "Mật khẩu là bắt buộc"
+  },
+  "verify": {
+    "code": "Mã xác thực",
+    "code_placeholder": "Nhập mã 6 chữ số",
+    "code_resent": "Đã gửi lại mã xác thực",
+    "error": "Xác thực thất bại. Vui lòng kiểm tra lại mã.",
+    "invalid_code": "Vui lòng nhập mã 6 chữ số hợp lệ",
+    "no_code": "Chưa nhận được mã?",
+    "resend": "Gửi lại",
+    "resend_error": "Gửi lại mã thất bại. Vui lòng thử lại.",
+    "subtitle": "Chúng tôi đã gửi mã xác thực đến {{email}}",
+    "title": "Xác thực Email",
+    "verify": "Xác thực"
   },
   "welcome": {
-    "get_started": "Bắt đầu",
+    "login": "Đăng nhập",
+    "register": "Tạo tài khoản",
     "scanned": "Quét",
     "subtitle": "Quét vật thể, nhận thẻ từ vựng và học cùng AI.",
     "title": "Học tiếng Anh từ thế giới xung quanh bạn"

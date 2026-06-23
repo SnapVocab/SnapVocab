@@ -45,14 +45,21 @@ export function WelcomeScreen() {
         </View>
       </View>
 
-      {/* Bottom Action Button */}
-      <View className="w-full px-6 pt-4 pb-8">
+      {/* Bottom Action Buttons */}
+      <View className="w-full gap-3 px-6 pt-4 pb-8">
         <Button
-          label={translate('welcome.get_started')}
+          label={translate('welcome.login')}
           size="lg"
           variant="brand"
           className="w-full rounded-full"
           onPress={() => router.replace('/login')}
+        />
+        <Button
+          label={translate('welcome.register')}
+          size="lg"
+          variant="outline"
+          className="w-full rounded-full"
+          onPress={() => router.replace('/register')}
         />
       </View>
     </SafeAreaView>
