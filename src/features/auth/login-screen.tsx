@@ -1,25 +1,29 @@
-import type { LoginFormProps } from './components/login-form';
-import { useRouter } from 'expo-router';
-
 import * as React from 'react';
-import { FocusAwareStatusBar } from '@/components/ui';
+import { ScrollView, View } from 'react-native';
+
+import { FocusAwareStatusBar, SafeAreaView, Text } from '@/components/ui';
+import { translate } from '@/lib/i18n/utils';
 import { LoginForm } from './components/login-form';
-import { useAuthStore } from './use-auth-store';
 
 export function LoginScreen() {
-  const router = useRouter();
-  const signIn = useAuthStore.use.signIn();
-
-  const onSubmit: LoginFormProps['onSubmit'] = (data) => {
-    console.log(data);
-    signIn({ access: 'access-token', refresh: 'refresh-token' });
-    router.push('/');
-  };
-
   return (
-    <>
+    <SafeAreaView style={{ flex: 1 }} className="flex-1 bg-background">
       <FocusAwareStatusBar />
-      <LoginForm onSubmit={onSubmit} />
-    </>
+      <ScrollView
+        contentContainerClassName="flex-1 px-6 pt-16"
+        keyboardShouldPersistTaps="handled"
+      >
+        <View className="mb-8">
+          <Text className="text-3xl font-bold text-neutral-900 dark:text-white">
+            {translate('login.title')}
+          </Text>
+          <Text className="mt-2 text-base text-neutral-500 dark:text-neutral-400">
+            {translate('login.subtitle')}
+          </Text>
+        </View>
+
+        <LoginForm />
+      </ScrollView>
+    </SafeAreaView>
   );
 }

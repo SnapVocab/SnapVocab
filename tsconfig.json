@@ -1,10 +1,9 @@
 {
   "extends": "expo/tsconfig.base",
   "compilerOptions": {
-    "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"],
-      "@env": ["env.ts"],
+      "env": ["./env.ts"],
       "@assets/*": ["./assets/*"]
     },
     "checkJs": true,

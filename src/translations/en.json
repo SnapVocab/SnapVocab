@@ -1,37 +1,60 @@
 {
-  "onboarding": {
-    "message": "Welcome to obytes app site"
+  "home": {
+    "welcome": "Welcome to SnapVocab"
   },
-  "settings": {
-    "about": "About",
-    "app_name": "App Name",
-    "arabic": "Arabic",
-    "english": "English",
-    "generale": "General",
-    "github": "Github",
-    "language": "Language",
-    "links": "Links",
-    "logout": "Logout",
-    "more": "More",
-    "privacy": "Privacy Policy",
-    "rate": "Rate",
-    "share": "Share",
-    "support": "Support",
-    "support_us": "Support Us",
-    "terms": "Terms of Service",
-    "theme": {
-      "dark": "Dark",
-      "light": "Light",
-      "system": "System",
-      "title": "Theme"
-    },
-    "title": "Settings",
-    "version": "Version",
-    "vietnamese": "Vietnamese",
-    "website": "Website"
+  "login": {
+    "email": "Email",
+    "email_placeholder": "Enter your email",
+    "error": "Login failed. Please check your credentials.",
+    "forgot_password": "Forgot password?",
+    "no_account": "Don't have an account?",
+    "password": "Password",
+    "password_placeholder": "Enter your password",
+    "register": "Sign up",
+    "sign_in": "Sign In",
+    "subtitle": "Sign in to continue learning",
+    "title": "Welcome back"
+  },
+  "register": {
+    "email": "Email",
+    "email_placeholder": "Enter your email",
+    "error": "Registration failed. Please try again.",
+    "first_name": "First Name",
+    "first_name_placeholder": "Enter your first name",
+    "have_account": "Already have an account?",
+    "last_name": "Last Name",
+    "last_name_placeholder": "Enter your last name",
+    "login": "Sign in",
+    "password": "Password",
+    "password_placeholder": "Enter your password",
+    "sign_up": "Sign Up",
+    "subtitle": "Create an account to get started",
+    "title": "Create Account"
+  },
+  "validation": {
+    "email_invalid": "Email is invalid",
+    "email_required": "Email is required",
+    "first_name_required": "First name is required",
+    "last_name_required": "Last name is required",
+    "password_min": "Password must be at least 5 characters",
+    "password_required": "Password is required"
+  },
+  "verify": {
+    "code": "Verification Code",
+    "code_placeholder": "Enter 6-digit code",
+    "code_resent": "Verification code resent",
+    "error": "Verification failed. Please check your code.",
+    "invalid_code": "Please enter a valid 6-digit code",
+    "no_code": "Didn't receive the code?",
+    "resend": "Resend",
+    "resend_error": "Failed to resend code. Please try again.",
+    "subtitle": "We sent a verification code to {{email}}",
+    "title": "Verify Email",
+    "verify": "Verify"
   },
   "welcome": {
-    "get_started": "Get Started",
+    "login": "Sign In",
+    "register": "Create Account",
     "scanned": "Scanned",
     "subtitle": "Scan objects, get vocabulary cards, and learn with AI.",
     "title": "Learn English from the world around you"
