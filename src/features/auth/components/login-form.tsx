@@ -85,17 +85,13 @@ export function LoginForm() {
         )}
       />
 
-      <View className="mt-6 flex-row justify-center">
-        <Text className="text-neutral-500 dark:text-neutral-400">
-          {translate('login.no_account')}
-          {' '}
-        </Text>
-        <Link href="/register" asChild>
-          <Text className="font-semibold text-primary-600 dark:text-primary-400">
-            {translate('login.register')}
-          </Text>
+      <Text className="mt-6 text-center text-neutral-500 dark:text-neutral-400">
+        {translate('login.no_account')}
+        {' '}
+        <Link href="/register" replace className="font-semibold text-primary-600 dark:text-primary-400">
+          {translate('login.register')}
         </Link>
-      </View>
+      </Text>
     </View>
   );
 }

@@ -9,7 +9,7 @@ import FlashMessage from 'react-native-flash-message';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { KeyboardProvider } from 'react-native-keyboard-controller';
 import { useThemeConfig } from '@/components/ui/use-theme-config';
-import { hydrateAuth } from '@/features/auth/use-auth-store';
+import { useAuthStore } from '@/features/auth/use-auth-store';
 
 import { APIProvider } from '@/lib/api';
 import { loadSelectedTheme } from '@/lib/hooks/use-selected-theme';
@@ -21,7 +21,6 @@ export const unstable_settings = {
   initialRouteName: '(app)',
 };
 
-hydrateAuth();
 loadSelectedTheme();
 
 SplashScreen.preventAutoHideAsync();
@@ -31,18 +30,20 @@ SplashScreen.setOptions({
 });
 
 export default function RootLayout() {
+  const status = useAuthStore.use.status();
+
   React.useEffect(() => {
     SplashScreen.hideAsync();
   }, []);
 
   return (
     <Providers>
-      <Stack>
-        <Stack.Screen name="(app)" options={{ headerShown: false }} />
-        <Stack.Screen name="login" options={{ headerShown: false }} />
-        <Stack.Screen name="register" options={{ headerShown: false }} />
-        <Stack.Screen name="verify" options={{ headerShown: false }} />
-        <Stack.Screen name="welcome" options={{ headerShown: false }} />
+      <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="(app)" />
+        {status !== 'signIn' && <Stack.Screen name="welcome" />}
+        {status !== 'signIn' && <Stack.Screen name="login" />}
+        {status !== 'signIn' && <Stack.Screen name="register" />}
+        {status !== 'signIn' && <Stack.Screen name="verify" />}
       </Stack>
     </Providers>
   );

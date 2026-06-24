@@ -35,7 +35,6 @@ type AuthState = {
   logout: () => void;
   updateTokens: (accessToken: string, refreshToken: string) => void;
   updateUser: (userData: Partial<User>) => void;
-  hydrate: () => void;
 };
 
 const mmkvStorage: StateStorage = {
@@ -53,7 +52,7 @@ const mmkvStorage: StateStorage = {
 
 const store = create<AuthState>()(
   persist(
-    (set, get) => ({
+    set => ({
       user: null,
       accessToken: null,
       refreshToken: null,
@@ -88,16 +87,6 @@ const store = create<AuthState>()(
         set(state => ({
           user: state.user ? { ...state.user, ...userData } : null,
         })),
-
-      hydrate: () => {
-        const state = get();
-        if (state.accessToken && state.user) {
-          set({ status: 'signIn' });
-        }
-        else {
-          set({ status: 'signOut' });
-        }
-      },
     }),
     {
       name: 'auth-storage',
@@ -107,10 +96,17 @@ const store = create<AuthState>()(
         accessToken: state.accessToken,
         refreshToken: state.refreshToken,
       }),
+      onRehydrateStorage: () => (state) => {
+        if (state?.accessToken && state?.user) {
+          store.setState({ status: 'signIn' });
+        }
+        else {
+          store.setState({ status: 'signOut' });
+        }
+      },
     },
   ),
 );
 
 export { store };
 export const useAuthStore = createSelectors(store);
-export const hydrateAuth = () => store.getState().hydrate();

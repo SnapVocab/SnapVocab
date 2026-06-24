@@ -59,6 +59,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       backgroundColor: '#FF6C00',
     },
     package: Env.EXPO_PUBLIC_PACKAGE,
+    softwareKeyboardLayoutMode: 'resize',
   },
   web: {
     favicon: './assets/favicon.png',
