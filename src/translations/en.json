@@ -1,5 +1,6 @@
 {
   "home": {
+    "sign_out": "Sign Out",
     "welcome": "Welcome to SnapVocab"
   },
   "login": {
@@ -54,9 +55,17 @@
   },
   "welcome": {
     "login": "Sign In",
+    "next": "Next",
     "register": "Create Account",
     "scanned": "Scanned",
+    "sign_out": "Sign Out",
     "subtitle": "Scan objects, get vocabulary cards, and learn with AI.",
-    "title": "Learn English from the world around you"
+    "subtitle1": "Point your camera at anything and instantly discover the English word, meaning and pronunciation.",
+    "subtitle2": "Swipe, flip and review beautiful cards designed to make words stick in your memory.",
+    "subtitle3": "Smart spaced repetition reminds you at the perfect moment so you never forget.",
+    "title": "Learn English from the world around you",
+    "title1": "Learn vocabulary with AI",
+    "title2": "Practice with flashcards",
+    "title3": "Review using SRS"
   }
 }

@@ -1,5 +1,6 @@
 {
   "home": {
+    "sign_out": "Đăng xuất",
     "welcome": "Chào mừng đến với SnapVocab"
   },
   "login": {
@@ -54,9 +55,17 @@
   },
   "welcome": {
     "login": "Đăng nhập",
+    "next": "Tiếp tục",
     "register": "Tạo tài khoản",
-    "scanned": "Quét",
-    "subtitle": "Quét vật thể, nhận thẻ từ vựng và học cùng AI.",
-    "title": "Học tiếng Anh từ thế giới xung quanh bạn"
+    "scanned": "Đã quét",
+    "sign_out": "Đăng xuất",
+    "subtitle": "Quét đồ vật, nhận thẻ từ vựng và học cùng AI.",
+    "subtitle1": "Hướng camera vào bất kỳ vật gì và ngay lập tức khám phá từ tiếng Anh, nghĩa và cách phát âm.",
+    "subtitle2": "Vuốt, lật và ôn tập với những thẻ học được thiết kế đẹp mắt giúp từ vựng ghi nhớ lâu hơn.",
+    "subtitle3": "Hệ thống lặp lại ngắt quãng thông minh sẽ nhắc bạn ôn tập đúng thời điểm để không quên từ vựng.",
+    "title": "Học tiếng Anh từ thế giới xung quanh bạn",
+    "title1": "Học từ vựng cùng AI",
+    "title2": "Luyện tập với flashcard",
+    "title3": "Ôn tập bằng SRS"
   }
 }
