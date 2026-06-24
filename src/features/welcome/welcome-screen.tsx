@@ -1,6 +1,8 @@
 import { useRouter } from 'expo-router';
 import * as React from 'react';
 import { View } from 'react-native';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
+import { runOnJS } from 'react-native-reanimated';
 
 import {
   Button,
@@ -12,56 +14,88 @@ import {
 import { translate } from '@/lib/i18n/utils';
 
 export function WelcomeScreen() {
+  const slides = [{
+    image: require('@assets/onboarding-1.png'),
+    title: translate('welcome.title1'),
+    subtitle: translate('welcome.subtitle1'),
+    bg: 'from-primary/10 to-pink/10',
+  }, {
+    image: require('@assets/onboarding-2.png'),
+    title: translate('welcome.title2'),
+    subtitle: translate('welcome.subtitle2'),
+    bg: 'from-primary/10 to-success/10',
+  }, {
+    image: require('@assets/onboarding-3.png'),
+    title: translate('welcome.title3'),
+    subtitle: translate('welcome.subtitle3'),
+    bg: 'from-warning/10 to-primary/10',
+  }];
+
   const router = useRouter();
+  const [index, setIndex] = React.useState(0);
+  const last = index === slides.length - 1;
+  const slide = slides[index];
+  const next = () => (last ? router.replace('/login') : setIndex(i => i + 1));
+  const prev = () => setIndex(i => Math.max(0, i - 1));
+
+  const swipe = Gesture.Pan()
+    .onEnd((event) => {
+      if (event.translationX < -50)
+        runOnJS(next)();
+      else if (event.translationX > 50)
+        runOnJS(prev)();
+    });
 
   return (
     <SafeAreaView style={{ flex: 1 }} className="flex-1 bg-[#F4F6FC] dark:bg-neutral-900">
       <FocusAwareStatusBar />
 
-      <View className="flex-1 items-center justify-center px-6">
-        {/* Avatar / Image Container */}
-        <View className="relative mb-12 items-center justify-center">
-          {/* Main Circle */}
-          <View className="size-72 items-center justify-center rounded-full bg-white shadow-xl shadow-neutral-200 dark:bg-neutral-800 dark:shadow-none">
-            <Image
-              source={require('@assets/fox.png')}
-              className="size-56 rounded-full"
-              contentFit="contain"
-            />
-          </View>
-
-          {/* "Scanned" Badge */}
-          <View className="absolute top-6 -right-2 flex-row items-center rounded-xl border border-neutral-100 bg-white px-4 py-2 shadow-sm dark:border-neutral-700 dark:bg-neutral-800">
-            <View className="mr-2 size-2 rounded-full bg-green-700" />
-            <Text tx="welcome.scanned" className="text-sm font-medium text-neutral-800 dark:text-neutral-200" />
+      <GestureDetector gesture={swipe}>
+        <View className="flex-1 items-center justify-center px-6">
+          {/* Avatar / Image Container */}
+          <View className="relative mb-12 items-center justify-center">
+            {/* Main Circle */}
+            <View className="size-72 items-center justify-center rounded-full bg-white shadow-xl shadow-neutral-200 dark:bg-neutral-800 dark:shadow-none">
+              <Image
+                source={slide.image}
+                alt={slide.title}
+                className={`flex aspect-square w-full max-w-[18rem] items-center justify-center rounded-[2.5rem] bg-linear-to-br ${slide.bg} p-6`}
+                contentFit="contain"
+              />
+            </View>
 
           </View>
-        </View>
 
-        {/* Typography */}
-        <View className="w-full items-center">
-          <Text tx="welcome.title" className="mb-4 text-center text-[28px] leading-tight font-bold text-neutral-900 dark:text-white" />
-          <Text tx="welcome.subtitle" className="px-4 text-center text-base/relaxed text-neutral-500 dark:text-neutral-400" />
+          {/* Typography */}
+          <View className="w-full items-center">
+            <Text className="mb-4 text-center text-[28px] leading-tight font-bold text-neutral-900 dark:text-white">{slide.title}</Text>
+            <Text className="px-4 text-center text-base/relaxed text-neutral-500 dark:text-neutral-400">{slide.subtitle}</Text>
+          </View>
         </View>
-      </View>
+      </GestureDetector>
 
       {/* Bottom Action Buttons */}
       <View className="w-full gap-3 px-6 pt-4 pb-8">
+        <View className="mb-6 flex-row items-center justify-center gap-2">
+          {slides.map((_, i) => (
+            <View
+              key={i}
+              className={`h-2 rounded-full ${
+                i === index ? 'w-7 bg-[#5D5FEF]' : 'w-2 bg-neutral-300 dark:bg-neutral-600'
+              }`}
+            />
+          ))}
+        </View>
+
         <Button
-          label={translate('welcome.login')}
+          label={last ? translate('welcome.login') : translate('welcome.next')}
           size="lg"
           variant="brand"
           className="w-full rounded-full"
-          onPress={() => router.replace('/login')}
-        />
-        <Button
-          label={translate('welcome.register')}
-          size="lg"
-          variant="outline"
-          className="w-full rounded-full"
-          onPress={() => router.replace('/register')}
+          onPress={() => next()}
         />
       </View>
+
     </SafeAreaView>
   );
 }
