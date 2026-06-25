@@ -1,4 +1,13 @@
 {
+  "forgot_password": {
+    "back_to_login": "Back to Login",
+    "email": "Email address",
+    "error": "Failed to send reset code. Please try again.",
+    "send_code": "Send code",
+    "subtitle": "No worries! Enter your email and we'll send you 6-digit reset code.",
+    "success": "Reset code sent! Check your email.",
+    "title": "Forgot Password?"
+  },
   "home": {
     "sign_out": "Sign Out",
     "welcome": "Welcome to SnapVocab"
@@ -34,6 +43,18 @@
     "subtitle": "Create an account to get started",
     "title": "Create Account"
   },
+  "reset_password": {
+    "confirm_password": "Confirm Password",
+    "confirm_password_placeholder": "Re-enter new password",
+    "error": "Failed to reset password. Please try again.",
+    "new_password": "New Password",
+    "new_password_placeholder": "Enter new password",
+    "password_mismatch": "Passwords do not match",
+    "reset": "Reset Password",
+    "subtitle": "Enter your new password",
+    "success": "Password reset successfully!",
+    "title": "Set New Password"
+  },
   "validation": {
     "email_invalid": "Email is invalid",
     "email_required": "Email is required",
@@ -53,6 +74,14 @@
     "resend_error": "Failed to resend code. Please try again.",
     "subtitle": "We sent a verification code to {{email}}",
     "title": "Verify Email",
+    "verify": "Verify"
+  },
+  "verify_reset_code": {
+    "code": "Reset Code",
+    "code_placeholder": "Enter 6-digit code",
+    "invalid_code": "Please enter a valid 6-digit code",
+    "subtitle": "Enter the 6-digit code sent to {{email}}",
+    "title": "Enter Reset Code",
     "verify": "Verify"
   },
   "welcome": {

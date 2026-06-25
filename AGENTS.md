@@ -551,3 +551,38 @@ Access in code via `env.ts`:
 import Env from 'env';
 console.log(Env.EXPO_PUBLIC_API_URL);
 ```
+
+# Convert SVG to react native svg
+Simple conversion rules:
+
+  On <Svg> tag:
+  - Keep only viewBox="...", fill="none"
+  - Add width={24} height={24} (numbers)
+  - Remove xmlns, class, stroke, stroke-width
+
+  On <Path> tag:
+  - Keep d="..." as-is
+  - Kebab-case → camelCase: stroke-width → strokeWidth, stroke-linecap → strokeLinecap, stroke-linejoin → strokeLinejoin
+  - String values → numbers: stroke-width="1.5" → strokeWidth={2}
+  - stroke="currentColor" → stroke={color}
+  - Remove class, fill (put fill="none" on <Svg> instead)
+
+  Template:
+
+  import Svg, { Path } from 'react-native-svg';
+
+  type Props = { color?: string };
+
+  export function IconName({ color = '#000' }: Props) {
+    return (
+      <Svg width={24} height={24} viewBox="0 0 24 24" fill="none">
+        <Path
+          d="<paste path data here>"
+          stroke={color}
+          strokeWidth={2}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </Svg>
+    );
+  }

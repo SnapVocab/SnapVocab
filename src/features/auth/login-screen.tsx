@@ -1,6 +1,6 @@
 import { Link } from 'expo-router';
 import * as React from 'react';
-import { View } from 'react-native';
+import { ScrollView, View } from 'react-native';
 
 import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
 import { FocusAwareStatusBar, SafeAreaView, Text } from '@/components/ui';
@@ -17,9 +17,12 @@ export function LoginScreen() {
         style={{ flex: 1 }}
         behavior="padding"
       >
-        <Mascot float className="mt-2 size-48 self-center" />
-        <View className="flex-1 px-6 pt-16">
-          <View className="mb-8 items-center gap-1">
+        <ScrollView
+          contentContainerClassName="px-6 pt-16"
+          keyboardShouldPersistTaps="handled"
+        >
+          <Mascot float className="mt-2 size-48 self-center" />
+          <View className="mt-6 mb-8 items-center gap-1">
             <Text className="text-lg font-bold text-neutral-900 dark:text-white">
               {translate('login.title')}
             </Text>
@@ -28,16 +31,18 @@ export function LoginScreen() {
             </Text>
           </View>
 
-          <LoginForm />
+          <View className="w-full">
+            <LoginForm />
+          </View>
 
           <Text className="mt-6 text-center text-neutral-500 dark:text-neutral-400">
             {translate('login.no_account')}
             {' '}
-            <Link href="/register" replace className="font-semibold text-[#5D5FEF]">
+            <Link href="/(auth)/register" className="font-semibold text-[#5D5FEF]">
               {translate('login.register')}
             </Link>
           </Text>
-        </View>
+        </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );

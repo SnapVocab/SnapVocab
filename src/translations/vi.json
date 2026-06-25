@@ -1,4 +1,13 @@
 {
+  "forgot_password": {
+    "back_to_login": "Quay lại Đăng nhập",
+    "email": "Địa chỉ email",
+    "error": "Gửi mã khôi phục thất bại. Vui lòng thử lại.",
+    "send_code": "Gửi mã",
+    "subtitle": "Đừng lo! Nhập địa chỉ email và chúng tôi sẽ gửi cho bạn mã khôi phục 6 chữ số.",
+    "success": "Đã gửi mã khôi phục! Kiểm tra email của bạn.",
+    "title": "Quên mật khẩu?"
+  },
   "home": {
     "sign_out": "Đăng xuất",
     "welcome": "Chào mừng đến với SnapVocab"
@@ -34,6 +43,18 @@
     "subtitle": "Tạo tài khoản để bắt đầu",
     "title": "Tạo tài khoản"
   },
+  "reset_password": {
+    "confirm_password": "Xác nhận mật khẩu",
+    "confirm_password_placeholder": "Nhập lại mật khẩu mới",
+    "error": "Đặt lại mật khẩu thất bại. Vui lòng thử lại.",
+    "new_password": "Mật khẩu mới",
+    "new_password_placeholder": "Nhập mật khẩu mới",
+    "password_mismatch": "Mật khẩu không khớp",
+    "reset": "Đặt lại mật khẩu",
+    "subtitle": "Nhập mật khẩu mới của bạn",
+    "success": "Đặt lại mật khẩu thành công!",
+    "title": "Đặt mật khẩu mới"
+  },
   "validation": {
     "email_invalid": "Email không hợp lệ",
     "email_required": "Email là bắt buộc",
@@ -53,6 +74,14 @@
     "resend_error": "Gửi lại mã thất bại. Vui lòng thử lại.",
     "subtitle": "Chúng tôi đã gửi mã xác thực đến {{email}}",
     "title": "Xác thực Email",
+    "verify": "Xác thực"
+  },
+  "verify_reset_code": {
+    "code": "Mã khôi phục",
+    "code_placeholder": "Nhập mã 6 chữ số",
+    "invalid_code": "Vui lòng nhập mã 6 chữ số hợp lệ",
+    "subtitle": "Nhập mã 6 chữ số đã gửi đến {{email}}",
+    "title": "Nhập mã khôi phục",
     "verify": "Xác thực"
   },
   "welcome": {

@@ -4,6 +4,7 @@ import { store } from '@/features/auth/use-auth-store';
 
 export const client = axios.create({
   baseURL: Env.EXPO_PUBLIC_API_URL,
+  timeout: 15000,
 });
 
 client.interceptors.request.use((config) => {
