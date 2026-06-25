@@ -86,7 +86,7 @@ export function LoginForm() {
       />
 
       <View className="flex-row justify-end">
-        <Link href="/register" replace className="mt-2 font-semibold text-[#5D5FEF]">
+        <Link href="/(auth)/forgot-password" className="mt-2 font-semibold text-[#5D5FEF]">
           {translate('login.forgot_password')}
         </Link>
       </View>

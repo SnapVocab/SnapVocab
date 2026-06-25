@@ -63,7 +63,7 @@ export function RegisterForm() {
     onSubmit: async ({ value }) => {
       register(value, {
         onSuccess: (data) => {
-          router.replace({ pathname: '/verify', params: { email: data.email } });
+          router.push({ pathname: '/(auth)/verify', params: { email: data.email } });
         },
         onError: () => {
           showErrorMessage(translate('register.error'));

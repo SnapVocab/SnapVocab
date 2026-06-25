@@ -40,11 +40,8 @@ export default function RootLayout() {
     <Providers>
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="(app)" />
+        <Stack.Screen name="(auth)" />
         {status !== 'signIn' && <Stack.Screen name="welcome" />}
-        {status !== 'signIn' && <Stack.Screen name="login" />}
-        {status !== 'signIn' && <Stack.Screen name="forgot-password" />}
-        {status !== 'signIn' && <Stack.Screen name="register" />}
-        {status !== 'signIn' && <Stack.Screen name="verify" />}
       </Stack>
     </Providers>
   );

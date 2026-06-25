@@ -6,7 +6,7 @@ import { useAuthStore } from '@/features/auth/use-auth-store';
 export default function AppLayout() {
   const status = useAuthStore.use.status();
 
-  if (status === 'signOut') {
+  if (status !== 'signIn') {
     return <Redirect href="/welcome" />;
   }
   return (

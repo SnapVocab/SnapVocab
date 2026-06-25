@@ -95,6 +95,7 @@ const store = create<AuthState>()(
         user: state.user,
         accessToken: state.accessToken,
         refreshToken: state.refreshToken,
+        status: state.status,
       }),
       onRehydrateStorage: () => (state) => {
         if (state?.accessToken && state?.user) {

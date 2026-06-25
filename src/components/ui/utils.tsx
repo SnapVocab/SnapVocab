@@ -23,6 +23,14 @@ export function showError(error: AxiosError) {
   });
 }
 
+export function showSuccessMessage(message: string) {
+  showMessage({
+    message,
+    type: 'success',
+    duration: 4000,
+  });
+}
+
 export function showErrorMessage(message: string = 'Something went wrong ') {
   showMessage({
     message,

@@ -35,7 +35,7 @@ export function WelcomeScreen() {
   const [index, setIndex] = React.useState(0);
   const last = index === slides.length - 1;
   const slide = slides[index];
-  const next = () => (last ? router.replace('/login') : setIndex(i => i + 1));
+  const next = () => (last ? router.replace('/(auth)/login') : setIndex(i => i + 1));
   const prev = () => setIndex(i => Math.max(0, i - 1));
 
   const swipe = Gesture.Pan()
