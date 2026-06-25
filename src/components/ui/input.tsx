@@ -2,6 +2,7 @@
 import type { TextInputProps } from 'react-native';
 import * as React from 'react';
 import { I18nManager, TextInput as NTextInput, StyleSheet, View } from 'react-native';
+import { twMerge } from 'tailwind-merge';
 import { tv } from 'tailwind-variants';
 
 import colors from './colors';
@@ -12,7 +13,7 @@ const inputTv = tv({
     container: 'mb-2',
     label: 'text-grey-100 mb-1 text-lg dark:text-neutral-100',
     input:
-      'font-inter mt-0 rounded-xl border-[0.5px] border-neutral-300 bg-neutral-100 px-4 py-3 text-base/6 font-medium dark:border-neutral-700 dark:bg-neutral-800 dark:text-white',
+      'font-inter mt-0 rounded-2xl border-[0.5px] border-neutral-300 bg-neutral-100 px-4 py-3 text-base/6 font-medium dark:border-neutral-700 dark:bg-neutral-800 dark:text-white',
   },
 
   variants: {
@@ -23,8 +24,8 @@ const inputTv = tv({
     },
     error: {
       true: {
-        input: 'border-danger-600',
-        label: 'text-danger-600 dark:text-danger-600',
+        input: 'border-[#5D5FEF]',
+        label: 'text-[#5D5FEF]',
       },
     },
     disabled: {
@@ -44,10 +45,12 @@ export type NInputProps = {
   label?: string;
   disabled?: boolean;
   error?: string;
+  icon?: React.ReactNode;
+  rightIcon?: React.ReactNode;
 } & TextInputProps;
 
 export function Input({ ref, ...props }: NInputProps & { ref?: React.Ref<NTextInput | null> }) {
-  const { label, error, testID, onBlur: onBlurProp, onFocus: onFocusProp, ...inputProps } = props;
+  const { label, error, testID, onBlur: onBlurProp, onFocus: onFocusProp, icon, rightIcon, className, ...inputProps } = props;
   const [isFocussed, setIsFocussed] = React.useState(false);
 
   const onBlur = React.useCallback(
@@ -82,20 +85,38 @@ export function Input({ ref, ...props }: NInputProps & { ref?: React.Ref<NTextIn
           {label}
         </Text>
       )}
-      <NTextInput
-        testID={testID}
-        ref={ref}
-        placeholderTextColor={colors.neutral[400]}
-        className={styles.input()}
-        onBlur={onBlur}
-        onFocus={onFocus}
-        {...inputProps}
-        style={StyleSheet.flatten([
-          { writingDirection: I18nManager.isRTL ? 'rtl' : 'ltr' },
-          { textAlign: I18nManager.isRTL ? 'right' : 'left' },
-          inputProps.style,
-        ])}
-      />
+      <View className="relative">
+        {icon && (
+          <View className="absolute inset-y-0 left-4 z-10 justify-center">
+            {icon}
+          </View>
+        )}
+        {rightIcon && (
+          <View className="absolute inset-y-0 right-4 z-10 justify-center">
+            {rightIcon}
+          </View>
+        )}
+        <NTextInput
+          testID={testID}
+          ref={ref}
+          placeholderTextColor={colors.neutral[400]}
+          className={styles.input({
+            className: twMerge(
+              icon ? 'pl-12' : '',
+              rightIcon ? 'pr-12' : '',
+              className ?? '',
+            ),
+          })}
+          onBlur={onBlur}
+          onFocus={onFocus}
+          {...inputProps}
+          style={StyleSheet.flatten([
+            { writingDirection: I18nManager.isRTL ? 'rtl' : 'ltr' },
+            { textAlign: I18nManager.isRTL ? 'right' : 'left' },
+            inputProps.style,
+          ])}
+        />
+      </View>
       {error && (
         <Text
           testID={testID ? `${testID}-error` : undefined}

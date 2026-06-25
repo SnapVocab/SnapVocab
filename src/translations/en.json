@@ -13,10 +13,12 @@
     "password_placeholder": "Enter your password",
     "register": "Sign up",
     "sign_in": "Sign In",
-    "subtitle": "Sign in to continue learning",
-    "title": "Welcome back"
+    "subtitle": "Let's keep your streak alive!",
+    "title": "Welcome back!"
   },
   "register": {
+    "confirm_password": "Confirm Password",
+    "confirm_password_placeholder": "Confirm your password",
     "email": "Email",
     "email_placeholder": "Enter your email",
     "error": "Registration failed. Please try again.",
