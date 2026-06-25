@@ -34,7 +34,7 @@ export function RegisterScreen() {
           <Text className="mt-6 text-center text-neutral-500 dark:text-neutral-400">
             {translate('register.have_account')}
             {' '}
-            <Link href="/login" replace className="font-semibold text-primary-600 dark:text-primary-400">
+            <Link href="/login" replace className="mt-2 font-semibold text-[#5D5FEF]">
               {translate('register.login')}
             </Link>
           </Text>
