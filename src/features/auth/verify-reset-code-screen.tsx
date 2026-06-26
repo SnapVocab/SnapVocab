@@ -19,6 +19,17 @@ export function VerifyResetCodeScreen() {
   const { email } = useLocalSearchParams<{ email: string }>();
   const [code, setCode] = useState('');
 
+  const getMaskedEmail = (email: string): string => {
+    const [localPart, domain] = email.split('@');
+
+    if (localPart.length <= 2) {
+      return `${localPart[0]}***@${domain}`;
+    }
+
+    const maskedLocalPart = `${localPart[0]}***${localPart[localPart.length - 1]}`;
+    return `${maskedLocalPart}@${domain}`;
+  };
+
   const handleNext = () => {
     if (code.length !== 6) {
       showErrorMessage(translate('verify_reset_code.invalid_code'));
@@ -41,12 +52,11 @@ export function VerifyResetCodeScreen() {
               {translate('verify_reset_code.title')}
             </Text>
             <Text className="text-center text-base text-neutral-500 dark:text-neutral-400">
-              {translate('verify_reset_code.subtitle', { email })}
+              {translate('verify_reset_code.subtitle', { email: getMaskedEmail(email || '') })}
             </Text>
           </View>
 
           <Input
-            label={translate('verify_reset_code.code')}
             placeholder={translate('verify_reset_code.code_placeholder')}
             keyboardType="number-pad"
             maxLength={6}
@@ -54,7 +64,6 @@ export function VerifyResetCodeScreen() {
             onChangeText={setCode}
             className="rounded-3xl"
           />
-
           <Button
             label={translate('verify_reset_code.verify')}
             variant="brand"
@@ -63,6 +72,7 @@ export function VerifyResetCodeScreen() {
             className="mt-6 w-full rounded-3xl"
             size="lg"
           />
+
         </View>
       </KeyboardAvoidingView>
     </SafeAreaView>
