@@ -33,8 +33,20 @@ export function LoginForm() {
           setAuth(data);
           router.replace('/');
         },
-        onError: () => {
-          showErrorMessage(translate('login.error'));
+        onError: (error) => {
+          const body = error.response?.data as any;
+          if (body?.error === 'USER_NOT_ACTIVATED') {
+            // navigate to verify page
+            router.push({
+              pathname: '/(auth)/verify',
+              params: {
+                email: value.email,
+              },
+            });
+          }
+          else {
+            showErrorMessage(translate('login.error'));
+          }
         },
       });
     },
