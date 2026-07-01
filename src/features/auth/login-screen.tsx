@@ -1,9 +1,8 @@
-import { Link } from 'expo-router';
 import * as React from 'react';
 import { ScrollView, View } from 'react-native';
 
 import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
-import { FocusAwareStatusBar, SafeAreaView, Text } from '@/components/ui';
+import { FocusAwareStatusBar, SafeAreaView, Text, ThemedLink } from '@/components/ui';
 
 import { Mascot } from '@/components/ui/mascot';
 import { translate } from '@/lib/i18n/utils';
@@ -38,9 +37,9 @@ export function LoginScreen() {
           <Text className="mt-6 text-center text-neutral-500 dark:text-neutral-400">
             {translate('login.no_account')}
             {' '}
-            <Link href="/(auth)/register" className="font-semibold text-[#5D5FEF]">
+            <ThemedLink href="/(auth)/register">
               {translate('login.register')}
-            </Link>
+            </ThemedLink>
           </Text>
         </ScrollView>
       </KeyboardAvoidingView>

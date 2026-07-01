@@ -11,11 +11,11 @@ const DarkTheme: Theme = {
   ..._DarkTheme,
   colors: {
     ..._DarkTheme.colors,
-    primary: colors.primary[200],
-    background: colors.charcoal[950],
-    text: colors.charcoal[100],
-    border: colors.charcoal[500],
-    card: colors.charcoal[850],
+    primary: colors.primary[300],
+    background: colors.neutral[900],
+    text: colors.neutral[100],
+    border: colors.neutral[600],
+    card: colors.neutral[800],
   },
 };
 
@@ -23,8 +23,11 @@ const LightTheme: Theme = {
   ...DefaultTheme,
   colors: {
     ...DefaultTheme.colors,
-    primary: colors.primary[400],
+    primary: colors.primary[500],
     background: colors.white,
+    text: colors.neutral[800],
+    border: colors.neutral[200],
+    card: colors.white,
   },
 };
 

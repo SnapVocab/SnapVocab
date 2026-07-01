@@ -81,7 +81,7 @@ export function WelcomeScreen() {
             <View
               key={i}
               className={`h-2 rounded-full ${
-                i === index ? 'w-7 bg-[#5D5FEF]' : 'w-2 bg-neutral-300 dark:bg-neutral-600'
+                i === index ? 'w-7 bg-primary-500' : 'w-2 bg-neutral-300 dark:bg-neutral-600'
               }`}
             />
           ))}

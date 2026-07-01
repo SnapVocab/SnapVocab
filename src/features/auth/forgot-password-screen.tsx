@@ -1,8 +1,7 @@
-import { Link } from 'expo-router';
 import { View } from 'react-native';
 import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
 
-import { FocusAwareStatusBar, SafeAreaView, Text } from '@/components/ui';
+import { FocusAwareStatusBar, SafeAreaView, Text, ThemedLink } from '@/components/ui';
 import { Mascot } from '@/components/ui/mascot';
 import { translate } from '@/lib/i18n';
 import { ForgotPasswordForm } from './components/forgot-password-form';
@@ -29,9 +28,9 @@ export function ForgotPasswordScreen() {
           <ForgotPasswordForm />
 
           <Text className="mt-6 text-center text-neutral-500 dark:text-neutral-400">
-            <Link href="/(auth)/login" className="font-semibold text-[#5D5FEF]">
+            <ThemedLink href="/(auth)/login">
               {translate('forgot_password.back_to_login')}
-            </Link>
+            </ThemedLink>
           </Text>
         </View>
       </KeyboardAvoidingView>
