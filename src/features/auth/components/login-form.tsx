@@ -1,9 +1,9 @@
 import { useForm } from '@tanstack/react-form';
-import { Link, useRouter } from 'expo-router';
+import { useRouter } from 'expo-router';
 import * as React from 'react';
 import * as z from 'zod';
 
-import { Button, Input, showErrorMessage, TouchableOpacity, View } from '@/components/ui';
+import { Button, Input, showErrorMessage, ThemedLink, TouchableOpacity, View } from '@/components/ui';
 import { getFieldError } from '@/components/ui/form-utils';
 import { Eye, EyeSlash, Lock, Mail } from '@/components/ui/icons';
 import { translate } from '@/lib/i18n/utils';
@@ -98,9 +98,9 @@ export function LoginForm() {
       />
 
       <View className="flex-row justify-end">
-        <Link href="/(auth)/forgot-password" className="mt-2 font-semibold text-[#5D5FEF]">
+        <ThemedLink href="/(auth)/forgot-password" className="mt-2">
           {translate('login.forgot_password')}
-        </Link>
+        </ThemedLink>
       </View>
 
       <form.Subscribe
