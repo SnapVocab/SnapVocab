@@ -27,7 +27,8 @@ client.interceptors.response.use(
           const { data } = await axios.post(`${Env.EXPO_PUBLIC_API_URL}/api/auth/refresh`, {
             refreshToken,
           });
-          store.getState().updateTokens(data.access_token, data.refresh_token);
+          const { access_token, refresh_token } = data.data;
+          store.getState().updateTokens(access_token, refresh_token);
           originalRequest.headers.Authorization = `Bearer ${data.access_token}`;
           return client(originalRequest);
         }

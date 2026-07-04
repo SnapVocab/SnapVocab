@@ -9,8 +9,15 @@
     "title": "Forgot Password?"
   },
   "home": {
+    "good_afternoon": "Good afternoon",
+    "good_evening": "Good evening",
+    "good_morning": "Good morning",
+    "greeting_name": "{{name}}!",
+    "level": "LEVEL {{level}}",
     "sign_out": "Sign Out",
-    "welcome": "Welcome to SnapVocab"
+    "welcome": "Welcome to SnapVocab",
+    "xp": "{{count}} XP",
+    "xp_to_level": "{{remaining}} XP to level {{nextLevel}}"
   },
   "login": {
     "email": "Email",
