@@ -1,4 +1,5 @@
 import { Text, View } from '@/components/ui';
+import { translate } from '@/lib/i18n';
 import { formatNumber } from '../utils';
 
 type LevelCardProps = {
@@ -28,8 +29,7 @@ export function LevelCard({
       <View>
         <View className="my-2 self-start rounded-full bg-[#42c5f5] p-2">
           <Text className="text-[11px] font-bold text-white">
-            LEVEL
-            {level}
+            {translate('home.level', { level })}
           </Text>
         </View>
         <View className="mb-2 flex-row justify-between">
@@ -39,11 +39,7 @@ export function LevelCard({
             XP
           </Text>
           <Text className="text-[14px] font-bold text-white">
-            {maxXP - currentXP}
-            {' '}
-            XP to level
-            {' '}
-            {level + 1}
+            {translate('home.xp_to_level', { remaining: maxXP - currentXP, nextLevel: level + 1 })}
           </Text>
         </View>
 

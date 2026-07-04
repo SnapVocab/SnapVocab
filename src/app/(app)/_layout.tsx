@@ -14,17 +14,15 @@ export default function AppLayout() {
 
   const displayName = user?.firstName?.split('@')[0] ?? 'U';
 
-  const getGreeting = () => {
-    const hour = new Date().getHours();
-    const greeting = hour < 12 ? 'Morning' : hour < 18 ? 'Afternoon' : 'Evening';
-    if (greeting === 'Morning') {
-      return translate('home.good_morning');
-    }
-    if (greeting === 'Afternoon') {
-      return translate('home.good_afternoon');
-    }
+  const userName = user?.firstName ?? 'User';
 
-    return translate('home.good_evening');
+  const greetingKey = () => {
+    const hour = new Date().getHours();
+    if (hour < 12)
+      return 'home.good_morning' as const;
+    if (hour < 18)
+      return 'home.good_afternoon' as const;
+    return 'home.good_evening' as const;
   };
 
   if (status !== 'signIn') {
@@ -48,13 +46,12 @@ export default function AppLayout() {
             <View className="ml-4 flex-row items-center">
               <Avatar name={displayName} size={36} avatarUrl={user?.avatarUrl} />
               <View className="ml-2 flex-col">
-                <Text className="text-[10px] font-bold text-[#3525CD]">
-                  {getGreeting().toLocaleUpperCase()}
-                  ,
-                </Text>
+                <Text
+                  tx={greetingKey()}
+                  className="text-[10px] font-bold text-[#3525CD] uppercase"
+                />
                 <Text className="text-[20px] font-bold">
-                  {user?.firstName ?? 'User'}
-                  !
+                  {translate('home.greeting_name', { name: userName })}
                 </Text>
               </View>
             </View>

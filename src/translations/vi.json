@@ -12,8 +12,12 @@
     "good_afternoon": "Chào buổi chiều",
     "good_evening": "Chào buổi tối",
     "good_morning": "Chào buổi sáng",
+    "greeting_name": "{{name}}!",
+    "level": "CẤP {{level}}",
     "sign_out": "Đăng xuất",
-    "welcome": "Chào mừng đến với SnapVocab"
+    "welcome": "Chào mừng đến với SnapVocab",
+    "xp": "{{count}} XP",
+    "xp_to_level": "Còn {{remaining}} XP để lên cấp {{nextLevel}}"
   },
   "login": {
     "email": "Email",
