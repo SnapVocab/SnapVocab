@@ -2,6 +2,12 @@ import type { AxiosError } from 'axios';
 import { createMutation } from 'react-query-kit';
 import { client } from '@/lib/api';
 
+export type ApiResponse<T> = {
+  statusCode: number;
+  data: T;
+  error: string | null;
+};
+
 export type User = {
   id: number;
   nativeLanguage: string;
@@ -12,6 +18,8 @@ export type User = {
   streakDays: number;
   lastStudiedAt: string;
   email: string;
+  firstName: string;
+  lastName: string;
 };
 
 // login
@@ -75,63 +83,65 @@ export type RefreshTokenRequest = {
 // mutations
 export const useLogin = createMutation<ResponseLoginDTO, RequestLoginDTO, AxiosError>({
   mutationFn: async variables =>
-    client({
+    client<ApiResponse<ResponseLoginDTO>>({
       url: '/api/auth/login',
       method: 'POST',
       data: variables,
-    }).then(response => response.data),
+    }).then((response) => {
+      return response.data.data;
+    }),
 });
 
 export const useRegister = createMutation<ResponseRegisterDTO, RequestRegisterDTO, AxiosError>({
   mutationFn: async variables =>
-    client({
+    client<ApiResponse<ResponseRegisterDTO>>({
       url: '/api/auth/register',
       method: 'POST',
       data: variables,
-    }).then(response => response.data),
+    }).then(response => response.data.data),
 });
 
 export const useVerifyCode = createMutation<ResponseLoginDTO, VerifyMailRequest, AxiosError>({
   mutationFn: async variables =>
-    client({
+    client<ApiResponse<ResponseLoginDTO>>({
       url: '/api/auth/verify',
       method: 'POST',
       data: variables,
-    }).then(response => response.data),
+    }).then(response => response.data.data),
 });
 
 export const useResendCode = createMutation<object, ResendCodeRequest, AxiosError>({
   mutationFn: async variables =>
-    client({
+    client<ApiResponse<object>>({
       url: '/api/auth/resend-code',
       method: 'POST',
       data: variables,
-    }).then(response => response.data),
+    }).then(response => response.data.data),
 });
 
 export const useForgotPassword = createMutation<object, ForgotPasswordRequest, AxiosError>({
   mutationFn: async variables =>
-    client({
+    client<ApiResponse<object>>({
       url: '/api/auth/forgot-password',
       method: 'POST',
       data: variables,
-    }).then(response => response.data),
+    }).then(response => response.data.data),
 });
 
 export const useResetPassword = createMutation<object, ResetPasswordRequest, AxiosError>({
   mutationFn: async variables =>
-    client({
+    client<ApiResponse<object>>({
       url: '/api/auth/reset-password',
       method: 'POST',
       data: variables,
-    }).then(response => response.data),
+    }).then(response => response.data.data),
 });
 
 export const useRefreshToken = createMutation<ResponseLoginDTO, RefreshTokenRequest, AxiosError>({
   mutationFn: async variables =>
-    client({
+    client<ApiResponse<ResponseLoginDTO>>({
       url: '/api/auth/refresh',
       method: 'POST',
       data: variables,
-    }).then(response => response.data),
+    }).then(response => response.data.data),
 });

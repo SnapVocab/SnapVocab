@@ -7,5 +7,6 @@ export * from './home';
 export * from './learn';
 export * from './lock';
 export * from './mail';
+export * from './notification-bell';
 export * from './profile';
 export * from './user';

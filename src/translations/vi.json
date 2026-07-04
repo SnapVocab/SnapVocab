@@ -9,6 +9,9 @@
     "title": "Quên mật khẩu?"
   },
   "home": {
+    "good_afternoon": "Chào buổi chiều",
+    "good_evening": "Chào buổi tối",
+    "good_morning": "Chào buổi sáng",
     "sign_out": "Đăng xuất",
     "welcome": "Chào mừng đến với SnapVocab"
   },

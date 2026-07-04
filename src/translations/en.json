@@ -9,6 +9,9 @@
     "title": "Forgot Password?"
   },
   "home": {
+    "good_afternoon": "Good afternoon",
+    "good_evening": "Good evening",
+    "good_morning": "Good morning",
     "sign_out": "Sign Out",
     "welcome": "Welcome to SnapVocab"
   },

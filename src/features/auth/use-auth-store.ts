@@ -8,6 +8,8 @@ import { createSelectors } from '@/lib/utils';
 export type User = {
   id: number;
   nativeLanguage: string;
+  firstName: string;
+  lastName: string;
   learningLanguage: string;
   avatarUrl: string;
   exp: number;

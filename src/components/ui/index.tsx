@@ -1,3 +1,4 @@
+export * from './avatar';
 export * from './button';
 export { default as colors } from './colors';
 export * from './focus-aware-status-bar';

@@ -7,7 +7,7 @@
 
   // Disable Prettier completely
   "prettier.enable": false,
-  "editor.formatOnSave": false,
+  "editor.formatOnSave": true,
 
   // Enable ESLint auto-fix on save
   "editor.codeActionsOnSave": {

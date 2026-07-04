@@ -1,0 +1,17 @@
+export function formatNumber(n: number): string {
+  let result = '';
+  const str = n.toString();
+
+  let count = 0;
+
+  for (let i = str.length - 1; i >= 0; i--) {
+    result = str[i] + result;
+    count++;
+    if (count === 3) {
+      result = `,${result}`;
+      count = 0;
+    }
+  }
+
+  return result.startsWith(',') ? result.slice(1) : result;
+}
