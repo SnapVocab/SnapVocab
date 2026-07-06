@@ -1,23 +1,25 @@
 import * as React from 'react';
 
-import { Button, FocusAwareStatusBar, SafeAreaView, Text, View } from '@/components/ui';
-import { translate } from '@/lib/i18n/utils';
-import { useAuthStore } from '../auth/use-auth-store';
+import { FocusAwareStatusBar, SafeAreaView, View } from '@/components/ui';
+import { AccuracyIcon, FlameIcon, FlashcardIcon } from '@/components/ui/icons';
+
 import { LevelCard } from './components/level-card';
+import { MetricCard } from './components/metric-card';
 
 export function HomeScreen() {
-  const logout = useAuthStore.use.logout();
-
   return (
-    <SafeAreaView style={{ flex: 1 }} className="flex-1 bg-background">
+    <SafeAreaView style={{ flex: 1 }} className="flex-1 bg-neutral-200 dark:bg-neutral-900">
       <FocusAwareStatusBar />
       <View>
         <LevelCard level={12} maxXP={5140} currentXP={4820} barColor="white" />
       </View>
-      <View className="flex-1 items-center justify-center">
-        <Text tx="home.welcome" className="text-2xl font-bold text-neutral-900 dark:text-white" />
-        <Button onPress={logout} label={translate('home.sign_out')} />
+
+      <View className="flex-row justify-between px-5">
+        <MetricCard icon={() => <FlameIcon width={32} height={32} />} value="23" label="STREAK" />
+        <MetricCard icon={() => <FlashcardIcon />} value="482" label="WORDS" />
+        <MetricCard icon={() => <AccuracyIcon />} value="92%" label="ACCURACY" />
       </View>
+
     </SafeAreaView>
   );
 }

@@ -5,6 +5,7 @@ import { Avatar, Text, View } from '@/components/ui';
 import { CameraIcon, CommunityIcon, Home as HomeIcon, LearnIcon, ProfileIcon } from '@/components/ui/icons';
 import { useAuthStore } from '@/features/auth/use-auth-store';
 import { Notification } from '@/features/home/components/notification';
+import { StreakPill } from '@/features/home/components/streak-pill';
 import { translate } from '@/lib/i18n';
 
 export default function AppLayout() {
@@ -56,7 +57,15 @@ export default function AppLayout() {
               </View>
             </View>
           ),
-          headerRight: () => <Notification unread={true} size={24} />,
+          headerRight: () => (
+            <View className="my-0.5 flex-row">
+              <View className="mt-2 mr-2">
+                <StreakPill streak={user?.streakDays ?? 0} />
+              </View>
+
+              <Notification unread={true} size={24} />
+            </View>
+          ),
           tabBarIcon: ({ color }) => <HomeIcon color={color} />,
           tabBarButtonTestID: 'home-tab',
         }}
