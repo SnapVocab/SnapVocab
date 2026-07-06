@@ -24,10 +24,11 @@ export function LevelCard({
 
   return (
     <View
-      className="mx-5 rounded-3xl bg-[#0EA5E9] p-4 shadow-sm dark:bg-neutral-800"
+      className="mx-5 rounded-3xl bg-[#0284C7] p-4 shadow-md shadow-gray-400 dark:bg-neutral-800"
+      style={{ elevation: 5 }}
     >
       <View>
-        <View className="my-2 self-start rounded-full bg-[#42c5f5] p-2">
+        <View className="my-2 self-start rounded-full bg-[#0EA5E9] p-2">
           <Text className="text-[11px] font-bold text-white">
             {translate('home.level', { level })}
           </Text>
@@ -35,12 +36,14 @@ export function LevelCard({
         <View className="mb-2 flex-row justify-between">
           <Text className="text-[36px] font-bold text-white">
             {formatNumber(currentXP)}
+            {' / '}
+            {formatNumber(maxXP)}
             {' '}
             XP
           </Text>
-          <Text className="text-[14px] font-bold text-white">
+          {/* <Text className="text-[14px] font-bold text-white">
             {translate('home.xp_to_level', { remaining: maxXP - currentXP, nextLevel: level + 1 })}
-          </Text>
+          </Text> */}
         </View>
 
       </View>
