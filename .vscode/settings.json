@@ -5,9 +5,8 @@
     "yarn.lock": true
   },
 
-  // Disable Prettier completely
-  "prettier.enable": false,
   "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
 
   // Enable ESLint auto-fix on save
   "editor.codeActionsOnSave": {
