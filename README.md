@@ -15,6 +15,24 @@ pnpm start
 
 Press `a` for Android or `i` for iOS in the Expo dev menu.
 
+## Environment Variables
+
+Three environment files for different stages:
+
+| File | Purpose | Loaded by |
+|------|---------|-----------|
+| `.env.development` | Local development | `pnpm start` |
+| `.env.preview` | Staging/preview | `pnpm start:preview` |
+| `.env.production` | Production | EAS builds |
+
+To add a new variable:
+
+1. Add to all three `.env.*` files
+2. Add schema in `env.ts`
+3. Use `import Env from '@/env'` in code
+
+See `.env.example` for all available variables.
+
 ## Documentation
 
 See [AGENTS.md](./AGENTS.md) for the complete intern onboarding guide covering project structure, key patterns, conventions, and how to add new features.

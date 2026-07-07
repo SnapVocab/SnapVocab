@@ -33,6 +33,7 @@ export default function TabLayout() {
         name="learn"
         options={{
           title: 'Learn',
+          headerShown: false,
           tabBarIcon: ({ color }) => <LearnIcon color={color} />,
           tabBarButtonTestID: 'learn-tab',
         }}
@@ -41,6 +42,7 @@ export default function TabLayout() {
         name="camera"
         options={{
           title: 'Camera',
+          headerShown: false,
           tabBarIcon: ({ color }) => <CameraIcon color={color} />,
           tabBarButtonTestID: 'camera-tab',
         }}
@@ -49,6 +51,7 @@ export default function TabLayout() {
         name="community"
         options={{
           title: 'Community',
+          headerShown: false,
           tabBarIcon: ({ color }) => <CommunityIcon color={color} />,
           tabBarButtonTestID: 'community-tab',
         }}

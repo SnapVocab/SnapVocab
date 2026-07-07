@@ -8,7 +8,7 @@ export function NotificationButton({ unread, size, onPress }: Props) {
   return (
     <Pressable
       onPress={onPress}
-      className="size-13 items-center justify-center rounded-full bg-[#F7F9FBE5]"
+      className="size-13 items-center justify-center rounded-full bg-gray-100 dark:bg-neutral-800"
     >
       <NotificationBell unread={unread} size={size} />
     </Pressable>
