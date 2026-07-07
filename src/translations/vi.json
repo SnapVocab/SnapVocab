@@ -9,13 +9,22 @@
     "title": "Quên mật khẩu?"
   },
   "home": {
+    "accuracy": "ĐỘ CHÍNH XÁC",
+    "continue": "TIẾP TỤC",
+    "continue_learning": "Tiếp tục học",
+    "current_unit": "BÀI HIỆN TẠI · {{unitName}}",
+    "daily_mission": "Nhiệm vụ hàng ngày",
     "good_afternoon": "Chào buổi chiều",
     "good_evening": "Chào buổi tối",
     "good_morning": "Chào buổi sáng",
     "greeting_name": "{{name}}!",
+    "lesson_progress": "Bài {{currentLesson}} trên {{lessonCount}}",
     "level": "CẤP {{level}}",
+    "see_all": "XEM TẤT CẢ",
     "sign_out": "Đăng xuất",
+    "streak": "CHUỖI",
     "welcome": "Chào mừng đến với SnapVocab",
+    "words": "TỪ VỰNG",
     "xp": "{{count}} XP",
     "xp_to_level": "Còn {{remaining}} XP để lên cấp {{nextLevel}}"
   },

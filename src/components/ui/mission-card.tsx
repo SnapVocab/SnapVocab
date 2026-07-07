@@ -25,7 +25,7 @@ export function MissionCard({
   trackColor,
 }: MissionCardProps) {
   return (
-    <View className="mx-5 flex-row items-center rounded-3xl bg-white p-4 shadow-md shadow-gray-300 dark:bg-neutral-800" style={{ elevation: 5 }}>
+    <View className="flex-row items-center rounded-3xl bg-white p-4 shadow-md shadow-gray-300 dark:bg-neutral-800" style={{ elevation: 5 }}>
       <Icon width={32} height={32} />
       <View className="ml-3 flex-1">
         <View className="mb-2">

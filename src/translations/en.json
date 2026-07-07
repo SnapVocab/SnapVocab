@@ -9,13 +9,22 @@
     "title": "Forgot Password?"
   },
   "home": {
+    "accuracy": "ACCURACY",
+    "continue": "CONTINUE",
+    "continue_learning": "Continue learning",
+    "current_unit": "CURRENT UNIT · {{unitName}}",
+    "daily_mission": "Daily mission",
     "good_afternoon": "Good afternoon",
     "good_evening": "Good evening",
     "good_morning": "Good morning",
     "greeting_name": "{{name}}!",
+    "lesson_progress": "Lesson {{currentLesson}} of {{lessonCount}}",
     "level": "LEVEL {{level}}",
+    "see_all": "SEE ALL",
     "sign_out": "Sign Out",
+    "streak": "STREAK",
     "welcome": "Welcome to SnapVocab",
+    "words": "WORDS",
     "xp": "{{count}} XP",
     "xp_to_level": "{{remaining}} XP to level {{nextLevel}}"
   },

@@ -22,7 +22,7 @@ export function LevelCard({
 }: LevelCardProps) {
   return (
     <View
-      className="mx-5 rounded-3xl bg-[#0284C7] p-4 shadow-md shadow-gray-400 dark:bg-neutral-800"
+      className="rounded-3xl bg-[#0284C7] p-4 shadow-md shadow-gray-400 dark:bg-neutral-800"
       style={{ elevation: 5 }}
     >
       <View>
