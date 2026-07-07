@@ -118,6 +118,7 @@
     "eslint": "^9.39.2",
     "eslint-import-resolver-typescript": "^4.4.4",
     "eslint-plugin-better-tailwindcss": "^4.0.1",
+    "eslint-plugin-format": "^2.0.1",
     "eslint-plugin-i18n-json": "^4.0.1",
     "eslint-plugin-import": "^2.32.0",
     "eslint-plugin-react-compiler": "19.1.0-rc.2",
@@ -131,6 +132,7 @@
     "jest-junit": "^16.0.0",
     "lint-staged": "^16.2.7",
     "np": "^10.3.0",
+    "prettier": "^3.9.4",
     "tailwindcss": "4.1.18",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3"

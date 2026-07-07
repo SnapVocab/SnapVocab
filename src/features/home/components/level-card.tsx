@@ -1,6 +1,7 @@
 import { Text, View } from '@/components/ui';
 import { translate } from '@/lib/i18n';
 import { formatNumber } from '../utils';
+import { ProgressBar } from './progress-bar';
 
 type LevelCardProps = {
   level: number;
@@ -19,9 +20,6 @@ export function LevelCard({
   barColor,
   trackColor,
 }: LevelCardProps) {
-  const progress = Math.min(currentXP / maxXP, 1);
-  const barRadius = barHeight / 2;
-
   return (
     <View
       className="mx-5 rounded-3xl bg-[#0284C7] p-4 shadow-md shadow-gray-400 dark:bg-neutral-800"
@@ -41,32 +39,15 @@ export function LevelCard({
             {' '}
             XP
           </Text>
-          {/* <Text className="text-[14px] font-bold text-white">
-            {translate('home.xp_to_level', { remaining: maxXP - currentXP, nextLevel: level + 1 })}
-          </Text> */}
         </View>
-
       </View>
-      {/* Progress bar track */}
-      <View
-        style={{
-          height: barHeight,
-          borderRadius: barRadius,
-          backgroundColor: trackColor,
-        }}
-        className="w-full overflow-hidden bg-neutral-200 dark:bg-neutral-700"
-      >
-        {/* Progress bar fill */}
-        <View
-          style={{
-            width: `${progress * 100}%`,
-            height: barHeight,
-            borderRadius: barRadius,
-            backgroundColor: barColor,
-          }}
-          className="bg-primary-500"
-        />
-      </View>
+      <ProgressBar
+        currentValue={currentXP}
+        maxValue={maxXP}
+        barColor={barColor}
+        trackColor={trackColor}
+        height={barHeight}
+      />
     </View>
   );
 }

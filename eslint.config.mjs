@@ -25,6 +25,7 @@ export default antfu(
       semi: true,
     },
 
+
     // Global ignores
     ignores: [
       'dist/*',
@@ -75,6 +76,7 @@ export default antfu(
       'no-cond-assign': 'off', // Allow assignment in conditions when intentional
       'regexp/no-super-linear-backtracking': 'off', // Relax regex performance rules
       'regexp/no-unused-capturing-group': 'off', // Allow unused capturing groups
+      'style/max-len': ['warn', { code: 100, ignoreStrings: true, ignoreTemplateLiterals: true, ignoreRegExpLiterals: true }],
     },
   },
 

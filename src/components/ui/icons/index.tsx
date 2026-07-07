@@ -10,6 +10,7 @@ export * from './home';
 export * from './learn';
 export * from './lock';
 export * from './mail';
+export * from './mission-flashcard';
 export * from './notification-bell';
 export * from './profile';
 export * from './user';

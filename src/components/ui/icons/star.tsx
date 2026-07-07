@@ -1,0 +1,13 @@
+import { createIcon } from './create-icon';
+
+export const StarIcon = createIcon({
+  viewBox: '0 0 14 13',
+  width: 14,
+  height: 13,
+  elements: [
+    {
+      d: 'M2.55 12.6667L3.63333 7.98333L0 4.83333L4.8 4.41667L6.66667 0L8.53333 4.41667L13.3333 4.83333L9.7 7.98333L10.7833 12.6667L6.66667 10.1833L2.55 12.6667Z',
+      fill: '#FBBF24',
+    },
+  ],
+});

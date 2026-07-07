@@ -52,15 +52,16 @@ export function createIcon({
           const resolvedStroke = elStroke !== undefined
             ? (color ?? elStroke)
             : undefined;
-          const shared = { key: i, fill: resolvedFill, stroke: resolvedStroke };
 
           if (cx !== undefined && cy !== undefined && r !== undefined) {
             return (
               <Circle
+                key={i}
                 cx={cx}
                 cy={cy}
                 r={r}
-                {...shared}
+                fill={resolvedFill}
+                stroke={resolvedStroke}
                 strokeWidth={svgProps.strokeWidth}
                 strokeLinecap={svgProps.strokeLinecap}
                 strokeLinejoin={svgProps.strokeLinejoin}
@@ -70,8 +71,10 @@ export function createIcon({
 
           return (
             <Path
+              key={i}
               d={svgProps.d ?? ''}
-              {...shared}
+              fill={resolvedFill}
+              stroke={resolvedStroke}
               strokeWidth={svgProps.strokeWidth}
               strokeLinecap={svgProps.strokeLinecap}
               strokeLinejoin={svgProps.strokeLinejoin}
