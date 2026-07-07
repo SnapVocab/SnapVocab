@@ -15,3 +15,12 @@ export function formatNumber(n: number): string {
 
   return result.startsWith(',') ? result.slice(1) : result;
 }
+
+export function getGreetingKey() {
+  const hour = new Date().getHours();
+  if (hour < 12)
+    return 'home.good_morning' as const;
+  if (hour < 18)
+    return 'home.good_afternoon' as const;
+  return 'home.good_evening' as const;
+}

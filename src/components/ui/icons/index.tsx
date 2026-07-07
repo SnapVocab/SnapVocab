@@ -1,6 +1,7 @@
 export * from './accuracy';
 export * from './camera';
 export * from './community';
+export * from './edit';
 export * from './eye';
 export * from './eye-slash';
 export * from './fb';
@@ -13,4 +14,5 @@ export * from './mail';
 export * from './mission-flashcard';
 export * from './notification-bell';
 export * from './profile';
+export * from './settings';
 export * from './user';

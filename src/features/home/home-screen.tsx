@@ -2,7 +2,14 @@ import { Link } from 'expo-router';
 
 import * as React from 'react';
 import { ScrollView } from 'react-native';
-import { Avatar, FocusAwareStatusBar, MissionCard, SafeAreaView, Text, View } from '@/components/ui';
+import {
+  Avatar,
+  FocusAwareStatusBar,
+  MissionCard,
+  SafeAreaView,
+  Text,
+  View,
+} from '@/components/ui';
 
 import {
   AccuracyIcon,
@@ -15,22 +22,14 @@ import { translate } from '@/lib/i18n';
 import { CurrentUnitCard } from './components/current-unit-card';
 import { LevelCard } from './components/level-card';
 import { MetricCard } from './components/metric-card';
-import { Notification } from './components/notification';
+import { NotificationButton } from './components/notification-button';
 import { StreakPill } from './components/streak-pill';
+import { getGreetingKey } from './utils';
 
 export function HomeScreen() {
   const user = useAuthStore.use.user();
   const displayName = user?.firstName?.split('@')[0] ?? 'U';
   const userName = user?.firstName ?? 'User';
-
-  const greetingKey = () => {
-    const hour = new Date().getHours();
-    if (hour < 12)
-      return 'home.good_morning' as const;
-    if (hour < 18)
-      return 'home.good_afternoon' as const;
-    return 'home.good_evening' as const;
-  };
 
   return (
     <SafeAreaView className="flex-1 bg-neutral-200 dark:bg-neutral-900">
@@ -41,7 +40,7 @@ export function HomeScreen() {
           <Avatar name={displayName} size={36} avatarUrl={user?.avatarUrl} />
           <View className="ml-2 flex-col">
             <Text
-              tx={greetingKey()}
+              tx={getGreetingKey()}
               className="text-[10px] font-bold text-[#3525CD] uppercase"
             />
             <Text className="text-[20px] font-bold">
@@ -53,7 +52,7 @@ export function HomeScreen() {
           <View className="mr-2">
             <StreakPill streak={user?.streakDays ?? 0} />
           </View>
-          <Notification unread={true} size={24} />
+          <NotificationButton unread={true} size={24} />
         </View>
       </View>
 
