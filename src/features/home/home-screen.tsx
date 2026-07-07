@@ -32,77 +32,79 @@ export function HomeScreen() {
   const userName = user?.firstName ?? 'User';
 
   return (
-    <SafeAreaView className="flex-1 bg-neutral-200 dark:bg-neutral-900">
-      <FocusAwareStatusBar />
+    <View className="flex-1 bg-white dark:bg-neutral-900">
+      <SafeAreaView className="flex-1">
+        <FocusAwareStatusBar />
 
-      <View className="flex-row items-center justify-between px-5 py-3">
-        <View className="flex-row items-center">
-          <Avatar name={displayName} size={36} avatarUrl={user?.avatarUrl} />
-          <View className="ml-2 flex-col">
-            <Text
-              tx={getGreetingKey()}
-              className="text-[10px] font-bold text-[#3525CD] uppercase"
-            />
-            <Text className="text-[20px] font-bold">
-              {translate('home.greeting_name', { name: userName })}
-            </Text>
+        <View className="flex-row items-center justify-between bg-white px-5 py-3 dark:bg-neutral-900">
+          <View className="flex-row items-center">
+            <Avatar name={displayName} size={36} avatarUrl={user?.avatarUrl} />
+            <View className="ml-2 flex-col">
+              <Text
+                tx={getGreetingKey()}
+                className="text-[10px] font-bold text-[#3525CD] uppercase"
+              />
+              <Text className="text-[20px] font-bold">
+                {translate('home.greeting_name', { name: userName })}
+              </Text>
+            </View>
+          </View>
+          <View className="flex-row items-center">
+            <View className="mr-2">
+              <StreakPill streak={user?.streakDays ?? 0} />
+            </View>
+            <NotificationButton unread={true} size={24} />
           </View>
         </View>
-        <View className="flex-row items-center">
-          <View className="mr-2">
-            <StreakPill streak={user?.streakDays ?? 0} />
-          </View>
-          <NotificationButton unread={true} size={24} />
-        </View>
-      </View>
 
-      <ScrollView contentContainerStyle={{ paddingBottom: 100 }}>
-        <View className="gap-5 px-5 pt-5">
-          <LevelCard
-            level={12}
-            maxXP={5140}
-            currentXP={4820}
-            barColor="white"
-            trackColor="#7DD3FC"
-          />
-
-          <View className="flex-row justify-between">
-            <MetricCard
-              icon={() => <FlameIcon width={32} height={32} />}
-              value="23"
-              label="STREAK"
+        <ScrollView className="bg-gray-100" contentContainerStyle={{ paddingBottom: 100 }}>
+          <View className="min-h-175 gap-5 px-5 pt-5">
+            <LevelCard
+              level={12}
+              maxXP={5140}
+              currentXP={4820}
+              barColor="white"
+              trackColor="#7DD3FC"
             />
-            <MetricCard icon={() => <FlashcardIcon />} value="482" label="WORDS" />
-            <MetricCard icon={() => <AccuracyIcon />} value="92%" label="ACCURACY" />
-          </View>
 
-          <View className="flex-row justify-between">
+            <View className="flex-row justify-between">
+              <MetricCard
+                icon={() => <FlameIcon width={32} height={32} />}
+                value="23"
+                label="STREAK"
+              />
+              <MetricCard icon={() => <FlashcardIcon />} value="482" label="WORDS" />
+              <MetricCard icon={() => <AccuracyIcon />} value="92%" label="ACCURACY" />
+            </View>
+
+            <View className="flex-row justify-between">
+              <Text
+                className="text-[22px] font-bold text-neutral-900 dark:text-white"
+                tx="home.daily_mission"
+              />
+              <Link href="/">
+                <Text className="text-[13px] font-bold text-[#3525CD]" tx="home.see_all" />
+              </Link>
+            </View>
+
+            <MissionCard
+              icon={() => <MissionFlashcardIcon />}
+              label="Review 10 flashcards"
+              currentProgress={7}
+              totalProgress={10}
+              trackColor="#E2E8F0"
+              barColor="#FB923C"
+              xpReward={20}
+            />
+
             <Text
               className="text-[22px] font-bold text-neutral-900 dark:text-white"
-              tx="home.daily_mission"
+              tx="home.continue_learning"
             />
-            <Link href="/">
-              <Text className="text-[13px] font-bold text-[#3525CD]" tx="home.see_all" />
-            </Link>
+            <CurrentUnitCard currentLesson={4} lessonCount={5} unitName="KITCHEN" />
           </View>
-
-          <MissionCard
-            icon={() => <MissionFlashcardIcon />}
-            label="Review 10 flashcards"
-            currentProgress={7}
-            totalProgress={10}
-            trackColor="#E2E8F0"
-            barColor="#FB923C"
-            xpReward={20}
-          />
-
-          <Text
-            className="text-[22px] font-bold text-neutral-900 dark:text-white"
-            tx="home.continue_learning"
-          />
-          <CurrentUnitCard currentLesson={4} lessonCount={5} unitName="KITCHEN" />
-        </View>
-      </ScrollView>
-    </SafeAreaView>
+        </ScrollView>
+      </SafeAreaView>
+    </View>
   );
 }
