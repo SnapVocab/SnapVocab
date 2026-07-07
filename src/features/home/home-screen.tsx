@@ -23,7 +23,7 @@ export function HomeScreen() {
 
       <View className="mt-5 flex-row justify-between px-5">
         <Text className="text-[22px] font-bold text-black">Daily mission</Text>
-        <Link href="/daily-mission">
+        <Link href="/">
           <Text className="text-[13px] font-bold text-[#3525CD]">SEE ALL</Text>
         </Link>
       </View>
