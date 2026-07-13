@@ -19,11 +19,11 @@ Press `a` for Android or `i` for iOS in the Expo dev menu.
 
 Three environment files for different stages:
 
-| File | Purpose | Loaded by |
-|------|---------|-----------|
-| `.env.development` | Local development | `pnpm start` |
-| `.env.preview` | Staging/preview | `pnpm start:preview` |
-| `.env.production` | Production | EAS builds |
+| File               | Purpose           | Loaded by            |
+| ------------------ | ----------------- | -------------------- |
+| `.env.development` | Local development | `pnpm start`         |
+| `.env.preview`     | Staging/preview   | `pnpm start:preview` |
+| `.env.production`  | Production        | EAS builds           |
 
 To add a new variable:
 
