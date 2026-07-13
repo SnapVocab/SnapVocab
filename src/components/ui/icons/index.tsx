@@ -1,6 +1,7 @@
 export * from './accuracy';
 export * from './book';
 export * from './camera';
+export * from './chevron-left';
 export * from './community';
 export * from './edit';
 export * from './eye';

@@ -17,6 +17,7 @@ export type User = {
   streakDays: number;
   lastStudiedAt: string;
   email: string;
+  bio: string;
 };
 
 export type AuthResponse = {

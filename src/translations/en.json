@@ -1,4 +1,14 @@
 {
+  "edit_profile": {
+    "bio": "Bio",
+    "bio_placeholder": "Tell us about yourself",
+    "first_name": "First Name",
+    "first_name_placeholder": "Enter your first name",
+    "last_name": "Last Name",
+    "last_name_placeholder": "Enter your last name",
+    "save": "Save",
+    "title": "Edit Profile"
+  },
   "forgot_password": {
     "back_to_login": "Back to Login",
     "email": "Email address",
@@ -40,6 +50,9 @@
     "sign_in": "Sign In",
     "subtitle": "Let's keep your streak alive!",
     "title": "Welcome back!"
+  },
+  "profile": {
+    "level": "Level {{level}}"
   },
   "register": {
     "confirm_password": "Confirm Password",

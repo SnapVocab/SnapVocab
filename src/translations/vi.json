@@ -1,4 +1,14 @@
 {
+  "edit_profile": {
+    "bio": "Tiểu sử",
+    "bio_placeholder": "Kể một chút về bản thân",
+    "first_name": "Tên",
+    "first_name_placeholder": "Nhập tên của bạn",
+    "last_name": "Họ",
+    "last_name_placeholder": "Nhập họ của bạn",
+    "save": "Lưu",
+    "title": "Chỉnh sửa hồ sơ"
+  },
   "forgot_password": {
     "back_to_login": "Quay lại Đăng nhập",
     "email": "Địa chỉ email",
@@ -40,6 +50,9 @@
     "sign_in": "Đăng nhập",
     "subtitle": "Đừng để chuỗi học tập bị gián đoạn nhé!",
     "title": "Chào mừng trở lại!"
+  },
+  "profile": {
+    "level": "Cấp {{level}}"
   },
   "register": {
     "confirm_password": "Xác nhận mật khẩu",

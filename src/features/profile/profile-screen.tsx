@@ -3,6 +3,7 @@ import { ScrollView } from 'react-native';
 import { FocusAwareStatusBar, ListItem, SafeAreaView, Text, View } from '@/components/ui';
 import { InventoryIcon, ShoppingBagIcon, TrophyIcon, WalletIcon } from '@/components/ui/icons';
 import { EditButton } from './components/edit-button';
+import { LogoutButton } from './components/logout-button';
 import { ProfileCard } from './components/profile-card';
 import { SettingsButton } from './components/settings-button';
 
@@ -44,6 +45,7 @@ export function ProfileScreen() {
                 iconColor="#00A6E5"
               />
             </View>
+            <LogoutButton />
           </View>
         </ScrollView>
       </SafeAreaView>

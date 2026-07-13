@@ -14,11 +14,7 @@ export default function AppLayout() {
       <Stack.Screen name="(tabs)" />
       <Stack.Screen
         name="edit-profile"
-        options={{
-          headerShown: true,
-          title: 'Edit Profile',
-          presentation: 'modal',
-        }}
+        options={{ presentation: 'modal' }}
       />
     </Stack>
   );
