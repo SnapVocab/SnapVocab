@@ -45,13 +45,18 @@ export function EditProfileScreen() {
         try {
           const fileName = selectedImage.split('/').pop() ?? 'avatar.jpg';
           console.log('[EditProfile] Getting upload URL for:', fileName);
-          const { uploadUrl, objectName, contentType } = await getUploadUrl.mutateAsync({ fileName });
+          const { uploadUrl, objectName, contentType } = await getUploadUrl.mutateAsync({
+            fileName,
+          });
           console.log('[EditProfile] Upload URL:', uploadUrl, 'objectName:', objectName);
           if (!uploadUrl)
             throw new Error('Empty upload URL');
           await uploadToPresignedUrl(uploadUrl, selectedImage, contentType);
           console.log('[EditProfile] Upload to MinIO success');
-          const completeRes = await completeUpload.mutateAsync({ objectName, purpose: UploadPurpose.AVATAR });
+          const completeRes = await completeUpload.mutateAsync({
+            objectName,
+            purpose: UploadPurpose.AVATAR,
+          });
           console.log('[EditProfile] Upload complete, avatar URL:', completeRes.url);
           avatarUrl = completeRes.url;
         }

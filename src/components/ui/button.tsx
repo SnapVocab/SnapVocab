@@ -2,7 +2,7 @@
 import type { PressableProps, View } from 'react-native';
 import type { VariantProps } from 'tailwind-variants';
 import * as React from 'react';
-import { ActivityIndicator, Pressable, Text } from 'react-native';
+import { ActivityIndicator, Animated, Pressable } from 'react-native';
 import { tv } from 'tailwind-variants';
 
 const button = tv({
@@ -96,13 +96,35 @@ type Props = {
   loading?: boolean;
   className?: string;
   textClassName?: string;
-} & ButtonVariants & Omit<PressableProps, 'disabled'>;
+} & ButtonVariants
+& Omit<PressableProps, 'disabled'>;
 
-export function Button({ ref, label: text, loading = false, variant = 'default', disabled = false, size = 'default', className = '', testID, textClassName = '', ...props }: Props & { ref?: React.RefObject<View | null> }) {
+export function Button({
+  ref,
+  label: text,
+  loading = false,
+  variant = 'default',
+  disabled = false,
+  size = 'default',
+  className = '',
+  testID,
+  textClassName = '',
+  ...props
+}: Props & { ref?: React.RefObject<View | null> }) {
   const styles = React.useMemo(
     () => button({ variant, disabled, size }),
     [variant, disabled, size],
   );
+
+  const fadeAnim = React.useRef(new Animated.Value(loading ? 1 : 0)).current;
+
+  React.useEffect(() => {
+    Animated.timing(fadeAnim, {
+      toValue: loading ? 1 : 0,
+      duration: 200,
+      useNativeDriver: true,
+    }).start();
+  }, [loading, fadeAnim]);
 
   return (
     <Pressable
@@ -117,24 +139,27 @@ export function Button({ ref, label: text, loading = false, variant = 'default',
             props.children
           )
         : (
-            <>
-              {loading
-                ? (
-                    <ActivityIndicator
-                      size="small"
-                      className={styles.indicator()}
-                      testID={testID ? `${testID}-activity-indicator` : undefined}
-                    />
-                  )
-                : (
-                    <Text
-                      testID={testID ? `${testID}-label` : undefined}
-                      className={styles.label({ className: textClassName })}
-                    >
-                      {text}
-                    </Text>
-                  )}
-            </>
+            <Animated.View className="relative flex-row items-center justify-center">
+              <Animated.Text
+                style={{ opacity: fadeAnim.interpolate({ inputRange: [0, 1], outputRange: [1, 0] }) }}
+                testID={testID ? `${testID}-label` : undefined}
+                className={styles.label({ className: textClassName })}
+              >
+                {text}
+              </Animated.Text>
+              <Animated.View
+                style={{
+                  position: 'absolute',
+                  opacity: fadeAnim,
+                }}
+              >
+                <ActivityIndicator
+                  size="small"
+                  className={styles.indicator()}
+                  testID={testID ? `${testID}-activity-indicator` : undefined}
+                />
+              </Animated.View>
+            </Animated.View>
           )}
     </Pressable>
   );

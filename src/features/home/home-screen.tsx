@@ -1,4 +1,4 @@
-import { Link } from 'expo-router';
+import { Link, router } from 'expo-router';
 
 import * as React from 'react';
 import { ScrollView } from 'react-native';
@@ -18,6 +18,7 @@ import {
   MissionFlashcardIcon,
 } from '@/components/ui/icons';
 import { useAuthStore } from '@/features/auth/use-auth-store';
+import { useNotificationStore } from '@/features/notification/use-notification-store';
 import { translate } from '@/lib/i18n';
 import { CurrentUnitCard } from './components/current-unit-card';
 import { LevelCard } from './components/level-card';
@@ -28,6 +29,8 @@ import { getGreetingKey } from './utils';
 
 export function HomeScreen() {
   const user = useAuthStore.use.user();
+  const notifications = useNotificationStore.use.notifications();
+  const hasUnread = notifications.some(n => !n.isRead);
   const displayName = user?.firstName?.split('@')[0] ?? 'U';
   const userName = user?.firstName ?? 'User';
 
@@ -53,7 +56,11 @@ export function HomeScreen() {
             <View className="mr-2">
               <StreakPill streak={user?.streakDays ?? 0} />
             </View>
-            <NotificationButton unread={true} size={24} />
+            <NotificationButton
+              unread={hasUnread}
+              size={24}
+              onPress={() => router.navigate('/notification')}
+            />
           </View>
         </View>
 

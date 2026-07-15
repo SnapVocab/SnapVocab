@@ -1,8 +1,8 @@
 import { useTheme } from '@react-navigation/native';
 import { Tabs } from 'expo-router';
 
+import { CameraTabButton } from '@/components/ui/camera-tab-button';
 import {
-  CameraIcon,
   CommunityIcon,
   Home as HomeIcon,
   LearnIcon,
@@ -41,9 +41,9 @@ export default function TabLayout() {
       <Tabs.Screen
         name="camera"
         options={{
-          title: 'Camera',
+          title: '',
           headerShown: false,
-          tabBarIcon: ({ color }) => <CameraIcon color={color} />,
+          tabBarButton: props => <CameraTabButton {...props} />,
           tabBarButtonTestID: 'camera-tab',
         }}
       />
