@@ -101,7 +101,6 @@
     "error": "Detection failed. Please try again.",
     "find_meanings": "Find meanings",
     "grant_permission": "Enable camera",
-    "hide_detections": "Hide detections",
     "hint_subtitle": "SnapVocab detects English words from the objects around you.",
     "hint_title": "Point at real-world objects",
     "not_in_dictionary": "Not in dictionary yet",
@@ -114,9 +113,7 @@
     "results_empty": "No objects detected. Try another photo.",
     "results_title": "Detected Words",
     "retake": "Retake",
-    "scan_another": "Scan another",
     "select_all": "Select all",
-    "show_detections": "Show detections",
     "take_photo": "Take Photo",
     "title": "Scan",
     "words": "Words"

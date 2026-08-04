@@ -20,7 +20,7 @@ export function CameraScreen() {
   const [permission, requestPermission] = useCameraPermissions();
   const [photo, setPhoto] = useState<PickedPhoto | null>(null);
   const scanMutation = useScanImage();
-  const setScan = useScanStore.use.setScan();
+  const setResult = useScanStore.use.setResult();
 
   const pickFromLibrary = async () => {
     try {
@@ -32,7 +32,9 @@ export function CameraScreen() {
 
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ['images'],
-        quality: 0.8,
+        // Full quality: re-encoding at 0.8 measurably cost ~30% of the detections
+        // (16 labels -> 11 on the same photo).
+        quality: 1,
       });
       if (!result.canceled) {
         const asset = result.assets[0];
@@ -58,7 +60,7 @@ export function CameraScreen() {
       { uri: photo.uri, fileName, mimeType: photo.mimeType },
       {
         onSuccess: (data) => {
-          setScan({ uri: photo.uri, width: photo.width, height: photo.height }, data);
+          setResult(data);
           router.push('/scan-results');
         },
         onError: (error) => {

@@ -1,7 +1,7 @@
 import type { ScanItem } from '../api';
 import { Pressable } from 'react-native';
 
-import { Image, Pill, Text, View } from '@/components/ui';
+import { Pill, Text, View } from '@/components/ui';
 import { CheckCircleIcon } from '@/components/ui/icons';
 import { translate } from '@/lib/i18n';
 
@@ -33,13 +33,6 @@ export function DetectedItemCard({ item, selected, isDuplicate, onToggle }: Dete
         >
           <CheckCircleIcon color={selected ? '#FFFFFF' : '#9597AD'} />
         </View>
-
-        <Image
-          source={{ uri: `data:image/png;base64,${item.imageBase64}` }}
-          className="size-14 rounded-2xl bg-gray-100 dark:bg-neutral-800"
-          contentFit="cover"
-          alt={item.label}
-        />
 
         <View style={{ flex: 1 }} className="flex-1 gap-1">
           <View className="flex-row flex-wrap items-center gap-2">

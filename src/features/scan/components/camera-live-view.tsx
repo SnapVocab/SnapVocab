@@ -30,7 +30,8 @@ export function CameraLiveView({ onClose, onCaptured, onPickFromLibrary }: Camer
 
     setIsCapturing(true);
     try {
-      const photo = await cameraRef.current.takePictureAsync({ quality: 0.8 });
+      // Full quality: re-encoding at 0.8 measurably cost ~30% of the detections.
+      const photo = await cameraRef.current.takePictureAsync({ quality: 1 });
       if (photo)
         onCaptured({ uri: photo.uri, width: photo.width, height: photo.height });
     }

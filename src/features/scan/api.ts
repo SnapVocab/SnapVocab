@@ -50,8 +50,17 @@ export type ScanItem = {
   score: number;
   source: string;
   box: BoundingBox;
-  imageBase64: string;
   word: LookupResult | null;
+};
+
+export type ScanResult = {
+  /** Base64 image (no `data:` prefix) with every detection box already drawn on it. */
+  annotatedImageBase64: string;
+  annotatedImageMime: string;
+  /** Coordinate space shared by the annotated image and every `box`. */
+  imageWidth: number;
+  imageHeight: number;
+  items: ScanItem[];
 };
 
 type ScanImageRequest = {
@@ -63,7 +72,7 @@ type ScanImageRequest = {
 // CPU-only inference on the backend legitimately takes 30-90s per image.
 const SCAN_TIMEOUT_MS = 180000;
 
-export const useScanImage = createMutation<ScanItem[], ScanImageRequest, AxiosError>({
+export const useScanImage = createMutation<ScanResult, ScanImageRequest, AxiosError>({
   mutationFn: async ({ uri, fileName, mimeType }) => {
     const formData = new FormData();
     // React Native's FormData takes { uri, name, type } for file parts.
@@ -98,7 +107,7 @@ export const useScanImage = createMutation<ScanItem[], ScanImageRequest, AxiosEr
       if (!response.ok)
         throw new Error(body?.error ?? `Scan failed with status ${response.status}`);
 
-      return body.data as ScanItem[];
+      return body.data as ScanResult;
     }
     finally {
       clearTimeout(timeout);

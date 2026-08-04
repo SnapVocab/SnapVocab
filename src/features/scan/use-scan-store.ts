@@ -1,30 +1,20 @@
-import type { ScanItem } from './api';
+import type { ScanResult } from './api';
 import { create } from 'zustand';
 import { createSelectors } from '@/lib/utils';
 
-export type ScanPhoto = {
-  uri: string;
-  width: number;
-  height: number;
-};
-
 type ScanState = {
-  photo: ScanPhoto | null;
-  results: ScanItem[];
-  setScan: (photo: ScanPhoto, results: ScanItem[]) => void;
+  result: ScanResult | null;
+  setResult: (result: ScanResult) => void;
   reset: () => void;
 };
 
-// Ephemeral, in-memory only (no MMKV persistence) — results carry base64 image
-// blobs that are only relevant for the lifetime of a single scan session.
-// `photo` (the original captured/picked image + its pixel dimensions) is kept
-// alongside so the results screen can draw detection boxes at the right scale.
+// Ephemeral, in-memory only (no MMKV persistence) — the result carries a base64
+// image that is only relevant for the lifetime of a single scan session.
 const store = create<ScanState>()(set => ({
-  photo: null,
-  results: [],
+  result: null,
 
-  setScan: (photo, results) => set({ photo, results }),
-  reset: () => set({ photo: null, results: [] }),
+  setResult: result => set({ result }),
+  reset: () => set({ result: null }),
 }));
 
 export const useScanStore = createSelectors(store);

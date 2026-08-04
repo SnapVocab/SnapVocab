@@ -101,7 +101,6 @@
     "error": "Nhận diện thất bại. Vui lòng thử lại.",
     "find_meanings": "Tra nghĩa",
     "grant_permission": "Bật camera",
-    "hide_detections": "Ẩn khung nhận diện",
     "hint_subtitle": "SnapVocab nhận diện từ tiếng Anh từ những đồ vật quanh bạn.",
     "hint_title": "Hướng vào đồ vật thật",
     "not_in_dictionary": "Chưa có trong từ điển",
@@ -114,9 +113,7 @@
     "results_empty": "Không phát hiện đồ vật nào. Hãy thử ảnh khác.",
     "results_title": "Từ đã nhận diện",
     "retake": "Chụp lại",
-    "scan_another": "Quét ảnh khác",
     "select_all": "Chọn tất cả",
-    "show_detections": "Hiện khung nhận diện",
     "take_photo": "Chụp ảnh",
     "title": "Quét",
     "words": "Xem từ"
