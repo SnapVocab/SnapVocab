@@ -16,6 +16,7 @@ export default function AppLayout() {
         name="edit-profile"
         options={{ presentation: 'modal' }}
       />
+      <Stack.Screen name="scan-results" />
     </Stack>
   );
 }
