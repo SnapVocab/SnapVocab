@@ -45,6 +45,9 @@ export default function TabLayout() {
           headerShown: false,
           tabBarButton: props => <CameraTabButton {...props} />,
           tabBarButtonTestID: 'camera-tab',
+          // Full-bleed camera: the tab bar is hidden here, the in-screen
+          // close (X) button is how the user leaves the scanner.
+          tabBarStyle: { display: 'none' },
         }}
       />
       <Tabs.Screen

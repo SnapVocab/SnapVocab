@@ -12,8 +12,11 @@ export default function AppLayout() {
   return (
     <Stack screenOptions={{ headerShown: false }}>
       <Stack.Screen name="(tabs)" />
-      <Stack.Screen name="edit-profile" options={{ presentation: 'modal' }} />
-      <Stack.Screen name="notification" />
+      <Stack.Screen
+        name="edit-profile"
+        options={{ presentation: 'modal' }}
+      />
+      <Stack.Screen name="scan-results" />
     </Stack>
   );
 }

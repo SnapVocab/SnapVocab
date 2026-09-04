@@ -27,6 +27,68 @@ const appIconBadgeConfig: AppIconBadgeConfig = {
   ],
 };
 
+const fontPluginConfig = {
+  ios: {
+    fonts: [
+      'node_modules/@expo-google-fonts/inter/400Regular/Inter_400Regular.ttf',
+      'node_modules/@expo-google-fonts/inter/500Medium/Inter_500Medium.ttf',
+      'node_modules/@expo-google-fonts/inter/600SemiBold/Inter_600SemiBold.ttf',
+      'node_modules/@expo-google-fonts/inter/700Bold/Inter_700Bold.ttf',
+    ],
+  },
+  android: {
+    fonts: [
+      {
+        fontFamily: 'Inter',
+        fontDefinitions: [
+          {
+            path: 'node_modules/@expo-google-fonts/inter/400Regular/Inter_400Regular.ttf',
+            weight: 400,
+          },
+          {
+            path: 'node_modules/@expo-google-fonts/inter/500Medium/Inter_500Medium.ttf',
+            weight: 500,
+          },
+          {
+            path: 'node_modules/@expo-google-fonts/inter/600SemiBold/Inter_600SemiBold.ttf',
+            weight: 600,
+          },
+          {
+            path: 'node_modules/@expo-google-fonts/inter/700Bold/Inter_700Bold.ttf',
+            weight: 700,
+          },
+        ],
+      },
+    ],
+  },
+};
+
+const CAMERA_PERMISSION = 'Allow $(PRODUCT_NAME) to use the camera to scan objects.';
+
+const plugins: ExpoConfig['plugins'] = [
+  [
+    'expo-splash-screen',
+    {
+      backgroundColor: '#FF6C00',
+      image: './assets/splash-icon.png',
+      imageWidth: 150,
+    },
+  ],
+  ['expo-font', fontPluginConfig],
+  'expo-localization',
+  'expo-router',
+  ['app-icon-badge', appIconBadgeConfig],
+  ['react-native-edge-to-edge'],
+  [
+    'expo-image-picker',
+    {
+      cameraPermission: CAMERA_PERMISSION,
+      photosPermission: 'Allow $(PRODUCT_NAME) to access your photos to scan objects.',
+    },
+  ],
+  ['expo-camera', { cameraPermission: CAMERA_PERMISSION, recordAudioAndroid: false }],
+];
+
 export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
   name: Env.EXPO_PUBLIC_NAME,
@@ -60,63 +122,15 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     },
     package: Env.EXPO_PUBLIC_PACKAGE,
     softwareKeyboardLayoutMode: 'resize',
+    // expo-image-picker's requestCameraPermissionsAsync() checks this at runtime;
+    // without it declared, the permission request silently always resolves denied.
+    permissions: ['android.permission.CAMERA'],
   },
   web: {
     favicon: './assets/favicon.png',
     bundler: 'metro',
   },
-  plugins: [
-    [
-      'expo-splash-screen',
-      {
-        backgroundColor: '#FF6C00',
-        image: './assets/splash-icon.png',
-        imageWidth: 150,
-      },
-    ],
-    [
-      'expo-font',
-      {
-        ios: {
-          fonts: [
-            'node_modules/@expo-google-fonts/inter/400Regular/Inter_400Regular.ttf',
-            'node_modules/@expo-google-fonts/inter/500Medium/Inter_500Medium.ttf',
-            'node_modules/@expo-google-fonts/inter/600SemiBold/Inter_600SemiBold.ttf',
-            'node_modules/@expo-google-fonts/inter/700Bold/Inter_700Bold.ttf',
-          ],
-        },
-        android: {
-          fonts: [
-            {
-              fontFamily: 'Inter',
-              fontDefinitions: [
-                {
-                  path: 'node_modules/@expo-google-fonts/inter/400Regular/Inter_400Regular.ttf',
-                  weight: 400,
-                },
-                {
-                  path: 'node_modules/@expo-google-fonts/inter/500Medium/Inter_500Medium.ttf',
-                  weight: 500,
-                },
-                {
-                  path: 'node_modules/@expo-google-fonts/inter/600SemiBold/Inter_600SemiBold.ttf',
-                  weight: 600,
-                },
-                {
-                  path: 'node_modules/@expo-google-fonts/inter/700Bold/Inter_700Bold.ttf',
-                  weight: 700,
-                },
-              ],
-            },
-          ],
-        },
-      },
-    ],
-    'expo-localization',
-    'expo-router',
-    ['app-icon-badge', appIconBadgeConfig],
-    ['react-native-edge-to-edge'],
-  ],
+  plugins,
   extra: {
     eas: {
       projectId: EAS_PROJECT_ID,
