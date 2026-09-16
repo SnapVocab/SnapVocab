@@ -77,9 +77,9 @@ export function WelcomeScreen() {
       {/* Bottom Action Buttons */}
       <View className="w-full gap-3 px-6 pt-4 pb-8">
         <View className="mb-6 flex-row items-center justify-center gap-2">
-          {slides.map((_, i) => (
+          {slides.map((item, i) => (
             <View
-              key={i}
+              key={item.title}
               className={`h-2 rounded-full ${
                 i === index ? 'w-7 bg-primary-500' : 'w-2 bg-neutral-300 dark:bg-neutral-600'
               }`}
@@ -91,7 +91,7 @@ export function WelcomeScreen() {
           label={last ? translate('welcome.login') : translate('welcome.next')}
           size="lg"
           variant="brand"
-          className="w-full rounded-full"
+          className="w-full rounded-2xl"
           onPress={() => next()}
         />
       </View>

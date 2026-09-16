@@ -3,7 +3,6 @@ import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 import { removeToken, setToken } from '@/lib/auth/utils';
 import { storage } from '@/lib/storage';
-import { createSelectors } from '@/lib/utils';
 
 export type User = {
   id: number;
@@ -113,4 +112,4 @@ const store = create<AuthState>()(
 );
 
 export { store };
-export const useAuthStore = createSelectors(store);
+export const useAuthStore = store;

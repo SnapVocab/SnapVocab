@@ -4,7 +4,7 @@ import { ThemeProvider } from '@react-navigation/native';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import * as React from 'react';
-import { StyleSheet } from 'react-native';
+import { LogBox, StyleSheet } from 'react-native';
 import FlashMessage from 'react-native-flash-message';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { KeyboardProvider } from 'react-native-keyboard-controller';
@@ -15,6 +15,8 @@ import { useAuthStore } from '@/features/auth/use-auth-store';
 import { APIProvider } from '@/lib/api';
 import { loadSelectedTheme } from '@/lib/hooks/use-selected-theme';
 import '../global.css';
+
+LogBox.ignoreLogs(['Unable to activate keep awake']);
 
 export { ErrorBoundary } from 'expo-router';
 
@@ -31,7 +33,7 @@ SplashScreen.setOptions({
 });
 
 export default function RootLayout() {
-  const status = useAuthStore.use.status();
+  const status = useAuthStore(s => s.status);
 
   React.useEffect(() => {
     SplashScreen.hideAsync();
