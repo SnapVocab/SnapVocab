@@ -6,6 +6,7 @@ export * from './focus-aware-status-bar';
 export * from './image';
 export * from './input';
 export * from './link';
+export * from './mascot';
 export * from './otp-input';
 export * from './text';
 export * from './utils';

@@ -1,0 +1,92 @@
+import type { BottomSheetModal } from '@gorhom/bottom-sheet';
+import type { Collection } from './types';
+import { useCallback, useRef, useState } from 'react';
+import { ScrollView } from 'react-native';
+import Animated, { FadeIn } from 'react-native-reanimated';
+import { FocusAwareStatusBar, SafeAreaView, View } from '@/components/ui';
+import { useCollections } from './api';
+import {
+  CollectionCard,
+  CollectionEmptyState,
+  CollectionErrorState,
+  CollectionHeader,
+  CollectionOptionsBottomSheet,
+  CollectionSwitcher,
+  SkeletonCollectionList,
+} from './components';
+
+export function CollectionsScreen() {
+  const [viewType, setViewType] = useState<'USER' | 'SYSTEM'>('USER');
+  const [selectedCollection, setSelectedCollection] = useState<Collection | null>(null);
+  const bottomSheetRef = useRef<BottomSheetModal>(null);
+
+  const {
+    data: collections,
+    isError,
+    isLoading,
+    isRefetching,
+    refetch,
+  } = useCollections({ type: viewType });
+
+  const handleOptionsPress = useCallback((collection: Collection) => {
+    setSelectedCollection(collection);
+    bottomSheetRef.current?.present();
+  }, []);
+
+  return (
+    <SafeAreaView style={{ flex: 1 }} className="flex-1 bg-background">
+      <FocusAwareStatusBar />
+
+      {/* Header bar */}
+      <CollectionHeader />
+
+      <View className="flex-1 px-3 pt-4">
+        {/* Switcher Tab: Mine / System */}
+        <CollectionSwitcher viewType={viewType} onChange={setViewType} />
+
+        <ScrollView
+          className="flex-1"
+          showsVerticalScrollIndicator={false}
+          contentContainerClassName="pt-3 pb-8"
+        >
+          {/* Loading State */}
+          {isLoading && !collections && <SkeletonCollectionList count={5} />}
+
+          {/* Error State */}
+          {isError && !collections && (
+            <CollectionErrorState
+              isRetrying={isRefetching}
+              onRetry={() => refetch()}
+            />
+          )}
+
+          {/* Empty State */}
+          {!isLoading && !isError && collections && collections.length === 0 && (
+            <CollectionEmptyState />
+          )}
+
+          {/* Data State */}
+          {collections && collections.length > 0 && (
+            <Animated.View key={viewType} entering={FadeIn.duration(200)} className="gap-2.5">
+              {collections.map(item => (
+                <CollectionCard
+                  key={item.id}
+                  name={item.name}
+                  translation={item.translation}
+                  isSystemCollection={item.type === 'SYSTEM'}
+                  onOptionsPress={() => handleOptionsPress(item)}
+                />
+              ))}
+            </Animated.View>
+          )}
+        </ScrollView>
+      </View>
+
+      {/* Collection Options Bottom Sheet */}
+      <CollectionOptionsBottomSheet
+        bottomSheetRef={bottomSheetRef}
+        collection={selectedCollection}
+      />
+    </SafeAreaView>
+  );
+}

@@ -38,6 +38,27 @@
     "xp": "{{count}} XP",
     "xp_to_level": "{{remaining}} XP to level {{nextLevel}}"
   },
+  "learn": {
+    "collections": {
+      "empty_description": "No collections found in this category yet.",
+      "empty_title": "No collections yet",
+      "error_description": "Failed to load collections. Please check your connection and try again.",
+      "error_title": "Something went wrong",
+      "mine": "Mine",
+      "options_delete": "Delete Collection",
+      "options_edit": "Edit Collection",
+      "options_study": "Practice This Collection",
+      "retry": "Try again",
+      "subtitle": "Vocabulary and learning topics",
+      "system": "System",
+      "title": "Collections"
+    },
+    "continue_deck": "Continue Deck",
+    "learn": "Continue",
+    "lesson_progress": "Lesson {{lesson}} · {{progress}}/{{total}} words",
+    "title": "Learn",
+    "view_all": "View all"
+  },
   "login": {
     "email": "Email",
     "email_placeholder": "Enter your email",

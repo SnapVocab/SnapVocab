@@ -38,6 +38,27 @@
     "xp": "{{count}} XP",
     "xp_to_level": "Còn {{remaining}} XP để lên cấp {{nextLevel}}"
   },
+  "learn": {
+    "collections": {
+      "empty_description": "Chưa có bộ sưu tập nào trong mục này.",
+      "empty_title": "Chưa có bộ sưu tập nào",
+      "error_description": "Không thể tải danh sách bộ sưu tập. Vui lòng thử lại.",
+      "error_title": "Đã có lỗi xảy ra",
+      "mine": "Của tôi",
+      "options_delete": "Xóa bộ sưu tập",
+      "options_edit": "Chỉnh sửa bộ từ",
+      "options_study": "Luyện tập bộ từ này",
+      "retry": "Thử lại",
+      "subtitle": "Kho từ vựng và chủ đề học",
+      "system": "Hệ thống",
+      "title": "Bộ sưu tập"
+    },
+    "continue_deck": "Tiếp tục bộ thẻ",
+    "learn": "Học tiếp",
+    "lesson_progress": "Bài {{lesson}} · {{progress}}/{{total}} từ",
+    "title": "Học tập",
+    "view_all": "Xem tất cả"
+  },
   "login": {
     "email": "Email",
     "email_placeholder": "Nhập email của bạn",
