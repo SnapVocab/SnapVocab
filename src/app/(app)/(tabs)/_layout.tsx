@@ -1,4 +1,3 @@
-import { useTheme } from '@react-navigation/native';
 import { Tabs } from 'expo-router';
 
 import { CameraTabButton } from '@/components/ui/camera-tab-button';
@@ -10,14 +9,23 @@ import {
 } from '@/components/ui/icons';
 
 export default function TabLayout() {
-  const { colors } = useTheme();
-
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: colors.primary,
-        tabBarInactiveTintColor: colors.text,
-        headerRightContainerStyle: { paddingRight: 16 },
+        tabBarActiveTintColor: '#58CC02',
+        tabBarInactiveTintColor: '#AFAFAF',
+        tabBarStyle: {
+          backgroundColor: '#FFFFFF',
+          borderTopWidth: 2,
+          borderTopColor: '#F3F4F6',
+          height: 64,
+          paddingBottom: 8,
+          paddingTop: 8,
+        },
+        tabBarLabelStyle: {
+          fontSize: 12,
+          fontWeight: '700',
+        },
       }}
     >
       <Tabs.Screen
@@ -45,8 +53,6 @@ export default function TabLayout() {
           headerShown: false,
           tabBarButton: props => <CameraTabButton {...props} />,
           tabBarButtonTestID: 'camera-tab',
-          // Full-bleed camera: the tab bar is hidden here, the in-screen
-          // close (X) button is how the user leaves the scanner.
           tabBarStyle: { display: 'none' },
         }}
       />

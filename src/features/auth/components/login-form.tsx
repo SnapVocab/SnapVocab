@@ -1,98 +1,95 @@
-import { useForm } from '@tanstack/react-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'expo-router';
 import * as React from 'react';
+import { Controller, useForm } from 'react-hook-form';
 import * as z from 'zod';
 
-import { Button, Input, showErrorMessage, ThemedLink, TouchableOpacity, View } from '@/components/ui';
-import { getFieldError } from '@/components/ui/form-utils';
-import { Eye, EyeSlash, Lock, Mail } from '@/components/ui/icons';
+import { Button, Input, showErrorMessage, ThemedLink, View } from '@/components/ui';
+import { Lock, Mail } from '@/components/ui/icons';
 import { translate } from '@/lib/i18n/utils';
 import { useLogin } from '../api';
 import { useAuthStore } from '../use-auth-store';
 
+const loginSchema = z.object({
+  email: z.string().min(1, translate('validation.email_required')).email(translate('validation.email_invalid')),
+  password: z.string().min(1, translate('validation.password_required')),
+});
+
+type LoginFormValues = z.infer<typeof loginSchema>;
+
 export function LoginForm() {
   const router = useRouter();
-  const [showPassword, setShowPassword] = React.useState(false);
-  const setAuth = useAuthStore.use.login();
+  const setAuth = useAuthStore(s => s.login);
   const { mutate: login, isPending } = useLogin();
 
-  const form = useForm({
+  const {
+    control,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<LoginFormValues>({
+    resolver: zodResolver(loginSchema),
     defaultValues: {
       email: '',
       password: '',
     },
-    validators: {
-      onChange: z.object({
-        email: z.string().min(1, translate('validation.email_required')).email(translate('validation.email_invalid')),
-        password: z.string().min(1, translate('validation.password_required')),
-      }),
-    },
-    onSubmit: async ({ value }) => {
-      login(value, {
-        onSuccess: (data) => {
-          setAuth(data);
-          router.replace('/');
-        },
-        onError: (error) => {
-          const body = error.response?.data as any;
-          if (body?.error === 'USER_NOT_ACTIVATED') {
-            // navigate to verify page
-            router.push({
-              pathname: '/(auth)/verify',
-              params: {
-                email: value.email,
-              },
-            });
-          }
-          else {
-            showErrorMessage(translate('login.error'));
-          }
-        },
-      });
-    },
   });
+
+  const onSubmit = (value: LoginFormValues) => {
+    login(value, {
+      onSuccess: (data) => {
+        setAuth(data);
+        router.replace('/');
+      },
+      onError: (error) => {
+        const body = error.response?.data as any;
+        if (body?.error === 'USER_NOT_ACTIVATED') {
+          router.push({
+            pathname: '/(auth)/verify',
+            params: {
+              email: value.email,
+            },
+          });
+        }
+        else {
+          showErrorMessage(translate('login.error'));
+        }
+      },
+    });
+  };
 
   return (
     <View className="mt-4">
-      <form.Field
+      <Controller
+        control={control}
         name="email"
-        children={field => (
+        render={({ field: { onChange, onBlur, value } }) => (
           <Input
             placeholder={translate('login.email_placeholder')}
             autoCapitalize="none"
             keyboardType="email-address"
-            value={field.state.value}
-            onBlur={field.handleBlur}
-            onChangeText={field.handleChange}
-            error={getFieldError(field)}
+            value={value}
+            onBlur={onBlur}
+            onChangeText={onChange}
+            error={errors.email?.message}
             icon={<Mail color="#737373" />}
-            className="rounded-3xl"
           />
         )}
       />
 
       <View className="h-4" />
 
-      <form.Field
+      <Controller
+        control={control}
         name="password"
-        children={field => (
+        render={({ field: { onChange, onBlur, value } }) => (
           <Input
             placeholder={translate('login.password_placeholder')}
-            secureTextEntry={!showPassword}
-            value={field.state.value}
-            onBlur={field.handleBlur}
-            onChangeText={field.handleChange}
-            error={getFieldError(field)}
+            isPassword
+            value={value}
+            onBlur={onBlur}
+            onChangeText={onChange}
+            error={errors.password?.message}
             icon={<Lock color="#737373" />}
-            className="rounded-3xl"
-            rightIcon={(
-              <TouchableOpacity
-                onPress={() => setShowPassword(prev => !prev)}
-                hitSlop={8}
-              >
-                {showPassword ? <EyeSlash color="#737373" /> : <Eye color="#737373" />}
-              </TouchableOpacity>
-            )}
           />
         )}
       />
@@ -103,18 +100,13 @@ export function LoginForm() {
         </ThemedLink>
       </View>
 
-      <form.Subscribe
-        selector={state => [state.isSubmitting]}
-        children={([isSubmitting]) => (
-          <Button
-            label={translate('login.sign_in')}
-            variant="brand"
-            loading={isPending || isSubmitting}
-            onPress={form.handleSubmit}
-            className="mt-6 w-full rounded-3xl"
-            size="lg"
-          />
-        )}
+      <Button
+        label={translate('login.sign_in')}
+        variant="brand"
+        loading={isPending || isSubmitting}
+        onPress={handleSubmit(onSubmit)}
+        className="mt-6 w-full rounded-2xl"
+        size="lg"
       />
     </View>
   );

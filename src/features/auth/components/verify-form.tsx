@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { View } from 'react-native';
 import { showMessage } from 'react-native-flash-message';
 
-import { Button, Input, showErrorMessage, Text } from '@/components/ui';
+import { Button, OtpInput, showErrorMessage, Text } from '@/components/ui';
 import { translate } from '@/lib/i18n/utils';
 import { useResendCode, useVerifyCode } from '../api';
 import { useAuthStore } from '../use-auth-store';
@@ -16,7 +16,7 @@ export function VerifyForm({ email }: Props) {
   const router = useRouter();
   const [code, setCode] = useState('');
   const [cooldown, setCooldown] = useState(0);
-  const setAuth = useAuthStore.use.login();
+  const setAuth = useAuthStore(s => s.login);
   const { mutate: verifyCode, isPending } = useVerifyCode();
   const { mutate: resendCode, isPending: isResending } = useResendCode();
 
@@ -67,14 +67,13 @@ export function VerifyForm({ email }: Props) {
 
   return (
     <>
-      <Input
-        label={translate('verify.code')}
-        placeholder={translate('verify.code_placeholder')}
-        keyboardType="number-pad"
-        maxLength={6}
-        value={code}
-        onChangeText={setCode}
-      />
+      <View className="my-2 items-center">
+        <OtpInput
+          value={code}
+          onChange={setCode}
+          disabled={isPending}
+        />
+      </View>
 
       <Button
         label={translate('verify.verify')}

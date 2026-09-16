@@ -29,9 +29,11 @@ const parsed = envSchema.safeParse(raw);
 
 if (parsed.success === false) {
   const errorMessage
-    = `❌ Invalid environment variables:\n${
-      JSON.stringify(parsed.error.flatten().fieldErrors, null, 2)
-    }`
+    = `❌ Invalid environment variables:\n${JSON.stringify(
+      parsed.error.flatten().fieldErrors,
+      null,
+      2,
+    )}`
     + `\n💡 Ensure .env.${raw.EXPO_PUBLIC_APP_ENV} file exists with all required variables.`
     + `\n💡 Restart with -c to clear cache.`;
 
@@ -44,7 +46,7 @@ if (parsed.success === false) {
 }
 
 const Env = {
-  ...(parsed.success ? parsed.data : raw as z.infer<typeof envSchema>),
+  ...(parsed.success ? parsed.data : (raw as z.infer<typeof envSchema>)),
   EXPO_PUBLIC_VERSION: packageJSON.version,
 };
 

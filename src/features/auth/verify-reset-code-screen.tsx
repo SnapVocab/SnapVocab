@@ -6,7 +6,7 @@ import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
 import {
   Button,
   FocusAwareStatusBar,
-  Input,
+  OtpInput,
   SafeAreaView,
   showErrorMessage,
   Text,
@@ -56,20 +56,16 @@ export function VerifyResetCodeScreen() {
             </Text>
           </View>
 
-          <Input
-            placeholder={translate('verify_reset_code.code_placeholder')}
-            keyboardType="number-pad"
-            maxLength={6}
+          <OtpInput
             value={code}
-            onChangeText={setCode}
-            className="rounded-3xl"
+            onChange={setCode}
           />
           <Button
             label={translate('verify_reset_code.verify')}
             variant="brand"
             disabled={code.length !== 6}
             onPress={handleNext}
-            className="mt-6 w-full rounded-3xl"
+            className="mt-6 w-full rounded-2xl"
             size="lg"
           />
 

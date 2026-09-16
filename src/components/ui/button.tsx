@@ -1,166 +1,229 @@
-/* eslint-disable better-tailwindcss/no-unknown-classes */
 import type { PressableProps, View } from 'react-native';
-import type { VariantProps } from 'tailwind-variants';
+import type { TxKeyPath } from '@/lib/i18n';
 import * as React from 'react';
-import { ActivityIndicator, Animated, Pressable } from 'react-native';
-import { tv } from 'tailwind-variants';
+import { Pressable, View as RNView, Text } from 'react-native';
+import { twMerge } from 'tailwind-merge';
+import { translate } from '@/lib/i18n';
+import { BouncingDots } from './bouncing-dots';
 
-const button = tv({
-  slots: {
-    container: 'my-2 flex flex-row items-center justify-center overflow-visible rounded-md px-4',
-    label: 'font-inter text-base font-semibold',
-    indicator: 'h-6 text-white',
-  },
+export type ButtonVariant
+  = | 'default'
+    | 'brand'
+    | 'primary'
+    | 'purple'
+    | 'secondary'
+    | 'white'
+    | 'info'
+    | 'blue'
+    | 'mascot'
+    | 'orange'
+    | 'reward'
+    | 'gold'
+    | 'destructive'
+    | 'danger'
+    | 'outline'
+    | 'ghost';
 
-  variants: {
-    variant: {
-      default: {
-        container: 'bg-black dark:bg-white',
-        label: 'text-white dark:text-black',
-        indicator: 'text-white dark:text-black',
-      },
-      brand: {
-        container: 'bg-primary-600 dark:bg-neutral-800',
-        label: 'text-white dark:text-primary-300',
-        indicator: 'text-white dark:text-primary-300',
-      },
-      secondary: {
-        container: 'bg-primary-600 dark:bg-neutral-800',
-        label: 'text-white dark:text-primary-300',
-        indicator: 'text-white dark:text-primary-300',
-      },
-      outline: {
-        container: 'border border-neutral-400 dark:border-neutral-500',
-        label: 'text-black dark:text-primary-300',
-        indicator: 'text-black dark:text-primary-300',
-      },
-      destructive: {
-        container: 'bg-red-600',
-        label: 'text-white',
-        indicator: 'text-white',
-      },
-      ghost: {
-        container: 'bg-transparent',
-        label: 'text-black underline dark:text-primary-300',
-        indicator: 'text-black dark:text-primary-300',
-      },
-      link: {
-        container: 'bg-transparent',
-        label: 'text-black dark:text-primary-300',
-        indicator: 'text-black dark:text-primary-300',
-      },
-    },
-    size: {
-      default: {
-        container: 'h-10 px-4',
-        label: 'text-base',
-      },
-      lg: {
-        container: 'h-12 px-8',
-        label: 'text-xl',
-      },
-      sm: {
-        container: 'h-8 px-3',
-        label: 'text-sm',
-        indicator: 'h-2',
-      },
-      icon: { container: 'size-9' },
-    },
-    disabled: {
-      true: {
-        container: 'bg-neutral-300 dark:bg-neutral-300',
-        label: 'text-neutral-600 dark:text-neutral-600',
-        indicator: 'text-neutral-400 dark:text-neutral-400',
-      },
-    },
-    fullWidth: {
-      true: {
-        container: '',
-      },
-      false: {
-        container: 'self-center',
-      },
-    },
-  },
-  defaultVariants: {
-    variant: 'default',
-    disabled: false,
-    fullWidth: true,
-    size: 'default',
-  },
-});
+export type ButtonSize = 'sm' | 'default' | 'lg' | 'icon';
 
-type ButtonVariants = VariantProps<typeof button>;
-type Props = {
+export type ButtonProps = {
   label?: string;
+  tx?: TxKeyPath;
   loading?: boolean;
+  loadingText?: string;
+  disabled?: boolean;
+  variant?: ButtonVariant;
+  size?: ButtonSize;
+  fullWidth?: boolean;
+  icon?: React.ReactNode;
+  rightIcon?: React.ReactNode;
   className?: string;
   textClassName?: string;
-} & ButtonVariants
-& Omit<PressableProps, 'disabled'>;
+  indicatorColor?: string;
+  ref?: React.RefObject<View | null>;
+} & Omit<PressableProps, 'disabled'>;
+
+const variantStyles: Record<
+  ButtonVariant,
+  { container: string; text: string; indicator: string }
+> = {
+  default: {
+    container: 'bg-primary-500 border-b-[4px] border-primary-700 active:translate-y-[2px] active:border-b-[2px]',
+    text: 'text-white font-extrabold tracking-wider uppercase',
+    indicator: '#ffffff',
+  },
+  brand: {
+    container: 'bg-primary-500 border-b-[4px] border-primary-700 active:translate-y-[2px] active:border-b-[2px]',
+    text: 'text-white font-extrabold tracking-wider uppercase',
+    indicator: '#ffffff',
+  },
+  primary: {
+    container: 'bg-primary-500 border-b-[4px] border-primary-700 active:translate-y-[2px] active:border-b-[2px]',
+    text: 'text-white font-extrabold tracking-wider uppercase',
+    indicator: '#ffffff',
+  },
+  purple: {
+    container: 'bg-[#8253EC] border-b-[4px] border-[#5927C2] active:translate-y-[2px] active:border-b-[2px]',
+    text: 'text-white font-extrabold tracking-wider uppercase',
+    indicator: '#ffffff',
+  },
+  secondary: {
+    container: 'bg-white border-2 border-neutral-200 border-b-[4px] border-b-neutral-300 active:translate-y-[2px] active:border-b-[2px]',
+    text: 'text-neutral-800 font-extrabold tracking-wider uppercase',
+    indicator: '#1E2A44',
+  },
+  white: {
+    container: 'bg-white border-2 border-neutral-200 border-b-[4px] border-b-neutral-300 active:translate-y-[2px] active:border-b-[2px]',
+    text: 'text-neutral-800 font-extrabold tracking-wider uppercase',
+    indicator: '#1E2A44',
+  },
+  info: {
+    container: 'bg-info-500 border-b-[4px] border-info-700 active:translate-y-[2px] active:border-b-[2px]',
+    text: 'text-white font-extrabold tracking-wider uppercase',
+    indicator: '#ffffff',
+  },
+  blue: {
+    container: 'bg-info-500 border-b-[4px] border-info-700 active:translate-y-[2px] active:border-b-[2px]',
+    text: 'text-white font-extrabold tracking-wider uppercase',
+    indicator: '#ffffff',
+  },
+  mascot: {
+    container: 'bg-mascot-500 border-b-[4px] border-mascot-700 active:translate-y-[2px] active:border-b-[2px]',
+    text: 'text-white font-extrabold tracking-wider uppercase',
+    indicator: '#ffffff',
+  },
+  orange: {
+    container: 'bg-mascot-500 border-b-[4px] border-mascot-700 active:translate-y-[2px] active:border-b-[2px]',
+    text: 'text-white font-extrabold tracking-wider uppercase',
+    indicator: '#ffffff',
+  },
+  reward: {
+    container: 'bg-reward-500 border-b-[4px] border-reward-700 active:translate-y-[2px] active:border-b-[2px]',
+    text: 'text-white font-extrabold tracking-wider uppercase',
+    indicator: '#ffffff',
+  },
+  gold: {
+    container: 'bg-reward-500 border-b-[4px] border-reward-700 active:translate-y-[2px] active:border-b-[2px]',
+    text: 'text-white font-extrabold tracking-wider uppercase',
+    indicator: '#ffffff',
+  },
+  destructive: {
+    container: 'bg-danger-500 border-b-[4px] border-danger-700 active:translate-y-[2px] active:border-b-[2px]',
+    text: 'text-white font-extrabold tracking-wider uppercase',
+    indicator: '#ffffff',
+  },
+  danger: {
+    container: 'bg-danger-500 border-b-[4px] border-danger-700 active:translate-y-[2px] active:border-b-[2px]',
+    text: 'text-white font-extrabold tracking-wider uppercase',
+    indicator: '#ffffff',
+  },
+  outline: {
+    container: 'bg-white border-2 border-primary-500 border-b-[4px] border-b-primary-700 active:translate-y-[2px] active:border-b-[2px]',
+    text: 'text-primary-600 font-extrabold tracking-wider uppercase',
+    indicator: '#58CC02',
+  },
+  ghost: {
+    container: 'bg-transparent active:bg-neutral-100 dark:active:bg-neutral-800',
+    text: 'text-neutral-700 dark:text-neutral-200 font-bold',
+    indicator: '#757793',
+  },
+};
+
+const sizeStyles: Record<ButtonSize, { container: string; text: string }> = {
+  sm: {
+    container: 'h-10 px-4 rounded-xl',
+    text: 'text-xs',
+  },
+  default: {
+    container: 'h-14 px-6 rounded-2xl',
+    text: 'text-[15px]',
+  },
+  lg: {
+    container: 'h-14 px-8 rounded-2xl',
+    text: 'text-[16px]',
+  },
+  icon: {
+    container: 'size-12 p-0 rounded-2xl',
+    text: 'text-base',
+  },
+};
 
 export function Button({
   ref,
-  label: text,
+  label,
+  tx,
+  children,
   loading = false,
-  variant = 'default',
+  loadingText,
+  variant = 'brand',
   disabled = false,
   size = 'default',
+  fullWidth,
+  icon,
+  rightIcon,
   className = '',
-  testID,
   textClassName = '',
+  indicatorColor,
   ...props
-}: Props & { ref?: React.RefObject<View | null> }) {
-  const styles = React.useMemo(
-    () => button({ variant, disabled, size }),
-    [variant, disabled, size],
+}: ButtonProps) {
+  const isIcon = size === 'icon';
+  const shouldFullWidth = fullWidth ?? !isIcon;
+
+  const currentVariant = variantStyles[variant] ?? variantStyles.brand;
+  const currentSize = sizeStyles[size] ?? sizeStyles.default;
+  const isDisabled = disabled || loading;
+
+  const resolvedText = tx ? translate(tx) : label;
+
+  const containerClasses = twMerge(
+    'flex-row items-center justify-center',
+    currentSize.container,
+    currentVariant.container,
+    shouldFullWidth ? 'w-full' : 'self-center',
+    disabled && !loading && 'opacity-50',
+    loading && 'opacity-95',
+    className,
   );
 
-  const fadeAnim = React.useRef(new Animated.Value(loading ? 1 : 0)).current;
-
-  React.useEffect(() => {
-    Animated.timing(fadeAnim, {
-      toValue: loading ? 1 : 0,
-      duration: 200,
-      useNativeDriver: true,
-    }).start();
-  }, [loading, fadeAnim]);
+  const textClasses = twMerge(
+    currentVariant.text,
+    currentSize.text,
+    'text-center',
+    textClassName,
+  );
 
   return (
     <Pressable
-      disabled={disabled || loading}
-      className={styles.container({ className })}
-      {...props}
       ref={ref}
-      testID={testID}
+      disabled={isDisabled}
+      className={containerClasses}
+      {...props}
     >
-      {props.children
+      {loading
         ? (
-            props.children
+            <RNView className="flex-row items-center justify-center">
+              <BouncingDots
+                color={indicatorColor ?? currentVariant.indicator}
+                size={size === 'sm' ? 6 : 8}
+                gap={size === 'sm' ? 4 : 6}
+                bounceHeight={size === 'sm' ? 5 : 7}
+              />
+              {loadingText
+                ? (
+                    <Text className={twMerge(textClasses, 'ml-3')}>
+                      {loadingText}
+                    </Text>
+                  )
+                : null}
+            </RNView>
           )
-        : (
-            <Animated.View className="relative flex-row items-center justify-center">
-              <Animated.Text
-                style={{ opacity: fadeAnim.interpolate({ inputRange: [0, 1], outputRange: [1, 0] }) }}
-                testID={testID ? `${testID}-label` : undefined}
-                className={styles.label({ className: textClassName })}
-              >
-                {text}
-              </Animated.Text>
-              <Animated.View
-                style={{
-                  position: 'absolute',
-                  opacity: fadeAnim,
-                }}
-              >
-                <ActivityIndicator
-                  size="small"
-                  className={styles.indicator()}
-                  testID={testID ? `${testID}-activity-indicator` : undefined}
-                />
-              </Animated.View>
-            </Animated.View>
-          )}
+        : children || (
+          <>
+            {icon && <RNView className="mr-2">{icon}</RNView>}
+            {resolvedText && <Text className={textClasses}>{resolvedText}</Text>}
+            {rightIcon && <RNView className="ml-2">{rightIcon}</RNView>}
+          </>
+        )}
     </Pressable>
   );
 }

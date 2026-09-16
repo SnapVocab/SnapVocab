@@ -133,16 +133,16 @@ router.back();                // go back
 
 ---
 
-### 2. TanStack Form + Zod — Form State & Validation
+### 2. React Hook Form + Zod — Form State & Validation
 
-Never use plain `useState` for form fields. Always use TanStack Form with Zod validation.
+Always use React Hook Form with Zod validation (`@hookform/resolvers/zod`).
 
 **Pattern:**
 ```tsx
-import { useForm } from '@tanstack/react-form';
+import { Controller, useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Button, Input } from '@/components/ui';
-import { getFieldError } from '@/components/ui/form-utils';
 import { translate } from '@/lib/i18n/utils';
 
 // 1. Define validation schema with Zod
@@ -151,85 +151,93 @@ const schema = z.object({
   password: z.string().min(6, translate('validation.password_min')),
 });
 
-// 2. Create form instance
-const form = useForm({
+type FormValues = z.infer<typeof schema>;
+
+// 2. Initialize form
+const {
+  control,
+  handleSubmit,
+  formState: { errors, isSubmitting },
+} = useForm<FormValues>({
+  resolver: zodResolver(schema),
   defaultValues: { email: '', password: '' },
-  validators: { onChange: schema },
-  onSubmit: async ({ value }) => {
-    // value is fully typed from the schema
-    await apiCall(value);
-  },
 });
 
-// 3. Render fields — each field uses .Field render prop
-<form.Field name="email" children={field => (
-  <Input
-    label={translate('login.email')}
-    value={field.state.value}
-    onChangeText={field.handleChange}
-    onBlur={field.handleBlur}
-    error={getFieldError(field)}  // extracts first Zod error message
-  />
-)} />
+// 3. Render fields with Controller
+<Controller
+  control={control}
+  name="email"
+  render={({ field: { onChange, onBlur, value } }) => (
+    <Input
+      label={translate('login.email')}
+      value={value}
+      onChangeText={onChange}
+      onBlur={onBlur}
+      error={errors.email?.message}
+    />
+  )}
+/>
 
-// 4. Submit button — uses .Subscribe to react to form state
-<form.Subscribe selector={s => [s.isSubmitting]} children={([isSubmitting]) => (
-  <Button
-    label="Sign In"
-    loading={isSubmitting || isPending}
-    onPress={form.handleSubmit}
-  />
-)} />
+// 4. Password field (uses built-in isPassword toggle - no manual state needed!)
+<Controller
+  control={control}
+  name="password"
+  render={({ field: { onChange, onBlur, value } }) => (
+    <Input
+      isPassword
+      placeholder="Enter password"
+      value={value}
+      onChangeText={onChange}
+      onBlur={onBlur}
+      error={errors.password?.message}
+    />
+  )}
+/>
+
+// 5. Submit button
+<Button
+  label="Sign In"
+  loading={isSubmitting || isPending}
+  onPress={handleSubmit(onSubmit)}
+/>
 ```
 
-**Key points:**
-- `field.handleChange` replaces `onChangeText` — it updates the field value AND runs validation
-- `field.handleBlur` marks the field as touched so errors only show after interaction
-- `getFieldError(field)` from `@/components/ui/form-utils` extracts the first error string (handles Zod object errors)
-- `form.Subscribe` with a selector re-renders only when the selected values change — use it for submit button loading state
-
-**For async/submit validation** (e.g., checking if email is taken), use the `onSubmit` validator:
+**OTP Verification Pattern:**
 ```tsx
-validators: {
-  onChange: schema,
-  onSubmit: z.object({
-    email: z.string().refine(async (email) => {
-      const exists = await checkEmailExists(email);
-      return !exists;
-    }, translate('validation.email_taken')),
-  }),
-}
+import { OtpInput } from '@/components/ui';
+
+// 6 chunky 3D boxes with auto-focus, paste, and backspace
+<OtpInput
+  value={code}
+  onChange={setCode}
+/>
 ```
 
 ---
 
 ### 3. React Query (TanStack Query) — Server Data & API Calls
 
-All API calls go through React Query. We use `react-query-kit` for cleaner mutation/query definitions.
+All API calls go through standard TanStack Query wrapped in clean Custom Hooks (`useMutation`, `useQuery`).
 
 **Mutations** (POST, PUT, PATCH, DELETE):
 
 ```tsx
 // src/features/flashcards/api.ts
-import { createMutation } from 'react-query-kit';
+import { useMutation } from '@tanstack/react-query';
 import type { AxiosError } from 'axios';
 import { client } from '@/lib/api';
 
 type CreateFlashcardRequest = { word: string; translation: string };
 type CreateFlashcardResponse = { id: number; word: string };
 
-export const useCreateFlashcard = createMutation<
-  CreateFlashcardResponse,
-  CreateFlashcardRequest,
-  AxiosError
->({
-  mutationFn: async (variables) =>
-    client({
-      url: '/api/flashcards',
-      method: 'POST',
-      data: variables,
-    }).then(res => res.data),
-});
+export function useCreateFlashcard() {
+  return useMutation<CreateFlashcardResponse, AxiosError, CreateFlashcardRequest>({
+    mutationFn: async (variables) => {
+      const { data } = await client.post('/api/flashcards', variables);
+      return data;
+    },
+  });
+}
 
 // Using in a component:
 const { mutate, isPending } = useCreateFlashcard();
@@ -242,23 +250,25 @@ mutate({ word: 'apple', translation: 'quả táo' }, {
 **Queries** (GET requests):
 
 ```tsx
-import { createQuery } from 'react-query-kit';
+import { useQuery } from '@tanstack/react-query';
+import type { AxiosError } from 'axios';
 import { client } from '@/lib/api';
-import { getQueryKey } from '@/lib/api/utils';
 
 type GetFlashcardsParams = { page?: number; limit?: number };
 type Flashcard = { id: number; word: string; translation: string };
 
-export const useFlashcards = createQuery<Flashcard[], GetFlashcardsParams, AxiosError>({
-  queryKey: getQueryKey('flashcards'),
-  queryFn: async (params) => {
-    const { data } = await client.get('/api/flashcards', { params });
-    return data;
-  },
-});
+export function useFlashcards(params?: GetFlashcardsParams) {
+  return useQuery<Flashcard[], AxiosError>({
+    queryKey: ['flashcards', params],
+    queryFn: async () => {
+      const { data } = await client.get('/api/flashcards', { params });
+      return data;
+    },
+  });
+}
 
 // In component:
-const { data, isLoading, isError, refetch } = useFlashcards({ variables: { page: 1 } });
+const { data, isLoading, isError, refetch } = useFlashcards({ page: 1 });
 ```
 
 **Pattern: lifting React Query into custom hooks**
@@ -268,13 +278,13 @@ When a query needs derived state or combines with Zustand, wrap it in a custom h
 ```tsx
 // A custom hook that combines query data with local state
 export function useFlashcardList() {
-  const { data, isLoading, refetch } = useFlashcards({ variables: { page: 1 } });
-  const filters = useFlashcardStore.use.filters();
+  const { data, isLoading, refetch } = useFlashcards({ page: 1 });
+  const search = useFlashcardStore(s => s.filters.search);
 
   const filtered = useMemo(() => {
     if (!data) return [];
-    return data.filter(f => f.word.includes(filters.search || ''));
-  }, [data, filters]);
+    return data.filter(f => f.word.includes(search || ''));
+  }, [data, search]);
 
   return { flashcards: filtered, isLoading, refetch };
 }
@@ -290,22 +300,21 @@ You never need to set `Authorization` headers manually — just use `client` fro
 
 ### 4. Zustand — Client-Side Global State
 
-Zustand stores live next to their feature (e.g., `src/features/auth/use-auth-store.ts`). Use `createSelectors` for auto-generated per-field hooks.
+Zustand stores live next to their feature (e.g., `src/features/auth/use-auth-store.ts`). Use standard Zustand selectors for optimal rendering and simplicity.
 
-**Pattern: persisted store with selectors**
+**Pattern: persisted store**
 ```tsx
 // src/features/flashcards/use-flashcard-store.ts
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { storage } from '@/lib/storage';
-import { createSelectors } from '@/lib/utils';
 
 type State = {
   filters: Record<string, string>;
   setFilters: (filters: Record<string, string>) => void;
 };
 
-const store = create<State>()(
+export const useFlashcardStore = create<State>()(
   persist(
     (set) => ({
       filters: {},
@@ -321,15 +330,13 @@ const store = create<State>()(
     }
   )
 );
-
-export const useFlashcardStore = createSelectors(store);
 ```
 
 **Using in components:**
 ```tsx
-// Auto-generated per-field hooks via createSelectors (no selector function needed)
-const filters = useFlashcardStore.use.filters();
-const setFilters = useFlashcardStore.use.setFilters();
+// Standard Zustand selectors (clean, simple, standard)
+const filters = useFlashcardStore(s => s.filters);
+const setFilters = useFlashcardStore(s => s.setFilters);
 
 // Calling actions
 setFilters({ search: 'apple' });
@@ -454,13 +461,19 @@ import { Flashcards as FlashcardsIcon } from '@/components/ui/icons';
 **Step 5: Add API hooks (if fetching data)**
 ```tsx
 // src/features/flashcards/api.ts
-import { createQuery, createMutation } from 'react-query-kit';
+import { useQuery } from '@tanstack/react-query';
+import type { AxiosError } from 'axios';
 import { client } from '@/lib/api';
 
-export const useFlashcards = createQuery<Flashcard[], void, AxiosError>({
-  queryKey: ['flashcards'],
-  queryFn: async () => client.get('/api/flashcards').then(res => res.data),
-});
+export function useFlashcards() {
+  return useQuery<Flashcard[], AxiosError>({
+    queryKey: ['flashcards'],
+    queryFn: async () => {
+      const { data } = await client.get('/api/flashcards');
+      return data;
+    },
+  });
+}
 ```
 
 **Step 6: Add translation keys**
@@ -493,7 +506,7 @@ pnpm check-all          # Run all quality checks (lint + type-check + translatio
 | Rule | Good | Bad |
 |------|------|-----|
 | **Imports** | `@/components/ui/button` | `../../components/ui/button` |
-| **Forms** | TanStack Form + Zod | `useState` for form fields |
+| **Forms** | React Hook Form + Zod | `useState` for complex form fields |
 | **API calls** | React Query mutations/queries | Raw `axios.get()` in components |
 | **Global state** | Zustand with MMKV persistence | React Context for shared state |
 | **Styling** | Tailwind class strings | `style={{...}}` inline |

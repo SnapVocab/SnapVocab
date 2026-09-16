@@ -3,7 +3,7 @@ import { Redirect, Stack } from 'expo-router';
 import { useAuthStore } from '@/features/auth/use-auth-store';
 
 export default function AuthLayout() {
-  const status = useAuthStore.use.status();
+  const status = useAuthStore(s => s.status);
 
   if (status === 'signIn') {
     return <Redirect href="/" />;
