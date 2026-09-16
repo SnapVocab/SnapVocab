@@ -3,7 +3,8 @@ import type { Collection } from './types';
 import { useCallback, useRef, useState } from 'react';
 import { ScrollView } from 'react-native';
 import Animated, { FadeIn } from 'react-native-reanimated';
-import { FocusAwareStatusBar, SafeAreaView, View } from '@/components/ui';
+import { Button, FocusAwareStatusBar, SafeAreaView, View } from '@/components/ui';
+import { translate } from '@/lib/i18n';
 import { useCollections } from './api';
 import {
   CollectionCard,
@@ -18,6 +19,7 @@ import {
 export function CollectionsScreen() {
   const [viewType, setViewType] = useState<'USER' | 'SYSTEM'>('USER');
   const [selectedCollection, setSelectedCollection] = useState<Collection | null>(null);
+  const [sheetMode, setSheetMode] = useState<'OPTIONS' | 'CREATE'>('OPTIONS');
   const bottomSheetRef = useRef<BottomSheetModal>(null);
 
   const {
@@ -30,6 +32,13 @@ export function CollectionsScreen() {
 
   const handleOptionsPress = useCallback((collection: Collection) => {
     setSelectedCollection(collection);
+    setSheetMode('OPTIONS');
+    bottomSheetRef.current?.present();
+  }, []);
+
+  const handleCreatePress = useCallback(() => {
+    setSelectedCollection(null);
+    setSheetMode('CREATE');
     bottomSheetRef.current?.present();
   }, []);
 
@@ -54,10 +63,7 @@ export function CollectionsScreen() {
 
           {/* Error State */}
           {isError && !collections && (
-            <CollectionErrorState
-              isRetrying={isRefetching}
-              onRetry={() => refetch()}
-            />
+            <CollectionErrorState isRetrying={isRefetching} onRetry={() => refetch()} />
           )}
 
           {/* Empty State */}
@@ -80,12 +86,18 @@ export function CollectionsScreen() {
             </Animated.View>
           )}
         </ScrollView>
+
+        <Button
+          label={`${translate('learn.collections.create_new_collection')}`}
+          onPress={handleCreatePress}
+        />
       </View>
 
       {/* Collection Options Bottom Sheet */}
       <CollectionOptionsBottomSheet
         bottomSheetRef={bottomSheetRef}
         collection={selectedCollection}
+        mode={sheetMode}
       />
     </SafeAreaView>
   );

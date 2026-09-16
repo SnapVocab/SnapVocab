@@ -7,3 +7,10 @@ export type Collection = {
   createdAt: string;
   updatedAt: string;
 };
+
+export type CollectionDTO = Collection;
+
+export type UpdateCollectionDTO = {
+  name: string;
+  translation?: string;
+};

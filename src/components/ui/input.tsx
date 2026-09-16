@@ -52,6 +52,7 @@ export type NInputProps = {
   icon?: React.ReactNode;
   rightIcon?: React.ReactNode;
   isPassword?: boolean;
+  inputComponent?: React.ComponentType<any>;
 } & TextInputProps;
 
 export function Input({ ref, ...props }: NInputProps & { ref?: React.Ref<NTextInput | null> }) {
@@ -66,6 +67,9 @@ export function Input({ ref, ...props }: NInputProps & { ref?: React.Ref<NTextIn
     rightIcon,
     isPassword = false,
     secureTextEntry,
+    inputComponent,
+    autoCorrect = false,
+    spellCheck = false,
     className,
     ...inputProps
   } = props;
@@ -117,6 +121,8 @@ export function Input({ ref, ...props }: NInputProps & { ref?: React.Ref<NTextIn
         rightIcon
       );
 
+  const InputComponent: any = inputComponent || NTextInput;
+
   return (
     <View className={styles.container()}>
       {label && (
@@ -138,9 +144,11 @@ export function Input({ ref, ...props }: NInputProps & { ref?: React.Ref<NTextIn
             {effectiveRightIcon}
           </View>
         )}
-        <NTextInput
+        <InputComponent
           testID={testID}
           ref={ref}
+          autoCorrect={autoCorrect}
+          spellCheck={spellCheck}
           placeholderTextColor={colors.neutral[400]}
           secureTextEntry={effectiveSecure}
           className={styles.input({
