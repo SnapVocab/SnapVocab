@@ -39,6 +39,22 @@
     "xp_to_level": "{{remaining}} XP to level {{nextLevel}}"
   },
   "learn": {
+    "collection_detail": {
+      "empty_words_desc": "This collection has no words yet. Start adding new words or scan objects to save here!",
+      "empty_words_title": "No vocabulary yet",
+      "filter_all": "All",
+      "filter_learning": "Learning",
+      "filter_mastered": "Mastered",
+      "no_matching_words": "No matching vocabulary found",
+      "search_placeholder": "Search vocabulary...",
+      "stat_learning": "Learning",
+      "stat_mastered": "Mastered",
+      "stat_total": "Total Words",
+      "study_now": "Study Now",
+      "subtitle": "Vocabulary list details",
+      "title": "Collection Details",
+      "words_list_title": "Vocabulary List"
+    },
     "collections": {
       "cancel": "Cancel",
       "confirm_delete": "Delete",

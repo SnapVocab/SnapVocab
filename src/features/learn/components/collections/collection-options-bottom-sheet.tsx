@@ -15,6 +15,7 @@ type Props = {
   onCreated?: (collection: Collection) => void;
   onSaveEdit?: (collection: Collection) => void;
   onDelete?: (collection: Collection) => void;
+  onStudy?: (collection: Collection) => void;
 };
 
 export function CollectionOptionsBottomSheet({
@@ -24,6 +25,7 @@ export function CollectionOptionsBottomSheet({
   onCreated,
   onSaveEdit,
   onDelete,
+  onStudy,
 }: Props) {
   const insets = useSafeAreaInsets();
   const [currentView, setCurrentView] = React.useState<'MENU' | 'EDIT' | 'DELETE'>('MENU');
@@ -103,6 +105,14 @@ export function CollectionOptionsBottomSheet({
                 collection={collection}
                 onOpenEdit={() => setCurrentView('EDIT')}
                 onOpenDelete={() => setCurrentView('DELETE')}
+                onStudy={
+                  onStudy
+                    ? () => {
+                        handleClose();
+                        onStudy(collection);
+                      }
+                    : undefined
+                }
               />
             )}
 

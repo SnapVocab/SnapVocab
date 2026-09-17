@@ -39,6 +39,22 @@
     "xp_to_level": "Còn {{remaining}} XP để lên cấp {{nextLevel}}"
   },
   "learn": {
+    "collection_detail": {
+      "empty_words_desc": "Bộ sưu tập này chưa có từ vựng nào. Hãy bắt đầu thêm từ mới hoặc quét đồ vật để lưu vào đây nhé!",
+      "empty_words_title": "Chưa có từ vựng",
+      "filter_all": "Tất cả",
+      "filter_learning": "Đang học",
+      "filter_mastered": "Đã thuộc",
+      "no_matching_words": "Không tìm thấy từ vựng phù hợp",
+      "search_placeholder": "Tìm kiếm từ vựng...",
+      "stat_learning": "Đang học",
+      "stat_mastered": "Đã thuộc",
+      "stat_total": "Tổng số từ",
+      "study_now": "Luyện tập ngay",
+      "subtitle": "Chi tiết danh sách từ vựng",
+      "title": "Chi tiết bộ sưu tập",
+      "words_list_title": "Danh sách từ vựng"
+    },
     "collections": {
       "cancel": "Hủy bỏ",
       "confirm_delete": "Xác nhận xóa",

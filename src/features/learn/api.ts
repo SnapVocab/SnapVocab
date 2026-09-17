@@ -23,6 +23,21 @@ export function useCollections(params?: GetCollectionsParams) {
   });
 }
 
+export function useCollection(id?: number | string) {
+  return useQuery<Collection, AxiosError>({
+    queryKey: ['collection', id],
+    queryFn: async () => {
+      const response = await client<ApiResponse<Collection>>({
+        url: `/api/collections/${id}`,
+        method: 'GET',
+      });
+
+      return response.data.data;
+    },
+    enabled: id !== undefined && id !== null && id !== '',
+  });
+}
+
 export type UpdateCollectionParams = {
   id: number;
   data: UpdateCollectionDTO;
@@ -41,8 +56,10 @@ export function useUpdateCollection() {
 
       return response.data.data;
     },
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['collections'] });
+      queryClient.invalidateQueries({ queryKey: ['collection', variables.id] });
+      queryClient.invalidateQueries({ queryKey: ['collection', String(variables.id)] });
     },
   });
 }

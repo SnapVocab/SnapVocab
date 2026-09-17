@@ -9,9 +9,10 @@ type Props = {
   collection: Collection;
   onOpenEdit: () => void;
   onOpenDelete: () => void;
+  onStudy?: () => void;
 };
 
-export function CollectionMenuView({ collection, onOpenEdit, onOpenDelete }: Props) {
+export function CollectionMenuView({ collection, onOpenEdit, onOpenDelete, onStudy }: Props) {
   const isUserCollection = collection.type === 'USER';
 
   return (
@@ -39,6 +40,22 @@ export function CollectionMenuView({ collection, onOpenEdit, onOpenDelete }: Pro
 
       {/* Actions List */}
       <View className="gap-2">
+        {/* Action: Study / View */}
+        {onStudy && (
+          <Pressable
+            onPress={onStudy}
+            android_ripple={{ color: 'transparent' }}
+            className="flex-row items-center rounded-2xl bg-emerald-50/60 p-3.5 active:opacity-70 dark:bg-emerald-950/30"
+          >
+            <View className="mr-3 size-10 items-center justify-center rounded-xl bg-emerald-100 dark:bg-emerald-900/50">
+              <FolderIcon width={18} height={18} color="#059669" />
+            </View>
+            <Text className="font-nunito text-[15px] font-bold text-emerald-700 dark:text-emerald-300">
+              {translate('learn.collections.options_study')}
+            </Text>
+          </Pressable>
+        )}
+
         {/* Action: Edit (User collections only) */}
         {isUserCollection && (
           <Pressable

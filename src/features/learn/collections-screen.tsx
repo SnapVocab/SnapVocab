@@ -1,10 +1,12 @@
 import type { BottomSheetModal } from '@gorhom/bottom-sheet';
 import type { Collection } from './types';
+import { useRouter } from 'expo-router';
 import { useCallback, useRef, useState } from 'react';
 import { ScrollView } from 'react-native';
 import Animated, { FadeIn } from 'react-native-reanimated';
 import { Button, FocusAwareStatusBar, SafeAreaView, View } from '@/components/ui';
 import { translate } from '@/lib/i18n';
+import { setItem } from '@/lib/storage';
 import { useCollections } from './api';
 import {
   CollectionCard,
@@ -17,6 +19,7 @@ import {
 } from './components';
 
 export function CollectionsScreen() {
+  const router = useRouter();
   const [viewType, setViewType] = useState<'USER' | 'SYSTEM'>('USER');
   const [selectedCollection, setSelectedCollection] = useState<Collection | null>(null);
   const [sheetMode, setSheetMode] = useState<'OPTIONS' | 'CREATE'>('OPTIONS');
@@ -29,6 +32,19 @@ export function CollectionsScreen() {
     isRefetching,
     refetch,
   } = useCollections({ type: viewType });
+
+  const handleCardPress = useCallback((collection: Collection) => {
+    setItem('last_studied_collection_id', collection.id);
+    router.push({
+      pathname: '/(app)/collections/[id]',
+      params: {
+        id: String(collection.id),
+        name: collection.name,
+        translation: collection.translation,
+        type: collection.type,
+      },
+    });
+  }, [router]);
 
   const handleOptionsPress = useCallback((collection: Collection) => {
     setSelectedCollection(collection);
@@ -80,6 +96,7 @@ export function CollectionsScreen() {
                   name={item.name}
                   translation={item.translation}
                   isSystemCollection={item.type === 'SYSTEM'}
+                  onPress={() => handleCardPress(item)}
                   onOptionsPress={() => handleOptionsPress(item)}
                 />
               ))}
@@ -98,6 +115,7 @@ export function CollectionsScreen() {
         bottomSheetRef={bottomSheetRef}
         collection={selectedCollection}
         mode={sheetMode}
+        onStudy={handleCardPress}
       />
     </SafeAreaView>
   );
