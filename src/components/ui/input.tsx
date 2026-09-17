@@ -1,4 +1,3 @@
-/* eslint-disable better-tailwindcss/no-unknown-classes */
 import type { TextInputProps } from 'react-native';
 import * as React from 'react';
 import { I18nManager, TextInput as NTextInput, Pressable, StyleSheet, View } from 'react-native';
@@ -14,7 +13,7 @@ const inputTv = tv({
     container: 'mb-3',
     label: 'mb-1.5 text-sm font-bold text-mascot-navy dark:text-neutral-100',
     input:
-      'font-inter h-14 rounded-2xl border-2 px-4 text-[15px] font-medium text-mascot-navy dark:text-neutral-100',
+      'h-14 rounded-2xl border-2 px-4 font-inter text-[15px] font-medium text-mascot-navy dark:text-neutral-100',
   },
 
   variants: {
@@ -53,6 +52,7 @@ export type NInputProps = {
   icon?: React.ReactNode;
   rightIcon?: React.ReactNode;
   isPassword?: boolean;
+  inputComponent?: React.ComponentType<any>;
 } & TextInputProps;
 
 export function Input({ ref, ...props }: NInputProps & { ref?: React.Ref<NTextInput | null> }) {
@@ -67,6 +67,9 @@ export function Input({ ref, ...props }: NInputProps & { ref?: React.Ref<NTextIn
     rightIcon,
     isPassword = false,
     secureTextEntry,
+    inputComponent,
+    autoCorrect = false,
+    spellCheck = false,
     className,
     ...inputProps
   } = props;
@@ -118,6 +121,8 @@ export function Input({ ref, ...props }: NInputProps & { ref?: React.Ref<NTextIn
         rightIcon
       );
 
+  const InputComponent: any = inputComponent || NTextInput;
+
   return (
     <View className={styles.container()}>
       {label && (
@@ -139,9 +144,11 @@ export function Input({ ref, ...props }: NInputProps & { ref?: React.Ref<NTextIn
             {effectiveRightIcon}
           </View>
         )}
-        <NTextInput
+        <InputComponent
           testID={testID}
           ref={ref}
+          autoCorrect={autoCorrect}
+          spellCheck={spellCheck}
           placeholderTextColor={colors.neutral[400]}
           secureTextEntry={effectiveSecure}
           className={styles.input({
