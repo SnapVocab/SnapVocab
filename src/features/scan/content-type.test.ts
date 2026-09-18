@@ -42,4 +42,24 @@ describe('dictionary display helpers', () => {
     expect(translationFor(word)).toBe('cái chai');
     expect(translationFor({ ...word, translations: null })).toBeNull();
   });
+
+  it('falls back to the first Vietnamese definition when there is no translation', () => {
+    const meaning = {
+      definition: '',
+      definitionLang: 'vi',
+      example: null,
+      pos: 'Danh từ',
+      subPos: null,
+      links: null,
+    };
+    const onlyDefinitions = {
+      ...word,
+      translations: [],
+      meanings: [
+        { ...meaning, definition: 'A container', definitionLang: 'en' },
+        { ...meaning, definition: 'Cửa sổ.' },
+      ],
+    };
+    expect(translationFor(onlyDefinitions)).toBe('Cửa sổ');
+  });
 });

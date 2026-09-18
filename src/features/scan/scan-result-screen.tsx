@@ -1,6 +1,6 @@
 import type { ScanFailure } from './scan-errors';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Pressable, ScrollView } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -67,6 +67,14 @@ export function ScanResultScreen() {
   const result = data?.status === 'DONE' ? data.result : null;
   const items = result?.items ?? [];
   const allLow = items.length > 0 && items.every(item => item.reliability === 'LOW');
+
+  // The waiting view is taller than the photo, so when results replace it the
+  // list would keep that scroll offset and hide the photo: start from the top.
+  const hasResult = !!result;
+  useEffect(() => {
+    if (hasResult)
+      scrollRef.current?.scrollTo({ y: 0, animated: false });
+  }, [hasResult, requestId]);
 
   const header = (
     <View className="h-14 flex-row items-center border-b border-neutral-100 bg-white px-4 dark:border-neutral-800 dark:bg-neutral-900">

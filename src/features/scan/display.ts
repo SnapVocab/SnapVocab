@@ -30,7 +30,15 @@ export function primaryIpa(word: LookupResult | null): string | null {
   return ipa.startsWith('/') ? ipa : `/${ipa}/`;
 }
 
-/** Translation in `langCode` (Vietnamese by default); null when missing. */
+/**
+ * Meaning in `langCode` (Vietnamese by default): the translation if the entry
+ * has one, else the first definition written in that language. The imported
+ * dictionary mostly carries Vietnamese as definitions, with no translations.
+ */
 export function translationFor(word: LookupResult | null, langCode = 'vi'): string | null {
-  return word?.translations?.find(t => t.langCode === langCode)?.translation ?? null;
+  const translation = word?.translations?.find(t => t.langCode === langCode)?.translation;
+  if (translation)
+    return translation;
+  const definition = word?.meanings?.find(m => m.definitionLang === langCode && m.definition)?.definition;
+  return definition?.trim().replace(/\.$/, '') || null;
 }
