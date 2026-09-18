@@ -1,17 +1,18 @@
 import type { ScanFailure } from './scan-errors';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { Pressable, ScrollView } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Button, FocusAwareStatusBar, Mascot, SafeAreaView, showErrorMessage, Text, View } from '@/components/ui';
-import { CameraIcon, ChevronLeftIcon } from '@/components/ui/icons';
+import { CameraIcon, ChevronLeftIcon, SparklesIcon } from '@/components/ui/icons';
 import { translate } from '@/lib/i18n';
 import { useScanStatus, useStartScan } from './api';
 import { DetectedItemCard } from './components/detected-item-card';
 import { DetectionImage } from './components/detection-image';
 import { ScanFailed } from './components/scan-failed';
 import { ScanWaiting } from './components/scan-waiting';
+import { boxColor } from './display';
 import { scanFailureMessageKey, toScanFailure } from './scan-errors';
 
 type Params = {
@@ -68,20 +69,21 @@ export function ScanResultScreen() {
   const items = result?.items ?? [];
   const allLow = items.length > 0 && items.every(item => item.reliability === 'LOW');
 
-  // The waiting view is taller than the photo, so when results replace it the
-  // list would keep that scroll offset and hide the photo: start from the top.
-  const hasResult = !!result;
-  useEffect(() => {
-    if (hasResult)
-      scrollRef.current?.scrollTo({ y: 0, animated: false });
-  }, [hasResult, requestId]);
-
   const header = (
     <View className="h-14 flex-row items-center border-b border-neutral-100 bg-white px-4 dark:border-neutral-800 dark:bg-neutral-900">
-      <Pressable onPress={backToCamera} testID="scan-result-back" className="-ml-1 size-10 items-center justify-center rounded-full active:bg-neutral-100">
+      <Pressable
+        onPress={backToCamera}
+        testID="scan-result-back"
+        className="size-10 items-center justify-center rounded-full active:bg-neutral-100"
+      >
         <ChevronLeftIcon color="#1E2A44" />
       </Pressable>
-      <Text className="mr-9 flex-1 text-center font-nunito text-lg font-extrabold text-mascot-navy dark:text-white" tx="scan.result.title" />
+      <Text
+        className="flex-1 text-center font-nunito text-lg font-extrabold text-mascot-navy dark:text-white"
+        tx="scan.result.title"
+      />
+      {/* Same width as the back button so the title is truly centred. */}
+      <View className="size-10" />
     </View>
   );
 
@@ -107,6 +109,9 @@ export function ScanResultScreen() {
       {header}
 
       <ScrollView
+        // A new key when results land remounts the list at the top; scrolling
+        // imperatively raced the layout of the new content and was ignored.
+        key={result ? `result-${requestId}` : `waiting-${requestId}`}
         ref={scrollRef}
         style={{ flex: 1 }}
         contentContainerStyle={{ padding: 16, paddingBottom: result ? 140 : 32 }}
@@ -118,6 +123,15 @@ export function ScanResultScreen() {
           selectedIndex={selectedIndex}
           onSelect={selectFromImage}
         />
+
+        {result && items.length > 0 && (
+          <View className="mt-3 flex-row items-center gap-1.5 px-1">
+            <SparklesIcon color="#58CC02" />
+            <Text className="font-nunito text-sm font-bold text-neutral-600 dark:text-neutral-300">
+              {translate('scan.result.found', { count: items.length })}
+            </Text>
+          </View>
+        )}
 
         {!result && (
           <ScanWaiting
@@ -145,7 +159,7 @@ export function ScanResultScreen() {
 
         {items.length > 0 && (
           <View
-            className="mt-4 gap-4"
+            className="mt-3 gap-3"
             onLayout={(e) => {
               listOffset.current = e.nativeEvent.layout.y;
             }}
@@ -160,6 +174,7 @@ export function ScanResultScreen() {
               >
                 <DetectedItemCard
                   item={item}
+                  color={boxColor(index)}
                   selected={selectedIndex === index}
                   onPress={() => setSelectedIndex(index)}
                 />
@@ -171,7 +186,7 @@ export function ScanResultScreen() {
 
       {items.length > 0 && (
         <View
-          style={{ paddingBottom: Math.max(insets.bottom, 16) }}
+          style={{ paddingBottom: insets.bottom + 12 }}
           className="absolute inset-x-0 bottom-0 flex-row gap-3 border-t border-neutral-100 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900"
         >
           <Button

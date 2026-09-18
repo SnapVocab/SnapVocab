@@ -162,6 +162,11 @@
     "permission_subtitle": "Cho phép SnapVocab truy cập Camera để nhận diện các vật thể xung quanh bạn, hoặc chọn ảnh từ thư viện.",
     "permission_title": "Khám phá từ mới cùng Camera AI",
     "pick_error": "Không mở được camera hoặc thư viện. Vui lòng thử lại.",
+    "preview": {
+      "hint": "Kiểm tra ảnh rõ nét trước khi gửi nhận diện.",
+      "retake": "Chụp lại",
+      "send": "Nhận diện"
+    },
     "quota": {
       "badge": "{{remaining}}/{{limit}} lượt",
       "exhausted_subtitle": "Bạn đã dùng hết {{limit}} lượt hôm nay. Lượt scan sẽ được làm mới lúc {{time}}.",

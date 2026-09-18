@@ -162,6 +162,11 @@
     "permission_subtitle": "Allow camera access to name the objects around you, or pick a photo from your library.",
     "permission_title": "Discover new words with AI Camera",
     "pick_error": "Could not open the camera or library. Please try again.",
+    "preview": {
+      "hint": "Make sure the objects are sharp before sending.",
+      "retake": "Retake",
+      "send": "Recognise"
+    },
     "quota": {
       "badge": "{{remaining}}/{{limit}} scans",
       "exhausted_subtitle": "You have used all {{limit}} scans today. Scans refresh at {{time}}.",

@@ -7,6 +7,28 @@ export const RELIABILITY_COLORS: Record<Reliability, string> = {
   LOW: '#757793', // neutral-400
 };
 
+/**
+ * One colour per detected object, so each box on the photo can be matched to
+ * its card. High-contrast hues that stay readable with white label text and
+ * against both light and dark photos; cycles after 10 objects.
+ */
+export const BOX_COLORS = [
+  '#1CB0F6', // blue
+  '#58CC02', // green
+  '#A560F8', // purple
+  '#FF9600', // orange
+  '#FF4B8B', // pink
+  '#00C2B8', // teal
+  '#FF4B4B', // red
+  '#4F6BFF', // indigo
+  '#E5B800', // mustard
+  '#8BC34A', // lime
+] as const;
+
+export function boxColor(index: number): string {
+  return BOX_COLORS[index % BOX_COLORS.length];
+}
+
 export const RELIABILITY_KEYS = {
   HIGH: 'scan.reliability.high',
   MEDIUM: 'scan.reliability.medium',
@@ -39,6 +61,8 @@ export function translationFor(word: LookupResult | null, langCode = 'vi'): stri
   const translation = word?.translations?.find(t => t.langCode === langCode)?.translation;
   if (translation)
     return translation;
-  const definition = word?.meanings?.find(m => m.definitionLang === langCode && m.definition)?.definition;
+  const definition = word?.meanings
+    ?.find(m => m.definitionLang === langCode && m.definition)
+    ?.definition;
   return definition?.trim().replace(/\.$/, '') || null;
 }

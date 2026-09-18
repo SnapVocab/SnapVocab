@@ -1,4 +1,5 @@
 import { Tabs } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { CameraTabButton } from '@/components/ui/camera-tab-button';
 import {
@@ -9,6 +10,10 @@ import {
 } from '@/components/ui/icons';
 
 export default function TabLayout() {
+  // Edge-to-edge: the system gesture/nav bar draws over the app, so the tab bar
+  // grows by the bottom inset instead of letting it cover the labels.
+  const { bottom } = useSafeAreaInsets();
+
   return (
     <Tabs
       screenOptions={{
@@ -18,8 +23,8 @@ export default function TabLayout() {
           backgroundColor: '#FFFFFF',
           borderTopWidth: 2,
           borderTopColor: '#F3F4F6',
-          height: 64,
-          paddingBottom: 8,
+          height: 64 + bottom,
+          paddingBottom: 8 + bottom,
           paddingTop: 8,
         },
         tabBarLabelStyle: {
@@ -54,6 +59,8 @@ export default function TabLayout() {
           tabBarButton: props => <CameraTabButton {...props} />,
           tabBarButtonTestID: 'camera-tab',
           tabBarStyle: { display: 'none' },
+          // Dark behind the system navigation bar, like the camera itself.
+          sceneStyle: { backgroundColor: '#000000' },
         }}
       />
       <Tabs.Screen
