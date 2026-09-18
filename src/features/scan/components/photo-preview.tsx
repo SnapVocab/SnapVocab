@@ -33,7 +33,7 @@ export function PhotoPreview({ uri, sending, onRetake, onSend }: Props) {
         )}
       </View>
 
-      <View style={{ paddingBottom: insets.bottom + 16 }} className="gap-3 bg-black px-5 pt-4">
+      <View style={{ paddingBottom: insets.bottom + 40 }} className="gap-4 bg-black px-5 pt-5">
         <Text className="text-center text-sm text-white/70" tx="scan.preview.hint" />
         <View className="flex-row gap-3">
           <Button

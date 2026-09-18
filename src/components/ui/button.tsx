@@ -219,9 +219,10 @@ export function Button({
           )
         : children || (
           <>
-            {icon && <RNView className="mr-2">{icon}</RNView>}
+            {/* The gap only separates icon from text; an icon-only button stays centred. */}
+            {icon && <RNView className={resolvedText ? 'mr-2' : undefined}>{icon}</RNView>}
             {resolvedText && <Text className={textClasses}>{resolvedText}</Text>}
-            {rightIcon && <RNView className="ml-2">{rightIcon}</RNView>}
+            {rightIcon && <RNView className={resolvedText ? 'ml-2' : undefined}>{rightIcon}</RNView>}
           </>
         )}
     </Pressable>

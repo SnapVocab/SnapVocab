@@ -1,6 +1,6 @@
 import type { ScanStatus } from '../types';
 import { useEffect, useState } from 'react';
-import { BouncingDots, Button, Mascot, Text, View } from '@/components/ui';
+import { BouncingDots, Button, Text, View } from '@/components/ui';
 
 /** The UI promises about 90s (BF-06); past that, say the server is busy rather than look stuck. */
 const SLOW_AFTER_MS = 90_000;
@@ -26,8 +26,7 @@ export function ScanWaiting({ status, startedAt, onCancel }: Props) {
   const pending = status === 'PENDING';
 
   return (
-    <View style={{ flex: 1 }} className="flex-1 items-center justify-center px-6">
-      <Mascot pose="read" float className="mb-4 size-36" />
+    <View style={{ flex: 1 }} className="flex-1 items-center justify-center px-6 pt-8">
       <Text
         className="mb-2 text-center font-nunito text-[22px] font-extrabold text-mascot-navy dark:text-white"
         tx={pending ? 'scan.status.pending_title' : 'scan.status.processing_title'}
