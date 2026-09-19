@@ -1,6 +1,6 @@
 import type { AxiosError } from 'axios';
 import type { ApiResponse } from '../auth/api';
-import type { Collection, CollectionTopicParams, TopicDTO, UpdateCollectionDTO } from './types';
+import type { Collection, CollectionTopicParams, CreateTopicDTO, TopicDTO, UpdateCollectionDTO } from './types';
 import type { PaginateResponse } from '@/lib/api/types';
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { client } from '@/lib/api';
@@ -161,5 +161,33 @@ export function useInfiniteCollectionTopics(
       return page + 1 < pages ? page + 1 : undefined;
     },
     enabled: id !== undefined && id !== null && id !== '',
+  });
+}
+
+export type CreateTopicParams = {
+  collectionId: number | string;
+  data: CreateTopicDTO;
+};
+
+export function useCreateTopic() {
+  const queryClient = useQueryClient();
+
+  return useMutation<TopicDTO, AxiosError<ApiResponse<unknown>>, CreateTopicParams>({
+    mutationFn: async ({ collectionId, data }) => {
+      const response = await client<ApiResponse<TopicDTO>>({
+        url: `/api/collections/${collectionId}/topics`,
+        method: 'POST',
+        data,
+      });
+
+      return response.data.data;
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['collection-topics', variables.collectionId] });
+      queryClient.invalidateQueries({ queryKey: ['collection-topics', String(variables.collectionId)] });
+      queryClient.invalidateQueries({ queryKey: ['collection-topics-infinite', variables.collectionId] });
+      queryClient.invalidateQueries({ queryKey: ['collection-topics-infinite', String(variables.collectionId)] });
+      queryClient.invalidateQueries({ queryKey: ['collections'] });
+    },
   });
 }

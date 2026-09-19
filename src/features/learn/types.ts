@@ -54,3 +54,13 @@ export type TopicDTO = {
   createdAt: string;
   updatedAt: string;
 };
+
+export type CreateTopicDTO = {
+  name: string;
+  translation?: string;
+  description?: string;
+  parentId?: number | null;
+  descriptionTranslation?: string;
+  schemaId?: number | null;
+  activeTemplateId?: number | null;
+};

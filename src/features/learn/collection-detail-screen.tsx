@@ -3,8 +3,15 @@ import type { TopicDTO } from './types';
 import { FlashList } from '@shopify/flash-list';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, Pressable, RefreshControl, ScrollView, TextInput, View } from 'react-native';
-import { FocusAwareStatusBar, SafeAreaView, Text } from '@/components/ui';
+import {
+  ActivityIndicator,
+  Pressable,
+  RefreshControl,
+  ScrollView,
+  TextInput,
+  View,
+} from 'react-native';
+import { Button, FocusAwareStatusBar, SafeAreaView, Text } from '@/components/ui';
 import { ChevronRightIcon, CloseIcon, SearchIcon } from '@/components/ui/icons';
 import { translate } from '@/lib/i18n';
 import { useCollection, useInfiniteCollectionTopics } from './api';
@@ -82,21 +89,18 @@ export function CollectionDetailScreen() {
   }, [topics, searchQuery]);
 
   // Handle drill down into a folder topic
-  const handleTopicPress = useCallback(
-    (topic: TopicDTO) => {
-      if (topic.hasChildren) {
-        setParentStack(prev => [
-          ...prev,
-          { id: topic.id, name: topic.name, translation: topic.translation },
-        ]);
-        setSearchQuery('');
-      }
-      else {
-        // Navigate to topic flashcards / study session
-      }
-    },
-    [],
-  );
+  const handleTopicPress = useCallback((topic: TopicDTO) => {
+    if (topic.hasChildren) {
+      setParentStack(prev => [
+        ...prev,
+        { id: topic.id, name: topic.name, translation: topic.translation },
+      ]);
+      setSearchQuery('');
+    }
+    else {
+      // Navigate to topic flashcards / study session
+    }
+  }, []);
 
   // Handle navigating up one level or back
   const handleBack = useCallback(() => {
@@ -223,7 +227,9 @@ export function CollectionDetailScreen() {
           >
             <Pressable onPress={() => handleBreadcrumbPress(-1)} hitSlop={6}>
               <Text className="font-nunito text-xs font-bold text-primary-600 dark:text-primary-400">
-                {collectionData?.name || paramName || translate('learn.collection_detail.root_level')}
+                {collectionData?.name
+                  || paramName
+                  || translate('learn.collection_detail.root_level')}
               </Text>
             </Pressable>
 
@@ -270,14 +276,27 @@ export function CollectionDetailScreen() {
           ListFooterComponent={ListFooter}
           onEndReached={handleEndReached}
           onEndReachedThreshold={0.5}
-          refreshControl={(
-            <RefreshControl
-              refreshing={isRefetching && !isFetchingNextPage}
-              onRefresh={refetch}
-            />
-          )}
+          refreshControl={
+            <RefreshControl refreshing={isRefetching && !isFetchingNextPage} onRefresh={refetch} />
+          }
           contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 16, paddingBottom: 24 }}
           showsVerticalScrollIndicator={false}
+        />
+      </View>
+
+      <View className="absolute inset-x-0 bottom-4 items-center px-[14px] pb-2">
+        <Button
+          label={translate('learn.topic.add_topic')}
+          onPress={() => {
+            router.push({
+              pathname: '/(app)/collections/create-topic' as any,
+              params: {
+                collectionId: String(id),
+                collectionName: collectionData?.name ?? paramName ?? '',
+                parentId: currentParentId !== null ? String(currentParentId) : '',
+              },
+            });
+          }}
         />
       </View>
 
@@ -290,6 +309,7 @@ export function CollectionDetailScreen() {
           onDelete={handleDeleteSuccess}
         />
       )}
+
     </SafeAreaView>
   );
 }
