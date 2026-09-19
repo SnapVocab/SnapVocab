@@ -7,7 +7,7 @@ type Props = {
   name: string;
   onPress?: () => void;
   onOptionsPress?: () => void;
-
+  showOption?: boolean;
   translation: string;
 };
 
@@ -17,7 +17,10 @@ export default function CollectionCard({
   onOptionsPress,
   translation,
   isSystemCollection,
+  showOption = true,
 }: Props) {
+  const canShowOption = showOption && !isSystemCollection;
+
   return (
     <View className="flex-row items-center justify-between rounded-2xl border border-neutral-200/80 bg-white p-3.5 dark:border-neutral-800 dark:bg-neutral-900">
       {/* Left section: Folder Icon + Title / Translation (Clickable) */}
@@ -46,8 +49,8 @@ export default function CollectionCard({
         </View>
       </Pressable>
 
-      {/* Right section: 3-dots action button */}
-      {!isSystemCollection
+      {/* Right section: 3-dots action button or Chevron */}
+      {canShowOption
         ? (
             <Pressable
               onPress={onOptionsPress}

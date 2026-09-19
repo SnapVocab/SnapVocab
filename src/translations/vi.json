@@ -40,19 +40,26 @@
   },
   "learn": {
     "collection_detail": {
+      "empty_topics_desc": "Mục này hiện chưa có chủ đề học tập nào.",
+      "empty_topics_title": "Chưa có chủ đề nào",
       "empty_words_desc": "Bộ sưu tập này chưa có từ vựng nào. Hãy bắt đầu thêm từ mới hoặc quét đồ vật để lưu vào đây nhé!",
       "empty_words_title": "Chưa có từ vựng",
       "filter_all": "Tất cả",
       "filter_learning": "Đang học",
       "filter_mastered": "Đã thuộc",
       "no_matching_words": "Không tìm thấy từ vựng phù hợp",
+      "page_next": "Trang sau",
+      "page_prev": "Trang trước",
+      "root_level": "Trang chủ bộ sưu tập",
       "search_placeholder": "Tìm kiếm từ vựng...",
       "stat_learning": "Đang học",
       "stat_mastered": "Đã thuộc",
       "stat_total": "Tổng số từ",
       "study_now": "Luyện tập ngay",
-      "subtitle": "Chi tiết danh sách từ vựng",
+      "subtitle": "Chi tiết danh sách chủ đề",
+      "subtopics_badge": "Chủ đề con",
       "title": "Chi tiết bộ sưu tập",
+      "topics_list_title": "Danh sách chủ đề",
       "words_list_title": "Danh sách từ vựng"
     },
     "collections": {

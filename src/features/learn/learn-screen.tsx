@@ -1,26 +1,18 @@
-import type { BottomSheetModal } from '@gorhom/bottom-sheet';
 import type { Collection } from './types';
 import { useRouter } from 'expo-router';
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo } from 'react';
 import { Pressable, ScrollView } from 'react-native';
 import Animated, { FadeIn } from 'react-native-reanimated';
 import { FocusAwareStatusBar, SafeAreaView, Text, View } from '@/components/ui';
 import { translate } from '@/lib/i18n';
 import { getItem, setItem } from '@/lib/storage';
 import { useCollections } from './api';
-import {
-  CollectionCard,
-  CollectionOptionsBottomSheet,
-  SkeletonCollectionCard,
-} from './components';
+import { CollectionCard, SkeletonCollectionCard } from './components';
 
 const LAST_STUDIED_COLLECTION_KEY = 'last_studied_collection_id';
 
 export function LearnScreen() {
   const router = useRouter();
-  const bottomSheetRef = useRef<BottomSheetModal>(null);
-  const [selectedCollection, setSelectedCollection] = useState<Collection | null>(null);
-
   const { data: collections, isLoading } = useCollections();
 
   const activeCollection = useMemo(() => {
@@ -51,31 +43,31 @@ export function LearnScreen() {
     return systemCollections[0] ?? null;
   }, [collections]);
 
-  const handleCardPress = useCallback((collection: Collection) => {
-    setItem(LAST_STUDIED_COLLECTION_KEY, collection.id);
-    router.push({
-      pathname: '/(app)/collections/[id]',
-      params: {
-        id: String(collection.id),
-        name: collection.name,
-        translation: collection.translation,
-        type: collection.type,
-      },
-    });
-  }, [router]);
-
-  const handleOptionsPress = useCallback((collection: Collection) => {
-    setSelectedCollection(collection);
-    bottomSheetRef.current?.present();
-  }, []);
+  const handleCardPress = useCallback(
+    (collection: Collection) => {
+      setItem(LAST_STUDIED_COLLECTION_KEY, collection.id);
+      router.push({
+        pathname: '/(app)/collections/[id]',
+        params: {
+          id: String(collection.id),
+          name: collection.name,
+          translation: collection.translation,
+          type: collection.type,
+        },
+      });
+    },
+    [router],
+  );
 
   return (
     <SafeAreaView style={{ flex: 1 }} className="flex-1 bg-background">
       <FocusAwareStatusBar />
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        contentContainerClassName="p-4 pb-8"
-      >
+      <View className="px-4 pt-4">
+        <Text className="font-nunito text-[24px] font-extrabold tracking-tight text-neutral-800">
+          {translate('learn.title')}
+        </Text>
+      </View>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerClassName="p-4 pb-8">
         {/* Section Header: Collections */}
         <View className="flex-row items-center justify-between">
           <Text className="font-nunito text-xs font-extrabold tracking-wider text-neutral-400 uppercase">
@@ -98,8 +90,8 @@ export function LearnScreen() {
                 name={activeCollection.name}
                 translation={activeCollection.translation}
                 isSystemCollection={activeCollection.type === 'SYSTEM'}
+                showOption={false}
                 onPress={() => handleCardPress(activeCollection)}
-                onOptionsPress={() => handleOptionsPress(activeCollection)}
               />
             </Animated.View>
           )}
@@ -116,14 +108,6 @@ export function LearnScreen() {
           )}
         </View>
       </ScrollView>
-
-      {/* Collection Options Bottom Sheet */}
-      <CollectionOptionsBottomSheet
-        bottomSheetRef={bottomSheetRef}
-        collection={selectedCollection}
-        mode="OPTIONS"
-        onStudy={handleCardPress}
-      />
     </SafeAreaView>
   );
 }
