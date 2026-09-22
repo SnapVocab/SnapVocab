@@ -1,6 +1,6 @@
 import type { AxiosError } from 'axios';
 import type { ApiResponse } from '../auth/api';
-import type { Collection, UpdateCollectionDTO } from './types';
+import type { Collection, Topic, UpdateCollectionDTO } from './types';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { client } from '@/lib/api';
 
@@ -96,5 +96,19 @@ export function useDeleteCollection() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['collections'] });
     },
+  });
+}
+
+export function useTopicsByCollection(collectionId?: number | string | null) {
+  return useQuery<Topic[], AxiosError>({
+    queryKey: ['collection-topics', collectionId],
+    queryFn: async () => {
+      const response = await client<ApiResponse<Topic[]>>({
+        url: `/api/collections/${collectionId}/topics`,
+        method: 'GET',
+      });
+      return response.data.data;
+    },
+    enabled: collectionId !== undefined && collectionId !== null && collectionId !== '',
   });
 }

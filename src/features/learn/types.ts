@@ -33,3 +33,12 @@ export type CollectionDetail = Collection & {
   wordsCount?: number;
   masteredCount?: number;
 };
+
+export type Topic = {
+  id: number;
+  name: string;
+  translation?: string;
+  description?: string;
+  parentId?: number | null;
+  children?: Topic[];
+};

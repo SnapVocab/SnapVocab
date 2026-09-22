@@ -2,6 +2,7 @@ export * from './bouncing-dots';
 export * from './button';
 export * from './card';
 export { default as colors } from './colors';
+export * from './feature-icons';
 export * from './focus-aware-status-bar';
 export * from './image';
 export * from './input';

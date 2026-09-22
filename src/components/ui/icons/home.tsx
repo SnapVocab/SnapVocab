@@ -19,3 +19,5 @@ export const Home = createIcon({
     },
   ],
 });
+
+export const HomeIcon = Home;

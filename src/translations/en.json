@@ -107,6 +107,21 @@
   "profile": {
     "level": "Level {{level}}"
   },
+  "quiz": {
+    "check": "Check",
+    "completed": "QUIZ COMPLETED",
+    "continue": "Continue",
+    "fill_blank": "Fill in the Blank",
+    "home": "Home",
+    "matching": "Match Word Pairs",
+    "multiple_choice": "Multiple Choice Reflex",
+    "perfect": "PERFECT! EXCELLENT",
+    "retry": "Try Again",
+    "review_wrong": "Review Mistakes",
+    "see_result": "See Result",
+    "start_quiz": "Start Quiz",
+    "title": "Create Quiz"
+  },
   "register": {
     "confirm_password": "Confirm Password",
     "confirm_password_placeholder": "Confirm your password",

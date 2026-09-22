@@ -107,6 +107,21 @@
   "profile": {
     "level": "Cấp {{level}}"
   },
+  "quiz": {
+    "check": "Kiểm tra",
+    "completed": "HOÀN THÀNH BÀI THI",
+    "continue": "Tiếp tục",
+    "fill_blank": "Điền từ vào chỗ trống",
+    "home": "Về Home",
+    "matching": "Ghép đôi từ vựng",
+    "multiple_choice": "Trắc nghiệm phản xạ",
+    "perfect": "PERFECT! XUẤT SẮC",
+    "retry": "Thử lại",
+    "review_wrong": "Ôn tập từ sai",
+    "see_result": "Xem kết quả",
+    "start_quiz": "Bắt đầu Quiz",
+    "title": "Tạo Quiz"
+  },
   "register": {
     "confirm_password": "Xác nhận mật khẩu",
     "confirm_password_placeholder": "Nhập lại mật khẩu",
