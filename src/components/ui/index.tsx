@@ -9,6 +9,7 @@ export * from './link';
 export * from './mascot';
 export * from './otp-input';
 export * from './text';
+export * from './user-avatar';
 export * from './utils';
 
 export { ActivityIndicator, Pressable, ScrollView, TouchableOpacity, View } from 'react-native';

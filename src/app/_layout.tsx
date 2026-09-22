@@ -10,7 +10,6 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { KeyboardProvider } from 'react-native-keyboard-controller';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useThemeConfig } from '@/components/ui/use-theme-config';
-import { useAuthStore } from '@/features/auth/use-auth-store';
 
 import { APIProvider } from '@/lib/api';
 import { loadSelectedTheme } from '@/lib/hooks/use-selected-theme';
@@ -33,7 +32,7 @@ SplashScreen.setOptions({
 });
 
 export default function RootLayout() {
-  const status = useAuthStore(s => s.status);
+  // const status = useAuthStore(s => s.status);
 
   React.useEffect(() => {
     SplashScreen.hideAsync();
@@ -44,7 +43,7 @@ export default function RootLayout() {
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="(app)" />
         <Stack.Screen name="(auth)" />
-        {status !== 'signIn' && <Stack.Screen name="welcome" />}
+        <Stack.Screen name="welcome" />
       </Stack>
     </Providers>
   );

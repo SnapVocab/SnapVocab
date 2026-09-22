@@ -1,0 +1,14 @@
+import { createIcon } from './create-icon';
+
+export const SlidersIcon = createIcon({
+  viewBox: '0 0 24 24',
+  elements: [
+    {
+      d: 'M4 21V14M4 10V3M12 21V12M12 8V3M20 21V16M20 12V3M1 14H7M9 8H15M17 16H23',
+      stroke: '#1C274C',
+      strokeWidth: 2,
+      strokeLinecap: 'round',
+      strokeLinejoin: 'round',
+    },
+  ],
+});

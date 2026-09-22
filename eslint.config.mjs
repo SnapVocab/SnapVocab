@@ -81,6 +81,8 @@ export default antfu(
       'regexp/no-super-linear-backtracking': 'off', // Relax regex performance rules
       'regexp/no-unused-capturing-group': 'off', // Allow unused capturing groups
       'style/max-len': ['warn', { code: 100, ignoreStrings: true, ignoreTemplateLiterals: true, ignoreRegExpLiterals: true }],
+      'style/multiline-ternary': 'off', // Avoid conflict with Prettier format on save
+      'style/operator-linebreak': 'off',
     },
   },
 

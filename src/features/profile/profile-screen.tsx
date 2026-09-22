@@ -1,6 +1,5 @@
 import { useRouter } from 'expo-router';
-
-import { Button, FocusAwareStatusBar, SafeAreaView, Text, View } from '@/components/ui';
+import { Button, FocusAwareStatusBar, SafeAreaView, Text, UserAvatar, View } from '@/components/ui';
 import { useAuthStore } from '@/features/auth/use-auth-store';
 
 export function ProfileScreen() {
@@ -13,7 +12,6 @@ export function ProfileScreen() {
     router.replace('/welcome');
   };
 
-  const initial = (user?.firstName?.[0] ?? user?.email?.[0] ?? 'U').toUpperCase();
   const displayName = user?.firstName
     ? `${user.firstName} ${user.lastName ?? ''}`.trim()
     : 'SnapVocab Learner';
@@ -23,11 +21,12 @@ export function ProfileScreen() {
       <FocusAwareStatusBar />
       <View className="flex-1 items-center justify-center p-6">
         <View className="mb-8 items-center">
-          <View className="size-20 items-center justify-center rounded-full bg-primary-100 dark:bg-primary-900">
-            <Text className="text-3xl font-black text-primary-600">
-              {initial}
-            </Text>
-          </View>
+          <UserAvatar
+            url={user?.avatarUrl}
+            name={user?.firstName ?? user?.email}
+            size="xl"
+            bordered
+          />
           <Text className="mt-4 text-xl font-bold text-mascot-navy dark:text-white">
             {displayName}
           </Text>

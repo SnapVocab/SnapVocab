@@ -19,3 +19,5 @@ export const Eye = createIcon({
     },
   ],
 });
+
+export const EyeIcon = Eye;

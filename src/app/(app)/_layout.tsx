@@ -12,6 +12,13 @@ export default function AppLayout() {
   return (
     <Stack screenOptions={{ headerShown: false }}>
       <Stack.Screen name="(tabs)" />
+      <Stack.Screen name="lookup" />
+      <Stack.Screen name="word-detail" />
+      <Stack.Screen name="collections" />
+      <Stack.Screen name="collections/[id]" />
+      <Stack.Screen name="collections/create-topic" />
+      <Stack.Screen name="scan-result" />
+      <Stack.Screen name="template-builder" />
     </Stack>
   );
 }

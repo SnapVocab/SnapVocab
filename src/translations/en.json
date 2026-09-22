@@ -30,6 +30,8 @@
     "greeting_name": "{{name}}!",
     "lesson_progress": "Lesson {{currentLesson}} of {{lessonCount}}",
     "level": "LEVEL {{level}}",
+    "search_hint": "What do you want to learn today?",
+    "search_placeholder": "Lookup words",
     "see_all": "SEE ALL",
     "sign_out": "Sign Out",
     "streak": "STREAK",
@@ -40,19 +42,26 @@
   },
   "learn": {
     "collection_detail": {
+      "empty_topics_desc": "There are no topics in this section yet.",
+      "empty_topics_title": "No topics yet",
       "empty_words_desc": "This collection has no words yet. Start adding new words or scan objects to save here!",
       "empty_words_title": "No vocabulary yet",
       "filter_all": "All",
       "filter_learning": "Learning",
       "filter_mastered": "Mastered",
       "no_matching_words": "No matching vocabulary found",
+      "page_next": "Next",
+      "page_prev": "Previous",
+      "root_level": "Collection Root",
       "search_placeholder": "Search vocabulary...",
       "stat_learning": "Learning",
       "stat_mastered": "Mastered",
       "stat_total": "Total Words",
       "study_now": "Study Now",
-      "subtitle": "Vocabulary list details",
+      "subtitle": "Collection topics & details",
+      "subtopics_badge": "Subtopics",
       "title": "Collection Details",
+      "topics_list_title": "Topics",
       "words_list_title": "Vocabulary List"
     },
     "collections": {
@@ -86,9 +95,38 @@
       "update_error": "Failed to update collection. Please try again."
     },
     "continue_deck": "Continue Deck",
+    "create_topic": {
+      "banner_desc": "The system will automatically assign the Standard card layout (including vocabulary, pronunciation, translation, and example sentence).",
+      "banner_title": "Create Flexible Vocabulary Topic",
+      "collection_label": "Collection: {{name}}",
+      "create_error": "Failed to create topic. Please try again.",
+      "create_success": "Topic created successfully!",
+      "description_label": "Notes / Description (Optional)",
+      "description_placeholder": "Notes about this vocabulary topic...",
+      "layout_back_label": "BACK SIDE",
+      "layout_back_value": "Meaning · Example",
+      "layout_badge_default": "DEFAULT",
+      "layout_customize": "Customize",
+      "layout_desc": "Standard 4-field reflex layout",
+      "layout_front_label": "FRONT SIDE",
+      "layout_front_value": "Word · IPA",
+      "layout_name": "Standard English",
+      "layout_section_title": "Flashcard layout",
+      "name_label": "Topic name *",
+      "name_placeholder": "E.g. Education & Technology, Airport...",
+      "submit_button": "CREATE TOPIC",
+      "title": "Add New Topic",
+      "translation_label": "Vietnamese translation",
+      "translation_placeholder": "E.g. Giáo dục & Công nghệ hiện đại...",
+      "validation_name_max": "Topic name must not exceed 100 characters",
+      "validation_name_min": "Topic name must be at least 2 characters"
+    },
     "learn": "Continue",
     "lesson_progress": "Lesson {{lesson}} · {{progress}}/{{total}} words",
     "title": "Learn",
+    "topic": {
+      "add_topic": "Add Topic"
+    },
     "view_all": "View all"
   },
   "login": {
@@ -103,6 +141,15 @@
     "sign_in": "Sign In",
     "subtitle": "Let's keep your streak alive!",
     "title": "Welcome back!"
+  },
+  "lookup": {
+    "clear": "Clear",
+    "no_recent": "No recent searches",
+    "no_suggestions": "No suggestions found",
+    "recent_searches": "Recent searches",
+    "search_placeholder": "Search English words...",
+    "suggestions": "Suggestions",
+    "title": "Look up"
   },
   "profile": {
     "level": "Level {{level}}"
@@ -207,6 +254,112 @@
     },
     "uploading": "Uploading photo…"
   },
+  "template_builder": {
+    "add_field": {
+      "already_added": "Added",
+      "no_attributes": "No available attributes",
+      "subtitle": "Choose field from Topic Schema",
+      "title": "Add field to card"
+    },
+    "add_field_sheet": {
+      "already_added": "Added",
+      "btn_create_field": "Add field to card",
+      "custom_display_label": "DISPLAY LABEL",
+      "custom_display_placeholder": "E.g. Grammar Notes, Synonyms...",
+      "custom_name_label": "FIELD IDENTIFIER (KEY)",
+      "custom_name_placeholder": "E.g. grammar_notes, synonyms...",
+      "data_type_label": "DATA TYPE",
+      "no_available_fields": "No available fields",
+      "required_desc": "User must fill this field when creating a word",
+      "required_label": "Required field",
+      "subtitle": "Configure schema attribute and card placement",
+      "tab_custom": "Custom Field",
+      "tab_presets": "Suggested / Available",
+      "title": "Add Field to Card"
+    },
+    "add_field_to_section": "+ Add field to Section",
+    "add_section": "Add Section to {{side}}",
+    "add_to_col1": "Add to Column 1",
+    "add_to_col2": "Add to Column 2",
+    "align_center": "Center",
+    "align_left": "Left",
+    "align_right": "Right",
+    "back_side": "BACK",
+    "back_side_label": "Back Side",
+    "col1_left": "Column 1 (Left)",
+    "col2_right": "Column 2 (Right)",
+    "data_types": {
+      "AUDIO": "Audio",
+      "BOOLEAN": "Boolean",
+      "DATE": "Date",
+      "IMAGE": "Image",
+      "NUMBER": "Number",
+      "TEXT": "Text"
+    },
+    "default_template_name": "Standard Vocabulary",
+    "done": "Done",
+    "field_settings": {
+      "apply_changes": "Apply Changes",
+      "audio_action": "Play audio on tap",
+      "audio_action_desc": "Play pronunciation audio when learner taps",
+      "column_position": "COLUMN POSITION",
+      "data_type": "DATA TYPE",
+      "delete_field": "Remove field from card",
+      "display_name": "DISPLAY FIELD NAME",
+      "display_name_placeholder": "Enter field name...",
+      "font_size": "FONT SIZE",
+      "hide_if_empty": "Auto hide when empty",
+      "hide_if_empty_desc": "Do not display this item if no data exists",
+      "required": "Required field",
+      "required_desc": "Require user to fill this field when adding words",
+      "semantic_role": "DATA ROLE",
+      "text_alignment": "TEXT ALIGNMENT",
+      "text_color": "TEXT COLOR",
+      "title": "Field Settings"
+    },
+    "front_side": "FRONT",
+    "front_side_label": "Front Side",
+    "header_title": "Card Customizer",
+    "hide_if_empty_badge": "Hide if empty",
+    "loading": "Loading card configuration...",
+    "one_column_badge": "1 col",
+    "preview": "Preview",
+    "preview_modal": {
+      "back_subtitle": "Back Side (Back)",
+      "flip_to_back": "Flip to Back Side",
+      "flip_to_front": "Flip to Front Side",
+      "front_subtitle": "Front Side (Front)",
+      "tap_to_flip": "Tap to flip card",
+      "title": "Flashcard Preview"
+    },
+    "repeatable_badge": "Repeat 1-n",
+    "roles": {
+      "AUDIO": "Audio Pronunciation",
+      "DEFINITION": "Definition / Meaning",
+      "EXAMPLE_SENTENCE": "Example Sentence",
+      "IMAGE": "Image",
+      "NATIVE_TRANSLATION": "Native Translation",
+      "NOTE": "Note / Grammar",
+      "TARGET_WORD": "Target Word"
+    },
+    "save_config": "Save card configuration",
+    "section_settings": {
+      "apply_changes": "Apply Changes",
+      "column_layout": "COLUMN LAYOUT",
+      "default_new_section": "New Section",
+      "delete_section": "Delete Section and inner fields",
+      "display_side": "DISPLAY ON SIDE",
+      "one_col_desc": "Full width vertical stacking",
+      "repeatable": "Allow repeating (List 1-n)",
+      "repeatable_desc": "Suitable for data groups with multiple items",
+      "section_name": "SECTION NAME",
+      "section_name_placeholder": "Enter section name...",
+      "title": "Section Settings",
+      "two_col_desc": "Side-by-side columns"
+    },
+    "size_badge": "Size {{size}}",
+    "two_column_badge": "2 cols"
+  },
   "validation": {
     "collection_name_required": "Collection name is required",
     "collection_name_size": "Collection name must be between 2 and 100 characters",
@@ -252,5 +405,16 @@
     "title1": "Learn vocabulary with AI",
     "title2": "Practice with flashcards",
     "title3": "Review using SRS"
+  },
+  "word_detail": {
+    "antonyms": "Antonyms",
+    "examples": "Examples",
+    "meanings": "Meanings",
+    "not_found": "Word details not found",
+    "pronounce": "Pronounce",
+    "related_words": "Related words",
+    "synonyms": "Synonyms",
+    "title": "Word details",
+    "word_family": "Word family"
   }
 }
