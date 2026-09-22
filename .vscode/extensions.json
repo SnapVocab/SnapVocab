@@ -6,6 +6,7 @@
     "mikestead.dotenv",
     "eamodio.gitlens",
     "streetsidesoftware.code-spell-checker",
+    "streetsidesoftware.code-spell-checker-vietnamese",
     "formulahendry.auto-close-tag",
     "formulahendry.auto-rename-tag",
     "bradlc.vscode-tailwindcss",

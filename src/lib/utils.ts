@@ -1,5 +1,10 @@
 import type { StoreApi, UseBoundStore } from 'zustand';
 import { Linking } from 'react-native';
+import { twMerge } from 'tailwind-merge';
+
+export function cn(...inputs: any[]) {
+  return twMerge(inputs.filter(Boolean).join(' '));
+}
 
 export function openLinkInBrowser(url: string) {
   Linking.canOpenURL(url).then(canOpen => canOpen && Linking.openURL(url));
