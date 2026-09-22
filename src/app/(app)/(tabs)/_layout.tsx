@@ -8,6 +8,7 @@ import {
   LearnIcon,
   ProfileIcon,
 } from '@/components/ui/icons';
+import { HomeHeader } from '@/features/home';
 
 export default function TabLayout() {
   // Edge-to-edge: the system gesture/nav bar draws over the app, so the tab bar
@@ -37,7 +38,8 @@ export default function TabLayout() {
         name="index"
         options={{
           title: 'Home',
-          headerShown: false,
+          headerShown: true,
+          header: () => <HomeHeader />,
           tabBarIcon: ({ color }) => <HomeIcon color={color} />,
           tabBarButtonTestID: 'home-tab',
         }}

@@ -30,6 +30,8 @@
     "greeting_name": "{{name}}!",
     "lesson_progress": "Lesson {{currentLesson}} of {{lessonCount}}",
     "level": "LEVEL {{level}}",
+    "search_hint": "What do you want to learn today?",
+    "search_placeholder": "Lookup words",
     "see_all": "SEE ALL",
     "sign_out": "Sign Out",
     "streak": "STREAK",
@@ -139,6 +141,15 @@
     "sign_in": "Sign In",
     "subtitle": "Let's keep your streak alive!",
     "title": "Welcome back!"
+  },
+  "lookup": {
+    "clear": "Clear",
+    "no_recent": "No recent searches",
+    "no_suggestions": "No suggestions found",
+    "recent_searches": "Recent searches",
+    "search_placeholder": "Search English words...",
+    "suggestions": "Suggestions",
+    "title": "Look up"
   },
   "profile": {
     "level": "Level {{level}}"
@@ -394,5 +405,16 @@
     "title1": "Learn vocabulary with AI",
     "title2": "Practice with flashcards",
     "title3": "Review using SRS"
+  },
+  "word_detail": {
+    "antonyms": "Antonyms",
+    "examples": "Examples",
+    "meanings": "Meanings",
+    "not_found": "Word details not found",
+    "pronounce": "Pronounce",
+    "related_words": "Related words",
+    "synonyms": "Synonyms",
+    "title": "Word details",
+    "word_family": "Word family"
   }
 }

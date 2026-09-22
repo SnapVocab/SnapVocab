@@ -30,6 +30,8 @@
     "greeting_name": "{{name}}!",
     "lesson_progress": "Bài {{currentLesson}} trên {{lessonCount}}",
     "level": "CẤP {{level}}",
+    "search_hint": "Hôm nay bạn muốn học gì?",
+    "search_placeholder": "Tìm từ vựng, chủ đề, bộ thẻ...",
     "see_all": "XEM TẤT CẢ",
     "sign_out": "Đăng xuất",
     "streak": "CHUỖI",
@@ -139,6 +141,15 @@
     "sign_in": "Đăng nhập",
     "subtitle": "Đừng để chuỗi học tập bị gián đoạn nhé!",
     "title": "Chào mừng trở lại!"
+  },
+  "lookup": {
+    "clear": "Xóa",
+    "no_recent": "Chưa có tìm kiếm gần đây",
+    "no_suggestions": "Không tìm thấy từ gợi ý",
+    "recent_searches": "Tìm kiếm gần đây",
+    "search_placeholder": "Tìm từ tiếng Anh...",
+    "suggestions": "Gợi ý",
+    "title": "Tra từ"
   },
   "profile": {
     "level": "Cấp {{level}}"
@@ -394,5 +405,16 @@
     "title1": "Học từ vựng cùng AI",
     "title2": "Luyện tập với flashcard",
     "title3": "Ôn tập bằng SRS"
+  },
+  "word_detail": {
+    "antonyms": "Trái nghĩa",
+    "examples": "Câu ví dụ",
+    "meanings": "Nghĩa của từ",
+    "not_found": "Không tìm thấy thông tin từ vựng",
+    "pronounce": "Phát âm",
+    "related_words": "Từ liên quan",
+    "synonyms": "Đồng nghĩa",
+    "title": "Chi tiết từ",
+    "word_family": "Từ cùng gốc"
   }
 }
