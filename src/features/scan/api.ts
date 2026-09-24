@@ -8,6 +8,7 @@ import type {
 } from './types';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { client } from '@/lib/api';
+import { putFileToStorage, UploadFailedError } from '@/lib/storage/upload';
 import { resolveContentType } from './content-type';
 import { ScanClientError } from './scan-errors';
 
@@ -52,7 +53,7 @@ export function useStartScan() {
       });
       const { uploadUrl, objectName } = upload.data.data;
 
-      await putFile(uploadUrl, uri, contentType);
+      await putScanImage(uploadUrl, uri, contentType);
 
       const submitted = await client<ApiResponse<ScanSubmitResponse>>({
         url: '/api/scan',
@@ -66,26 +67,16 @@ export function useStartScan() {
   });
 }
 
-/**
- * PUT the local file to the presigned URL. Uses fetch, not the axios client:
- * the URL targets storage directly and must not carry our Bearer token, and
- * the signature covers Content-Type, which has to match exactly.
- */
-async function putFile(uploadUrl: string, uri: string, contentType: string) {
-  let response: Response;
+/** Wraps the shared upload so a storage failure carries a scan error code. */
+async function putScanImage(uploadUrl: string, uri: string, contentType: string) {
   try {
-    const file = await (await fetch(uri)).blob();
-    response = await fetch(uploadUrl, {
-      method: 'PUT',
-      headers: { 'Content-Type': contentType },
-      body: file,
-    });
+    await putFileToStorage(uploadUrl, uri, contentType);
   }
   catch (error) {
-    throw new ScanClientError('UPLOAD_FAILED', String(error));
+    if (error instanceof UploadFailedError)
+      throw new ScanClientError('UPLOAD_FAILED', error.message);
+    throw error;
   }
-  if (!response.ok)
-    throw new ScanClientError('UPLOAD_FAILED', `Storage responded ${response.status}`);
 }
 
 /** Polls until the scan is DONE or FAILED, then stops. */
