@@ -82,6 +82,8 @@
   --color-info-500: #1CB0F6;
   --color-info-600: #0B8FCE;
   --color-info-700: #0077B6;
+  --color-info-800: #005F92;
+  --color-info-900: #00456B;
 
   /* Purple palette (SnapVocab Royal) */
   --color-purple-50: #F4F0FF;
@@ -116,6 +118,42 @@
   --color-danger-700: #B91C1C;
   --color-danger-800: #991B1B;
   --color-danger-900: #7F1D1D;
+
+  /* Success palette */
+  --color-success-50: #F0FDF4;
+  --color-success-100: #DCFCE7;
+  --color-success-200: #BBF7D0;
+  --color-success-300: #86EFAC;
+  --color-success-400: #4ADE80;
+  --color-success-500: #22C55E;
+  --color-success-600: #16A34A;
+  --color-success-700: #15803D;
+  --color-success-800: #166534;
+  --color-success-900: #14532D;
+
+  /* Error palette (aliases danger) */
+  --color-error-50: #FEF2F2;
+  --color-error-100: #FEE2E2;
+  --color-error-200: #FECACA;
+  --color-error-300: #FCA5A5;
+  --color-error-400: #F87171;
+  --color-error-500: #EF4444;
+  --color-error-600: #DC2626;
+  --color-error-700: #B91C1C;
+  --color-error-800: #991B1B;
+  --color-error-900: #7F1D1D;
+
+  /* Warning palette */
+  --color-warning-50: #FFFBEB;
+  --color-warning-100: #FEF3C7;
+  --color-warning-200: #FDE68A;
+  --color-warning-300: #FCD34D;
+  --color-warning-400: #FBBF24;
+  --color-warning-500: #F59E0B;
+  --color-warning-600: #D97706;
+  --color-warning-700: #B45309;
+  --color-warning-800: #92400E;
+  --color-warning-900: #78350F;
 
   /* Semantic colors */
   --color-background: #ffffff;

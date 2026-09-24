@@ -26,13 +26,15 @@ export function createIcon({
   height = 24,
   elements,
 }: IconOptions) {
-  return function Icon({ fill: iconFill, color: iconColor, ...props }: SvgProps) {
+  return function Icon({ fill: iconFill, color: iconColor, ...props }: SvgProps & { size?: number }) {
     const color = iconFill ?? iconColor;
+    const resolvedWidth = props.size ?? props.width ?? width;
+    const resolvedHeight = props.size ?? props.height ?? height;
 
     return (
       <Svg
-        width={width}
-        height={height}
+        width={resolvedWidth}
+        height={resolvedHeight}
         viewBox={viewBox}
         fill="none"
         {...props}

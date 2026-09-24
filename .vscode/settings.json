@@ -53,7 +53,19 @@
   ],
 
   "typescript.tsdk": "node_modules/typescript/lib",
-  "cSpell.words": ["Flashlist", "Lato"],
+  "cSpell.words": [
+    "Flashlist",
+    "Lato",
+    "Snapy",
+    "snapy",
+    "uniwind",
+    "gian",
+    "trang",
+    "nghi"
+  ],
+  "cSpell.ignoreRegExpList": [
+    "/[a-zA-Z\\u00C0-\\u024F\\u1EA0-\\u1EF9]*[\\u00C0-\\u024F\\u1EA0-\\u1EF9][a-zA-Z\\u00C0-\\u024F\\u1EA0-\\u1EF9]*/g"
+  ],
   "i18n-ally.localesPaths": ["src/translations/"],
   "i18n-ally.keystyle": "nested",
   "i18n-ally.disabled": false, // make sure to disable i18n-ally in your global setting and only enable it for such projects

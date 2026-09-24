@@ -146,7 +146,7 @@ export function parseElementsToSections({
         schemaAttributeId: fieldDto.schemaAttributeId,
         attributeName: attribute?.name ?? 'custom_field',
         fieldLabel: fieldDto.fieldLabel || attribute?.label || 'Trường dữ liệu',
-        semanticRole: fieldDto.semanticRole || 'TARGET_WORD',
+        semanticRole: fieldDto.semanticRole ?? null,
         required: attribute?.required ?? false,
         hideIfEmpty: fieldDto.hideIfEmpty ?? false,
         audioAction: fieldDto.audioAction ?? false,

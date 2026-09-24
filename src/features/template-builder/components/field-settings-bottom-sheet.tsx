@@ -38,7 +38,7 @@ export function FieldSettingsBottomSheet({
   const [label, setLabel] = React.useState('');
   const [dataType, setDataType] = React.useState<DataType>('TEXT');
   const [required, setRequired] = React.useState(false);
-  const [role, setRole] = React.useState<SemanticRole>('TARGET_WORD');
+  const [role, setRole] = React.useState<SemanticRole | null>(null);
   const [hideIfEmpty, setHideIfEmpty] = React.useState(false);
   const [audioAction, setAudioAction] = React.useState(false);
   const [fontSize, setFontSize] = React.useState<FontSize>('M');
