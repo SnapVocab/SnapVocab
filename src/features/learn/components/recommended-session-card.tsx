@@ -247,7 +247,14 @@ export function RecommendedSessionCard({
           </View>
 
           <Pressable
-            onPress={() => router.push('/(app)/study/quiz-setup' as any)}
+            onPress={() =>
+              router.push({
+                pathname: '/(app)/study/quiz-setup',
+                params: {
+                  topicId: activeSession.topicId,
+                  topicName: activeSession.topicName,
+                },
+              } as any)}
             className="h-13 w-full flex-row items-center justify-center gap-2 rounded-xl border-b-4 border-primary-700 bg-primary-500 active:translate-y-1 active:border-b-0"
           >
             <PlayIcon width={16} height={16} stroke="#FFFFFF" fill="#FFFFFF" />

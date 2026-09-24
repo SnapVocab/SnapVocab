@@ -22,7 +22,6 @@ import {
   EditIcon,
   LayersIcon,
   LayoutGridIcon,
-  RotateCcwIcon,
 } from '@/components/ui/icons';
 import { Snapy } from '@/components/ui/snapy';
 import { useInfiniteQuizHistory } from '../api/quiz-api';
@@ -30,6 +29,7 @@ import {
   filterQuizHistoryItems,
   formatQuizAccuracy,
   formatQuizSubmittedDate,
+  quizHistoryAction,
 } from '../utils';
 
 const FILTER_TABS: { key: HistoryFilterMode; label: string }[] = [
@@ -65,18 +65,15 @@ export function QuizHistoryScreen() {
   }, [allItems, selectedFilter]);
 
   const handleCardPress = (item: QuizHistorySummaryResponse) => {
-    if (item.status === 'IN_PROGRESS') {
-      router.push({
-        pathname: '/(app)/study/quiz-session' as any,
-        params: { quizId: String(item.quizId) },
-      });
-    }
-    else {
-      router.push({
-        pathname: '/(app)/study/quiz-result' as any,
-        params: { quizId: String(item.quizId) },
-      });
-    }
+    const action = quizHistoryAction(item.status);
+    if (action === 'NONE')
+      return;
+    router.push({
+      pathname: (action === 'RESUME'
+        ? '/(app)/study/quiz-session'
+        : '/(app)/study/quiz-result') as any,
+      params: { quizId: String(item.quizId) },
+    });
   };
 
   const getModeBadge = (type: QuizMode) => {
@@ -118,6 +115,7 @@ export function QuizHistoryScreen() {
 
   const renderHistoryCard = ({ item }: { item: QuizHistorySummaryResponse }) => {
     const modeInfo = getModeBadge(item.mode);
+    const action = quizHistoryAction(item.status);
     const accuracy = formatQuizAccuracy(item.accuracy);
     const dateFormatted = formatQuizSubmittedDate(item.completedAt || item.createdAt);
     const ModeIcon = modeInfo.Icon;
@@ -145,15 +143,6 @@ export function QuizHistoryScreen() {
             </Text>
           </View>
 
-          {item.purpose === 'REVIEW' && (
-            <View className="flex-row items-center gap-1 rounded-lg border border-sky-300 bg-sky-50 px-2.5 py-1 dark:border-sky-800 dark:bg-sky-950/40">
-              <RotateCcwIcon width={12} height={12} stroke="#0284C7" />
-              <Text className="font-nunito text-[11px] font-extrabold text-sky-700 dark:text-sky-300">
-                Ôn tập
-              </Text>
-            </View>
-          )}
-
           {item.status === 'IN_PROGRESS' && (
             <View className="rounded-lg bg-amber-100 px-2.5 py-1 dark:bg-amber-950/40">
               <Text className="font-nunito text-[11px] font-bold text-amber-800 dark:text-amber-300">
@@ -161,22 +150,24 @@ export function QuizHistoryScreen() {
               </Text>
             </View>
           )}
+
+          {item.status === 'EXPIRED' && (
+            <View className="rounded-lg bg-neutral-100 px-2.5 py-1 dark:bg-neutral-700">
+              <Text className="font-nunito text-[11px] font-bold text-neutral-600 dark:text-neutral-300">
+                Hết hạn
+              </Text>
+            </View>
+          )}
         </View>
 
-        {/* 2. Middle: Topic Name, Optional Review Context & Timestamp */}
+        {/* 2. Middle: Topic Name & Timestamp */}
         <View className="mb-1">
           <Text
             numberOfLines={1}
             className="font-nunito text-[17px] font-extrabold text-mascot-navy dark:text-white"
           >
-            {item.topicName || (item.purpose === 'REVIEW' ? `Ôn tập Quiz #${item.reviewOfQuizId}` : 'Chủ đề từ vựng')}
+            {item.topicName || 'Chủ đề từ vựng'}
           </Text>
-          {item.purpose === 'REVIEW' && item.topicName && (
-            <Text className="mt-0.5 font-inter text-[13px] font-semibold text-sky-600 dark:text-sky-400">
-              Ôn tập từ Quiz #
-              {item.reviewOfQuizId}
-            </Text>
-          )}
           <Text className="mt-1 font-inter text-[12px] font-medium text-neutral-400 dark:text-neutral-500">
             {dateFormatted}
           </Text>
@@ -229,12 +220,12 @@ export function QuizHistoryScreen() {
             {/* Counts */}
             <View className="gap-0.5">
               <Text className="font-inter text-[13px] font-bold text-neutral-700 dark:text-neutral-200">
-                {item.correctCount}
+                {item.correctCount ?? 0}
                 /
                 {item.questionCount}
                 {' '}
                 đúng
-                {item.incorrectCount > 0 && (
+                {(item.incorrectCount ?? 0) > 0 && (
                   <Text className="font-semibold text-rose-600 dark:text-rose-400">
                     {' · '}
                     {item.incorrectCount}
@@ -243,23 +234,24 @@ export function QuizHistoryScreen() {
                   </Text>
                 )}
               </Text>
-              {item.unansweredCount > 0 && (
-                <Text className="font-inter text-[12px] font-medium text-neutral-400">
-                  {item.unansweredCount}
-                  {' '}
-                  bỏ qua
-                </Text>
-              )}
             </View>
           </View>
 
-          {/* Action indicator with clear touch target */}
-          <View className="min-h-10 flex-row items-center gap-1 px-1">
-            <Text className="font-nunito text-[13px] font-extrabold text-[#394158] dark:text-neutral-300">
-              {item.status === 'IN_PROGRESS' ? 'Làm tiếp' : 'Xem lại'}
-            </Text>
-            <ArrowRightIcon width={14} height={14} stroke="#394158" />
-          </View>
+          {/* Action indicator with clear touch target — an expired session offers no action */}
+          {action === 'NONE' ? (
+            <View className="min-h-10 flex-row items-center px-1">
+              <Text className="font-inter text-[12px] font-bold text-neutral-400 dark:text-neutral-500">
+                Không thể làm tiếp
+              </Text>
+            </View>
+          ) : (
+            <View className="min-h-10 flex-row items-center gap-1 px-1">
+              <Text className="font-nunito text-[13px] font-extrabold text-[#394158] dark:text-neutral-300">
+                {action === 'RESUME' ? 'Làm tiếp' : 'Xem lại'}
+              </Text>
+              <ArrowRightIcon width={14} height={14} stroke="#394158" />
+            </View>
+          )}
         </View>
       </Pressable>
     );

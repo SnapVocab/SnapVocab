@@ -1,33 +1,110 @@
-import type { PaginationObject, QuizHistorySummaryResponse } from '../types';
+import type { PaginationObject, QuizHistorySummaryResponse, QuizResultDTO } from '../types';
 import {
   filterQuizHistoryItems,
+  findResumableQuiz,
   formatQuizAccuracy,
   formatQuizDuration,
   formatQuizSubmittedDate,
+  isQuizSessionExpired,
+  quizHistoryAction,
 } from '../utils';
 
 describe('quiz-history feature and helper functions', () => {
+  // D14: the value comes from QuizResultDTO.durationSeconds, never from the play-screen stopwatch.
   describe('formatQuizDuration', () => {
-    it('formats 0 or negative duration correctly', () => {
-      expect(formatQuizDuration(0)).toBe('0s');
-      expect(formatQuizDuration(-100)).toBe('0s');
-      expect(formatQuizDuration(null)).toBe('0s');
-      expect(formatQuizDuration(undefined)).toBe('0s');
+    it('formats missing or non-positive duration as 00:00', () => {
+      expect(formatQuizDuration(0)).toBe('00:00');
+      expect(formatQuizDuration(-100)).toBe('00:00');
+      expect(formatQuizDuration(null)).toBe('00:00');
+      expect(formatQuizDuration(undefined)).toBe('00:00');
     });
 
-    it('formats seconds only when under 1 minute', () => {
-      expect(formatQuizDuration(45000)).toBe('45s');
-      expect(formatQuizDuration(5000)).toBe('5s');
+    it('formats under an hour as mm:ss', () => {
+      expect(formatQuizDuration(45)).toBe('00:45');
+      expect(formatQuizDuration(105)).toBe('01:45');
+      expect(formatQuizDuration(600)).toBe('10:00');
+      expect(formatQuizDuration(3599)).toBe('59:59');
     });
 
-    it('formats exact minutes with no seconds remainder', () => {
-      expect(formatQuizDuration(60000)).toBe('1m');
-      expect(formatQuizDuration(120000)).toBe('2m');
+    it('formats an hour and over as hh:mm:ss', () => {
+      expect(formatQuizDuration(3600)).toBe('01:00:00');
+      expect(formatQuizDuration(3665)).toBe('01:01:05');
+    });
+  });
+
+  describe('isQuizSessionExpired', () => {
+    it('detects the QUIZ_SESSION_EXPIRED error code (D16)', () => {
+      expect(isQuizSessionExpired({ response: { data: { error: 'QUIZ_SESSION_EXPIRED' } } })).toBe(true);
     });
 
-    it('formats minutes and padded seconds', () => {
-      expect(formatQuizDuration(65000)).toBe('1m 05s');
-      expect(formatQuizDuration(154000)).toBe('2m 34s');
+    it('ignores other failures', () => {
+      expect(isQuizSessionExpired({ response: { data: { error: 'QUIZ_NOT_IN_PROGRESS' } } })).toBe(false);
+      expect(isQuizSessionExpired(new Error('network'))).toBe(false);
+      expect(isQuizSessionExpired(null)).toBe(false);
+    });
+  });
+
+  describe('quizHistoryAction', () => {
+    it('offers resume only for a session the backend still reports IN_PROGRESS', () => {
+      expect(quizHistoryAction('IN_PROGRESS')).toBe('RESUME');
+    });
+
+    it('offers nothing for an EXPIRED session (D16)', () => {
+      expect(quizHistoryAction('EXPIRED')).toBe('NONE');
+    });
+
+    it('offers review for finished sessions', () => {
+      expect(quizHistoryAction('COMPLETED')).toBe('REVIEW');
+      expect(quizHistoryAction('CANCELLED')).toBe('REVIEW');
+    });
+  });
+
+  describe('result review of incorrect answers (D15)', () => {
+    const result: QuizResultDTO = {
+      quizId: 9,
+      status: 'COMPLETED',
+      mode: 'MCQ',
+      direction: 'EN_VI',
+      topicId: 1,
+      topicName: 'TOEFL Core',
+      summary: { totalUnits: 2, correctCount: 1, incorrectCount: 1, accuracy: 0.5 },
+      completedAt: '2026-09-19T07:05:00.000Z',
+      cancelledAt: null,
+      durationSeconds: 105,
+      items: [
+        {
+          questionId: 1,
+          position: 1,
+          prompt: 'book',
+          learnerAnswer: 'quyển vở',
+          correctAnswer: 'quyển sách',
+          outcome: 'INCORRECT',
+          resolved: true,
+          attemptCount: 1,
+        },
+        {
+          questionId: 2,
+          position: 2,
+          prompt: 'pen',
+          learnerAnswer: 'cái bút',
+          correctAnswer: 'cái bút',
+          outcome: 'CORRECT',
+          resolved: true,
+          attemptCount: 1,
+        },
+      ],
+    };
+
+    it('reviews wrong answers straight from result items, with no extra request', () => {
+      const wrong = result.items.filter(i => i.outcome === 'INCORRECT');
+      expect(wrong).toHaveLength(1);
+      expect(wrong[0].prompt).toBe('book');
+      expect(wrong[0].learnerAnswer).toBe('quyển vở');
+      expect(wrong[0].correctAnswer).toBe('quyển sách');
+    });
+
+    it('renders the duration the backend calculated, not a client stopwatch', () => {
+      expect(formatQuizDuration(result.durationSeconds)).toBe('01:45');
     });
   });
 
@@ -67,46 +144,43 @@ describe('quiz-history feature and helper functions', () => {
     const mockHistoryItems: QuizHistorySummaryResponse[] = [
       {
         quizId: 101,
-        purpose: 'STANDARD',
-        reviewOfQuizId: null,
+        topicId: 1,
         topicName: 'TOEFL Core',
         status: 'COMPLETED',
         mode: 'MCQ',
+        direction: 'EN_VI',
         questionCount: 10,
         correctCount: 9,
         incorrectCount: 1,
-        unansweredCount: 0,
         accuracy: 0.9,
         createdAt: '2026-09-19T07:00:00.000Z',
         completedAt: '2026-09-19T07:05:00.000Z',
       },
       {
         quizId: 102,
-        purpose: 'STANDARD',
-        reviewOfQuizId: null,
+        topicId: 2,
         topicName: 'IELTS Academic',
         status: 'COMPLETED',
         mode: 'MATCHING',
+        direction: 'VI_EN',
         questionCount: 5,
         correctCount: 5,
         incorrectCount: 0,
-        unansweredCount: 0,
         accuracy: 1.0,
         createdAt: '2026-09-19T07:15:00.000Z',
         completedAt: '2026-09-19T07:18:00.000Z',
       },
       {
         quizId: 103,
-        purpose: 'REVIEW',
-        reviewOfQuizId: 101,
+        topicId: 1,
         topicName: 'TOEFL Core',
         status: 'IN_PROGRESS',
         mode: 'FILL_BLANK',
-        questionCount: 1,
-        correctCount: 0,
-        incorrectCount: 0,
-        unansweredCount: 0,
-        accuracy: 0,
+        direction: 'EN_VI',
+        questionCount: 5,
+        correctCount: null,
+        incorrectCount: null,
+        accuracy: null,
         createdAt: '2026-09-19T07:30:00.000Z',
         completedAt: null,
       },
@@ -127,9 +201,50 @@ describe('quiz-history feature and helper functions', () => {
       expect(fillBlankItems[0].quizId).toBe(103);
     });
 
+    // D18: Setup "Bắt đầu" must spot the unfinished session of the SAME context, and only that one.
+    describe('findResumableQuiz', () => {
+      const unfinished: QuizHistorySummaryResponse = {
+        ...mockHistoryItems[2],
+        quizId: 201,
+        mode: 'MCQ',
+        direction: 'EN_VI',
+        questionCount: 5,
+        topicId: 1,
+      };
+      const request = {
+        topicId: 1,
+        mode: 'MCQ',
+        direction: 'EN_VI',
+        requestedCount: 5,
+      } as const;
+
+      it('finds the IN_PROGRESS session matching topic, mode, direction and size', () => {
+        expect(findResumableQuiz([...mockHistoryItems, unfinished], request)?.quizId).toBe(201);
+      });
+
+      it('never resumes another context or a finished session', () => {
+        expect(findResumableQuiz([{ ...unfinished, topicId: 2 }], request)).toBeUndefined();
+        expect(findResumableQuiz([{ ...unfinished, direction: 'VI_EN' }], request)).toBeUndefined();
+        expect(findResumableQuiz([{ ...unfinished, questionCount: 10 }], request)).toBeUndefined();
+        expect(findResumableQuiz([{ ...unfinished, mode: 'MATCHING' }], request)).toBeUndefined();
+        expect(findResumableQuiz([{ ...unfinished, status: 'COMPLETED' }], request)).toBeUndefined();
+        expect(findResumableQuiz([{ ...unfinished, status: 'EXPIRED' }], request)).toBeUndefined();
+        expect(findResumableQuiz([], request)).toBeUndefined();
+      });
+
+      it('matches FILL_BLANK, where the request carries no direction', () => {
+        const fillBlank = { ...unfinished, mode: 'FILL_BLANK' as const, direction: null as any };
+        expect(findResumableQuiz([fillBlank], {
+          topicId: 1,
+          mode: 'FILL_BLANK',
+          requestedCount: 5,
+        })?.quizId).toBe(201);
+      });
+    });
+
     it('calculates total correct answers across history items', () => {
       const totalCorrect = mockHistoryItems.reduce(
-        (acc, item) => acc + item.correctCount,
+        (acc, item) => acc + (item.correctCount ?? 0),
         0,
       );
       expect(totalCorrect).toBe(14);

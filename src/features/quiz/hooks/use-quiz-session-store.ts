@@ -1,19 +1,19 @@
 import type { StateStorage } from 'zustand/middleware';
-import type { QuizAnswerStatus, QuizPlayResponse } from '../types';
+import type { QuizOutcome, QuizPlayDTO } from '../types';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 import { storage } from '@/lib/storage';
 
 export type PendingUnitRequest = {
   unitKey: string;
-  action: 'CHECK' | 'SKIP';
+  action: 'CHECK';
   payload: any;
   idempotencyKey: string;
   stagedAt: number;
 };
 
 export type UnitFeedback = {
-  answerStatus: QuizAnswerStatus;
+  outcome: QuizOutcome;
   correct: boolean | null;
   feedback?: Record<string, any>;
 };
@@ -32,12 +32,7 @@ type QuizSessionStore = {
   stagePendingRequest: (sessionKey: string, request: PendingUnitRequest) => void;
   clearPendingRequest: (sessionKey: string, unitKey: string) => void;
   commitQuestionFeedback: (sessionKey: string, questionId: number, feedback: UnitFeedback) => void;
-  commitMatchingRoundFeedbacks: (
-    sessionKey: string,
-    roundUnitKey: string,
-    pairs: { questionId: number; answerStatus: QuizAnswerStatus; correct: boolean }[],
-  ) => void;
-  syncWithServerPlay: (sessionKey: string, playData: QuizPlayResponse) => void;
+  syncWithServerPlay: (sessionKey: string, playData: QuizPlayDTO) => void;
   clearSession: (sessionKey: string) => void;
 };
 
@@ -144,30 +139,6 @@ export const useQuizSessionStore = create<QuizSessionStore>()(
         });
       },
 
-      commitMatchingRoundFeedbacks: (sessionKey, roundUnitKey, pairs) => {
-        set((state) => {
-          const session = state.sessions[sessionKey] || { ...DEFAULT_SESSION };
-          const { [roundUnitKey]: _, ...remainingPending } = session.pendingRequests;
-          const newFeedbacks = { ...session.committedFeedbacks };
-          for (const p of pairs) {
-            newFeedbacks[p.questionId] = {
-              answerStatus: p.answerStatus,
-              correct: p.correct,
-            };
-          }
-          return {
-            sessions: {
-              ...state.sessions,
-              [sessionKey]: {
-                ...session,
-                pendingRequests: remainingPending,
-                committedFeedbacks: newFeedbacks,
-              },
-            },
-          };
-        });
-      },
-
       syncWithServerPlay: (sessionKey, playData) => {
         set((state) => {
           const session = state.sessions[sessionKey] || { ...DEFAULT_SESSION };
@@ -175,15 +146,12 @@ export const useQuizSessionStore = create<QuizSessionStore>()(
           const remainingPending = { ...session.pendingRequests };
 
           for (const q of playData.questions) {
-            if (q.feedback && q.feedback.answerStatus !== 'UNCOMMITTED') {
-              updatedFeedbacks[q.id] = {
-                answerStatus: q.feedback.answerStatus as QuizAnswerStatus,
-                correct: q.feedback.correct,
+            if (q.resolved && q.outcome !== 'UNCOMMITTED') {
+              updatedFeedbacks[q.questionId] = {
+                outcome: q.outcome,
+                correct: q.outcome === 'CORRECT',
               };
-              delete remainingPending[`q_${q.id}`];
-              if (q.roundNo) {
-                delete remainingPending[`round_${q.roundNo}`];
-              }
+              delete remainingPending[`q_${q.questionId}`];
             }
           }
 

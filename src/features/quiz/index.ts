@@ -2,6 +2,7 @@ export * from './api/quiz-api';
 export * from './components/fill-blank-quiz-view';
 export * from './components/matching-quiz-view';
 export * from './components/multiple-choice-quiz-view';
+export * from './components/topic-select-bottom-sheet';
 export * from './hooks/use-quiz-session-store';
 export * from './screens/quiz-history-screen';
 export * from './screens/quiz-result-screen';

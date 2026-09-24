@@ -1,20 +1,21 @@
 import type { AxiosError } from 'axios';
 import type {
-  CheckMatchingRoundRequest,
   CheckQuestionRequest,
   CreateQuizRequest,
-  MatchingRoundCommitDto,
+  MatchingAttemptDTO,
+  MatchingAttemptRequest,
   PaginationObject,
-  QuestionCommitDto,
-  QuizCompleteDto,
-  QuizHistorySummaryResponse,
-  QuizLifecycleDto,
-  QuizPlayDto,
-  QuizPlayResponse,
-  QuizResultResponse,
+  QuestionCheckDTO,
+  QuizHistoryItemDTO,
+  QuizLifecycleDTO,
+  QuizPlayDTO,
+  QuizResultDTO,
 } from '../types';
 import type { ApiResponse } from '@/features/auth/api';
+import type { TopicDTO } from '@/features/learn/types';
+import type { PaginateResponse } from '@/lib/api/types';
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useCollections } from '@/features/learn/api';
 import { client } from '@/lib/api';
 
 // ---------------------------------------------------------------------------
@@ -29,23 +30,23 @@ export type CreateQuizParams = {
 export async function createQuiz(
   data: CreateQuizRequest,
   idempotencyKey: string,
-): Promise<QuizPlayDto> {
-  const response = await client<ApiResponse<QuizPlayDto>>({
-    url: '/api/v1/me/quizzes',
+): Promise<QuizPlayDTO> {
+  const response = await client<ApiResponse<QuizPlayDTO>>({
+    url: '/api/me/quizzes',
     method: 'POST',
     headers: {
       'Idempotency-Key': idempotencyKey,
     },
     data,
   });
-  return response.data.data;
+  return response.data.data ?? (response.data as unknown as QuizPlayDTO);
 }
 
 export function useCreateQuiz() {
   const queryClient = useQueryClient();
 
   return useMutation<
-    QuizPlayDto,
+    QuizPlayDTO,
     AxiosError<ApiResponse<unknown>>,
     CreateQuizParams
   >({
@@ -57,19 +58,19 @@ export function useCreateQuiz() {
 }
 
 // ---------------------------------------------------------------------------
-// 2. Resume / Query Quiz Lifecycle Snapshot
+// 2. Get / Resume Quiz Session
 // ---------------------------------------------------------------------------
 
-export async function getQuiz(quizId: number): Promise<QuizPlayDto> {
-  const response = await client<ApiResponse<QuizPlayDto>>({
-    url: `/api/v1/me/quizzes/${quizId}`,
+export async function getQuiz(quizId: number): Promise<QuizPlayDTO> {
+  const response = await client<ApiResponse<QuizPlayDTO>>({
+    url: `/api/me/quizzes/${quizId}`,
     method: 'GET',
   });
-  return response.data.data;
+  return response.data.data ?? (response.data as unknown as QuizPlayDTO);
 }
 
 export function useQuiz(quizId?: number | null, options?: { enabled?: boolean }) {
-  return useQuery<QuizPlayDto, AxiosError<ApiResponse<unknown>>>({
+  return useQuery<QuizPlayDTO, AxiosError<ApiResponse<unknown>>>({
     queryKey: ['quiz', quizId],
     queryFn: () => getQuiz(quizId as number),
     enabled: quizId !== undefined && quizId !== null && (options?.enabled ?? true),
@@ -77,27 +78,7 @@ export function useQuiz(quizId?: number | null, options?: { enabled?: boolean })
 }
 
 // ---------------------------------------------------------------------------
-// 3. Play with Feedback
-// ---------------------------------------------------------------------------
-
-export async function getQuizPlay(quizId: number): Promise<QuizPlayResponse> {
-  const response = await client<ApiResponse<QuizPlayResponse>>({
-    url: `/api/v1/me/quizzes/${quizId}/play`,
-    method: 'GET',
-  });
-  return response.data.data;
-}
-
-export function useQuizPlay(quizId?: number | null, options?: { enabled?: boolean }) {
-  return useQuery<QuizPlayResponse, AxiosError<ApiResponse<unknown>>>({
-    queryKey: ['quiz-play', quizId],
-    queryFn: () => getQuizPlay(quizId as number),
-    enabled: quizId !== undefined && quizId !== null && (options?.enabled ?? true),
-  });
-}
-
-// ---------------------------------------------------------------------------
-// 4. Check & Skip Question (MCQ / Fill Blank)
+// 3. Check Question (MCQ / FILL_BLANK)
 // ---------------------------------------------------------------------------
 
 export type CheckQuestionParams = {
@@ -110,21 +91,21 @@ export async function checkQuestion(
   questionId: number,
   data: CheckQuestionRequest,
   idempotencyKey: string,
-): Promise<QuestionCommitDto> {
-  const response = await client<ApiResponse<QuestionCommitDto>>({
-    url: `/api/v1/questions/${questionId}/check`,
+): Promise<QuestionCheckDTO> {
+  const response = await client<ApiResponse<QuestionCheckDTO>>({
+    url: `/api/questions/${questionId}/check`,
     method: 'POST',
     headers: {
       'Idempotency-Key': idempotencyKey,
     },
     data,
   });
-  return response.data.data;
+  return response.data.data ?? (response.data as unknown as QuestionCheckDTO);
 }
 
 export function useCheckQuestion() {
   return useMutation<
-    QuestionCommitDto,
+    QuestionCheckDTO,
     AxiosError<ApiResponse<unknown>>,
     CheckQuestionParams
   >({
@@ -133,130 +114,68 @@ export function useCheckQuestion() {
   });
 }
 
-export type SkipQuestionParams = {
-  questionId: number;
-  idempotencyKey: string;
-};
-
-export async function skipQuestion(
-  questionId: number,
-  idempotencyKey: string,
-): Promise<QuestionCommitDto> {
-  const response = await client<ApiResponse<QuestionCommitDto>>({
-    url: `/api/v1/questions/${questionId}/skip`,
-    method: 'POST',
-    headers: {
-      'Idempotency-Key': idempotencyKey,
-    },
-  });
-  return response.data.data;
-}
-
-export function useSkipQuestion() {
-  return useMutation<
-    QuestionCommitDto,
-    AxiosError<ApiResponse<unknown>>,
-    SkipQuestionParams
-  >({
-    mutationFn: ({ questionId, idempotencyKey }) =>
-      skipQuestion(questionId, idempotencyKey),
-  });
-}
-
 // ---------------------------------------------------------------------------
-// 5. Check & Skip Matching Round
+// 4. Matching Pair Attempt
 // ---------------------------------------------------------------------------
 
-export type CheckMatchingRoundParams = {
+export type AttemptMatchingPairParams = {
   quizId: number;
   roundNo: number;
-  data: CheckMatchingRoundRequest;
+  data: MatchingAttemptRequest;
   idempotencyKey: string;
 };
 
-export async function checkMatchingRound({
+export async function attemptMatchingPair({
   quizId,
   roundNo,
   data,
   idempotencyKey,
-}: CheckMatchingRoundParams): Promise<MatchingRoundCommitDto> {
-  const response = await client<ApiResponse<MatchingRoundCommitDto>>({
-    url: `/api/v1/me/quizzes/${quizId}/rounds/${roundNo}/check`,
+}: AttemptMatchingPairParams): Promise<MatchingAttemptDTO> {
+  const response = await client<ApiResponse<MatchingAttemptDTO>>({
+    url: `/api/me/quizzes/${quizId}/rounds/${roundNo}/attempts`,
     method: 'POST',
     headers: {
       'Idempotency-Key': idempotencyKey,
     },
     data,
   });
-  return response.data.data;
+  return response.data.data ?? (response.data as unknown as MatchingAttemptDTO);
 }
 
-export function useCheckMatchingRound() {
+export function useAttemptMatchingPair() {
   return useMutation<
-    MatchingRoundCommitDto,
+    MatchingAttemptDTO,
     AxiosError<ApiResponse<unknown>>,
-    CheckMatchingRoundParams
+    AttemptMatchingPairParams
   >({
-    mutationFn: params => checkMatchingRound(params),
-  });
-}
-
-export type SkipMatchingRoundParams = {
-  quizId: number;
-  roundNo: number;
-  idempotencyKey: string;
-};
-
-export async function skipMatchingRound(
-  quizId: number,
-  roundNo: number,
-  idempotencyKey: string,
-): Promise<MatchingRoundCommitDto> {
-  const response = await client<ApiResponse<MatchingRoundCommitDto>>({
-    url: `/api/v1/me/quizzes/${quizId}/rounds/${roundNo}/skip`,
-    method: 'POST',
-    headers: {
-      'Idempotency-Key': idempotencyKey,
-    },
-  });
-  return response.data.data;
-}
-
-export function useSkipMatchingRound() {
-  return useMutation<
-    MatchingRoundCommitDto,
-    AxiosError<ApiResponse<unknown>>,
-    SkipMatchingRoundParams
-  >({
-    mutationFn: ({ quizId, roundNo, idempotencyKey }) =>
-      skipMatchingRound(quizId, roundNo, idempotencyKey),
+    mutationFn: params => attemptMatchingPair(params),
   });
 }
 
 // ---------------------------------------------------------------------------
-// 6. Complete, Cancel & Review Quiz
+// 5. Complete & Cancel Quiz
 // ---------------------------------------------------------------------------
 
-export async function completeQuiz(quizId: number): Promise<QuizCompleteDto> {
-  const response = await client<ApiResponse<QuizCompleteDto>>({
-    url: `/api/v1/me/quizzes/${quizId}/complete`,
+export async function completeQuiz(quizId: number): Promise<QuizResultDTO> {
+  const response = await client<ApiResponse<QuizResultDTO>>({
+    url: `/api/me/quizzes/${quizId}/complete`,
     method: 'POST',
   });
-  return response.data.data;
+  return response.data.data ?? (response.data as unknown as QuizResultDTO);
 }
 
 export function useCompleteQuiz() {
   const queryClient = useQueryClient();
 
   return useMutation<
-    QuizCompleteDto,
+    QuizResultDTO,
     AxiosError<ApiResponse<unknown>>,
     number
   >({
     mutationFn: (quizId: number) => completeQuiz(quizId),
     onSuccess: (data) => {
+      queryClient.setQueryData(['quiz-result', data.quizId], data);
       queryClient.invalidateQueries({ queryKey: ['quiz', data.quizId] });
-      queryClient.invalidateQueries({ queryKey: ['quiz-play', data.quizId] });
       queryClient.invalidateQueries({ queryKey: ['quiz-history'] });
     },
   });
@@ -264,93 +183,58 @@ export function useCompleteQuiz() {
 
 export type CancelQuizParams = {
   quizId: number;
-  idempotencyKey: string;
+  idempotencyKey?: string;
 };
 
 export async function cancelQuiz(
   quizId: number,
-  idempotencyKey: string,
-): Promise<QuizLifecycleDto> {
-  const response = await client<ApiResponse<QuizLifecycleDto>>({
-    url: `/api/v1/me/quizzes/${quizId}/cancel`,
+  idempotencyKey?: string,
+): Promise<QuizLifecycleDTO> {
+  const headers: Record<string, string> = {};
+  if (idempotencyKey) {
+    headers['Idempotency-Key'] = idempotencyKey;
+  }
+  const response = await client<ApiResponse<QuizLifecycleDTO>>({
+    url: `/api/me/quizzes/${quizId}/cancel`,
     method: 'POST',
-    headers: {
-      'Idempotency-Key': idempotencyKey,
-    },
+    headers,
   });
-  return response.data.data;
+  return response.data.data ?? (response.data as unknown as QuizLifecycleDTO);
 }
 
 export function useCancelQuiz() {
   const queryClient = useQueryClient();
 
   return useMutation<
-    QuizLifecycleDto,
+    QuizLifecycleDTO,
     AxiosError<ApiResponse<unknown>>,
     CancelQuizParams
   >({
     mutationFn: ({ quizId, idempotencyKey }) => cancelQuiz(quizId, idempotencyKey),
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['quiz', data.quizId] });
-      queryClient.invalidateQueries({ queryKey: ['quiz-play', data.quizId] });
-      queryClient.invalidateQueries({ queryKey: ['quiz-history'] });
-    },
-  });
-}
-
-export type ReviewQuizParams = {
-  sourceQuizId: number;
-  idempotencyKey: string;
-};
-
-export async function reviewQuiz(
-  sourceQuizId: number,
-  idempotencyKey: string,
-): Promise<QuizPlayDto> {
-  const response = await client<ApiResponse<QuizPlayDto>>({
-    url: `/api/v1/me/quizzes/${sourceQuizId}/review`,
-    method: 'POST',
-    headers: {
-      'Idempotency-Key': idempotencyKey,
-    },
-  });
-  return response.data.data;
-}
-
-export function useReviewQuiz() {
-  const queryClient = useQueryClient();
-
-  return useMutation<
-    QuizPlayDto,
-    AxiosError<ApiResponse<unknown>>,
-    ReviewQuizParams
-  >({
-    mutationFn: ({ sourceQuizId, idempotencyKey }) =>
-      reviewQuiz(sourceQuizId, idempotencyKey),
-    onSuccess: (data) => {
-      queryClient.setQueryData(['quiz', data.quizId], data);
       queryClient.invalidateQueries({ queryKey: ['quiz-history'] });
     },
   });
 }
 
 // ---------------------------------------------------------------------------
-// 7. Result
+// 6. Result
 // ---------------------------------------------------------------------------
 
-export async function getQuizResult(quizId: number): Promise<QuizResultResponse> {
-  const response = await client<ApiResponse<QuizResultResponse>>({
-    url: `/api/v1/me/quizzes/${quizId}/result`,
+export async function getQuizResult(quizId: number): Promise<QuizResultDTO> {
+  const response = await client<ApiResponse<QuizResultDTO>>({
+    url: `/api/me/quizzes/${quizId}/result`,
     method: 'GET',
   });
-  return response.data.data;
+  return response.data.data ?? (response.data as unknown as QuizResultDTO);
 }
 
 export function useQuizResult(
   quizId?: number | null,
   options?: { enabled?: boolean },
 ) {
-  return useQuery<QuizResultResponse, AxiosError<ApiResponse<unknown>>>({
+  return useQuery<QuizResultDTO, AxiosError<ApiResponse<unknown>>>({
     queryKey: ['quiz-result', quizId],
     queryFn: () => getQuizResult(quizId as number),
     enabled: quizId !== undefined && quizId !== null && (options?.enabled ?? true),
@@ -358,7 +242,7 @@ export function useQuizResult(
 }
 
 // ---------------------------------------------------------------------------
-// 8. History (Paging via page / size)
+// 7. History (Paging via page / size)
 // ---------------------------------------------------------------------------
 
 export type GetQuizHistoryParams = {
@@ -368,23 +252,20 @@ export type GetQuizHistoryParams = {
 
 export async function getQuizHistory(
   params?: GetQuizHistoryParams,
-): Promise<PaginationObject<QuizHistorySummaryResponse[]>> {
-  const response = await client<any>({
-    url: '/api/v1/me/quizzes',
+): Promise<PaginationObject<QuizHistoryItemDTO[]>> {
+  const response = await client<ApiResponse<PaginationObject<QuizHistoryItemDTO[]>>>({
+    url: '/api/me/quizzes',
     method: 'GET',
     params: {
       page: params?.page ?? 0,
       size: params?.size ?? 20,
     },
   });
-  if (response.data?.data && response.data?.data?.meta) {
-    return response.data.data;
-  }
-  return response.data;
+  return response.data.data;
 }
 
 export function useQuizHistory(params?: GetQuizHistoryParams) {
-  return useQuery<PaginationObject<QuizHistorySummaryResponse[]>, AxiosError>({
+  return useQuery<PaginationObject<QuizHistoryItemDTO[]>, AxiosError>({
     queryKey: ['quiz-history', params?.page, params?.size],
     queryFn: () => getQuizHistory(params),
   });
@@ -402,4 +283,52 @@ export function useInfiniteQuizHistory(size = 20) {
       return page + 1 < pages ? page + 1 : undefined;
     },
   });
+}
+
+// ---------------------------------------------------------------------------
+// 8. Available Topics for Quiz Setup
+// ---------------------------------------------------------------------------
+
+export type QuizAvailableTopic = TopicDTO & {
+  collectionName: string;
+};
+
+export function useQuizAvailableTopics() {
+  const { data: collections = [], isLoading: isLoadingCollections } = useCollections();
+
+  const query = useQuery<QuizAvailableTopic[]>({
+    queryKey: ['quiz-available-topics', collections.map(c => c.id)],
+    queryFn: async () => {
+      if (!collections || collections.length === 0)
+        return [];
+
+      const topicLists = await Promise.all(
+        collections.map(async (col) => {
+          try {
+            const res = await client<ApiResponse<PaginateResponse<TopicDTO>>>({
+              url: `/api/collections/${col.id}/topics`,
+              method: 'GET',
+              params: { size: 100 },
+            });
+            const list = res.data?.data?.data ?? [];
+            return list.map(t => ({
+              ...t,
+              collectionName: col.name,
+            }));
+          }
+          catch {
+            return [];
+          }
+        }),
+      );
+
+      return topicLists.flat();
+    },
+    enabled: collections.length > 0,
+  });
+
+  return {
+    ...query,
+    isLoading: isLoadingCollections || query.isLoading,
+  };
 }

@@ -1,200 +1,225 @@
-export type QuizMode = 'MCQ' | 'MULTIPLE_CHOICE' | 'MATCHING' | 'FILL_BLANK';
+export type QuizMode = 'MCQ' | 'MATCHING' | 'FILL_BLANK';
 
 export type QuizDirection = 'EN_VI' | 'VI_EN';
 
+/** EXPIRED = system closed an unfinished session on its 24h TTL (D16), not a learner cancel. */
 export type QuizStatus = 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED' | 'EXPIRED';
 
-export type QuizPurpose = 'STANDARD' | 'REVIEW';
+export type QuizOutcome = 'UNCOMMITTED' | 'CORRECT' | 'INCORRECT';
 
-export type QuizAnswerStatus = 'UNCOMMITTED' | 'CORRECT' | 'INCORRECT' | 'UNANSWERED';
+export type QuizErrorCode
+  = | 'INVALID_REQUEST'
+    | 'IDEMPOTENCY_KEY_REQUIRED'
+    | 'QUIZ_NOT_FOUND'
+    | 'QUESTION_ALREADY_CHECKED'
+    | 'MATCHING_LEFT_ALREADY_RESOLVED'
+    | 'MATCHING_TILE_ALREADY_MATCHED'
+    | 'QUIZ_NOT_IN_PROGRESS'
+    | 'QUIZ_HAS_UNRESOLVED_UNITS'
+    | 'QUIZ_NOT_FINISHED'
+    | 'TOPIC_TEMPLATE_NOT_CONFIGURED'
+    | 'SEMANTIC_ROLE_NOT_BOUND'
+    | 'SEMANTIC_ROLE_AMBIGUOUS'
+    | 'QUIZ_INSUFFICIENT_ELIGIBLE_ITEMS'
+    | 'NOT_ENOUGH_DISTINCT_ANSWERS'
+    | 'INVALID_OPTION'
+    | 'INVALID_MATCHING_PAIR'
+    | 'QUIZ_SESSION_EXPIRED';
 
-export type QuizOption = {
-  key: string;
-  displayOrder?: number;
-  label: string;
-};
-
-export type QuizTile = {
-  roundNo: number;
-  key: string;
-  displayOrder?: number;
-  label: string;
-};
-
-export type QuizFeedback = {
-  answerStatus: QuizAnswerStatus;
-  correct: boolean | null;
-  selectedOptionKey?: string | null;
-  correctOptionKey?: string | null;
-};
-
-export type QuizQuestion = {
-  id: number;
-  position: number;
-  roundNo?: number | null;
-  mode?: QuizMode;
-  direction?: QuizDirection;
-  prompt: string;
-  hint?: string | null;
-  options?: QuizOption[];
-  feedback?: QuizFeedback | null;
-};
-
-export type MatchingRound = {
-  roundNo: number;
-  questions: QuizQuestion[];
-  tiles: QuizTile[];
-};
-
-export type QuizSummarySnapshot = {
-  totalUnits?: number;
-  questionCount?: number;
-  correctCount?: number;
-  incorrectCount?: number;
-  unansweredCount?: number;
-  accuracy?: number; // 0..1 from server
-  completedAt?: string;
-  purpose?: string;
-  [key: string]: any;
+export type QuizErrorData = {
+  requestedCount?: number;
+  eligibleCount?: number;
+  allowedCounts?: number[];
+  semanticRole?: string;
+  unresolvedCount?: number;
+  [key: string]: unknown;
 };
 
 // ---------------------------------------------------------------------------
-// API Request & Response DTOs
+// 1. Create Quiz Request
 // ---------------------------------------------------------------------------
 
 export type CreateQuizRequest = {
   topicId: number;
   mode: QuizMode;
-  direction: QuizDirection;
-  requestedCount: number;
+  direction?: QuizDirection;
+  requestedCount: 5 | 10 | 20;
 };
 
-export type QuizPlayQuestionDto = {
-  id: number;
-  position: number;
-  roundNo: number | null;
-  mode: string;
-  direction: string;
-  sourceSnapshot?: Record<string, any>;
-  promptSnapshot: string;
-  options: {
-    key: string;
-    displayOrder: number;
-    label: string;
-  }[];
-};
+// ---------------------------------------------------------------------------
+// 2. Play / Session DTOs
+// ---------------------------------------------------------------------------
 
-export type QuizPlayTileDto = {
-  roundNo: number;
+export type QuizPlayOption = {
   key: string;
-  displayOrder: number;
   label: string;
+  displayOrder: number;
 };
 
-export type QuizPlayDto = {
-  quizId: number;
-  status: QuizStatus;
-  questions: QuizPlayQuestionDto[];
-  matchingTiles: QuizPlayTileDto[];
-};
-
-export type QuizQuestionPlayResponseDto = {
-  id: number;
+export type QuizPlayQuestion = {
+  questionId: number;
   position: number;
-  roundNo: number | null;
-  mode: string;
-  direction: string;
   prompt: string;
-  options: {
-    key: string;
-    displayOrder: number;
-    label: string;
-  }[];
-  feedback: {
-    answerStatus: string;
-    correct: boolean | null;
-    selectedOptionKey?: string | null;
-    correctOptionKey?: string | null;
-  } | null;
+  options: QuizPlayOption[];
+  outcome: QuizOutcome;
+  resolved: boolean;
 };
 
-export type QuizPlayResponse = {
-  quizId: number;
-  status: QuizStatus;
-  purpose: QuizPurpose;
-  questions: QuizQuestionPlayResponseDto[];
-  matchingTiles: QuizPlayTileDto[];
-};
-
-export type CheckQuestionRequest = {
-  answer: string;
-};
-
-export type QuestionCommitDto = {
+export type QuizPlayLeftTile = {
+  key: string;
+  label: string;
+  displayOrder: number;
   questionId: number;
-  answerStatus: QuizAnswerStatus;
-  correct: boolean;
-  feedback: Record<string, any>;
+  outcome: QuizOutcome;
+  resolved: boolean;
+  attemptCount: number;
 };
 
-export type CheckMatchingRoundRequest = {
-  pairs: {
-    questionId: number;
-    tileKey: string;
-  }[];
+export type QuizPlayRightTile = {
+  key: string;
+  label: string;
+  displayOrder: number;
+  matched: boolean;
 };
 
-export type MatchingRoundPairResult = {
-  questionId: number;
-  answerStatus: QuizAnswerStatus;
-  correct: boolean;
-};
-
-export type MatchingRoundCommitDto = {
-  quizId: number;
+export type QuizPlayMatchingRound = {
   roundNo: number;
-  pairs: MatchingRoundPairResult[];
-  correctCount: number;
-  incorrectCount: number;
-  unansweredCount: number;
+  totalPairs: number;
+  matchedCount: number;
+  completed: boolean;
+  leftTiles: QuizPlayLeftTile[];
+  rightTiles: QuizPlayRightTile[];
 };
 
-export type QuizCompleteDto = {
+export type QuizPlayDTO = {
   quizId: number;
-  status: QuizStatus;
-  summary: QuizSummarySnapshot;
-  rewardGrantId: number | null;
-};
-
-export type QuizLifecycleDto = {
-  quizId: number;
-  status: QuizStatus;
-};
-
-export type QuizResultResponse = {
-  quizId: number;
-  status: QuizStatus;
-  purpose: QuizPurpose;
-  reviewOfQuizId: number | null;
-  summary: QuizSummarySnapshot;
-  outcomes: QuizFeedback[];
-};
-
-export type QuizHistorySummaryResponse = {
-  quizId: number;
-  purpose: QuizPurpose;
-  reviewOfQuizId: number | null;
-  topicName: string;
   status: QuizStatus;
   mode: QuizMode;
-  questionCount: number;
+  direction: QuizDirection;
+  topicId: number;
+  topicName: string;
+  requestedCount: number;
+  questions: QuizPlayQuestion[];
+  matchingRounds: QuizPlayMatchingRound[];
+};
+
+// Backward-compat aliases
+export type QuizPlayDto = QuizPlayDTO;
+
+// ---------------------------------------------------------------------------
+// 3. Question Check (MCQ & FILL_BLANK)
+// ---------------------------------------------------------------------------
+
+export type CheckQuestionRequest = {
+  optionKey?: string;
+  answer?: string;
+};
+
+export type QuestionCheckDTO = {
+  questionId: number;
+  outcome: QuizOutcome;
+  correct: boolean;
+  correctAnswer: string;
+  correctOptionKey?: string;
+};
+
+// ---------------------------------------------------------------------------
+// 4. Matching Pair Attempt
+// ---------------------------------------------------------------------------
+
+export type MatchingAttemptRequest = {
+  leftTileKey: string;
+  rightTileKey: string;
+};
+
+export type MatchingAttemptDTO = {
+  quizId: number;
+  roundNo: number;
+  leftTileKey: string;
+  rightTileKey: string;
+  correct: boolean;
+  attemptNo: number;
+  outcome: QuizOutcome;
+  resolved: boolean;
+  round: {
+    matchedCount: number;
+    totalPairs: number;
+    completed: boolean;
+  };
+};
+
+// ---------------------------------------------------------------------------
+// 5. Completion & Result
+// ---------------------------------------------------------------------------
+
+export type QuizResultSummary = {
+  totalUnits: number;
   correctCount: number;
   incorrectCount: number;
-  unansweredCount: number;
   accuracy: number; // 0..1
+};
+
+export type QuizResultItem = {
+  questionId: number;
+  position: number;
+  roundNo?: number | null;
+  prompt: string;
+  learnerAnswer?: string | null;
+  correctAnswer: string;
+  outcome: QuizOutcome;
+  resolved: boolean;
+  attemptCount: number;
+};
+
+export type QuizResultDTO = {
+  quizId: number;
+  status: QuizStatus;
+  mode: QuizMode;
+  direction: QuizDirection;
+  topicId: number;
+  topicName: string;
+  summary: QuizResultSummary;
+  completedAt?: string | null;
+  cancelledAt?: string | null;
+  /** Backend-calculated completedAt - createdAt (D14); null unless the quiz is COMPLETED. */
+  durationSeconds?: number | null;
+  items: QuizResultItem[];
+};
+
+export type QuizResultResponse = QuizResultDTO;
+
+export type QuizLifecycleDTO = {
+  quizId: number;
+  status: QuizStatus;
+  cancelledAt?: string | null;
+};
+
+export type QuizLifecycleDto = QuizLifecycleDTO;
+
+// ---------------------------------------------------------------------------
+// 6. History
+// ---------------------------------------------------------------------------
+
+export type QuizHistoryItemDTO = {
+  quizId: number;
+  topicId: number;
+  topicName: string;
+  mode: QuizMode;
+  direction: QuizDirection;
+  status: QuizStatus;
+  questionCount: number;
+  correctCount: number | null;
+  incorrectCount: number | null;
+  accuracy: number | null;
   createdAt: string;
   completedAt: string | null;
 };
+
+export type QuizHistorySummaryResponse = QuizHistoryItemDTO;
+
+// ---------------------------------------------------------------------------
+// 7. Pagination
+// ---------------------------------------------------------------------------
 
 export type PaginationMeta = {
   page: number;
@@ -206,5 +231,4 @@ export type PaginationMeta = {
 export type PaginationObject<T> = {
   data: T;
   meta: PaginationMeta;
-  schema?: any;
 };

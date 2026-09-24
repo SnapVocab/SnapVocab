@@ -101,7 +101,7 @@ export type BuilderField = {
   schemaAttributeId: number; // Linked attribute ID from backend schema
   attributeName: string; // e.g. 'word', 'phonetic', 'meaning', 'example'
   fieldLabel: string; // Display label (e.g. 'Từ vựng', 'Phiên âm', 'Bản dịch / Nghĩa')
-  semanticRole: SemanticRole;
+  semanticRole: SemanticRole | null;
   required: boolean; // "Bắt buộc điền thông tin" toggle
   hideIfEmpty: boolean; // "Tự động ẩn ô này nếu để trống" toggle
   audioAction: boolean; // "Phát âm thanh khi chạm" toggle
@@ -118,7 +118,7 @@ export type CustomFieldInput = {
   label: string; // Display label (e.g. 'Từ đồng nghĩa')
   dataType: DataType; // 'TEXT' | 'AUDIO' | 'IMAGE' | 'NUMBER' | 'BOOLEAN'
   required: boolean;
-  semanticRole: SemanticRole;
+  semanticRole?: SemanticRole | null;
 };
 
 export type BuilderSection = {

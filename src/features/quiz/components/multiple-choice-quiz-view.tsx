@@ -1,8 +1,11 @@
 /* eslint-disable max-lines-per-function */
+import type { QuizPlayDTO } from '../types';
 import type { SnapyPose } from '@/components/ui/snapy';
+import { useRouter } from 'expo-router';
 import * as React from 'react';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
+  ActivityIndicator,
   Dimensions,
   Easing,
   Modal,
@@ -26,177 +29,28 @@ import {
 } from '@/components/ui/icons';
 import { Snapy } from '@/components/ui/snapy';
 import { cn } from '@/lib/utils';
+import { useCancelQuiz, useCheckQuestion, useCompleteQuiz } from '../api/quiz-api';
+import { useExpiredSessionHandler } from '../hooks/use-expired-session-handler';
+import { generateIdempotencyKey } from '../utils/idempotency';
 
-// ==========================================
-// TYPES & QUESTION BANK (20 VOCABULARY ITEMS)
-// ==========================================
 type CheckState = 'IDLE' | 'CORRECT' | 'INCORRECT';
 
-export type QuestionItem = {
-  id: string;
-  word: string;
-  ipa: string;
-  meaningVi: string;
-  promptText: string;
-  promptSubtext: string;
-  correctText: string;
-  correctId: string;
-  options: { id: string; text: string }[];
-};
-
-export const BASE_VOCABULARY = [
-  { id: 'v1', word: 'abandon', ipa: '/əˈbændən/', meaning: 'Từ bỏ, ruồng bỏ', distractorVi: ['Cải thiện, phát triển', 'Đạt được thành tích', 'Trì hoãn, hoãn lại'], distractorEn: ['improve', 'achieve', 'delay'] },
-  { id: 'v2', word: 'achieve', ipa: '/əˈtʃiːv/', meaning: 'Đạt được, hoàn thành', distractorVi: ['Bảo vệ, gìn giữ', 'Phát hiện ra', 'Thất bại hoàn toàn'], distractorEn: ['protect', 'discover', 'abandon'] },
-  { id: 'v3', word: 'boarding pass', ipa: '/ˈbɔːrdɪŋ pæs/', meaning: 'Thẻ lên máy bay', distractorVi: ['Hộ chiếu xuất cảnh', 'Hóa đơn hành lý', 'Thẻ căn cước công dân'], distractorEn: ['passport', 'invoice', 'luggage'] },
-  { id: 'v4', word: 'departure', ipa: '/dɪˈpɑːrtʃər/', meaning: 'Sự khởi hành, xuất phát', distractorVi: ['Sự chậm trễ', 'Nơi hạ cánh', 'Sự hoãn lại'], distractorEn: ['destination', 'delay', 'arrival'] },
-  { id: 'v5', word: 'destination', ipa: '/ˌdestɪˈneɪʃn/', meaning: 'Điểm đến, đích đến', distractorVi: ['Khoảng cách hành trình', 'Phương tiện vận chuyển', 'Thời gian bay'], distractorEn: ['departure', 'vehicle', 'schedule'] },
-  { id: 'v6', word: 'improve', ipa: '/ɪmˈpruːv/', meaning: 'Cải thiện, nâng cao', distractorVi: ['Từ bỏ cơ hội', 'Gặp gỡ trao đổi', 'Ghi chép cẩn thận'], distractorEn: ['abandon', 'meet', 'record'] },
-  { id: 'v7', word: 'luggage', ipa: '/ˈlʌɡɪdʒ/', meaning: 'Hành lý, đồ đạc xách tay', distractorVi: ['Ghế ngồi thương gia', 'Cửa ra máy bay', 'Phiếu thanh toán'], distractorEn: ['terminal', 'boarding pass', 'receipt'] },
-  { id: 'v8', word: 'efficient', ipa: '/ɪˈfɪʃnt/', meaning: 'Hiệu quả, năng suất cao', distractorVi: ['Tốn kém, lãng phí', 'Khó khăn, phức tạp', 'Chậm chạp, trì trệ'], distractorEn: ['wasteful', 'difficult', 'slow'] },
-  { id: 'v9', word: 'passenger', ipa: '/ˈpæsɪndʒər/', meaning: 'Hành khách trên chuyến đi', distractorVi: ['Phi công điều khiển', 'Nhân viên an ninh', 'Người hướng dẫn'], distractorEn: ['pilot', 'security', 'guide'] },
-  { id: 'v10', word: 'reservation', ipa: '/ˌrezərˈveɪʃn/', meaning: 'Sự đặt chỗ, giữ chỗ trước', distractorVi: ['Sự hủy chuyến', 'Hóa đơn tiền phòng', 'Hợp đồng lao động'], distractorEn: ['cancellation', 'invoice', 'contract'] },
-  { id: 'v11', word: 'itinerary', ipa: '/aɪˈtɪnəreri/', meaning: 'Lịch trình, kế hoạch chuyến đi', distractorVi: ['Bản đồ du lịch', 'Chi phí phát sinh', 'Phương tiện công cộng'], distractorEn: ['map', 'expense', 'transit'] },
-  { id: 'v12', word: 'delay', ipa: '/dɪˈleɪ/', meaning: 'Sự trì hoãn, làm chậm trễ', distractorVi: ['Sự khẩn cấp', 'Khởi hành sớm', 'Tăng tốc di chuyển'], distractorEn: ['urgent', 'departure', 'speed'] },
-  { id: 'v13', word: 'terminal', ipa: '/ˈtɜːrmɪnl/', meaning: 'Nhà ga sân bay, bến bãi', distractorVi: ['Đường băng cất cánh', 'Tháp không lưu', 'Quầy làm thủ tục'], distractorEn: ['runway', 'control tower', 'desk'] },
-  { id: 'v14', word: 'customs', ipa: '/ˈkʌstəmz/', meaning: 'Cơ quan hải quan, thuế quan', distractorVi: ['Đồn công an biên giới', 'Khu vực cách ly y tế', 'Quầy đổi ngoại tệ'], distractorEn: ['police', 'quarantine', 'exchange'] },
-  { id: 'v15', word: 'flight attendant', ipa: '/ˈflaɪt əˌtendənt/', meaning: 'Tiếp viên hàng không', distractorVi: ['Nhân viên bốc dỡ', 'Nhân viên bán vé', 'Kỹ thuật viên tàu bay'], distractorEn: ['loader', 'agent', 'mechanic'] },
-  { id: 'v16', word: 'negotiate', ipa: '/nɪˈɡoʊʃieɪt/', meaning: 'Đàm phán, thương lượng', distractorVi: ['Chấp thuận ngay', 'Từ chối thẳng thừng', 'Ký kết hoàn tất'], distractorEn: ['accept', 'refuse', 'sign'] },
-  { id: 'v17', word: 'contract', ipa: '/ˈkɑːntrækt/', meaning: 'Bản hợp đồng giao dịch', distractorVi: ['Báo cáo tài chính', 'Biên bản cuộc họp', 'Lời hứa miệng'], distractorEn: ['report', 'minutes', 'promise'] },
-  { id: 'v18', word: 'colleague', ipa: '/ˈkɑːliːɡ/', meaning: 'Đồng nghiệp cùng cơ quan', distractorVi: ['Khách hàng đối tác', 'Cấp trên trực tiếp', 'Đối thủ cạnh tranh'], distractorEn: ['client', 'boss', 'rival'] },
-  { id: 'v19', word: 'deadline', ipa: '/ˈdedlaɪn/', meaning: 'Hạn chót hoàn thành công việc', distractorVi: ['Lịch hẹn gặp', 'Giờ mở cửa văn phòng', 'Thời gian bắt đầu'], distractorEn: ['appointment', 'opening', 'start'] },
-  { id: 'v20', word: 'presentation', ipa: '/ˌpriːzenˈteɪʃn/', meaning: 'Bài thuyết trình, báo cáo', distractorVi: ['Cuộc phỏng vấn xin việc', 'Bản thảo bài viết', 'Tài liệu hướng dẫn'], distractorEn: ['interview', 'draft', 'manual'] },
-];
-
-export type MultipleChoiceResult = {
-  score: number;
-  total: number;
-  xp: number;
-  coin: number;
-  time: string;
-  topicId?: string;
-  topicName?: string;
-  deckId?: string;
-  mode: string;
-  direction?: 'EN_VI' | 'VI_EN';
-  wrongAnswers: Array<{
-    id: string;
-    word: string;
-    ipa: string;
-    correct: string;
-    yours: string;
-  }>;
-};
-
 export type MultipleChoiceQuizViewProps = {
-  topicId?: string;
-  topicName?: string;
-  deckId?: string;
-  count?: number;
-  direction?: 'EN_VI' | 'VI_EN';
-  reviewWrong?: boolean;
-  wrongData?: string;
+  quiz: QuizPlayDTO;
   onExit: () => void;
-  onComplete: (result: MultipleChoiceResult) => void;
 };
 
-export function MultipleChoiceQuizView({
-  topicId = 't1',
-  topicName = 'Chủ đề từ vựng',
-  deckId = 't1',
-  count = 5,
-  direction = 'EN_VI',
-  reviewWrong = false,
-  wrongData,
-  onExit,
-  onComplete,
-}: MultipleChoiceQuizViewProps) {
-  // 1. Determine questions list ensuring exact count
-  const questions = useMemo<QuestionItem[]>(() => {
-    if (reviewWrong && wrongData) {
-      try {
-        const parsed = JSON.parse(wrongData);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          return parsed.map((item: any, idx: number) => {
-            const isViEn = direction === 'VI_EN';
-            return {
-              id: `rw_${idx}`,
-              word: item.word,
-              ipa: item.ipa || '/.../',
-              meaningVi: item.correct,
-              promptText: isViEn ? (item.correct || item.meaningVi) : item.word,
-              promptSubtext: isViEn ? '(Chọn từ tiếng Anh chính xác)' : (item.ipa || ''),
-              correctText: isViEn ? item.word : item.correct,
-              correctId: 'opt1',
-              options: (isViEn
-                ? [
-                    { id: 'opt1', text: item.word },
-                    { id: 'opt2', text: 'abandon' },
-                    { id: 'opt3', text: 'improve' },
-                    { id: 'opt4', text: 'achieve' },
-                  ]
-                : [
-                    { id: 'opt1', text: item.correct },
-                    { id: 'opt2', text: 'Từ bỏ, ruồng bỏ' },
-                    { id: 'opt3', text: 'Cải thiện, phát triển' },
-                    { id: 'opt4', text: 'Đạt được thành tích' },
-                  ]).sort(() => Math.random() - 0.5),
-            };
-          });
-        }
-      }
-      catch {
-        // fallback to standard generation
-      }
-    }
-
-    const isViEn = direction === 'VI_EN';
-    const targetCount = Math.max(1, count);
-    const generated: QuestionItem[] = [];
-
-    for (let i = 0; i < targetCount; i++) {
-      const vocab = BASE_VOCABULARY[i % BASE_VOCABULARY.length];
-      const correctId = `opt_${i}_correct`;
-
-      let optionsList: { id: string; text: string }[] = [];
-      if (isViEn) {
-        optionsList = [
-          { id: correctId, text: vocab.word },
-          { id: `opt_${i}_d1`, text: vocab.distractorEn[0] },
-          { id: `opt_${i}_d2`, text: vocab.distractorEn[1] },
-          { id: `opt_${i}_d3`, text: vocab.distractorEn[2] },
-        ];
-      }
-      else {
-        optionsList = [
-          { id: correctId, text: vocab.meaning },
-          { id: `opt_${i}_d1`, text: vocab.distractorVi[0] },
-          { id: `opt_${i}_d2`, text: vocab.distractorVi[1] },
-          { id: `opt_${i}_d3`, text: vocab.distractorVi[2] },
-        ];
-      }
-
-      // Shuffle options
-      optionsList.sort(() => Math.random() - 0.5);
-
-      generated.push({
-        id: `q_${i}_${vocab.id}`,
-        word: vocab.word,
-        ipa: vocab.ipa,
-        meaningVi: vocab.meaning,
-        promptText: isViEn ? vocab.meaning : vocab.word,
-        promptSubtext: isViEn ? '(Chọn từ tiếng Anh tương ứng)' : vocab.ipa,
-        correctText: isViEn ? vocab.word : vocab.meaning,
-        correctId,
-        options: optionsList,
-      });
-    }
-
-    return generated;
-  }, [count, direction, reviewWrong, wrongData]);
+export function MultipleChoiceQuizView({ quiz, onExit }: MultipleChoiceQuizViewProps) {
+  const router = useRouter();
+  const questions = quiz.questions || [];
 
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [selectedOpt, setSelectedOpt] = useState<string | null>(null);
+  const [selectedOptKey, setSelectedOptKey] = useState<string | null>(null);
   const [checkState, setCheckState] = useState<CheckState>('IDLE');
+  const [correctAnswerText, setCorrectAnswerText] = useState<string>('');
+  const [correctOptionKey, setCorrectOptionKey] = useState<string | null>(null);
+  const [idempotencyKey, setIdempotencyKey] = useState<string>(() => generateIdempotencyKey());
+
   const [mascotPose, setMascotPose] = useState<SnapyPose>('tap_trung');
   const [mascotAnim, setMascotAnim] = useState<string>('idle');
   const [isSpeaking, setIsSpeaking] = useState(false);
@@ -216,20 +70,6 @@ export function MultipleChoiceQuizView({
     const s = totalSecs % 60;
     return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
   };
-
-  // Score & Performance Tracking
-  const [score, setScore] = useState(0);
-  const [wrongAnswers, setWrongAnswers] = useState<Array<{
-    id: string;
-    word: string;
-    ipa: string;
-    correct: string;
-    yours: string;
-  }>>([]);
-  const startTimeRef = useRef<number>(0);
-  useEffect(() => {
-    startTimeRef.current = Date.now();
-  }, []);
 
   // Animations
   const bottomBarAnim = useRef(new RNAnimated.Value(0)).current;
@@ -302,73 +142,78 @@ export function MultipleChoiceQuizView({
       settle,
       RNAnimated.parallel([revealQuestion, revealOptions]),
     ]).start();
-  }, []);
+  }, [contentOpacity, contentTranslateY, mascotScaleX, mascotScaleY, mascotTranslateY, optionsAnims]);
 
   const currentQ = questions[currentIndex] || questions[0];
-  const progressPercent = ((currentIndex) / questions.length) * 100;
+  const progressPercent = questions.length > 0 ? (currentIndex / questions.length) * 100 : 0;
+
+  const checkMutation = useCheckQuestion();
+  const completeMutation = useCompleteQuiz();
+  const cancelMutation = useCancelQuiz();
+  const handleExpiredSession = useExpiredSessionHandler();
 
   const handleCheck = () => {
-    if (!selectedOpt || checkState !== 'IDLE')
+    if (!selectedOptKey || checkState !== 'IDLE' || checkMutation.isPending || !currentQ)
       return;
 
-    const isCorrect = selectedOpt === currentQ.correctId;
-    setCheckState(isCorrect ? 'CORRECT' : 'INCORRECT');
-    setMascotPose(isCorrect ? 'nhay_len' : 'bat_ngo');
-    setMascotAnim(isCorrect ? 'celebrate' : 'shake');
+    checkMutation.mutate(
+      {
+        questionId: currentQ.questionId,
+        data: { optionKey: selectedOptKey },
+        idempotencyKey,
+      },
+      {
+        onSuccess: (data) => {
+          const isCorrect = data.correct;
+          setCheckState(isCorrect ? 'CORRECT' : 'INCORRECT');
+          setCorrectAnswerText(data.correctAnswer);
+          setCorrectOptionKey(data.correctOptionKey || null);
+          setMascotPose(isCorrect ? 'nhay_len' : 'bat_ngo');
+          setMascotAnim(isCorrect ? 'celebrate' : 'shake');
 
-    if (isCorrect) {
-      setScore(s => s + 1);
-    }
-    else {
-      const chosen = currentQ.options.find(o => o.id === selectedOpt)?.text || '';
-      setWrongAnswers(prev => [
-        ...prev,
-        {
-          id: currentQ.id,
-          word: currentQ.word,
-          ipa: currentQ.ipa,
-          correct: currentQ.correctText,
-          yours: chosen,
+          // Mascot reaction bounce
+          RNAnimated.sequence([
+            RNAnimated.timing(mascotScaleY, { toValue: 0.88, duration: 90, useNativeDriver: true }),
+            RNAnimated.spring(mascotScaleY, { toValue: 1, friction: 4, tension: 40, useNativeDriver: true }),
+          ]).start();
+
+          // Spring bottom bar
+          bottomBarAnim.setValue(0);
+          RNAnimated.spring(bottomBarAnim, {
+            toValue: 1,
+            friction: 6,
+            tension: 40,
+            useNativeDriver: true,
+          }).start();
         },
-      ]);
-    }
-
-    // Mascot reaction bounce
-    RNAnimated.sequence([
-      RNAnimated.timing(mascotScaleY, { toValue: 0.88, duration: 90, useNativeDriver: true }),
-      RNAnimated.spring(mascotScaleY, { toValue: 1, friction: 4, tension: 40, useNativeDriver: true }),
-    ]).start();
-
-    // Spring bottom bar
-    bottomBarAnim.setValue(0);
-    RNAnimated.spring(bottomBarAnim, {
-      toValue: 1,
-      friction: 6,
-      tension: 40,
-      useNativeDriver: true,
-    }).start();
+        onError: (error) => {
+          handleExpiredSession(error);
+          // Keep idempotencyKey so re-tap retries with same key
+        },
+      },
+    );
   };
 
   const handleNext = () => {
     if (currentIndex + 1 >= questions.length) {
-      const elapsed = Math.max(1, Math.round((Date.now() - startTimeRef.current) / 1000));
-      const finalScore = score;
-      const totalQuestions = questions.length;
-      const xpEarned = finalScore * 10;
-      const coinEarned = finalScore * 5;
-
-      onComplete({
-        score: finalScore,
-        total: totalQuestions,
-        xp: xpEarned,
-        coin: coinEarned,
-        time: formatTimer(elapsed),
-        topicId,
-        topicName,
-        deckId,
-        mode: 'MULTIPLE_CHOICE',
-        direction,
-        wrongAnswers,
+      if (completeMutation.isPending)
+        return;
+      completeMutation.mutate(quiz.quizId, {
+        onSuccess: () => {
+          router.replace({
+            pathname: '/(app)/study/quiz-result' as any,
+            params: { quizId: String(quiz.quizId) },
+          });
+        },
+        onError: (error) => {
+          if (handleExpiredSession(error))
+            return;
+          // On complete error, still attempt to navigate to result
+          router.replace({
+            pathname: '/(app)/study/quiz-result' as any,
+            params: { quizId: String(quiz.quizId) },
+          });
+        },
       });
       return;
     }
@@ -380,10 +225,12 @@ export function MultipleChoiceQuizView({
       easing: Easing.out(Easing.quad),
       useNativeDriver: true,
     }).start(() => {
-      // Update state
       setCurrentIndex(prev => prev + 1);
-      setSelectedOpt(null);
+      setSelectedOptKey(null);
       setCheckState('IDLE');
+      setCorrectAnswerText('');
+      setCorrectOptionKey(null);
+      setIdempotencyKey(generateIdempotencyKey()); // New key for next question
       setMascotPose('tap_trung');
       setMascotAnim('idle');
       bottomBarAnim.setValue(0);
@@ -397,6 +244,12 @@ export function MultipleChoiceQuizView({
         useNativeDriver: true,
       }).start();
     });
+  };
+
+  const handleExitConfirm = () => {
+    setShowExitModal(false);
+    cancelMutation.mutate({ quizId: quiz.quizId });
+    onExit();
   };
 
   const translateY = bottomBarAnim.interpolate({
@@ -422,7 +275,13 @@ export function MultipleChoiceQuizView({
             <View className="h-3 w-full overflow-hidden rounded-full bg-neutral-200">
               <View
                 className="h-full rounded-full bg-primary-500"
-                style={{ width: `${checkState === 'IDLE' ? progressPercent : ((currentIndex + 1) / questions.length) * 100}%` }}
+                style={{
+                  width: `${
+                    checkState === 'IDLE'
+                      ? progressPercent
+                      : ((currentIndex + 1) / questions.length) * 100
+                  }%`,
+                }}
               />
             </View>
           </View>
@@ -474,11 +333,11 @@ export function MultipleChoiceQuizView({
           <RNAnimated.View style={{ opacity: contentOpacity, transform: [{ translateY: contentTranslateY }] }}>
             <View className="mb-2 flex-row items-center justify-between">
               <Text className="font-inter text-[13px] font-bold tracking-wide text-neutral-400 uppercase">
-                {direction === 'VI_EN' ? 'Chọn từ tiếng Anh phù hợp' : 'Chọn nghĩa tiếng Việt đúng'}
+                {quiz.direction === 'VI_EN' ? 'Chọn từ tiếng Anh phù hợp' : 'Chọn nghĩa tiếng Việt đúng'}
               </Text>
               <View className="rounded-md bg-neutral-100 px-2 py-0.5">
                 <Text className="font-inter text-[10px] font-bold text-neutral-500">
-                  {direction === 'VI_EN' ? '🇻🇳 ➔ 🇬🇧' : '🇬🇧 ➔ 🇻🇳'}
+                  {quiz.direction === 'VI_EN' ? '🇻🇳 ➔ 🇬🇧' : '🇬🇧 ➔ 🇻🇳'}
                 </Text>
               </View>
             </View>
@@ -486,15 +345,12 @@ export function MultipleChoiceQuizView({
             <View className="mb-1.5 flex-row items-center justify-between rounded-2xl border-2 border-neutral-100 bg-white p-4">
               <View className="flex-1 pr-2">
                 <Text className="font-nunito text-[28px] leading-tight font-extrabold text-mascot-navy">
-                  {currentQ.promptText}
-                </Text>
-                <Text className="mt-0.5 font-inter text-[15px] font-medium text-neutral-400">
-                  {currentQ.promptSubtext}
+                  {currentQ?.prompt}
                 </Text>
               </View>
 
               <TouchableOpacity
-                onPress={() => playPronunciation(currentQ.word)}
+                onPress={() => playPronunciation(currentQ?.prompt || '')}
                 activeOpacity={0.7}
                 className={cn(
                   'size-12 items-center justify-center rounded-2xl border',
@@ -510,10 +366,10 @@ export function MultipleChoiceQuizView({
 
           {/* 3. ANSWER OPTIONS */}
           <View className="mt-4 gap-3">
-            {currentQ.options.map((opt, idx) => {
-              const isSelected = selectedOpt === opt.id;
+            {currentQ?.options?.map((opt, idx) => {
+              const isSelected = selectedOptKey === opt.key;
               const isSubmitted = checkState !== 'IDLE';
-              const isCorrectOption = opt.id === currentQ.correctId;
+              const isCorrectOption = opt.key === correctOptionKey;
 
               let containerStyle = 'bg-white border-neutral-200 border-b-[4px]';
               let textStyle = 'text-mascot-navy';
@@ -542,7 +398,7 @@ export function MultipleChoiceQuizView({
 
               return (
                 <RNAnimated.View
-                  key={opt.id}
+                  key={opt.key}
                   style={{
                     opacity: animVal,
                     transform: [{
@@ -551,26 +407,24 @@ export function MultipleChoiceQuizView({
                   }}
                 >
                   <TouchableOpacity
-                    onPress={() => !isSubmitted && setSelectedOpt(opt.id)}
-                    disabled={isSubmitted}
+                    onPress={() => !isSubmitted && setSelectedOptKey(opt.key)}
+                    disabled={isSubmitted || checkMutation.isPending}
                     activeOpacity={0.85}
-                    className={cn(
-                      'flex-row items-center rounded-2xl border-2 p-4',
-                      containerStyle,
-                    )}
+                    className={cn('flex-row items-center rounded-2xl border-2 p-4', containerStyle)}
                   >
-                    <View className={cn(
-                      'mr-3 size-7 items-center justify-center rounded-lg border-2',
-                      isSelected && !isSubmitted
-                        ? 'border-primary-500 bg-primary-500'
-                        : isSubmitted && isSelected && checkState === 'CORRECT'
-                          ? 'border-success-500 bg-success-500'
-                          : isSubmitted && isSelected && checkState === 'INCORRECT'
-                            ? 'border-error-500 bg-error-500'
-                            : isSubmitted && isCorrectOption
-                              ? 'border-success-500 bg-success-500'
-                              : 'border-neutral-200 bg-neutral-50',
-                    )}
+                    <View
+                      className={cn(
+                        'mr-3 size-7 items-center justify-center rounded-lg border-2',
+                        isSelected && !isSubmitted
+                          ? 'border-primary-500 bg-primary-500'
+                          : isSubmitted && isSelected && checkState === 'CORRECT'
+                            ? 'border-success-500 bg-success-500'
+                            : isSubmitted && isSelected && checkState === 'INCORRECT'
+                              ? 'border-error-500 bg-error-500'
+                              : isSubmitted && isCorrectOption
+                                ? 'border-success-500 bg-success-500'
+                                : 'border-neutral-200 bg-neutral-50',
+                      )}
                     >
                       {isSelected && !isSubmitted && (
                         <CheckIcon size={14} className="text-white" />
@@ -585,12 +439,14 @@ export function MultipleChoiceQuizView({
                         <CheckCircleIcon size={16} className="text-white" />
                       )}
                       {!isSelected && !isSubmitted && (
-                        <Text className="text-[12px] font-bold text-neutral-400">{String.fromCharCode(65 + idx)}</Text>
+                        <Text className="text-[12px] font-bold text-neutral-400">
+                          {String.fromCharCode(65 + idx)}
+                        </Text>
                       )}
                     </View>
 
                     <Text className={cn('flex-1 font-inter text-[15px] font-bold', textStyle)}>
-                      {opt.text}
+                      {opt.label}
                     </Text>
                   </TouchableOpacity>
                 </RNAnimated.View>
@@ -601,137 +457,137 @@ export function MultipleChoiceQuizView({
         </RNAnimated.View>
       </ScrollView>
 
-      {/* 4. BOTTOM ACTION & FEEDBACK BAR */}
-      <RNAnimated.View style={{ opacity: contentOpacity }}>
-        {checkState === 'IDLE'
-          ? (
-              <View className="border-t border-neutral-200 bg-white p-5">
-                <TouchableOpacity
-                  onPress={handleCheck}
-                  disabled={!selectedOpt}
-                  activeOpacity={0.85}
-                  style={!selectedOpt ? { opacity: 0.8 } : undefined}
-                  className={cn(
-                    'h-14 w-full items-center justify-center rounded-2xl',
-                    selectedOpt
-                      ? 'border-b-4 border-primary-700 bg-primary-500'
-                      : 'border-b-4 border-neutral-300 bg-neutral-200',
-                  )}
-                >
-                  <Text className={cn(
-                    'font-nunito text-[16px] font-extrabold tracking-wider uppercase',
-                    selectedOpt ? 'text-white' : 'text-neutral-400',
-                  )}
-                  >
-                    KIỂM TRA
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            )
-          : (
-              <RNAnimated.View style={{ transform: [{ translateY }] }}>
-                <View className={cn(
-                  'border-t-2 p-5',
-                  checkState === 'CORRECT' ? 'border-success-200 bg-success-50' : 'border-error-200 bg-error-50',
-                )}
-                >
-                  <View className="mb-4 flex-row items-start justify-between">
-                    <View className="flex-1 flex-row items-center gap-3 pr-2">
-                      <View className={cn(
-                        'size-11 items-center justify-center rounded-2xl border',
-                        checkState === 'CORRECT' ? 'border-success-200 bg-white' : 'border-error-200 bg-white',
-                      )}
-                      >
-                        {checkState === 'CORRECT'
-                          ? (
-                              <CheckCircleIcon size={26} className="text-success-500" />
-                            )
-                          : (
-                              <XCircleIcon size={26} className="text-error-500" />
-                            )}
-                      </View>
-                      <View className="flex-1">
-                        <Text className={cn(
-                          'font-nunito text-[19px] font-extrabold',
-                          checkState === 'CORRECT' ? 'text-success-700' : 'text-error-700',
-                        )}
-                        >
-                          {checkState === 'CORRECT' ? 'Chính xác! Rất tuyệt! 🎯' : 'Chưa đúng rồi!'}
-                        </Text>
-                        {checkState === 'INCORRECT' && (
-                          <Text className="mt-0.5 font-inter text-[13px] font-bold text-error-600">
-                            Đáp án:
-                            {' '}
-                            <Text className="font-extrabold">{currentQ.correctText}</Text>
-                          </Text>
-                        )}
-                      </View>
-                    </View>
-                    {checkState === 'CORRECT' && (
-                      <View className="rounded-xl border border-warning-300 bg-warning-100 px-2.5 py-1">
-                        <Text className="font-nunito text-[14px] font-extrabold text-warning-700">+10 XP</Text>
-                      </View>
-                    )}
-                  </View>
-
-                  <TouchableOpacity
-                    onPress={handleNext}
-                    activeOpacity={0.85}
-                    className={cn(
-                      'h-14 w-full flex-row items-center justify-center gap-2 rounded-2xl border-b-4',
-                      checkState === 'CORRECT'
-                        ? 'border-success-700 bg-success-500'
-                        : 'border-error-700 bg-error-500',
-                    )}
-                  >
-                    <Text className="font-nunito text-[16px] font-extrabold tracking-wider text-white uppercase">
-                      {currentIndex + 1 >= questions.length ? 'XEM KẾT QUẢ' : 'TIẾP TỤC'}
-                    </Text>
-                    <ArrowRightIcon size={20} className="text-white" />
-                  </TouchableOpacity>
-                </View>
-              </RNAnimated.View>
+      {/* 4. STATIC CHECK BUTTON (IDLE) */}
+      {checkState === 'IDLE' && (
+        <View className="border-t border-neutral-100 bg-white p-4">
+          <Pressable
+            onPress={handleCheck}
+            disabled={!selectedOptKey || checkMutation.isPending}
+            className={cn(
+              'h-13 w-full flex-row items-center justify-center gap-2 rounded-2xl border-b-4',
+              selectedOptKey && !checkMutation.isPending
+                ? 'border-primary-700 bg-primary-500 active:translate-y-px active:border-b-2'
+                : 'border-neutral-200 bg-neutral-200',
             )}
-      </RNAnimated.View>
+          >
+            {checkMutation.isPending ? (
+              <ActivityIndicator size="small" color="#FFFFFF" />
+            ) : (
+              <>
+                <Text
+                  className={cn(
+                    'font-nunito text-[16px] font-extrabold uppercase',
+                    selectedOptKey ? 'text-white' : 'text-neutral-400',
+                  )}
+                >
+                  Kiểm tra
+                </Text>
+                <ArrowRightIcon
+                  size={18}
+                  className={selectedOptKey ? 'text-white' : 'text-neutral-400'}
+                />
+              </>
+            )}
+          </Pressable>
+        </View>
+      )}
 
-      {/* 5. MODAL XÁC NHẬN THOÁT AN TOÀN */}
-      <Modal
-        visible={showExitModal}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setShowExitModal(false)}
-      >
-        <View
-          style={{ backgroundColor: 'rgba(0, 0, 0, 0.6)' }}
-          className="flex-1 items-center justify-center p-6"
+      {/* 5. SLIDE-UP FEEDBACK BOTTOM BAR (SUBMITTED) */}
+      {checkState !== 'IDLE' && (
+        <RNAnimated.View
+          style={{ transform: [{ translateY }] }}
+          className={cn(
+            'border-t-2 p-5',
+            checkState === 'CORRECT' ? 'border-success-500 bg-success-50' : 'border-error-500 bg-error-50',
+          )}
         >
-          <View className="w-full max-w-sm items-center rounded-3xl bg-white p-6">
-            <Snapy pose="suy_nghi" animation="idle" style={{ width: 100, height: 100 }} className="mb-3" />
+          <View className="mb-4 flex-row items-center gap-3">
+            <View
+              className={cn(
+                'size-10 items-center justify-center rounded-full',
+                checkState === 'CORRECT' ? 'bg-success-500' : 'bg-error-500',
+              )}
+            >
+              {checkState === 'CORRECT' ? (
+                <CheckCircleIcon size={24} className="text-white" />
+              ) : (
+                <XCircleIcon size={24} className="text-white" />
+              )}
+            </View>
 
-            <Text className="mb-1.5 text-center font-nunito text-[20px] font-extrabold text-mascot-navy">
-              Bạn muốn dừng bài Quiz?
+            <View className="flex-1">
+              <Text
+                className={cn(
+                  'font-nunito text-[18px] font-extrabold',
+                  checkState === 'CORRECT' ? 'text-success-800' : 'text-error-800',
+                )}
+              >
+                {checkState === 'CORRECT' ? 'Chính xác! Tuyệt vời lắm! 🎉' : 'Chưa chính xác rồi! 🤔'}
+              </Text>
+
+              {checkState === 'INCORRECT' && correctAnswerText && (
+                <Text className="mt-0.5 font-inter text-[13px] font-medium text-error-700">
+                  Đáp án đúng:
+                  {' '}
+                  <Text className="font-bold text-error-900">{correctAnswerText}</Text>
+                </Text>
+              )}
+            </View>
+          </View>
+
+          <Pressable
+            onPress={handleNext}
+            disabled={completeMutation.isPending}
+            className={cn(
+              'h-13 w-full flex-row items-center justify-center gap-2 rounded-2xl border-b-4 active:translate-y-px active:border-b-2',
+              checkState === 'CORRECT'
+                ? 'border-success-700 bg-success-500'
+                : 'border-error-700 bg-error-500',
+              completeMutation.isPending && 'opacity-70',
+            )}
+          >
+            {completeMutation.isPending ? (
+              <ActivityIndicator size="small" color="#FFFFFF" />
+            ) : (
+              <>
+                <Text className="font-nunito text-[16px] font-extrabold text-white uppercase">
+                  {currentIndex + 1 >= questions.length ? 'Hoàn thành' : 'Tiếp tục'}
+                </Text>
+                <ArrowRightIcon size={18} className="text-white" />
+              </>
+            )}
+          </Pressable>
+        </RNAnimated.View>
+      )}
+
+      {/* 6. EXIT CONFIRMATION MODAL */}
+      <Modal visible={showExitModal} transparent animationType="fade">
+        <View className="flex-1 items-center justify-center bg-black/50 p-6">
+          <View className="w-full max-w-sm rounded-3xl bg-white p-6 shadow-xl">
+            <View className="mb-4 size-14 items-center justify-center self-center rounded-2xl bg-amber-50">
+              <LogOutIcon size={28} className="text-amber-500" />
+            </View>
+
+            <Text className="mb-2 text-center font-nunito text-[20px] font-extrabold text-mascot-navy">
+              Dừng làm bài Quiz?
             </Text>
-            <Text className="mb-6 px-2 text-center font-inter text-[14px] font-medium text-neutral-500">
-              Tiến độ làm bài và điểm số trong lượt này sẽ không được lưu.
+            <Text className="mb-6 text-center font-inter text-[14px] leading-relaxed text-neutral-500">
+              Tiến trình làm bài này sẽ bị hủy. Bạn có muốn thoát không?
             </Text>
 
-            <View className="w-full gap-3">
+            <View className="gap-2.5">
               <Pressable
                 onPress={() => setShowExitModal(false)}
-                className="h-12 w-full items-center justify-center rounded-xl border-b-[3px] border-primary-700 bg-primary-500"
+                className="h-12 w-full items-center justify-center rounded-xl border-b-2 border-primary-700 bg-primary-500 active:bg-primary-600"
               >
-                <Text className="font-nunito text-[15px] font-extrabold text-white uppercase">TIẾP TỤC LÀM BÀI</Text>
+                <Text className="font-nunito text-[15px] font-extrabold text-white">Tiếp tục làm bài</Text>
               </Pressable>
 
               <Pressable
-                onPress={() => {
-                  setShowExitModal(false);
-                  onExit();
-                }}
-                className="h-12 w-full flex-row items-center justify-center gap-2 rounded-xl border-b-[3px] border-neutral-300 bg-neutral-100"
+                onPress={handleExitConfirm}
+                className="h-12 w-full items-center justify-center rounded-xl bg-neutral-100 active:bg-neutral-200"
               >
-                <LogOutIcon size={16} className="text-neutral-500" />
-                <Text className="font-nunito text-[14px] font-bold text-neutral-600 uppercase">THOÁT QUIZ</Text>
+                <Text className="font-nunito text-[15px] font-extrabold text-neutral-600">Thoát</Text>
               </Pressable>
             </View>
           </View>

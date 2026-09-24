@@ -10,7 +10,7 @@ export function RoleSelector({
   role,
   onSelect,
 }: {
-  role: SemanticRole;
+  role: SemanticRole | null;
   onSelect: (r: SemanticRole) => void;
 }) {
   return (

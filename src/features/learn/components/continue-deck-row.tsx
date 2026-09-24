@@ -46,7 +46,14 @@ export function ContinueDeckRow({ activeSession, hubState }: ContinueDeckRowProp
       </View>
 
       <Pressable
-        onPress={() => router.push('/(app)/study/quiz-setup' as any)}
+        onPress={() =>
+          router.push({
+            pathname: '/(app)/study/quiz-setup',
+            params: {
+              topicId: activeSession.topicId,
+              topicName: activeSession.topicName,
+            },
+          } as any)}
         className="flex-row items-center justify-between rounded-2xl border border-neutral-200/70 bg-white p-3.5 active:scale-[0.99] dark:border-neutral-700 dark:bg-neutral-900"
         style={SOFT_CARD_SHADOW}
       >

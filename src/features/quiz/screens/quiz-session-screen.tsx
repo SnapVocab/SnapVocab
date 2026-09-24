@@ -1,28 +1,23 @@
-import type { FillBlankResult } from '../components/fill-blank-quiz-view';
-import type { MatchingResult } from '../components/matching-quiz-view';
-import type { MultipleChoiceResult } from '../components/multiple-choice-quiz-view';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import * as React from 'react';
+import { ActivityIndicator, Pressable, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { Snapy } from '@/components/ui/snapy';
+import { useQuiz } from '../api/quiz-api';
 import { FillBlankQuizView } from '../components/fill-blank-quiz-view';
 import { MatchingQuizView } from '../components/matching-quiz-view';
 import { MultipleChoiceQuizView } from '../components/multiple-choice-quiz-view';
+import { isQuizSessionExpired } from '../utils';
 
 export function QuizSessionScreen() {
   const router = useRouter();
-  const rawParams = useLocalSearchParams<{
-    topicId?: string;
-    topicName?: string;
-    deckId?: string;
-    mode?: string;
-    count?: string;
-    direction?: 'EN_VI' | 'VI_EN';
-    reviewWrong?: string;
-    wrongData?: string;
+  const params = useLocalSearchParams<{
     quizId?: string;
   }>();
-  const params = rawParams || {};
 
-  // Safe navigation back to avoid broken history
+  const quizId = params.quizId ? Number(params.quizId) : null;
+
+  // Safe navigation back
   const navigateBackSafely = () => {
     try {
       if (router && typeof router.canGoBack === 'function' && router.canGoBack()) {
@@ -37,111 +32,71 @@ export function QuizSessionScreen() {
     }
   };
 
-  const currentTopicId = params.topicId || params.deckId || 't1';
-  const currentTopicName = params.topicName || 'Chủ đề từ vựng';
-  const currentDirection = params.direction === 'VI_EN' ? 'VI_EN' : 'EN_VI';
+  const { data: quiz, isLoading, isError, error, refetch } = useQuiz(quizId);
+  const expired = isQuizSessionExpired(error);
 
-  // Generic completion router
-  const handleGenericComplete = (result: {
-    score: number;
-    total: number;
-    xp: number;
-    coin: number;
-    time: string;
-    topicId?: string;
-    topicName?: string;
-    deckId?: string;
-    mode: string;
-    direction?: 'EN_VI' | 'VI_EN';
-    wrongAnswers: any[];
-  }) => {
-    const targetRoute = {
-      pathname: '/(app)/study/quiz-result' as any,
-      params: {
-        score: String(result.score),
-        total: String(result.total),
-        xp: String(result.xp),
-        coin: String(result.coin),
-        time: result.time,
-        topicId: result.topicId || currentTopicId,
-        topicName: result.topicName || currentTopicName,
-        deckId: result.deckId || currentTopicId,
-        mode: result.mode,
-        direction: result.direction || currentDirection,
-        wrongAnswers: JSON.stringify(result.wrongAnswers),
-      },
-    };
-
-    try {
-      router.replace(targetRoute as any);
-    }
-    catch {
-      // fallback
-    }
-  };
-
-  const parsedCount = Number.parseInt(params.count || '5', 10) || 5;
-  const isReviewWrong = params.reviewWrong === 'true';
-
-  if (params.mode === 'MATCHING') {
+  // 1. LOADING STATE
+  if (isLoading) {
     return (
-      <MatchingQuizView
-        count={parsedCount}
-        reviewWrong={isReviewWrong}
-        wrongData={params.wrongData}
-        onExit={navigateBackSafely}
-        onComplete={(res: MatchingResult) =>
-          handleGenericComplete({
-            ...res,
-            topicId: currentTopicId,
-            topicName: currentTopicName,
-            deckId: currentTopicId,
-            direction: currentDirection,
-            mode: 'MATCHING',
-          })}
-      />
+      <SafeAreaView className="flex-1 items-center justify-center bg-[#F7F8FA] p-6">
+        <Snapy pose="tap_trung" animation="idle" style={{ width: 120, height: 120 }} className="mb-6" />
+        <ActivityIndicator size="large" color="#3B82F6" className="mb-4" />
+        <Text className="text-center font-nunito text-[18px] font-extrabold text-mascot-navy">
+          Đang chuẩn bị bài Quiz...
+        </Text>
+        <Text className="mt-1 text-center font-inter text-[13px] font-medium text-neutral-400">
+          Tải câu hỏi từ máy chủ
+        </Text>
+      </SafeAreaView>
     );
   }
 
-  if (params.mode === 'FILL_BLANK') {
+  // 2. ERROR / NOT FOUND STATE
+  if (isError || !quiz) {
     return (
-      <FillBlankQuizView
-        count={parsedCount}
-        reviewWrong={isReviewWrong}
-        wrongData={params.wrongData}
-        onExit={navigateBackSafely}
-        onComplete={(res: FillBlankResult) =>
-          handleGenericComplete({
-            ...res,
-            topicId: currentTopicId,
-            topicName: currentTopicName,
-            deckId: currentTopicId,
-            direction: currentDirection,
-            mode: 'FILL_BLANK',
-          })}
-      />
+      <SafeAreaView className="flex-1 items-center justify-center bg-[#F7F8FA] p-6">
+        <Snapy pose="bat_ngo" animation="shake" style={{ width: 120, height: 120 }} className="mb-6" />
+        <Text className="text-center font-nunito text-[20px] font-extrabold text-mascot-navy">
+          {expired ? 'Phiên quiz đã hết hạn' : 'Không thể tải phiên Quiz'}
+        </Text>
+        <Text className="mt-2 mb-6 px-6 text-center font-inter text-[14px] leading-relaxed text-neutral-500">
+          {expired
+            ? 'Phiên làm bài chỉ giữ trong 24 giờ. Vui lòng tạo bài mới.'
+            : 'Kết nối mạng không ổn định hoặc phiên không tồn tại.'}
+        </Text>
+
+        <View className="w-full max-w-xs gap-3">
+          {/* Retrying an expired session can never succeed, so offer a new quiz instead (D16). */}
+          <Pressable
+            onPress={() => (expired
+              ? router.replace('/(app)/study/quiz-setup' as any)
+              : refetch())}
+            className="h-12 w-full items-center justify-center rounded-xl border-b-2 border-primary-700 bg-primary-500 active:bg-primary-600"
+          >
+            <Text className="font-nunito text-[15px] font-extrabold text-white">
+              {expired ? 'Tạo bài mới' : 'Thử lại'}
+            </Text>
+          </Pressable>
+
+          <Pressable
+            onPress={navigateBackSafely}
+            className="h-12 w-full items-center justify-center rounded-xl bg-neutral-200 active:bg-neutral-300"
+          >
+            <Text className="font-nunito text-[15px] font-extrabold text-neutral-700">Quay lại</Text>
+          </Pressable>
+        </View>
+      </SafeAreaView>
     );
   }
 
-  return (
-    <MultipleChoiceQuizView
-      topicId={currentTopicId}
-      topicName={currentTopicName}
-      deckId={currentTopicId}
-      count={parsedCount}
-      direction={currentDirection}
-      reviewWrong={isReviewWrong}
-      wrongData={params.wrongData}
-      onExit={navigateBackSafely}
-      onComplete={(res: MultipleChoiceResult) =>
-        handleGenericComplete({
-          ...res,
-          topicId: currentTopicId,
-          topicName: currentTopicName,
-          deckId: currentTopicId,
-          direction: currentDirection,
-          mode: 'MULTIPLE_CHOICE',
-        })}
-    />
-  );
+  // 3. RENDER ACTIVE QUIZ MODE
+  if (quiz.mode === 'MATCHING') {
+    return <MatchingQuizView quiz={quiz} onExit={navigateBackSafely} />;
+  }
+
+  if (quiz.mode === 'FILL_BLANK') {
+    return <FillBlankQuizView quiz={quiz} onExit={navigateBackSafely} />;
+  }
+
+  return <MultipleChoiceQuizView quiz={quiz} onExit={navigateBackSafely} />;
 }
