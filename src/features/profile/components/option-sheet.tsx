@@ -1,5 +1,5 @@
 import type { TxKeyPath } from '@/lib/i18n';
-import { Modal, Pressable } from 'react-native';
+import { Modal, Pressable, ScrollView, useWindowDimensions } from 'react-native';
 import { Button, Text, View } from '@/components/ui';
 import { CheckCircleIcon } from '@/components/ui/icons';
 
@@ -31,6 +31,11 @@ export function OptionSheet<T extends string | number>({
   clearTx,
   onClear,
 }: Props<T>) {
+  const { height } = useWindowDimensions();
+  // The reminder picker has 48 options; without a cap the sheet grows past the
+  // screen and pushes its own title out of view.
+  const listMaxHeight = Math.round(height * 0.45);
+
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
       <Pressable onPress={onClose} className="flex-1 justify-end bg-black/50">
@@ -43,31 +48,38 @@ export function OptionSheet<T extends string | number>({
             tx={titleTx}
           />
 
-          <View className="mb-5 gap-2.5">
-            {options.map(option => (
-              <Pressable
-                key={String(option.value)}
-                onPress={() => onSelect(option.value)}
-                testID={`option-${option.value}`}
-                className={`flex-row items-center justify-between rounded-2xl border-2 p-4 ${
-                  option.value === selected
-                    ? 'border-b-4 border-primary-500 bg-primary-50/70'
-                    : 'border-b-[3px] border-neutral-200 bg-white active:bg-neutral-50 dark:border-neutral-700 dark:bg-neutral-900'
-                }`}
-              >
-                <Text
-                  className={`text-[15px] font-extrabold ${
+          <ScrollView
+            style={{ maxHeight: listMaxHeight }}
+            className="mb-5"
+            showsVerticalScrollIndicator
+            bounces={false}
+          >
+            <View className="gap-2.5">
+              {options.map(option => (
+                <Pressable
+                  key={String(option.value)}
+                  onPress={() => onSelect(option.value)}
+                  testID={`option-${option.value}`}
+                  className={`flex-row items-center justify-between rounded-2xl border-2 p-4 ${
                     option.value === selected
-                      ? 'text-primary-700'
-                      : 'text-mascot-navy dark:text-white'
+                      ? 'border-b-4 border-primary-500 bg-primary-50/70 dark:bg-primary-500/15'
+                      : 'border-b-[3px] border-neutral-200 bg-white active:bg-neutral-50 dark:border-neutral-700 dark:bg-neutral-900'
                   }`}
                 >
-                  {option.label}
-                </Text>
-                {option.value === selected && <CheckCircleIcon color="#58CC02" />}
-              </Pressable>
-            ))}
-          </View>
+                  <Text
+                    className={`text-[15px] font-extrabold ${
+                      option.value === selected
+                        ? 'text-primary-700 dark:text-primary-300'
+                        : 'text-mascot-navy dark:text-white'
+                    }`}
+                  >
+                    {option.label}
+                  </Text>
+                  {option.value === selected && <CheckCircleIcon color="#58CC02" />}
+                </Pressable>
+              ))}
+            </View>
+          </ScrollView>
 
           {clearTx && onClear && (
             <Button tx={clearTx} variant="outline" fullWidth onPress={onClear} className="mb-2" />

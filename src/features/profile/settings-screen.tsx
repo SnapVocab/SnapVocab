@@ -179,9 +179,13 @@ export function SettingsScreen() {
         options={LANGUAGES}
         selected={(settings?.uiLanguage ?? 'vi') as Language}
         onSelect={(value) => {
-          setLanguage(value);
-          save({ uiLanguage: value });
           setSheet(null);
+          // Switching the language restarts the app, so let the save finish
+          // first; otherwise the reload cuts the request off.
+          updateSettings.mutate({ uiLanguage: value }, {
+            onError: () => showErrorMessage(translate('settings.error')),
+            onSettled: () => setLanguage(value),
+          });
         }}
         onClose={() => setSheet(null)}
       />
