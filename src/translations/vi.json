@@ -1,13 +1,38 @@
 {
+  "change_password": {
+    "confirm": "Xác nhận mật khẩu mới",
+    "confirm_placeholder": "Nhập lại mật khẩu mới",
+    "current": "Mật khẩu hiện tại",
+    "current_placeholder": "Nhập mật khẩu hiện tại",
+    "error": "Đổi mật khẩu thất bại. Kiểm tra lại mật khẩu hiện tại.",
+    "min_length": "Mật khẩu tối thiểu 5 ký tự",
+    "mismatch": "Mật khẩu không khớp",
+    "new": "Mật khẩu mới",
+    "new_placeholder": "Nhập mật khẩu mới",
+    "same_as_current": "Mật khẩu mới phải khác mật khẩu hiện tại",
+    "submit": "Đổi mật khẩu",
+    "subtitle": "Các thiết bị khác sẽ bị đăng xuất.",
+    "success": "Đã đổi mật khẩu",
+    "title": "Đổi mật khẩu"
+  },
   "edit_profile": {
+    "avatar": "Ảnh đại diện",
+    "avatar_change": "Đổi ảnh",
+    "avatar_error": "Tải ảnh lên thất bại. Vui lòng thử lại.",
+    "avatar_permission_denied": "Cần quyền truy cập thư viện ảnh để chọn ảnh.",
+    "avatar_updated": "Đã cập nhật ảnh đại diện",
     "bio": "Tiểu sử",
     "bio_placeholder": "Kể một chút về bản thân",
+    "error": "Lưu hồ sơ thất bại. Vui lòng thử lại.",
     "first_name": "Tên",
     "first_name_placeholder": "Nhập tên của bạn",
+    "first_name_required": "Vui lòng nhập tên",
     "last_name": "Họ",
     "last_name_placeholder": "Nhập họ của bạn",
     "save": "Lưu",
-    "title": "Chỉnh sửa hồ sơ"
+    "success": "Đã lưu hồ sơ",
+    "title": "Chỉnh sửa hồ sơ",
+    "too_long": "Tối đa {{max}} ký tự"
   },
   "forgot_password": {
     "back_to_login": "Quay lại Đăng nhập",
@@ -152,7 +177,23 @@
     "title": "Tra từ"
   },
   "profile": {
-    "level": "Cấp {{level}}"
+    "coin": "Xu",
+    "coming_soon": "Sắp có",
+    "edit": "Chỉnh sửa hồ sơ",
+    "error_description": "Kiểm tra kết nối rồi thử lại.",
+    "error_title": "Không tải được hồ sơ",
+    "joined": "Tham gia {{date}}",
+    "level": "Cấp {{level}}",
+    "menu": {
+      "achievements": "Thành tựu",
+      "inventory": "Kho đồ",
+      "wallet": "Ví xu"
+    },
+    "retry": "Thử lại",
+    "settings": "Cài đặt",
+    "streak": "Chuỗi ngày",
+    "title": "Hồ sơ cá nhân",
+    "xp": "Điểm XP"
   },
   "quiz": {
     "check": "Kiểm tra",
@@ -268,6 +309,36 @@
       "slow_hint": "Máy chủ đang bận, ảnh của bạn vẫn đang được xử lý."
     },
     "uploading": "Đang tải ảnh lên…"
+  },
+  "settings": {
+    "account": "Tài khoản",
+    "app": "Ứng dụng",
+    "cancel": "Hủy",
+    "change_password": "Đổi mật khẩu",
+    "daily_goal": "Mục tiêu mỗi ngày",
+    "daily_goal_unit": "{{count}} từ",
+    "done": "Xong",
+    "error": "Lưu cài đặt thất bại. Vui lòng thử lại.",
+    "language": "Ngôn ngữ",
+    "learning": "Học tập",
+    "logout": "Đăng xuất",
+    "logout_confirm_message": "Bạn sẽ phải đăng nhập lại trên thiết bị này.",
+    "logout_confirm_title": "Đăng xuất?",
+    "notifications": "Thông báo",
+    "push": "Thông báo đẩy",
+    "reminder": "Nhắc ôn tập",
+    "reminder_off": "Tắt",
+    "select_goal": "Số từ mỗi ngày",
+    "select_language": "Chọn ngôn ngữ",
+    "select_reminder": "Giờ nhắc",
+    "select_theme": "Chọn giao diện",
+    "theme": "Giao diện",
+    "theme_dark": "Tối",
+    "theme_light": "Sáng",
+    "theme_system": "Theo hệ thống",
+    "title": "Cài đặt",
+    "turn_off": "Tắt nhắc",
+    "version": "Phiên bản {{version}}"
   },
   "template_builder": {
     "add_field": {

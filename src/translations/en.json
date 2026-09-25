@@ -1,13 +1,38 @@
 {
+  "change_password": {
+    "confirm": "Confirm new password",
+    "confirm_placeholder": "Re-enter the new password",
+    "current": "Current password",
+    "current_placeholder": "Enter your current password",
+    "error": "Could not change the password. Check your current password.",
+    "min_length": "Password must be at least 5 characters",
+    "mismatch": "Passwords do not match",
+    "new": "New password",
+    "new_placeholder": "Enter a new password",
+    "same_as_current": "New password must differ from the current one",
+    "submit": "Change password",
+    "subtitle": "Other devices will be signed out.",
+    "success": "Password changed",
+    "title": "Change password"
+  },
   "edit_profile": {
+    "avatar": "Profile photo",
+    "avatar_change": "Change photo",
+    "avatar_error": "Could not upload the photo. Please try again.",
+    "avatar_permission_denied": "Photo library permission is required to choose a photo.",
+    "avatar_updated": "Photo updated",
     "bio": "Bio",
     "bio_placeholder": "Tell us about yourself",
+    "error": "Could not save your profile. Please try again.",
     "first_name": "First Name",
     "first_name_placeholder": "Enter your first name",
+    "first_name_required": "First name is required",
     "last_name": "Last Name",
     "last_name_placeholder": "Enter your last name",
     "save": "Save",
-    "title": "Edit Profile"
+    "success": "Profile saved",
+    "title": "Edit Profile",
+    "too_long": "Must be at most {{max}} characters"
   },
   "forgot_password": {
     "back_to_login": "Back to Login",
@@ -152,7 +177,23 @@
     "title": "Look up"
   },
   "profile": {
-    "level": "Level {{level}}"
+    "coin": "Coins",
+    "coming_soon": "Coming soon",
+    "edit": "Edit profile",
+    "error_description": "Check your connection and try again.",
+    "error_title": "Could not load your profile",
+    "joined": "Joined {{date}}",
+    "level": "Level {{level}}",
+    "menu": {
+      "achievements": "Achievements",
+      "inventory": "Inventory",
+      "wallet": "Wallet"
+    },
+    "retry": "Try again",
+    "settings": "Settings",
+    "streak": "Day streak",
+    "title": "Profile",
+    "xp": "XP"
   },
   "quiz": {
     "check": "Check",
@@ -268,6 +309,36 @@
       "slow_hint": "The server is busy — your photo is still being processed."
     },
     "uploading": "Uploading photo…"
+  },
+  "settings": {
+    "account": "Account",
+    "app": "App",
+    "cancel": "Cancel",
+    "change_password": "Change password",
+    "daily_goal": "Daily goal",
+    "daily_goal_unit": "{{count}} words",
+    "done": "Done",
+    "error": "Could not save the setting. Please try again.",
+    "language": "Language",
+    "learning": "Learning",
+    "logout": "Log out",
+    "logout_confirm_message": "You will need to sign in again on this device.",
+    "logout_confirm_title": "Log out?",
+    "notifications": "Notifications",
+    "push": "Push notifications",
+    "reminder": "Review reminder",
+    "reminder_off": "Off",
+    "select_goal": "Words per day",
+    "select_language": "Choose language",
+    "select_reminder": "Reminder time",
+    "select_theme": "Choose appearance",
+    "theme": "Appearance",
+    "theme_dark": "Dark",
+    "theme_light": "Light",
+    "theme_system": "System",
+    "title": "Settings",
+    "turn_off": "Turn off",
+    "version": "Version {{version}}"
   },
   "template_builder": {
     "add_field": {

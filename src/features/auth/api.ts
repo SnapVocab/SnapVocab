@@ -21,6 +21,7 @@ export type User = {
   firstName: string;
   lastName: string;
   bio: string;
+  createdAt?: string;
 };
 
 // login
