@@ -5,13 +5,17 @@ export * from './book';
 export * from './camera';
 export * from './check';
 export * from './check-circle';
+// Lucide-style aliases sit next to the icon they alias, to keep exports sorted.
+export { CheckCircleIcon as CheckCircle2Icon } from './check-circle';
 export * from './chevron-left';
 export * from './chevron-right';
 export * from './clock';
 export * from './close';
+export { CloseIcon as XIcon } from './close';
 export * from './coin';
 export * from './community';
 export * from './edit';
+export { EditIcon as Edit2Icon } from './edit';
 export * from './external-link';
 export * from './eye';
 export * from './eye-slash';
@@ -54,14 +58,8 @@ export * from './trash';
 export * from './trophy';
 export * from './user';
 export * from './volume';
+export { VolumeIcon as Volume2Icon } from './volume';
 export * from './wallet';
 export * from './wifi-off';
 export * from './x-circle';
 export * from './zap';
-
-// Aliases for Lucide compatibility
-export { CheckCircleIcon as CheckCircle2Icon } from './check-circle';
-export { VolumeIcon as Volume2Icon } from './volume';
-export { EditIcon as Edit2Icon } from './edit';
-export { CloseIcon as XIcon } from './close';
-
