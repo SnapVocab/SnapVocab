@@ -94,18 +94,13 @@ export function CollectionDetailScreen() {
     );
   }, [topics, searchQuery]);
 
-  // Handle drill down into a folder topic
+  // Handle drill down into a topic
   const handleTopicPress = useCallback((topic: TopicDTO) => {
-    if (topic.hasChildren) {
-      setParentStack(prev => [
-        ...prev,
-        { id: topic.id, name: topic.name, translation: topic.translation },
-      ]);
-      setSearchQuery('');
-    }
-    else {
-      // Navigate to topic flashcards / study session
-    }
+    setParentStack(prev => [
+      ...prev,
+      { id: topic.id, name: topic.name, translation: topic.translation },
+    ]);
+    setSearchQuery('');
   }, []);
 
   // Handle navigating up one level or back

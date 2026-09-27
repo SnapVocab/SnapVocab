@@ -12,6 +12,7 @@ import { createSectionSlice } from './store/section-slice';
 export * from './store-types';
 
 export const useTemplateBuilderStore = create<TemplateBuilderState>((set, get, api) => ({
+  isInitialized: false,
   topicId: undefined,
   topicName: '',
   templateId: undefined,
@@ -30,7 +31,18 @@ export const useTemplateBuilderStore = create<TemplateBuilderState>((set, get, a
 
   setActiveSide: (side: CardSide) => set({ activeSide: side }),
 
-  initBuilder: ({ topicId, topicName, template, schema }: InitBuilderParams) => {
+  initBuilder: ({ topicId, topicName, template, schema, force = false }: InitBuilderParams) => {
+    const current = get();
+
+    // If already initialized for the same topic context and not forced, preserve modified state!
+    if (!force && current.isInitialized && current.topicId === topicId) {
+      if (current.availableAttributes.length === 0 && schema?.groups) {
+        const attributes = schema.groups.flatMap(g => g.attributes ?? []);
+        set({ availableAttributes: attributes });
+      }
+      return;
+    }
+
     const { frontSections, backSections } = template
       ? templateDTOToBuilderSections(template, schema)
       : createDefaultFallbackSections(schema);
@@ -38,6 +50,7 @@ export const useTemplateBuilderStore = create<TemplateBuilderState>((set, get, a
     const attributes = schema?.groups?.flatMap(g => g.attributes ?? []) ?? [];
 
     set({
+      isInitialized: true,
       topicId,
       topicName: topicName ?? '',
       templateId: template?.id,
@@ -69,6 +82,7 @@ export const useTemplateBuilderStore = create<TemplateBuilderState>((set, get, a
 
   reset: () => {
     set({
+      isInitialized: false,
       topicId: undefined,
       topicName: '',
       templateId: undefined,

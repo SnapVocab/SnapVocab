@@ -59,7 +59,7 @@ export const createSectionSlice: StateCreator<TemplateBuilderState, [], [], Sect
         repeatable,
         fields: [],
       };
-      const isFront = editingSection.side === 'FRONT' || activeSide === 'FRONT';
+      const isFront = (editingSection.side ?? activeSide) === 'FRONT';
       set({
         frontSections: isFront ? [...frontSections, newSec] : frontSections,
         backSections: isFront ? backSections : [...backSections, newSec],
