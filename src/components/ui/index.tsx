@@ -9,7 +9,7 @@ export * from './input';
 export * from './link';
 export * from './mascot';
 export * from './otp-input';
-export * from './speed-dial-fab';
+export * from './speed-dial';
 export * from './text';
 export * from './user-avatar';
 export * from './utils';
