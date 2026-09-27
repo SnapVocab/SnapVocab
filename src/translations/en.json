@@ -150,7 +150,9 @@
     "lesson_progress": "Lesson {{lesson}} · {{progress}}/{{total}} words",
     "title": "Learn",
     "topic": {
-      "add_topic": "Add Topic"
+      "add_subtopic": "Add Subtopic",
+      "add_topic": "Add Topic",
+      "add_word": "Add Word"
     },
     "view_all": "View all"
   },

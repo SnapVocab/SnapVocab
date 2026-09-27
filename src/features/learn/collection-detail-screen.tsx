@@ -11,8 +11,14 @@ import {
   TextInput,
   View,
 } from 'react-native';
-import { Button, FocusAwareStatusBar, SafeAreaView, Text } from '@/components/ui';
-import { ChevronRightIcon, CloseIcon, SearchIcon } from '@/components/ui/icons';
+import { FocusAwareStatusBar, SafeAreaView, SpeedDialFAB, Text } from '@/components/ui';
+import {
+  BookIcon,
+  ChevronRightIcon,
+  CloseIcon,
+  FolderIcon,
+  SearchIcon,
+} from '@/components/ui/icons';
 import { translate } from '@/lib/i18n';
 import { useCollection, useInfiniteCollectionTopics } from './api';
 import {
@@ -263,7 +269,7 @@ export function CollectionDetailScreen() {
       )}
 
       {/* Virtualized Topic List with Infinite Scroll */}
-      <View className="flex-1">
+      <View className="mb-4 flex-1">
         <FlashList<TopicDTO>
           data={isLoading ? [] : filteredTopics}
           keyExtractor={item => String(item.id)}
@@ -279,26 +285,43 @@ export function CollectionDetailScreen() {
           refreshControl={
             <RefreshControl refreshing={isRefetching && !isFetchingNextPage} onRefresh={refetch} />
           }
-          contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 16, paddingBottom: 24 }}
+          contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 16, paddingBottom: 96 }}
           showsVerticalScrollIndicator={false}
         />
       </View>
 
-      <View className="absolute inset-x-0 bottom-4 items-center px-[14px] pb-2">
-        <Button
-          label={translate('learn.topic.add_topic')}
-          onPress={() => {
-            router.push({
-              pathname: '/(app)/collections/create-topic' as any,
-              params: {
-                collectionId: String(id),
-                collectionName: collectionData?.name ?? paramName ?? '',
-                parentId: currentParentId !== null ? String(currentParentId) : '',
-              },
-            });
-          }}
-        />
-      </View>
+      {/* Floating Speed Dial Button */}
+      <SpeedDialFAB
+        actions={[
+          {
+            id: 'add-word',
+            label: translate('learn.topic.add_word'),
+            icon: <BookIcon width={20} height={20} color="#FFFFFF" />,
+            bgColorClass: 'bg-emerald-600 dark:bg-emerald-500',
+            onPress: () => {
+              // Action to add vocabulary into the current topic/collection
+            },
+          },
+          {
+            id: 'add-topic',
+            label: currentParentId
+              ? translate('learn.topic.add_subtopic')
+              : translate('learn.topic.add_topic'),
+            icon: <FolderIcon width={20} height={20} color="#FFFFFF" />,
+            bgColorClass: 'bg-amber-500 dark:bg-amber-600',
+            onPress: () => {
+              router.push({
+                pathname: '/(app)/collections/create-topic' as any,
+                params: {
+                  collectionId: String(id),
+                  collectionName: collectionData?.name ?? paramName ?? '',
+                  parentId: currentParentId !== null ? String(currentParentId) : '',
+                },
+              });
+            },
+          },
+        ]}
+      />
 
       {/* Options Bottom Sheet */}
       {collectionData && (

@@ -150,7 +150,9 @@
     "lesson_progress": "Bài {{lesson}} · {{progress}}/{{total}} từ",
     "title": "Học tập",
     "topic": {
-      "add_topic": "Thêm chủ đề"
+      "add_subtopic": "Thêm chủ đề con",
+      "add_topic": "Thêm chủ đề",
+      "add_word": "Thêm từ vựng"
     },
     "view_all": "Xem tất cả"
   },
