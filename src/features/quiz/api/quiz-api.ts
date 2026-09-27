@@ -15,6 +15,7 @@ import type { ApiResponse } from '@/features/auth/api';
 import type { TopicDTO } from '@/features/learn/types';
 import type { PaginateResponse } from '@/lib/api/types';
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useAuthStore } from '@/features/auth/use-auth-store';
 import { useCollections } from '@/features/learn/api';
 import { client } from '@/lib/api';
 
@@ -174,6 +175,10 @@ export function useCompleteQuiz() {
   >({
     mutationFn: (quizId: number) => completeQuiz(quizId),
     onSuccess: (data) => {
+      const user = useAuthStore.getState().user;
+      if (data.xp && user && !queryClient.getQueryData(['quiz-result', data.quizId])) {
+        useAuthStore.getState().updateUser({ exp: user.exp + data.xp.amount });
+      }
       queryClient.setQueryData(['quiz-result', data.quizId], data);
       queryClient.invalidateQueries({ queryKey: ['quiz', data.quizId] });
       queryClient.invalidateQueries({ queryKey: ['quiz-history'] });

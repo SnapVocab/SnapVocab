@@ -46,6 +46,8 @@ export function QuizResultScreen() {
 
   const wrongAnswers = result?.items?.filter(i => i.outcome === 'INCORRECT') || [];
   const isPerfect = wrongAnswers.length === 0 && score > 0;
+  const xpEarned = result?.xp?.amount ?? 0;
+  const xpBonus = result?.xp?.bonusAmount ?? 0;
 
   // Animations
   const scaleAnim = useRef(new Animated.Value(0)).current;
@@ -184,9 +186,19 @@ export function QuizResultScreen() {
               <View className="mb-2 size-14 items-center justify-center rounded-2xl border border-neutral-200 bg-neutral-50">
                 <RewardIcon type="xp" size={42} />
               </View>
-              <Text className="font-nunito text-[16px] font-extrabold text-neutral-400">
-                +0 XP
+              <Text className={`font-nunito text-[16px] font-extrabold ${xpEarned > 0 ? 'text-primary-600' : 'text-neutral-400'}`}>
+                +
+                {xpEarned}
+                {' '}
+                XP
               </Text>
+              {xpBonus > 0 && (
+                <Text className="mt-0.5 font-inter text-[11px] font-bold text-reward-600">
+                  x2 Booster (+
+                  {xpBonus}
+                  )
+                </Text>
+              )}
             </View>
 
             <View className="h-12 w-[1.5px] bg-neutral-100" />
@@ -204,7 +216,7 @@ export function QuizResultScreen() {
           <View className="w-full flex-row items-center justify-center gap-2 rounded-2xl border border-amber-200 bg-amber-50 p-3.5">
             <SparklesIcon size={18} className="text-amber-600" />
             <Text className="text-center font-inter text-[13px] font-medium text-amber-800">
-              Cơ chế nhận EXP & Coin sẽ được kích hoạt ở bản cập nhật tiếp theo.
+              Coin được nhận qua nhiệm vụ và rương hằng ngày.
             </Text>
           </View>
         </Animated.View>

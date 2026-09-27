@@ -183,6 +183,8 @@ export type QuizResultDTO = {
   cancelledAt?: string | null;
   /** Backend-calculated completedAt - createdAt (D14); null unless the quiz is COMPLETED. */
   durationSeconds?: number | null;
+  /** XP written by the backend on complete; `bonusAmount > 0` when an XP Booster was active. Null when 0 correct. */
+  xp?: { baseAmount: number; bonusAmount: number; amount: number } | null;
   items: QuizResultItem[];
 };
 
