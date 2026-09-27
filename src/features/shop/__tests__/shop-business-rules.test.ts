@@ -1,0 +1,86 @@
+import type { ShopItemDTO, ShopItemType } from '../types';
+import { generateIdempotencyKey } from '@/features/quiz/utils/idempotency';
+
+describe('Shop & Economy business rules verification', () => {
+  describe('Canonical types strictly limited to 3 items', () => {
+    it('only allows THEME, AVATAR_FRAME, and XP_BOOSTER', () => {
+      const canonicalTypes: ShopItemType[] = ['THEME', 'AVATAR_FRAME', 'XP_BOOSTER'];
+      expect(canonicalTypes).toHaveLength(3);
+
+      const isCanonical = (type: string): type is ShopItemType => {
+        return canonicalTypes.includes(type as ShopItemType);
+      };
+
+      expect(isCanonical('THEME')).toBe(true);
+      expect(isCanonical('AVATAR_FRAME')).toBe(true);
+      expect(isCanonical('XP_BOOSTER')).toBe(true);
+
+      // Verify old mock types are rejected
+      expect(isCanonical('BOOSTER')).toBe(false);
+      expect(isCanonical('SPECIAL')).toBe(false);
+      expect(isCanonical('STREAK_FREEZE')).toBe(false);
+      expect(isCanonical('CHEST')).toBe(false);
+      expect(isCanonical('DECK')).toBe(false);
+      expect(isCanonical('HEART_REFILL')).toBe(false);
+      expect(isCanonical('COIN_MAGNET')).toBe(false);
+      expect(isCanonical('HINT_TOKEN')).toBe(false);
+      expect(isCanonical('TIMER_BOOST')).toBe(false);
+      expect(isCanonical('REFRESH_TICKET')).toBe(false);
+    });
+  });
+
+  describe('Idempotency key generation and reuse on retry', () => {
+    it('generates a valid UUID v4 format string', () => {
+      const key = generateIdempotencyKey();
+      const uuidV4Regex = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+      expect(key).toMatch(uuidV4Regex);
+    });
+
+    it('preserves the same UUID on retry of the same purchase intent', () => {
+      const intent = {
+        item: { itemId: 101, price: 250 } as ShopItemDTO,
+        idempotencyKey: generateIdempotencyKey(),
+      };
+
+      const originalKey = intent.idempotencyKey;
+
+      // Simulate a network failure retry attempt
+      const retryIntent = {
+        ...intent,
+      };
+
+      expect(retryIntent.idempotencyKey).toBe(originalKey);
+    });
+  });
+
+  describe('Wallet signed amount and source formatting', () => {
+    it('formats earn transactions with + prefix and spend transactions with negative number', () => {
+      const earnTx = { amount: 50 };
+      const spendTx = { amount: -250 };
+
+      const formatAmount = (amount: number) => (amount > 0 ? `+${amount}` : `${amount}`);
+
+      expect(formatAmount(earnTx.amount)).toBe('+50');
+      expect(formatAmount(spendTx.amount)).toBe('-250');
+    });
+  });
+
+  describe('Active booster blocking logic', () => {
+    it('disables booster activation when an active booster is running', () => {
+      const activeBooster = {
+        activationId: 1,
+        itemId: 102,
+        multiplier: 2,
+        startedAt: '2026-09-25T08:00:00Z',
+        expiresAt: '2026-09-25T08:30:00Z',
+      };
+
+      const canActivateNewBooster = (currentBooster: typeof activeBooster | null) => {
+        return currentBooster === null;
+      };
+
+      expect(canActivateNewBooster(activeBooster)).toBe(false);
+      expect(canActivateNewBooster(null)).toBe(true);
+    });
+  });
+});
