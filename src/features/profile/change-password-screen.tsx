@@ -1,7 +1,9 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'expo-router';
-import { Controller, useForm } from 'react-hook-form';
+import { useEffect } from 'react';
+import { Controller, useForm, useWatch } from 'react-hook-form';
 import { ScrollView } from 'react-native';
+import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
 import * as z from 'zod';
 
 import {
@@ -18,12 +20,16 @@ import {
 import { ChevronLeftIcon } from '@/components/ui/icons';
 import { translate } from '@/lib/i18n';
 import { useChangePassword } from './api';
+import { useIconColors } from './use-icon-colors';
 
 const schema = z
   .object({
-    currentPassword: z.string().min(1, translate('change_password.min_length')),
-    newPassword: z.string().min(5, translate('change_password.min_length')),
-    confirmPassword: z.string(),
+    currentPassword: z.string().min(1, translate('change_password.required')),
+    newPassword: z
+      .string()
+      .min(5, translate('change_password.min_length'))
+      .max(60, translate('change_password.max_length')),
+    confirmPassword: z.string().min(1, translate('change_password.mismatch')),
   })
   .refine(values => values.newPassword === values.confirmPassword, {
     message: translate('change_password.mismatch'),
@@ -39,12 +45,26 @@ type FormValues = z.infer<typeof schema>;
 /** Settings → Account. Signing out other devices happens on the server. */
 export function ChangePasswordScreen() {
   const router = useRouter();
+  const iconColor = useIconColors();
   const changePassword = useChangePassword();
 
-  const { control, handleSubmit, formState: { errors } } = useForm<FormValues>({
+  // onTouched: the first warning waits until the field is left, then follows
+  // every keystroke, so nobody is told their password is wrong while typing it.
+  const { control, handleSubmit, trigger, formState: { errors } } = useForm<FormValues>({
     resolver: zodResolver(schema),
+    mode: 'onTouched',
     defaultValues: { currentPassword: '', newPassword: '', confirmPassword: '' },
   });
+
+  const newPassword = useWatch({ control, name: 'newPassword' });
+  const confirmPassword = useWatch({ control, name: 'confirmPassword' });
+
+  // Editing the new password has to re-check the confirmation, which react-hook-form
+  // only revalidates when the confirmation itself changes.
+  useEffect(() => {
+    if (confirmPassword.length > 0)
+      void trigger('confirmPassword');
+  }, [newPassword, confirmPassword, trigger]);
 
   const onSubmit = ({ currentPassword, newPassword }: FormValues) => {
     changePassword.mutate(
@@ -69,7 +89,7 @@ export function ChangePasswordScreen() {
           testID="change-password-back"
           className="-ml-1 size-10 items-center justify-center rounded-full active:bg-neutral-100"
         >
-          <ChevronLeftIcon color="#1E2A44" />
+          <ChevronLeftIcon color={iconColor.header} />
         </Pressable>
         <Text
           className="mr-9 flex-1 text-center font-nunito text-lg font-extrabold text-mascot-navy dark:text-white"
@@ -77,69 +97,75 @@ export function ChangePasswordScreen() {
         />
       </View>
 
-      <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 40 }} keyboardShouldPersistTaps="handled">
-        <Text className="mb-4 text-sm text-neutral-500" tx="change_password.subtitle" />
+      <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
+        <ScrollView
+          contentContainerStyle={{ padding: 16, paddingBottom: 40 }}
+          keyboardShouldPersistTaps="handled"
+        >
+          <Text className="mb-4 text-sm text-neutral-500" tx="change_password.subtitle" />
 
-        <View className="gap-4">
-          <Controller
-            control={control}
-            name="currentPassword"
-            render={({ field: { onChange, onBlur, value } }) => (
-              <Input
-                isPassword
-                label={translate('change_password.current')}
-                placeholder={translate('change_password.current_placeholder')}
-                value={value}
-                onChangeText={onChange}
-                onBlur={onBlur}
-                error={errors.currentPassword?.message}
-                testID="change-password-current"
-              />
-            )}
-          />
-          <Controller
-            control={control}
-            name="newPassword"
-            render={({ field: { onChange, onBlur, value } }) => (
-              <Input
-                isPassword
-                label={translate('change_password.new')}
-                placeholder={translate('change_password.new_placeholder')}
-                value={value}
-                onChangeText={onChange}
-                onBlur={onBlur}
-                error={errors.newPassword?.message}
-                testID="change-password-new"
-              />
-            )}
-          />
-          <Controller
-            control={control}
-            name="confirmPassword"
-            render={({ field: { onChange, onBlur, value } }) => (
-              <Input
-                isPassword
-                label={translate('change_password.confirm')}
-                placeholder={translate('change_password.confirm_placeholder')}
-                value={value}
-                onChangeText={onChange}
-                onBlur={onBlur}
-                error={errors.confirmPassword?.message}
-                testID="change-password-confirm"
-              />
-            )}
-          />
-        </View>
+          <View className="gap-4">
+            <Controller
+              control={control}
+              name="currentPassword"
+              render={({ field: { onChange, onBlur, value } }) => (
+                <Input
+                  isPassword
+                  label={translate('change_password.current')}
+                  placeholder={translate('change_password.current_placeholder')}
+                  value={value}
+                  onChangeText={onChange}
+                  onBlur={onBlur}
+                  error={errors.currentPassword?.message}
+                  testID="change-password-current"
+                />
+              )}
+            />
+            <Controller
+              control={control}
+              name="newPassword"
+              render={({ field: { onChange, onBlur, value } }) => (
+                <Input
+                  isPassword
+                  label={translate('change_password.new')}
+                  placeholder={translate('change_password.new_placeholder')}
+                  value={value}
+                  onChangeText={onChange}
+                  onBlur={onBlur}
+                  error={errors.newPassword?.message}
+                  hint={translate('change_password.new_hint')}
+                  testID="change-password-new"
+                />
+              )}
+            />
+            <Controller
+              control={control}
+              name="confirmPassword"
+              render={({ field: { onChange, onBlur, value } }) => (
+                <Input
+                  isPassword
+                  label={translate('change_password.confirm')}
+                  placeholder={translate('change_password.confirm_placeholder')}
+                  value={value}
+                  onChangeText={onChange}
+                  onBlur={onBlur}
+                  error={errors.confirmPassword?.message}
+                  testID="change-password-confirm"
+                />
+              )}
+            />
+          </View>
 
-        <Button
-          tx="change_password.submit"
-          fullWidth
-          loading={changePassword.isPending}
-          onPress={handleSubmit(onSubmit)}
-          testID="change-password-submit"
-          className="mt-6"
-        />
-      </ScrollView>
+          <Button
+            tx="change_password.submit"
+            fullWidth
+            loading={changePassword.isPending}
+            onPress={handleSubmit(onSubmit)}
+            testID="change-password-submit"
+            className="mt-6"
+          />
+        </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }

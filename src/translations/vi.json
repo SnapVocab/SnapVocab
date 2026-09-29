@@ -5,10 +5,13 @@
     "current": "Mật khẩu hiện tại",
     "current_placeholder": "Nhập mật khẩu hiện tại",
     "error": "Đổi mật khẩu thất bại. Kiểm tra lại mật khẩu hiện tại.",
+    "max_length": "Mật khẩu tối đa 60 ký tự",
     "min_length": "Mật khẩu tối thiểu 5 ký tự",
     "mismatch": "Mật khẩu không khớp",
     "new": "Mật khẩu mới",
+    "new_hint": "Ít nhất 5 ký tự",
     "new_placeholder": "Nhập mật khẩu mới",
+    "required": "Nhập mật khẩu hiện tại",
     "same_as_current": "Mật khẩu mới phải khác mật khẩu hiện tại",
     "submit": "Đổi mật khẩu",
     "subtitle": "Các thiết bị khác sẽ bị đăng xuất.",
@@ -189,9 +192,15 @@
       "inventory": "Kho đồ",
       "wallet": "Ví xu"
     },
+    "menu_hints": {
+      "achievements": "Huy hiệu bạn đã đạt được",
+      "inventory": "Khung avatar, thẻ tăng tốc",
+      "wallet": "Xu thưởng và phần thưởng"
+    },
     "retry": "Thử lại",
     "settings": "Cài đặt",
     "streak": "Chuỗi ngày",
+    "tagline": "Học thông minh · Nhớ trọn đời",
     "title": "Hồ sơ cá nhân",
     "xp": "Điểm XP"
   },

@@ -5,10 +5,13 @@
     "current": "Current password",
     "current_placeholder": "Enter your current password",
     "error": "Could not change the password. Check your current password.",
+    "max_length": "Password must be at most 60 characters",
     "min_length": "Password must be at least 5 characters",
     "mismatch": "Passwords do not match",
     "new": "New password",
+    "new_hint": "At least 5 characters",
     "new_placeholder": "Enter a new password",
+    "required": "Enter your current password",
     "same_as_current": "New password must differ from the current one",
     "submit": "Change password",
     "subtitle": "Other devices will be signed out.",
@@ -189,9 +192,15 @@
       "inventory": "Inventory",
       "wallet": "Wallet"
     },
+    "menu_hints": {
+      "achievements": "Badges you have earned",
+      "inventory": "Avatar frames and boosters",
+      "wallet": "Coins and rewards"
+    },
     "retry": "Try again",
     "settings": "Settings",
     "streak": "Day streak",
+    "tagline": "Learn smart · Remember for life",
     "title": "Profile",
     "xp": "XP"
   },

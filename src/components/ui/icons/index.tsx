@@ -1,7 +1,12 @@
+// Every line here re-exports an icon component, which the rule cannot see
+// through `export *`; without this it warns once per line in review.
+/* eslint-disable react-refresh/only-export-components */
 export * from './accuracy';
 export * from './alert-triangle';
 export * from './arrow-right';
+export * from './bell';
 export * from './book';
+export * from './box';
 export * from './camera';
 export * from './check';
 export * from './check-circle';
@@ -10,6 +15,7 @@ export { CheckCircleIcon as CheckCircle2Icon } from './check-circle';
 export * from './chevron-left';
 export * from './chevron-right';
 export * from './clock';
+export * from './clock-rotate';
 export * from './close';
 export { CloseIcon as XIcon } from './close';
 export * from './coin';
@@ -25,6 +31,7 @@ export * from './flash';
 export * from './flash-cards';
 export * from './flashcard';
 export * from './folder';
+export * from './globe';
 export * from './help-circle';
 export * from './home';
 export * from './images';
@@ -39,6 +46,7 @@ export * from './mic';
 export * from './mission-flashcard';
 export * from './more-vertical';
 export * from './notification-bell';
+export * from './password';
 export * from './play';
 export * from './plus';
 export * from './profile';
@@ -54,6 +62,8 @@ export * from './sparkles';
 export * from './srs-review';
 export * from './star';
 export * from './statistic';
+export * from './target';
+export * from './theme-mode';
 export * from './trash';
 export * from './trophy';
 export * from './user';
