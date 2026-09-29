@@ -2,6 +2,7 @@ import type { TxKeyPath } from '@/lib/i18n';
 import { Modal, Pressable, ScrollView, useWindowDimensions } from 'react-native';
 import { Button, Text, View } from '@/components/ui';
 import { CheckIcon, CloseIcon } from '@/components/ui/icons';
+import { useIconColors } from '../use-icon-colors';
 
 export type Option<T> = {
   value: T;
@@ -34,6 +35,7 @@ export function OptionSheet<T extends string | number>({
   onClear,
 }: Props<T>) {
   const { height } = useWindowDimensions();
+  const iconColor = useIconColors();
   // The reminder picker has 48 options; without a cap the sheet grows past the
   // screen and pushes its own title out of view.
   const listMaxHeight = Math.round(height * 0.45);
@@ -53,7 +55,7 @@ export function OptionSheet<T extends string | number>({
               tx={titleTx}
             />
             <Pressable onPress={onClose} testID="option-sheet-close" className="-mr-2 p-2">
-              <CloseIcon color="#9CA3AF" width={20} height={20} />
+              <CloseIcon color={iconColor.muted} width={20} height={20} />
             </Pressable>
           </View>
 

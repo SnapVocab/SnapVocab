@@ -3,6 +3,7 @@ export * from './alert-triangle';
 export * from './arrow-right';
 export * from './bell';
 export * from './book';
+export * from './box';
 export * from './camera';
 export * from './check';
 export * from './check-circle';

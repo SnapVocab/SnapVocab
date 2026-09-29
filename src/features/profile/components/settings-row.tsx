@@ -3,6 +3,7 @@ import type { TxKeyPath } from '@/lib/i18n';
 import { Pressable, Switch } from 'react-native';
 import { Text, View } from '@/components/ui';
 import { ChevronRightIcon } from '@/components/ui/icons';
+import { useIconColors } from '../use-icon-colors';
 
 type Props = {
   icon: ReactNode;
@@ -17,6 +18,8 @@ type Props = {
 };
 
 export function SettingsRow({ icon, tx, value, toggle, onPress, last, testID }: Props) {
+  const iconColor = useIconColors();
+
   return (
     <Pressable
       onPress={onPress}
@@ -29,18 +32,18 @@ export function SettingsRow({ icon, tx, value, toggle, onPress, last, testID }: 
 
       <View className="flex-row items-center gap-2">
         {value !== undefined && (
-          <Text className="text-sm font-medium text-neutral-500">{value}</Text>
+          <Text className="text-sm font-medium text-neutral-500 dark:text-neutral-300">{value}</Text>
         )}
         {toggle && (
           <Switch
             value={toggle.value}
             onValueChange={toggle.onChange}
             disabled={toggle.disabled}
-            trackColor={{ false: '#E5E7EB', true: '#58CC02' }}
+            trackColor={{ false: iconColor.switchTrack, true: '#58CC02' }}
             thumbColor="#FFFFFF"
           />
         )}
-        {onPress && <ChevronRightIcon color="#9CA3AF" width={18} height={18} />}
+        {onPress && <ChevronRightIcon color={iconColor.muted} width={18} height={18} />}
       </View>
     </Pressable>
   );

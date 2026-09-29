@@ -109,7 +109,7 @@ export function SettingsScreen() {
       >
         <SettingsSection tx="settings.account">
           <SettingsRow
-            icon={<PasswordIcon color={iconColor.row} size={ROW_ICON_SIZE} />}
+            icon={<PasswordIcon color={iconColor.row.password} size={ROW_ICON_SIZE} />}
             tx="settings.change_password"
             onPress={() => router.push('/change-password')}
             testID="settings-change-password"
@@ -119,7 +119,7 @@ export function SettingsScreen() {
 
         <SettingsSection tx="settings.notifications">
           <SettingsRow
-            icon={<BellIcon color={iconColor.row} size={ROW_ICON_SIZE} />}
+            icon={<BellIcon color={iconColor.row.notification} size={ROW_ICON_SIZE} />}
             tx="settings.push"
             toggle={{
               value: settings?.pushEnabled ?? true,
@@ -133,14 +133,14 @@ export function SettingsScreen() {
 
         <SettingsSection tx="settings.learning">
           <SettingsRow
-            icon={<TargetIcon color={iconColor.row} size={ROW_ICON_SIZE} />}
+            icon={<TargetIcon color={iconColor.row.goal} size={ROW_ICON_SIZE} />}
             tx="settings.daily_goal"
             value={settings ? translate('settings.daily_goal_unit', { count: settings.dailyGoal }) : undefined}
             onPress={() => setSheet('goal')}
             testID="settings-daily-goal"
           />
           <SettingsRow
-            icon={<ClockRotateIcon color={iconColor.row} size={ROW_ICON_SIZE} />}
+            icon={<ClockRotateIcon color={iconColor.row.reminder} size={ROW_ICON_SIZE} />}
             tx="settings.reminder"
             value={reminder ?? translate('settings.reminder_off')}
             onPress={() => setSheet('reminder')}
@@ -151,14 +151,14 @@ export function SettingsScreen() {
 
         <SettingsSection tx="settings.app">
           <SettingsRow
-            icon={<GlobeIcon color={iconColor.row} size={ROW_ICON_SIZE} />}
+            icon={<GlobeIcon color={iconColor.row.language} size={ROW_ICON_SIZE} />}
             tx="settings.language"
             value={languageLabel}
             onPress={() => setSheet('language')}
             testID="settings-language"
           />
           <SettingsRow
-            icon={<ThemeModeIcon color={iconColor.row} size={ROW_ICON_SIZE} />}
+            icon={<ThemeModeIcon color={iconColor.row.theme} size={ROW_ICON_SIZE} />}
             tx="settings.theme"
             value={themeLabel}
             onPress={() => setSheet('theme')}
@@ -174,9 +174,9 @@ export function SettingsScreen() {
             testID="settings-logout"
             className="flex-row items-center justify-center p-4 active:bg-danger-50 dark:active:bg-danger-500/10"
           >
-            <LogOutIcon color="#EF4444" width={20} height={20} />
+            <LogOutIcon color={iconColor.danger} width={20} height={20} />
             <Text
-              className="ml-2 font-nunito text-base font-extrabold text-danger-600"
+              className="ml-2 font-nunito text-base font-extrabold text-danger-600 dark:text-danger-400"
               tx="settings.logout"
             />
           </Pressable>
