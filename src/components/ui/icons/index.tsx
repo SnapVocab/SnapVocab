@@ -1,3 +1,6 @@
+// Every line here re-exports an icon component, which the rule cannot see
+// through `export *`; without this it warns once per line in review.
+/* eslint-disable react-refresh/only-export-components */
 export * from './accuracy';
 export * from './alert-triangle';
 export * from './arrow-right';

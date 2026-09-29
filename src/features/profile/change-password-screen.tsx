@@ -1,7 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'expo-router';
 import { useEffect } from 'react';
-import { Controller, useForm } from 'react-hook-form';
+import { Controller, useForm, useWatch } from 'react-hook-form';
 import { ScrollView } from 'react-native';
 import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
 import * as z from 'zod';
@@ -50,14 +50,14 @@ export function ChangePasswordScreen() {
 
   // onTouched: the first warning waits until the field is left, then follows
   // every keystroke, so nobody is told their password is wrong while typing it.
-  const { control, handleSubmit, trigger, watch, formState: { errors } } = useForm<FormValues>({
+  const { control, handleSubmit, trigger, formState: { errors } } = useForm<FormValues>({
     resolver: zodResolver(schema),
     mode: 'onTouched',
     defaultValues: { currentPassword: '', newPassword: '', confirmPassword: '' },
   });
 
-  const newPassword = watch('newPassword');
-  const confirmPassword = watch('confirmPassword');
+  const newPassword = useWatch({ control, name: 'newPassword' });
+  const confirmPassword = useWatch({ control, name: 'confirmPassword' });
 
   // Editing the new password has to re-check the confirmation, which react-hook-form
   // only revalidates when the confirmation itself changes.
