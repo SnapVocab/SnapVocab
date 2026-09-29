@@ -189,9 +189,15 @@
       "inventory": "Kho đồ",
       "wallet": "Ví xu"
     },
+    "menu_hints": {
+      "achievements": "Huy hiệu bạn đã đạt được",
+      "inventory": "Khung avatar, thẻ tăng tốc",
+      "wallet": "Xu thưởng và phần thưởng"
+    },
     "retry": "Thử lại",
     "settings": "Cài đặt",
     "streak": "Chuỗi ngày",
+    "tagline": "Học thông minh · Nhớ trọn đời",
     "title": "Hồ sơ cá nhân",
     "xp": "Điểm XP"
   },

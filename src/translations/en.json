@@ -189,9 +189,15 @@
       "inventory": "Inventory",
       "wallet": "Wallet"
     },
+    "menu_hints": {
+      "achievements": "Badges you have earned",
+      "inventory": "Avatar frames and boosters",
+      "wallet": "Coins and rewards"
+    },
     "retry": "Try again",
     "settings": "Settings",
     "streak": "Day streak",
+    "tagline": "Learn smart · Remember for life",
     "title": "Profile",
     "xp": "XP"
   },

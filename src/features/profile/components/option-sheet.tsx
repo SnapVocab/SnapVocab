@@ -1,11 +1,13 @@
 import type { TxKeyPath } from '@/lib/i18n';
 import { Modal, Pressable, ScrollView, useWindowDimensions } from 'react-native';
 import { Button, Text, View } from '@/components/ui';
-import { CheckCircleIcon } from '@/components/ui/icons';
+import { CheckIcon, CloseIcon } from '@/components/ui/icons';
 
 export type Option<T> = {
   value: T;
   label: string;
+  /** Optional emoji shown before the label, e.g. a flag for a language. */
+  emoji?: string;
 };
 
 type Props<T> = {
@@ -38,15 +40,22 @@ export function OptionSheet<T extends string | number>({
 
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
-      <Pressable onPress={onClose} className="flex-1 justify-end bg-black/50">
+      <Pressable onPress={onClose} className="flex-1 justify-end bg-black/40">
         <Pressable
           onPress={e => e.stopPropagation()}
-          className="rounded-t-[36px] border-t-2 border-neutral-100 bg-white p-6 pb-10 dark:border-neutral-800 dark:bg-neutral-900"
+          className="rounded-t-[32px] bg-white p-6 pb-10 shadow-xl dark:bg-neutral-900"
         >
-          <Text
-            className="mb-4 font-nunito text-xl font-extrabold text-mascot-navy dark:text-white"
-            tx={titleTx}
-          />
+          <View className="mb-6 h-1.5 w-12 self-center rounded-full bg-neutral-200 dark:bg-neutral-700" />
+
+          <View className="mb-6 flex-row items-center justify-between">
+            <Text
+              className="font-nunito text-xl font-extrabold text-mascot-navy dark:text-white"
+              tx={titleTx}
+            />
+            <Pressable onPress={onClose} testID="option-sheet-close" className="-mr-2 p-2">
+              <CloseIcon color="#9CA3AF" width={20} height={20} />
+            </Pressable>
+          </View>
 
           <ScrollView
             style={{ maxHeight: listMaxHeight }}
@@ -54,20 +63,21 @@ export function OptionSheet<T extends string | number>({
             showsVerticalScrollIndicator
             bounces={false}
           >
-            <View className="gap-2.5">
+            <View className="gap-2">
               {options.map(option => (
                 <Pressable
                   key={String(option.value)}
                   onPress={() => onSelect(option.value)}
                   testID={`option-${option.value}`}
-                  className={`flex-row items-center justify-between rounded-2xl border-2 p-4 ${
+                  className={`h-16 flex-row items-center rounded-2xl border-2 px-4 active:opacity-70 ${
                     option.value === selected
-                      ? 'border-b-4 border-primary-500 bg-primary-50/70 dark:bg-primary-500/15'
-                      : 'border-b-[3px] border-neutral-200 bg-white active:bg-neutral-50 dark:border-neutral-700 dark:bg-neutral-900'
+                      ? 'border-primary-400 bg-primary-50 dark:bg-primary-500/15'
+                      : 'border-neutral-100 bg-white dark:border-neutral-700 dark:bg-neutral-900'
                   }`}
                 >
+                  {!!option.emoji && <Text className="mr-3 text-2xl">{option.emoji}</Text>}
                   <Text
-                    className={`text-[15px] font-extrabold ${
+                    className={`flex-1 text-base font-bold ${
                       option.value === selected
                         ? 'text-primary-700 dark:text-primary-300'
                         : 'text-mascot-navy dark:text-white'
@@ -75,7 +85,7 @@ export function OptionSheet<T extends string | number>({
                   >
                     {option.label}
                   </Text>
-                  {option.value === selected && <CheckCircleIcon color="#58CC02" />}
+                  {option.value === selected && <CheckIcon color="#58CC02" width={20} height={20} />}
                 </Pressable>
               ))}
             </View>

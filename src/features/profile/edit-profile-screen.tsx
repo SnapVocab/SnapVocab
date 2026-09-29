@@ -22,6 +22,7 @@ import { useAuthStore } from '@/features/auth/use-auth-store';
 import { translate } from '@/lib/i18n';
 import { useMe, useUpdateProfile, useUploadAvatar } from './api';
 import { fullName, initials } from './display';
+import { useIconColors } from './use-icon-colors';
 
 const MAX_BIO = 200;
 
@@ -40,6 +41,7 @@ export function EditProfileScreen() {
   const { data } = useMe();
   const user = data ?? stored;
 
+  const iconColor = useIconColors();
   const updateProfile = useUpdateProfile();
   const uploadAvatar = useUploadAvatar();
 
@@ -104,7 +106,7 @@ export function EditProfileScreen() {
           testID="edit-profile-back"
           className="-ml-1 size-10 items-center justify-center rounded-full active:bg-neutral-100"
         >
-          <ChevronLeftIcon color="#1E2A44" />
+          <ChevronLeftIcon color={iconColor.header} />
         </Pressable>
         <Text
           className="mr-9 flex-1 text-center font-nunito text-lg font-extrabold text-mascot-navy dark:text-white"
@@ -113,29 +115,41 @@ export function EditProfileScreen() {
       </View>
 
       <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 40 }} keyboardShouldPersistTaps="handled">
-        <View className="items-center">
-          <Pressable
-            onPress={pickAvatar}
-            disabled={uploadAvatar.isPending}
-            testID="edit-profile-avatar"
-            className="size-28 items-center justify-center overflow-hidden rounded-full bg-primary-500"
-          >
-            {user?.avatarUrl
-              ? <Image source={{ uri: user.avatarUrl }} contentFit="cover" style={{ width: '100%', height: '100%' }} />
-              : <Text className="font-nunito text-3xl font-extrabold text-white">{initials(name)}</Text>}
-          </Pressable>
+        <View className="items-center rounded-3xl border border-neutral-200/80 bg-white p-6 shadow-sm shadow-black/5 dark:border-neutral-800 dark:bg-neutral-900">
+          <View className="relative mb-3.5 items-center justify-center">
+            <Pressable
+              onPress={pickAvatar}
+              disabled={uploadAvatar.isPending}
+              testID="edit-profile-avatar"
+              className="size-28 items-center justify-center rounded-full border-2 border-primary-400 bg-primary-50/50 p-1.5 dark:bg-primary-500/10"
+            >
+              <View className="size-full items-center justify-center overflow-hidden rounded-full bg-primary-500">
+                {user?.avatarUrl
+                  ? <Image source={{ uri: user.avatarUrl }} contentFit="cover" style={{ width: '100%', height: '100%' }} />
+                  : <Text className="font-nunito text-4xl font-extrabold text-white">{initials(name)}</Text>}
+              </View>
+            </Pressable>
+
+            <Pressable
+              onPress={pickAvatar}
+              disabled={uploadAvatar.isPending}
+              accessibilityLabel={translate('edit_profile.avatar_change')}
+              className="absolute bottom-0 left-0 rounded-full border-2 border-white bg-mascot-navy p-2 active:scale-95 dark:border-neutral-900"
+            >
+              <CameraIcon color="#FFFFFF" width={16} height={16} />
+            </Pressable>
+          </View>
+
           <Button
             tx="edit_profile.avatar_change"
             variant="ghost"
             size="sm"
-            icon={<CameraIcon color="#565879" width={18} height={18} />}
             loading={uploadAvatar.isPending}
             onPress={pickAvatar}
-            className="mt-2"
           />
         </View>
 
-        <View className="mt-4 gap-4">
+        <View className="mt-4 gap-4 rounded-3xl border border-neutral-200/80 bg-white p-5 shadow-sm shadow-black/5 dark:border-neutral-800 dark:bg-neutral-900">
           <Controller
             control={control}
             name="firstName"

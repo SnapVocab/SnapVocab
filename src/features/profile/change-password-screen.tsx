@@ -18,6 +18,7 @@ import {
 import { ChevronLeftIcon } from '@/components/ui/icons';
 import { translate } from '@/lib/i18n';
 import { useChangePassword } from './api';
+import { useIconColors } from './use-icon-colors';
 
 const schema = z
   .object({
@@ -39,6 +40,7 @@ type FormValues = z.infer<typeof schema>;
 /** Settings → Account. Signing out other devices happens on the server. */
 export function ChangePasswordScreen() {
   const router = useRouter();
+  const iconColor = useIconColors();
   const changePassword = useChangePassword();
 
   const { control, handleSubmit, formState: { errors } } = useForm<FormValues>({
@@ -69,7 +71,7 @@ export function ChangePasswordScreen() {
           testID="change-password-back"
           className="-ml-1 size-10 items-center justify-center rounded-full active:bg-neutral-100"
         >
-          <ChevronLeftIcon color="#1E2A44" />
+          <ChevronLeftIcon color={iconColor.header} />
         </Pressable>
         <Text
           className="mr-9 flex-1 text-center font-nunito text-lg font-extrabold text-mascot-navy dark:text-white"

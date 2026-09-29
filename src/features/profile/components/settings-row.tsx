@@ -28,7 +28,9 @@ export function SettingsRow({ icon, tx, value, toggle, onPress, last, testID }: 
       <Text className="flex-1 text-base font-bold text-mascot-navy dark:text-white" tx={tx} />
 
       <View className="flex-row items-center gap-2">
-        {value !== undefined && <Text className="text-sm text-neutral-500">{value}</Text>}
+        {value !== undefined && (
+          <Text className="text-sm font-medium text-neutral-500">{value}</Text>
+        )}
         {toggle && (
           <Switch
             value={toggle.value}

@@ -7,8 +7,8 @@ import { useState } from 'react';
 import { Alert, ScrollView } from 'react-native';
 
 import {
-  Button,
   FocusAwareStatusBar,
+  Mascot,
   Pressable,
   SafeAreaView,
   showErrorMessage,
@@ -16,12 +16,14 @@ import {
   View,
 } from '@/components/ui';
 import {
-  BookIcon,
+  BellIcon,
   ChevronLeftIcon,
-  Lock,
-  NotificationBell,
-  SettingsIcon,
-  StarIcon,
+  ClockRotateIcon,
+  GlobeIcon,
+  LogOutIcon,
+  PasswordIcon,
+  TargetIcon,
+  ThemeModeIcon,
 } from '@/components/ui/icons';
 import { useSelectedTheme } from '@/lib/hooks';
 import { translate, useSelectedLanguage } from '@/lib/i18n';
@@ -30,10 +32,11 @@ import { OptionSheet } from './components/option-sheet';
 import { SettingsRow } from './components/settings-row';
 import { SettingsSection } from './components/settings-section';
 import { formatTimeOfDay, reminderOptions } from './display';
+import { useIconColors } from './use-icon-colors';
 
 const LANGUAGES = [
-  { value: 'vi' as Language, label: 'Tiếng Việt' },
-  { value: 'en' as Language, label: 'English' },
+  { value: 'vi' as Language, label: 'Tiếng Việt', emoji: '🇻🇳' },
+  { value: 'en' as Language, label: 'English', emoji: '🇬🇧' },
 ];
 
 const THEMES: { value: ThemePreference; label: string; scheme: ColorSchemeType }[] = [
@@ -44,12 +47,16 @@ const THEMES: { value: ThemePreference; label: string; scheme: ColorSchemeType }
 
 const DAILY_GOALS = [5, 10, 20, 30, 50];
 
+/** The row icons follow the muted grey of the design. */
+const ROW_ICON_SIZE = 22;
+
 type Sheet = 'language' | 'theme' | 'goal' | 'reminder' | null;
 
 /** MH-PROFILE-03. Biometric login and notification list are out of this round. */
 export function SettingsScreen() {
   const router = useRouter();
   const [sheet, setSheet] = useState<Sheet>(null);
+  const iconColor = useIconColors();
 
   const { data: settings } = useUserSettings();
   const updateSettings = useUpdateSettings();
@@ -88,7 +95,7 @@ export function SettingsScreen() {
           testID="settings-back"
           className="-ml-1 size-10 items-center justify-center rounded-full active:bg-neutral-100"
         >
-          <ChevronLeftIcon color="#1E2A44" />
+          <ChevronLeftIcon color={iconColor.header} />
         </Pressable>
         <Text
           className="mr-9 flex-1 text-center font-nunito text-lg font-extrabold text-mascot-navy dark:text-white"
@@ -102,7 +109,7 @@ export function SettingsScreen() {
       >
         <SettingsSection tx="settings.account">
           <SettingsRow
-            icon={<Lock color="#757793" />}
+            icon={<PasswordIcon color={iconColor.row} size={ROW_ICON_SIZE} />}
             tx="settings.change_password"
             onPress={() => router.push('/change-password')}
             testID="settings-change-password"
@@ -112,7 +119,7 @@ export function SettingsScreen() {
 
         <SettingsSection tx="settings.notifications">
           <SettingsRow
-            icon={<NotificationBell color="#757793" />}
+            icon={<BellIcon color={iconColor.row} size={ROW_ICON_SIZE} />}
             tx="settings.push"
             toggle={{
               value: settings?.pushEnabled ?? true,
@@ -126,14 +133,14 @@ export function SettingsScreen() {
 
         <SettingsSection tx="settings.learning">
           <SettingsRow
-            icon={<BookIcon color="#757793" />}
+            icon={<TargetIcon color={iconColor.row} size={ROW_ICON_SIZE} />}
             tx="settings.daily_goal"
             value={settings ? translate('settings.daily_goal_unit', { count: settings.dailyGoal }) : undefined}
             onPress={() => setSheet('goal')}
             testID="settings-daily-goal"
           />
           <SettingsRow
-            icon={<StarIcon color="#757793" />}
+            icon={<ClockRotateIcon color={iconColor.row} size={ROW_ICON_SIZE} />}
             tx="settings.reminder"
             value={reminder ?? translate('settings.reminder_off')}
             onPress={() => setSheet('reminder')}
@@ -144,14 +151,14 @@ export function SettingsScreen() {
 
         <SettingsSection tx="settings.app">
           <SettingsRow
-            icon={<SettingsIcon color="#757793" />}
+            icon={<GlobeIcon color={iconColor.row} size={ROW_ICON_SIZE} />}
             tx="settings.language"
             value={languageLabel}
             onPress={() => setSheet('language')}
             testID="settings-language"
           />
           <SettingsRow
-            icon={<SettingsIcon color="#757793" />}
+            icon={<ThemeModeIcon color={iconColor.row} size={ROW_ICON_SIZE} />}
             tx="settings.theme"
             value={themeLabel}
             onPress={() => setSheet('theme')}
@@ -160,17 +167,28 @@ export function SettingsScreen() {
           />
         </SettingsSection>
 
-        <Button
-          tx="settings.logout"
-          variant="danger"
-          fullWidth
-          loading={logout.isPending}
-          onPress={confirmLogout}
-          testID="settings-logout"
-        />
-        <Text className="mt-4 text-center text-xs text-neutral-400">
-          {translate('settings.version', { version: Env.EXPO_PUBLIC_VERSION })}
-        </Text>
+        <View className="mt-8 overflow-hidden rounded-3xl border border-danger-100 bg-white shadow-sm shadow-black/5 dark:border-danger-500/30 dark:bg-neutral-900">
+          <Pressable
+            onPress={confirmLogout}
+            disabled={logout.isPending}
+            testID="settings-logout"
+            className="flex-row items-center justify-center p-4 active:bg-danger-50 dark:active:bg-danger-500/10"
+          >
+            <LogOutIcon color="#EF4444" width={20} height={20} />
+            <Text
+              className="ml-2 font-nunito text-base font-extrabold text-danger-600"
+              tx="settings.logout"
+            />
+          </Pressable>
+        </View>
+
+        <View className="mt-6 items-center">
+          <Mascot pose="wave" className="mb-2 size-12 opacity-60" />
+          <Text className="font-nunito text-sm font-bold text-neutral-400">SnapVocab</Text>
+          <Text className="text-xs font-medium text-neutral-400">
+            {translate('settings.version', { version: Env.EXPO_PUBLIC_VERSION })}
+          </Text>
+        </View>
       </ScrollView>
 
       <OptionSheet
