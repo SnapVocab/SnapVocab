@@ -68,35 +68,36 @@ export function SpeedDialFAB({
     };
   });
 
-  // 5. Hiệu ứng làm mờ màn hình (Backdrop) khi mở menu
+  // 5. Hiệu ứng làm mờ màn hình (Backdrop) dịu nhẹ khi mở menu
   const backdropAnimatedStyle = useAnimatedStyle(() => {
     return {
-      opacity: withTiming(animation.value * 0.45, { duration: 180 }),
+      opacity: withTiming(animation.value * 0.22, { duration: 180 }),
     };
   });
 
   return (
     <>
-      {/* Lớp nền mờ khi mở menu (bấm ra ngoài sẽ đóng menu) */}
+      {/* Lớp nền mờ nhẹ khi mở menu (bấm ra ngoài sẽ đóng menu) */}
       {isOpen && (
         <Animated.View
           style={[StyleSheet.absoluteFillObject, backdropAnimatedStyle]}
-          className="z-30 bg-neutral-950"
+          className="z-30 bg-black"
           pointerEvents="auto"
         >
           <Pressable
             style={StyleSheet.absoluteFillObject}
             onPress={close}
+            android_ripple={{ color: 'transparent' }}
             accessibilityRole="button"
             accessibilityLabel="Close menu"
           />
         </Animated.View>
       )}
 
-      {/* Khung chứa các nút FAB (cố định ở góc dưới phải) */}
+      {/* Khung chứa các nút FAB (cố định ở góc dưới phải, đẩy cao hơn) */}
       <View
         testID={testID}
-        className={cn('absolute right-5 bottom-8 z-40 items-end gap-3.5', className)}
+        className={cn('absolute right-5 bottom-16 z-40 items-end gap-3.5', className)}
         pointerEvents="box-none"
       >
         {/* Danh sách các nút con (render từ trên xuống dưới) */}
@@ -124,6 +125,7 @@ export function SpeedDialFAB({
         <AnimatedPressable
           style={mainButtonAnimatedStyle}
           onPress={toggleOpen}
+          android_ripple={{ color: 'transparent' }}
           accessibilityRole="button"
           accessibilityLabel={isOpen ? 'Close speed dial menu' : 'Open speed dial menu'}
           className="size-14 items-center justify-center rounded-full bg-primary-600 shadow-xl shadow-primary-900/30 active:scale-95 active:opacity-90 dark:bg-primary-500"

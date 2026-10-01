@@ -66,6 +66,30 @@
     "xp_to_level": "{{remaining}} XP to level {{nextLevel}}"
   },
   "learn": {
+    "add_word": {
+      "add_error": "Failed to add word. Please try again.",
+      "add_item": "+ Add {{label}}",
+      "add_success": "Word added successfully!",
+      "audio_placeholder": "Enter audio URL or English word...",
+      "auto_fill": "Auto Fill",
+      "banner_desc": "Fields are dynamically generated based on this topic's Schema & Template.",
+      "banner_title": "Custom Word Form",
+      "boolean_disabled": "Disabled",
+      "boolean_enabled": "Enabled",
+      "enter": "Enter",
+      "lookup_error": "Unable to look up word at this moment.",
+      "lookup_not_found": "No dictionary entry found for this word.",
+      "lookup_success": "Dictionary information auto-filled!",
+      "missing_topic_id": "Missing Topic ID",
+      "required_field": "Please enter {{field}}",
+      "retry": "Try again",
+      "schema_error": "Failed to load topic schema structure.",
+      "schema_not_ready": "Schema data is not ready.",
+      "submit_button": "SAVE WORD",
+      "title": "Add Word",
+      "topic_label": "Topic: {{name}}",
+      "validation_failed": "Please fill in all required fields (*)"
+    },
     "collection_detail": {
       "empty_topics_desc": "There are no topics in this section yet.",
       "empty_topics_title": "No topics yet",
@@ -151,8 +175,12 @@
     "title": "Learn",
     "topic": {
       "add_subtopic": "Add Subtopic",
+      "add_subtopic_short": "Subtopic",
       "add_topic": "Add Topic",
-      "add_word": "Add Word"
+      "add_word": "Add Word",
+      "search_words_placeholder": "Search words, translations...",
+      "subtopics_title": "Subtopics",
+      "words_list_title": "Words & Cards"
     },
     "view_all": "View all"
   },

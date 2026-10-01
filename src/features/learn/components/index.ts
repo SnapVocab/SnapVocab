@@ -1,3 +1,4 @@
+export * from './add-word';
 export * from './collection-detail';
 export * from './collections';
 export * from './continue-deck-row';

@@ -1,6 +1,14 @@
 import type { AxiosError } from 'axios';
 import type { ApiResponse } from '../auth/api';
-import type { Collection, CollectionTopicParams, CreateTopicDTO, TopicDTO, UpdateCollectionDTO } from './types';
+import type {
+  AddTopicItemParams,
+  Collection,
+  CollectionTopicParams,
+  CreateTopicDTO,
+  TopicDTO,
+  TopicItemData,
+  UpdateCollectionDTO,
+} from './types';
 import type { PaginateResponse } from '@/lib/api/types';
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { client } from '@/lib/api';
@@ -189,5 +197,66 @@ export function useCreateTopic() {
       queryClient.invalidateQueries({ queryKey: ['collection-topics-infinite', String(variables.collectionId)] });
       queryClient.invalidateQueries({ queryKey: ['collections'] });
     },
+  });
+}
+
+export function useAddTopicItem() {
+  const queryClient = useQueryClient();
+
+  return useMutation<TopicItemData, AxiosError<ApiResponse<unknown>>, AddTopicItemParams>({
+    mutationFn: async ({ topicId, data }) => {
+      const response = await client<ApiResponse<TopicItemData>>({
+        url: `/api/topics/${topicId}/items`,
+        method: 'POST',
+        data,
+      });
+
+      return response.data.data;
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['topic-items', variables.topicId] });
+      queryClient.invalidateQueries({ queryKey: ['topic-items', String(variables.topicId)] });
+      queryClient.invalidateQueries({ queryKey: ['topic-items-infinite', variables.topicId] });
+      queryClient.invalidateQueries({ queryKey: ['topic-items-infinite', String(variables.topicId)] });
+      queryClient.invalidateQueries({ queryKey: ['collections'] });
+      queryClient.invalidateQueries({ queryKey: ['collection-topics'] });
+    },
+  });
+}
+
+export function useTopicItems(topicId?: number | string, page = 0, size = 20) {
+  return useQuery<PaginateResponse<TopicItemData>, AxiosError>({
+    queryKey: ['topic-items', topicId, { page, size }],
+    queryFn: async () => {
+      const response = await client<ApiResponse<PaginateResponse<TopicItemData>>>({
+        url: `/api/topics/${topicId}`,
+        method: 'GET',
+        params: { page, size },
+      });
+
+      return response.data.data;
+    },
+    enabled: topicId !== undefined && topicId !== null && topicId !== '',
+  });
+}
+
+export function useInfiniteTopicItems(topicId?: number | string | null, size = 20) {
+  return useInfiniteQuery<PaginateResponse<TopicItemData>, AxiosError>({
+    queryKey: ['topic-items-infinite', topicId, size],
+    queryFn: async ({ pageParam = 0 }) => {
+      const response = await client<ApiResponse<PaginateResponse<TopicItemData>>>({
+        url: `/api/topics/${topicId}`,
+        method: 'GET',
+        params: { page: pageParam, size },
+      });
+
+      return response.data.data;
+    },
+    initialPageParam: 0,
+    getNextPageParam: (lastPage) => {
+      const { page, pages } = lastPage.meta;
+      return page + 1 < pages ? page + 1 : undefined;
+    },
+    enabled: topicId !== undefined && topicId !== null && topicId !== '',
   });
 }

@@ -48,6 +48,7 @@ export function SpeedDialItem({
       {/* Nhãn văn bản (Text Badge) */}
       <Pressable
         onPress={onPress}
+        android_ripple={{ color: 'transparent' }}
         className="rounded-2xl border border-neutral-200/80 bg-white px-3.5 py-2 shadow-lg shadow-black/10 active:opacity-80 dark:border-neutral-700 dark:bg-neutral-800"
       >
         <Text
@@ -62,6 +63,7 @@ export function SpeedDialItem({
       {/* Nút icon tròn (Circle Icon Button) */}
       <Pressable
         onPress={onPress}
+        android_ripple={{ color: 'transparent' }}
         className={`size-12 items-center justify-center rounded-full shadow-lg shadow-black/15 active:scale-95 active:opacity-90 ${
           action.bgColorClass ?? 'bg-neutral-800 dark:bg-neutral-700'
         }`}

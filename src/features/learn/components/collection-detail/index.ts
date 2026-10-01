@@ -1,8 +1,14 @@
+export { default as CollectionBreadcrumbBar } from './collection-breadcrumb-bar';
+export { default as CollectionDetailContent } from './collection-detail-content';
+export { default as CollectionDetailFAB } from './collection-detail-fab';
 export { default as CollectionDetailHeader } from './collection-detail-header';
 export { default as CollectionDetailHero } from './collection-detail-hero';
+export { default as CollectionDetailListHeader } from './collection-detail-list-header';
 export { default as CollectionWordCard } from './collection-word-card';
 export { default as CollectionWordsEmpty } from './collection-words-empty';
 export { default as SkeletonCollectionDetail } from './skeleton-collection-detail';
 export { default as SkeletonTopicList } from './skeleton-topic-list';
+export { default as SubtopicSection } from './subtopic-section';
 export { default as TopicCard } from './topic-card';
+export { default as TopicItemRow } from './topic-item-row';
 export { default as TopicListEmpty } from './topic-list-empty';

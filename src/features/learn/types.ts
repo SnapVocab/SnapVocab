@@ -64,3 +64,16 @@ export type CreateTopicDTO = {
   schemaId?: number | null;
   activeTemplateId?: number | null;
 };
+
+export type TopicItemData = {
+  topicItemId: number;
+  createdAt: string;
+  groups: Record<string, any>;
+};
+
+export type CreateTopicItemDTO = Record<string, any>;
+
+export type AddTopicItemParams = {
+  topicId: number | string;
+  data: CreateTopicItemDTO;
+};
