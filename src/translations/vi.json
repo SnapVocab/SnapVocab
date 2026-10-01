@@ -69,6 +69,30 @@
     "xp_to_level": "Còn {{remaining}} XP để lên cấp {{nextLevel}}"
   },
   "learn": {
+    "add_word": {
+      "add_error": "Không thể thêm từ vựng. Vui lòng thử lại.",
+      "add_item": "+ Thêm {{label}}",
+      "add_success": "Thêm từ vựng thành công!",
+      "audio_placeholder": "Nhập link âm thanh hoặc từ tiếng Anh...",
+      "auto_fill": "Tra từ nhanh",
+      "banner_desc": "Các trường được tạo tự động theo Schema & Bố cục của chủ đề này.",
+      "banner_title": "Thêm từ vựng tùy biến",
+      "boolean_disabled": "Đang tắt",
+      "boolean_enabled": "Đang bật",
+      "enter": "Nhập",
+      "lookup_error": "Không thể tra từ lúc này.",
+      "lookup_not_found": "Không tìm thấy thông tin từ điển cho từ này.",
+      "lookup_success": "Đã tự động điền thông tin từ điển!",
+      "missing_topic_id": "Thiếu mã chủ đề (Topic ID)",
+      "required_field": "Vui lòng nhập {{field}}",
+      "retry": "Thử lại",
+      "schema_error": "Không thể tải cấu trúc thuộc tính của chủ đề.",
+      "schema_not_ready": "Cấu trúc dữ liệu chưa sẵn sàng.",
+      "submit_button": "LƯU TỪ VỰNG",
+      "title": "Thêm từ vựng",
+      "topic_label": "Chủ đề: {{name}}",
+      "validation_failed": "Vui lòng điền đầy đủ các thông tin bắt buộc (*)"
+    },
     "collection_detail": {
       "empty_topics_desc": "Mục này hiện chưa có chủ đề học tập nào.",
       "empty_topics_title": "Chưa có chủ đề nào",
@@ -153,7 +177,13 @@
     "lesson_progress": "Bài {{lesson}} · {{progress}}/{{total}} từ",
     "title": "Học tập",
     "topic": {
-      "add_topic": "Thêm chủ đề"
+      "add_subtopic": "Thêm chủ đề con",
+      "add_subtopic_short": "Chủ đề con",
+      "add_topic": "Thêm chủ đề",
+      "add_word": "Thêm từ vựng",
+      "search_words_placeholder": "Tìm kiếm từ vựng, nghĩa...",
+      "subtopics_title": "Chủ đề con",
+      "words_list_title": "Danh sách từ & thẻ"
     },
     "view_all": "Xem tất cả"
   },
