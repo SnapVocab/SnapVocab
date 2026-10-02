@@ -1,17 +1,27 @@
+// Every line here re-exports an icon component, which the rule cannot see
+// through `export *`; without this it warns once per line in review.
+/* eslint-disable react-refresh/only-export-components */
 export * from './accuracy';
 export * from './alert-triangle';
 export * from './arrow-right';
+export * from './bell';
 export * from './book';
+export * from './box';
 export * from './camera';
 export * from './check';
 export * from './check-circle';
+// Lucide-style aliases sit next to the icon they alias, to keep exports sorted.
+export { CheckCircleIcon as CheckCircle2Icon } from './check-circle';
 export * from './chevron-left';
 export * from './chevron-right';
 export * from './clock';
+export * from './clock-rotate';
 export * from './close';
+export { CloseIcon as XIcon } from './close';
 export * from './coin';
 export * from './community';
 export * from './edit';
+export { EditIcon as Edit2Icon } from './edit';
 export * from './external-link';
 export * from './eye';
 export * from './eye-slash';
@@ -21,6 +31,7 @@ export * from './flash';
 export * from './flash-cards';
 export * from './flashcard';
 export * from './folder';
+export * from './globe';
 export * from './help-circle';
 export * from './home';
 export * from './images';
@@ -35,6 +46,7 @@ export * from './mic';
 export * from './mission-flashcard';
 export * from './more-vertical';
 export * from './notification-bell';
+export * from './password';
 export * from './play';
 export * from './plus';
 export * from './profile';
@@ -50,18 +62,14 @@ export * from './sparkles';
 export * from './srs-review';
 export * from './star';
 export * from './statistic';
+export * from './target';
+export * from './theme-mode';
 export * from './trash';
 export * from './trophy';
 export * from './user';
 export * from './volume';
+export { VolumeIcon as Volume2Icon } from './volume';
 export * from './wallet';
 export * from './wifi-off';
 export * from './x-circle';
 export * from './zap';
-
-// Aliases for Lucide compatibility
-export { CheckCircleIcon as CheckCircle2Icon } from './check-circle';
-export { VolumeIcon as Volume2Icon } from './volume';
-export { EditIcon as Edit2Icon } from './edit';
-export { CloseIcon as XIcon } from './close';
-

@@ -13,7 +13,7 @@ config.resolver.resolveRequest = (context, moduleName, platform) => {
         type: 'sourceFile',
       };
     }
-    catch (e) {}
+    catch {}
   }
   if (originalResolveRequest) {
     return originalResolveRequest(context, moduleName, platform);

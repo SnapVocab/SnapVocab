@@ -16,6 +16,7 @@ export type InitBuilderParams = {
   topicName?: string;
   template?: TemplateDTO;
   schema?: TopicSchemaDTO;
+  force?: boolean;
 };
 
 export type SaveSectionParams = {
@@ -32,6 +33,7 @@ export type AddFieldParams = {
 };
 
 export type CoreBuilderState = {
+  isInitialized: boolean;
   topicId?: number;
   topicName: string;
   templateId?: number;

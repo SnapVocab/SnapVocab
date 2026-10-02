@@ -123,8 +123,8 @@ export function CreateTopicScreen() {
           showsVerticalScrollIndicator={false}
         >
           {/* Info Banner */}
-          <View className="mb-5 rounded-2xl border border-[#DCFCE7] bg-[#F0FDF4] p-4 dark:border-emerald-800/40 dark:bg-emerald-950/30">
-            <Text className="mb-1 font-nunito text-sm font-black text-[#15803D] dark:text-[#4ADE80]">
+          <View className="mb-5 rounded-2xl border border-success-100 bg-success-50 p-4 dark:border-emerald-800/40 dark:bg-emerald-950/30">
+            <Text className="mb-1 font-nunito text-sm font-black text-success-700 dark:text-success-400">
               {translate('learn.create_topic.banner_title')}
             </Text>
             <Text className="font-inter text-xs/relaxed font-medium text-[#475569] dark:text-neutral-300">
@@ -195,7 +195,7 @@ export function CreateTopicScreen() {
               {/* Header row */}
               <View className="flex-row items-center justify-between">
                 <View className="mr-2 flex-1 flex-row items-center">
-                  <View className="mr-3 size-11 items-center justify-center rounded-xl border border-[#86EFAC]/50 bg-[#DCFCE7]/60 dark:bg-emerald-950/80">
+                  <View className="mr-3 size-11 items-center justify-center rounded-xl border border-success-300/50 bg-success-100/60 dark:bg-emerald-950/80">
                     <LayoutGridIcon color="#16A34A" width={22} height={22} />
                   </View>
                   <View className="flex-1">
@@ -203,8 +203,8 @@ export function CreateTopicScreen() {
                       <Text className="font-nunito text-sm font-black text-mascot-navy dark:text-white">
                         {translate('learn.create_topic.layout_name')}
                       </Text>
-                      <View className="rounded-md bg-[#DCFCE7] px-1.5 py-0.5 dark:bg-emerald-900/60">
-                        <Text className="font-inter text-[10px] font-extrabold text-[#15803D] dark:text-[#4ADE80]">
+                      <View className="rounded-md bg-success-100 px-1.5 py-0.5 dark:bg-emerald-900/60">
+                        <Text className="font-inter text-[10px] font-extrabold text-success-700 dark:text-success-400">
                           {translate('learn.create_topic.layout_badge_default')}
                         </Text>
                       </View>
