@@ -12,3 +12,5 @@ export const Lock = createIcon({
     },
   ],
 });
+
+export const LockIcon = Lock;

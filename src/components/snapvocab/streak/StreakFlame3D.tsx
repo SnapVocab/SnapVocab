@@ -56,7 +56,7 @@ export function StreakFlame3D({
     else {
       scale.value = withTiming(1, { duration: 200 });
     }
-  }, [animation, state]);
+  }, [animation, scale, state]);
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ scale: scale.value }],
@@ -64,64 +64,70 @@ export function StreakFlame3D({
 
   const isInactive = state === 'inactive' || state === 'broken';
   const isMilestone = state === 'milestone';
+  const baseScale = isInactive ? 0.9 : 1;
 
   return (
     <GameVisual size={size} style={style} testID={testID} accessibilityLabel={accessibilityLabel}>
-      <Animated.View style={[{ width: numericSize, height: numericSize }, animatedStyle]}>
+      <Animated.View
+        style={[
+          { width: numericSize, height: numericSize, transform: [{ scale: baseScale }] },
+          animatedStyle,
+        ]}
+      >
         <Svg width={numericSize} height={numericSize} viewBox="0 0 64 64" fill="none">
           <Defs>
             {/* Outer Glow Gradient */}
             <RadialGradient id="flameGlow" cx="55%" cy="60%" r="50%">
-              <Stop offset="0%" stopColor={isInactive ? '#94A3B8' : isMilestone ? '#FFD700' : '#FF8A00'} stopOpacity="0.6" />
-              <Stop offset="100%" stopColor={isInactive ? '#CBD5E1' : '#FF3B30'} stopOpacity="0" />
+              <Stop offset="0%" stopColor={isMilestone ? '#FFD700' : '#FF8A00'} stopOpacity="0.6" />
+              <Stop offset="100%" stopColor={isMilestone ? '#FFA000' : '#FF3B30'} stopOpacity="0" />
             </RadialGradient>
 
             {/* Main Outer Flame Gradient */}
             <LinearGradient id="outerFlameGrad" x1="0" y1="0" x2="0" y2="1">
-              <Stop offset="0%" stopColor={isInactive ? '#94A3B8' : isMilestone ? '#FFF176' : '#FF9500'} />
-              <Stop offset="60%" stopColor={isInactive ? '#64748B' : isMilestone ? '#FFB300' : '#FF3B30'} />
-              <Stop offset="100%" stopColor={isInactive ? '#475569' : isMilestone ? '#E65100' : '#C2185B'} />
+              <Stop offset="0%" stopColor={isInactive ? '#A1A1AA' : isMilestone ? '#FFF176' : '#FF9500'} />
+              <Stop offset="60%" stopColor={isInactive ? '#71717A' : isMilestone ? '#FFB300' : '#FF3B30'} />
+              <Stop offset="100%" stopColor={isInactive ? '#52525B' : isMilestone ? '#E65100' : '#C2185B'} />
             </LinearGradient>
 
             {/* Mid Flame Gradient */}
             <LinearGradient id="midFlameGrad" x1="0" y1="0" x2="0" y2="1">
-              <Stop offset="0%" stopColor={isInactive ? '#CBD5E1' : '#FFE082'} />
-              <Stop offset="50%" stopColor={isInactive ? '#94A3B8' : '#FFC42E'} />
-              <Stop offset="100%" stopColor={isInactive ? '#64748B' : '#FF8A00'} />
+              <Stop offset="0%" stopColor={isInactive ? '#D4D4D8' : '#FFE082'} />
+              <Stop offset="50%" stopColor={isInactive ? '#A1A1AA' : '#FFC42E'} />
+              <Stop offset="100%" stopColor={isInactive ? '#71717A' : '#FF8A00'} />
             </LinearGradient>
 
             {/* Inner Hot Core Gradient */}
             <LinearGradient id="innerCoreGrad" x1="0" y1="0" x2="0" y2="1">
-              <Stop offset="0%" stopColor="#FFFFFF" />
-              <Stop offset="40%" stopColor={isInactive ? '#E2E8F0' : '#FFF59D'} />
-              <Stop offset="100%" stopColor={isInactive ? '#94A3B8' : '#FFB300'} />
+              <Stop offset="0%" stopColor={isInactive ? '#F4F4F5' : '#FFFFFF'} />
+              <Stop offset="40%" stopColor={isInactive ? '#E4E4E7' : '#FFF59D'} />
+              <Stop offset="100%" stopColor={isInactive ? '#A1A1AA' : '#FFB300'} />
             </LinearGradient>
           </Defs>
 
-          {/* Background Glow */}
-          <Circle cx="32" cy="36" r="26" fill="url(#flameGlow)" />
+          {/* Background Glow (Active / Milestone only, hidden when dormant) */}
+          {!isInactive && <Circle cx="32" cy="36" r="26" fill="url(#flameGlow)" />}
 
-          {/* Outer Layer 3D Shadow Base */}
+          {/* Outer Layer 3D Shadow Base with dynamic flame flick and tongue */}
           <Path
-            d="M32 4C24 16 12 26 12 40C12 51.0457 20.9543 60 32 60C43.0457 60 52 51.0457 52 40C52 26 40 16 32 4Z"
+            d="M32 4 C32 4 36 12 39 17 C42 13 46 11 49 15 C53 20 54 28 54 38 C54 50 44 59 32 59 C20 59 10 50 10 38 C10 26 18 17 24 11 C24 18 28 21 31 19 C32 15 32 4 32 4 Z"
             fill="url(#outerFlameGrad)"
           />
 
           {/* Mid Flame Layer */}
           <Path
-            d="M32 14C27 22 18 30 18 41C18 48.732 24.268 55 32 55C39.732 55 46 48.732 46 41C46 30 37 22 32 14Z"
+            d="M32 13 C32 13 35 19 37 23 C40 20 43 18 45 22 C48 26 48 32 48 39 C48 48 41 54 32 54 C23 54 16 48 16 39 C16 30 22 23 26 18 C26 23 29 25 31 23 C32 20 32 13 32 13 Z"
             fill="url(#midFlameGrad)"
           />
 
           {/* Inner Glowing Core */}
           <Path
-            d="M32 24C29 29 23 35 23 43C23 48 27.0294 51.5 32 51.5C36.9706 51.5 41 48 41 43C41 35 35 29 32 24Z"
+            d="M32 23 C32 23 34 27 35 30 C37 28 39 27 40 30 C42 33 42 37 42 41 C42 47 37 50.5 32 50.5 C27 50.5 22 47 22 41 C22 35 26 30 28 27 C28 30 30 31 31 30 C32 28 32 23 32 23 Z"
             fill="url(#innerCoreGrad)"
           />
 
           {/* Highlight Specular Crescent */}
           <Path
-            d="M26 18C28 14 31 10 32 8C33 13 36 17 38 20C34 18 29 20 26 18Z"
+            d="M26 15 C28 12 30 9 32 6 C33 10 35 14 36 17 C33 15 29 17 26 15 Z"
             fill="#FFFFFF"
             opacity={isInactive ? 0.3 : 0.85}
           />

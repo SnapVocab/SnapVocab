@@ -15,17 +15,17 @@ import { translate } from '@/lib/i18n/utils';
 
 export function WelcomeScreen() {
   const slides = [{
-    image: require('@assets/onboarding-1.png'),
+    image: require('@assets/images/snapy-welcome.png'),
     title: translate('welcome.title1'),
     subtitle: translate('welcome.subtitle1'),
     bg: 'from-primary/10 to-pink/10',
   }, {
-    image: require('@assets/onboarding-2.png'),
+    image: require('@assets/images/snapy-snap.png'),
     title: translate('welcome.title2'),
     subtitle: translate('welcome.subtitle2'),
     bg: 'from-primary/10 to-success/10',
   }, {
-    image: require('@assets/onboarding-3.png'),
+    image: require('@assets/images/snapy-reading.png'),
     title: translate('welcome.title3'),
     subtitle: translate('welcome.subtitle3'),
     bg: 'from-warning/10 to-primary/10',
