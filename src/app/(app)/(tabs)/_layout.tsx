@@ -1,4 +1,4 @@
-import { Tabs } from 'expo-router';
+import { Tabs, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { CameraTabButton } from '@/components/ui/camera-tab-button';
@@ -12,6 +12,7 @@ import { HomeHeader } from '@/features/home';
 import { useInventory, useShopTheme } from '@/features/shop';
 
 export default function TabLayout() {
+  const router = useRouter();
   // Edge-to-edge: the system gesture/nav bar draws over the app, so the tab bar
   // grows by the bottom inset instead of letting it cover the labels.
   const { bottom } = useSafeAreaInsets();
@@ -44,7 +45,13 @@ export default function TabLayout() {
         options={{
           title: 'Home',
           headerShown: true,
-          header: () => <HomeHeader />,
+          header: () => (
+            <HomeHeader
+              onStreakPress={() => router.push('/stats')}
+              onCoinPress={() => router.push('/profile/wallet')}
+              onAvatarPress={() => router.push('/profile')}
+            />
+          ),
           tabBarIcon: ({ color }) => <HomeIcon color={color} />,
           tabBarButtonTestID: 'home-tab',
         }}

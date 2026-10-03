@@ -4,6 +4,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text, UserAvatar } from '@/components/ui';
 import { CoinIcon, FlameIcon, NotificationBell } from '@/components/ui/icons';
 import { useAuthStore } from '@/features/auth/use-auth-store';
+import { useStreak } from '@/features/progress/api';
 
 export type HomeHeaderProps = {
   onAvatarPress?: () => void;
@@ -23,7 +24,9 @@ export function HomeHeader({
   const insets = useSafeAreaInsets();
   const user = useAuthStore(s => s.user);
 
-  const streakDays = user?.streakDays ?? 0;
+  // Same source as Home/Stats: the live streak (0 after a missed day), not users.streak_days.
+  // "–" while loading or on error: unknown is not 0.
+  const streakDays = useStreak().data?.currentStreak ?? '–';
   const coins = user?.coin ?? 0;
 
   return (

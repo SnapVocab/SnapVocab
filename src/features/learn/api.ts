@@ -11,6 +11,7 @@ import type {
 } from './types';
 import type { PaginateResponse } from '@/lib/api/types';
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { invalidateProgress } from '@/features/progress/api';
 import { client } from '@/lib/api';
 
 export type GetCollectionsParams = {
@@ -104,6 +105,8 @@ export function useDeleteCollection() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['collections'] });
+      // Its words leave the learner's vocabulary total.
+      invalidateProgress(queryClient);
     },
   });
 }
@@ -220,6 +223,7 @@ export function useAddTopicItem() {
       queryClient.invalidateQueries({ queryKey: ['topic-items-infinite', String(variables.topicId)] });
       queryClient.invalidateQueries({ queryKey: ['collections'] });
       queryClient.invalidateQueries({ queryKey: ['collection-topics'] });
+      invalidateProgress(queryClient);
     },
   });
 }

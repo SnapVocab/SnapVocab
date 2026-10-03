@@ -22,6 +22,8 @@ export default function AppLayout() {
       <Stack.Screen name="shop" />
       <Stack.Screen name="profile/inventory" />
       <Stack.Screen name="profile/wallet" />
+      <Stack.Screen name="stats" />
+      <Stack.Screen name="level-progress" />
     </Stack>
   );
 }

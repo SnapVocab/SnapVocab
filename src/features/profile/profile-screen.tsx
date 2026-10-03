@@ -23,6 +23,7 @@ import {
   WalletIcon,
 } from '@/components/ui/icons';
 import { useAuthStore } from '@/features/auth/use-auth-store';
+import { useStreak } from '@/features/progress/api';
 import { translate } from '@/lib/i18n';
 import { useMe } from './api';
 import { formatDate, fullName, initials } from './display';
@@ -34,6 +35,8 @@ export function ProfileScreen() {
   const stored = useAuthStore(s => s.user);
   const iconColor = useIconColors();
   const { data, isLoading, refetch, isRefetching } = useMe();
+  // Live streak from Progress; users.streakDays is stored and not reset after a missed day.
+  const streak = useStreak();
   // Render the stored copy while the fresh one loads, so the screen never blanks.
   const user = data ?? stored;
 
@@ -96,7 +99,7 @@ export function ProfileScreen() {
           <StatTile
             icon={<FlameIcon color={iconColor.stat.streak} />}
             tint="bg-mascot-100 border-mascot-200 dark:bg-mascot-500/15 dark:border-mascot-500/30"
-            value={user.streakDays ?? 0}
+            value={streak.data?.currentStreak ?? '–'}
             labelTx="profile.streak"
           />
           <StatTile
@@ -214,7 +217,7 @@ function StatTile({
 }: {
   icon: ReactNode;
   tint: string;
-  value: number;
+  value: number | string;
   labelTx: 'profile.streak' | 'profile.xp' | 'profile.coin';
 }) {
   return (
