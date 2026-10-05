@@ -9,7 +9,7 @@ import type {
   TopicItemData,
   UpdateCollectionDTO,
 } from './types';
-import type { CursorPaginationResponse, PaginateResponse } from '@/lib/api/types';
+import type { CursorPaginationResponse, PaginateResponse } from '@/lib/api';
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { client } from '@/lib/api';
 

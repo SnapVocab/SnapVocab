@@ -1,5 +1,4 @@
-import type { BuilderField } from '../types';
-import type { TopicItemData } from '@/features/learn/types';
+import type { BuilderField, TopicItemData } from '../types';
 import * as React from 'react';
 import { Pressable, View } from 'react-native';
 import { Image } from '@/components/ui/image';

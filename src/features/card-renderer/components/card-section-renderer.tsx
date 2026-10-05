@@ -1,5 +1,4 @@
-import type { BuilderSection, SchemaDTO, TopicSchemaDTO } from '../types';
-import type { TopicItemData } from '@/features/learn/types';
+import type { BuilderSection, SchemaDTO, TopicItemData, TopicSchemaDTO } from '../types';
 import * as React from 'react';
 import { View } from 'react-native';
 import { Text } from '@/components/ui/text';

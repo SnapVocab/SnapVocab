@@ -1,5 +1,4 @@
-import type { BuilderField, BuilderSection } from '../types';
-import type { TopicItemData } from '@/features/learn/types';
+import type { BuilderField, BuilderSection, TopicItemData } from '../types';
 import { getMockFieldValue } from './mock-data-generator';
 
 export type ResolvedFieldValue = {
