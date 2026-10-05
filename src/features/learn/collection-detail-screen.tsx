@@ -7,6 +7,7 @@ import {
   CollectionDetailContent,
   CollectionDetailFAB,
   CollectionDetailHeader,
+  TopicItemPreviewModal,
 } from './components/collection-detail';
 import { useCollectionDetail } from './use-collection-detail';
 
@@ -53,6 +54,20 @@ export function CollectionDetailScreen() {
         bottomSheetRef={detail.bottomSheetRef}
         collection={detail.collectionData}
         onDelete={detail.handleDeleteSuccess}
+      />
+
+      {/* Word / Topic Item Flashcard Preview Modal */}
+      <TopicItemPreviewModal
+        bottomSheetRef={detail.previewBottomSheetRef}
+        item={detail.previewItem}
+        items={detail.filteredItems}
+        currentIndex={detail.previewIndex}
+        template={detail.activeTemplate}
+        schema={detail.topicSchema || detail.fullSchema}
+        hasPrev={detail.previewIndex > 0}
+        hasNext={detail.previewIndex < detail.filteredItems.length - 1}
+        onPrev={detail.handlePrevPreview}
+        onNext={detail.handleNextPreview}
       />
     </SafeAreaView>
   );

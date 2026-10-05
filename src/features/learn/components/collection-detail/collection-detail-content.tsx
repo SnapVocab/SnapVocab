@@ -121,7 +121,12 @@ export function CollectionDetailContent({ detail }: Props) {
         <FlashList<TopicItemData>
           data={isItemsLoading ? [] : filteredItems}
           keyExtractor={item => String(item.topicItemId)}
-          renderItem={({ item }) => <TopicItemRow item={item} />}
+          renderItem={({ item, index }) => (
+            <TopicItemRow
+              item={item}
+              onPress={() => detail.handlePreviewItem(item, index)}
+            />
+          )}
           ItemSeparatorComponent={() => <View className="h-2.5" />}
           ListHeaderComponent={ListHeader}
           ListEmptyComponent={ListEmpty}
