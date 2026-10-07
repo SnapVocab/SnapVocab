@@ -108,13 +108,10 @@ export function TopicItemPreviewModal({
             />
             {totalCount > 0 ? (
               <Text className="font-inter text-xs font-semibold text-neutral-400 dark:text-neutral-500">
-                {currentIndex + 1}
-                {' '}
-                /
-                {' '}
-                {totalCount}
-                {' '}
-                thẻ
+                {translate('learn.collection_detail.card_counter', {
+                  current: currentIndex + 1,
+                  total: totalCount,
+                })}
               </Text>
             ) : null}
           </View>
@@ -149,13 +146,13 @@ export function TopicItemPreviewModal({
               schema={schema ?? undefined}
               side={currentSide}
               onFlip={setCurrentSide}
-              isInteractive
+              isInteractive={false}
               minHeight={380}
             />
           ) : (
             <View className="items-center justify-center py-12">
               <Text className="font-inter text-sm text-neutral-400">
-                Không tìm thấy dữ liệu thẻ
+                {translate('learn.collection_detail.card_not_found')}
               </Text>
             </View>
           )}
