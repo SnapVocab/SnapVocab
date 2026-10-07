@@ -1,6 +1,6 @@
 import { useRouter } from 'expo-router';
 import * as React from 'react';
-import { TouchableOpacity, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 import { Text } from '@/components/ui';
 import { SearchIcon } from '@/components/ui/icons';
 import { translate } from '@/lib/i18n/utils';
@@ -22,29 +22,26 @@ export function HomeSearchBar({ onPress }: HomeSearchBarProps) {
   };
 
   return (
-    <View className="mb-4 flex-row items-center justify-between">
+    <Pressable
+      onPress={handlePress}
+      className="mb-4 flex-row items-center justify-between rounded-2xl border-2 border-b-4 border-neutral-200/90 border-b-neutral-300 bg-white p-3.5 active:translate-y-[2px] active:border-b-2 dark:border-neutral-700 dark:border-b-neutral-800 dark:bg-neutral-900"
+    >
       {/* Left: Guided hint / Heading */}
-      <TouchableOpacity
-        onPress={handlePress}
-        activeOpacity={0.8}
-        className="flex-1 pr-3"
-      >
-        <Text className="font-nunito text-base font-black text-mascot-navy dark:text-white">
+      <View className="flex-1 pr-3">
+        <Text className="font-nunito text-[16px] font-black text-mascot-navy dark:text-white">
           {translate('home.search_hint')}
         </Text>
-        <Text className="mt-0.5 font-inter text-xs text-neutral-400 dark:text-neutral-500">
+        <Text className="mt-0.5 font-inter text-xs font-medium text-neutral-400 dark:text-neutral-500">
           {translate('home.search_placeholder')}
         </Text>
-      </TouchableOpacity>
+      </View>
 
-      {/* Right: Search Button (circular & larger, aligned straight below Notification Bell) */}
-      <TouchableOpacity
-        onPress={handlePress}
-        activeOpacity={0.7}
-        className="size-14 items-center justify-center rounded-full border border-neutral-200 bg-white shadow-sm active:bg-neutral-100 dark:border-neutral-700 dark:bg-neutral-800"
-      >
-        <SearchIcon color="#1E293B" width={26} height={26} />
-      </TouchableOpacity>
-    </View>
+      {/* Right: 3D Chunky Search Action Button */}
+      <View className="size-11 items-center justify-center rounded-xl border-2 border-b-[3px] border-primary-400 border-b-primary-600 bg-primary-500">
+        <SearchIcon color="#FFFFFF" width={20} height={20} />
+      </View>
+    </Pressable>
   );
 }
+
+export default HomeSearchBar;

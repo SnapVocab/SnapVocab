@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { TouchableOpacity, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text, UserAvatar } from '@/components/ui';
 import { CoinIcon, FlameIcon, NotificationBell } from '@/components/ui/icons';
@@ -31,12 +31,11 @@ export function HomeHeader({
       style={{ paddingTop: insets.top }}
       className="border-b border-neutral-100 bg-white px-4 pb-3 dark:border-neutral-800 dark:bg-neutral-900"
     >
-      <View className="flex-row items-center justify-between pt-2">
-        {/* User Avatar */}
-        <TouchableOpacity
+      <View className="flex-row items-center justify-between pt-1">
+        {/* User Avatar with tactile frame */}
+        <Pressable
           onPress={onAvatarPress}
-          activeOpacity={0.8}
-          className="flex-row items-center"
+          className="active:opacity-80"
         >
           <UserAvatar
             url={user?.avatarUrl}
@@ -44,49 +43,43 @@ export function HomeHeader({
             size="md"
             bordered
           />
-        </TouchableOpacity>
+        </Pressable>
 
-        {/* Search + Notification */}
+        {/* Gamified Status Counters + Notification */}
         <View className="flex-row items-center gap-2">
-          <View className="flex-row items-center rounded-2xl border border-neutral-200 bg-neutral-50/80 px-3 py-1.5 dark:border-neutral-700 dark:bg-neutral-800/80">
-            {/* Streak Item */}
-            <TouchableOpacity
-              onPress={onStreakPress}
-              activeOpacity={0.7}
-              className="flex-row items-center gap-1.5 pr-2.5 active:opacity-60"
-            >
-              <FlameIcon color="#F97316" width={18} height={18} />
-              <Text className="font-inter text-xs font-black text-orange-600 dark:text-orange-400">
-                {streakDays}
-              </Text>
-            </TouchableOpacity>
+          {/* Streak 3D Badge */}
+          <Pressable
+            onPress={onStreakPress}
+            className="flex-row items-center gap-1.5 rounded-2xl border-2 border-b-[3px] border-orange-200 border-b-orange-400 bg-orange-50 px-2.5 py-1.5 active:translate-y-px active:border-b-2 dark:border-orange-800 dark:border-b-orange-900 dark:bg-orange-950/40"
+          >
+            <FlameIcon color="#F97316" width={18} height={18} />
+            <Text className="font-nunito text-xs font-black text-orange-600 dark:text-orange-400">
+              {streakDays}
+            </Text>
+          </Pressable>
 
-            {/* Divider Line */}
-            <View className="h-3.5 w-px bg-neutral-200 dark:bg-neutral-700" />
+          {/* Coins 3D Badge */}
+          <Pressable
+            onPress={onCoinPress}
+            className="flex-row items-center gap-1.5 rounded-2xl border-2 border-b-[3px] border-amber-200 border-b-amber-400 bg-amber-50 px-2.5 py-1.5 active:translate-y-px active:border-b-2 dark:border-amber-800 dark:border-b-amber-900 dark:bg-amber-950/40"
+          >
+            <CoinIcon size={18} />
+            <Text className="font-nunito text-xs font-black text-amber-700 dark:text-amber-400">
+              {coins}
+            </Text>
+          </Pressable>
 
-            {/* Coins Item */}
-            <TouchableOpacity
-              onPress={onCoinPress}
-              activeOpacity={0.7}
-              className="flex-row items-center gap-1.5 pl-2.5 active:opacity-60"
-            >
-              <CoinIcon size={19} />
-              <Text className="font-inter text-xs font-black text-amber-600 dark:text-amber-400">
-                {coins}
-              </Text>
-            </TouchableOpacity>
-          </View>
-
-          {/* Notification Bell */}
-          <TouchableOpacity
+          {/* Notification Bell 3D Button */}
+          <Pressable
             onPress={onNotificationPress}
-            activeOpacity={0.7}
-            className="size-9 items-center justify-center rounded-2xl border border-neutral-200 bg-white active:bg-neutral-100 dark:border-neutral-700 dark:bg-neutral-800"
+            className="size-10 items-center justify-center rounded-2xl border-2 border-b-[3px] border-neutral-200/90 border-b-neutral-300 bg-white active:translate-y-px active:border-b-2 dark:border-neutral-700 dark:border-b-neutral-800 dark:bg-neutral-800"
           >
             <NotificationBell color="#1E293B" />
-          </TouchableOpacity>
+          </Pressable>
         </View>
       </View>
     </View>
   );
 }
+
+export default HomeHeader;

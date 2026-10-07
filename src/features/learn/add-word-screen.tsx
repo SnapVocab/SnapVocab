@@ -11,7 +11,7 @@ import {
   Text,
 } from '@/components/ui';
 import colors from '@/components/ui/colors';
-import { AlertTriangleIcon, ChevronLeftIcon, SparklesIcon } from '@/components/ui/icons';
+import { AlertTriangleIcon, ChevronLeftIcon } from '@/components/ui/icons';
 import { useTopicSchema } from '@/features/template-builder/api';
 import { useTts } from '@/lib/hooks/use-tts';
 import { translate } from '@/lib/i18n';
@@ -148,20 +148,6 @@ export function AddWordScreen() {
             />
           )}
         >
-          {/* Banner */}
-          <View className="mb-5 flex-row items-center rounded-2xl border border-sky-200 bg-sky-50/70 p-3.5 dark:border-sky-800/40 dark:bg-sky-950/30">
-            <View className="mr-3 size-8 items-center justify-center rounded-xl bg-sky-100 dark:bg-sky-900/60">
-              <SparklesIcon width={16} height={16} color="#0284C7" />
-            </View>
-            <View className="flex-1">
-              <Text className="font-nunito text-xs font-black text-sky-900 dark:text-sky-200">
-                {translate('learn.add_word.banner_title')}
-              </Text>
-              <Text className="mt-0.5 font-inter text-[11px] text-neutral-600 dark:text-neutral-300">
-                {translate('learn.add_word.banner_desc')}
-              </Text>
-            </View>
-          </View>
 
           {isSchemaLoading && <AddWordSkeleton />}
 

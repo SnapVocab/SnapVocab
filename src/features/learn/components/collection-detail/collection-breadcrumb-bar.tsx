@@ -2,7 +2,7 @@ import type { ParentBreadcrumb } from '../../use-collection-detail';
 import * as React from 'react';
 import { Pressable, ScrollView, View } from 'react-native';
 import { Text } from '@/components/ui';
-import { ChevronRightIcon } from '@/components/ui/icons';
+import { ChevronRightIcon, FolderIcon } from '@/components/ui/icons';
 import { translate } from '@/lib/i18n';
 
 type Props = {
@@ -17,15 +17,20 @@ export function CollectionBreadcrumbBar({ parentStack, rootName, onBreadcrumbPre
   }
 
   return (
-    <View className="flex-row items-center border-b border-neutral-100 bg-neutral-50/80 px-4 py-2.5 dark:border-neutral-800 dark:bg-neutral-900/50">
+    <View className="border-b border-neutral-100 bg-white/90 px-4 py-2 dark:border-neutral-800 dark:bg-neutral-900/90">
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
-        contentContainerClassName="flex-row items-center"
+        contentContainerClassName="flex-row items-center gap-1.5 py-0.5"
       >
-        {/* Root collection link */}
-        <Pressable onPress={() => onBreadcrumbPress(-1)} hitSlop={6}>
-          <Text className="font-nunito text-xs font-bold text-primary-600 dark:text-primary-400">
+        {/* Root collection button */}
+        <Pressable
+          onPress={() => onBreadcrumbPress(-1)}
+          hitSlop={6}
+          className="flex-row items-center gap-1.5 rounded-xl border-2 border-b-[3px] border-neutral-200/90 border-b-neutral-300 bg-neutral-50 px-2.5 py-1 active:translate-y-px active:border-b-2 dark:border-neutral-700 dark:border-b-neutral-800 dark:bg-neutral-800"
+        >
+          <FolderIcon width={12} height={12} color="#65A30D" />
+          <Text className="font-nunito text-xs font-black text-lime-700 dark:text-lime-400">
             {rootName || translate('learn.collection_detail.root_level')}
           </Text>
         </Pressable>
@@ -34,20 +39,24 @@ export function CollectionBreadcrumbBar({ parentStack, rootName, onBreadcrumbPre
         {parentStack.map((crumb, idx) => {
           const isLast = idx === parentStack.length - 1;
           return (
-            <View key={crumb.id} className="flex-row items-center">
-              <View className="mx-1.5">
-                <ChevronRightIcon width={12} height={12} color="#9CA3AF" />
-              </View>
+            <View key={crumb.id} className="flex-row items-center gap-1.5">
+              <ChevronRightIcon width={12} height={12} color="#A3A3A3" />
+
               <Pressable
                 onPress={() => !isLast && onBreadcrumbPress(idx)}
                 disabled={isLast}
                 hitSlop={6}
+                className={`flex-row items-center rounded-xl border-2 border-b-[3px] px-2.5 py-1 ${
+                  isLast
+                    ? 'dark:bg-primary-950/40 border-primary-300 border-b-primary-500 bg-primary-50 dark:border-primary-800 dark:border-b-primary-900'
+                    : 'border-neutral-200/90 border-b-neutral-300 bg-white active:translate-y-px active:border-b-2 dark:border-neutral-700 dark:border-b-neutral-800 dark:bg-neutral-800'
+                }`}
               >
                 <Text
                   className={`font-nunito text-xs ${
                     isLast
-                      ? 'font-black text-mascot-navy dark:text-white'
-                      : 'font-bold text-primary-600 dark:text-primary-400'
+                      ? 'font-black text-primary-700 dark:text-primary-300'
+                      : 'font-bold text-neutral-600 dark:text-neutral-300'
                   }`}
                 >
                   {crumb.name}

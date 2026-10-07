@@ -10,5 +10,6 @@ export { default as SkeletonCollectionDetail } from './skeleton-collection-detai
 export { default as SkeletonTopicList } from './skeleton-topic-list';
 export { default as SubtopicSection } from './subtopic-section';
 export { default as TopicCard } from './topic-card';
+export { default as TopicItemPreviewModal } from './topic-item-preview-modal';
 export { default as TopicItemRow } from './topic-item-row';
 export { default as TopicListEmpty } from './topic-list-empty';

@@ -3,7 +3,7 @@ import * as React from 'react';
 import { Switch, View } from 'react-native';
 import { Image, Input, Pressable, Text } from '@/components/ui';
 import colors from '@/components/ui/colors';
-import { SparklesIcon, Volume2Icon } from '@/components/ui/icons';
+import { Volume2Icon } from '@/components/ui/icons';
 import { translate } from '@/lib/i18n';
 
 type Props = {
@@ -22,16 +22,14 @@ export function DynamicFormField({
   onChange,
   error,
   onSpeak,
-  onLookup,
-  isLookupLoading,
+  onLookup: _onLookup,
+  isLookupLoading: _isLookupLoading,
 }: Props) {
   const isMultiline
     = attribute.name.includes('description')
       || attribute.name.includes('example')
       || attribute.name.includes('definition')
       || attribute.name.includes('note');
-
-  const isWordField = attribute.name === 'word' || attribute.name === 'target_word';
 
   // Render based on data type
   switch (attribute.dataType) {
@@ -151,19 +149,6 @@ export function DynamicFormField({
               style={isMultiline ? { textAlignVertical: 'top' } : undefined}
               error={error}
             />
-            {isWordField && onLookup ? (
-              <Pressable
-                onPress={() => onLookup(value)}
-                disabled={isLookupLoading || !value?.trim()}
-                hitSlop={8}
-                className="absolute top-9 right-3 flex-row items-center gap-1 rounded-xl bg-amber-100 px-2.5 py-1.5 active:opacity-70 dark:bg-amber-950/60"
-              >
-                <SparklesIcon width={13} height={13} color="#D97706" />
-                <Text className="font-nunito text-[11px] font-extrabold text-amber-700 dark:text-amber-300">
-                  {translate('learn.add_word.auto_fill')}
-                </Text>
-              </Pressable>
-            ) : null}
           </View>
         </View>
       );

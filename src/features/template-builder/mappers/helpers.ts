@@ -1,8 +1,10 @@
 import type {
+  BuilderField,
   BuilderSection,
   CardSide,
   FontSize,
   SchemaAttributeDTO,
+  SchemaAttributeGroupDTO,
   TemplateElementDTO,
   TopicSchemaDTO,
 } from '../types';
@@ -20,22 +22,33 @@ export type FindAttributeResult = {
 };
 
 export function findAttributeInSchema(
-  schema: TopicSchemaDTO | undefined,
+  schema: any,
   attributeId: number,
 ): FindAttributeResult {
-  if (!schema || !schema.groups) {
+  if (!schema) {
     return {};
   }
 
-  for (const group of schema.groups) {
-    if (group.attributes) {
-      const attr = group.attributes.find(a => a.attributeId === attributeId);
+  const groups = schema.groups || schema.attributeGroups;
+  if (!groups || !Array.isArray(groups)) {
+    return {};
+  }
+
+  for (const group of groups) {
+    const attributes = group.attributes;
+    if (attributes && Array.isArray(attributes)) {
+      const attr = attributes.find(
+        (a: any) => a.attributeId === attributeId || a.id === attributeId,
+      );
       if (attr) {
         return {
-          attribute: attr,
+          attribute: {
+            ...attr,
+            attributeId: attr.attributeId ?? attr.id,
+          },
           groupName: group.name,
           groupLabel: group.label,
-          repeatable: group.multiple,
+          repeatable: group.multiple ?? false,
         };
       }
     }
@@ -85,39 +98,20 @@ export function createEmptySection({
   };
 }
 
-export function createDefaultFallbackSections(schema: TopicSchemaDTO | undefined): {
+function buildDefaultStaticSections(): {
   frontSections: BuilderSection[];
   backSections: BuilderSection[];
 } {
-  const findAttr = (name: string) => {
-    if (!schema?.groups) {
-      return undefined;
-    }
-    for (const g of schema.groups) {
-      const a = g.attributes?.find(attr => attr.name === name);
-      if (a) {
-        return a;
-      }
-    }
-    return undefined;
-  };
-
-  const wordAttr = findAttr('word');
-  const phoneticAttr = findAttr('phonetic');
-  const audioAttr = findAttr('audio');
-  const meaningAttr = findAttr('meaning');
-  const exampleAttr = findAttr('example');
-
-  const frontSection: BuilderSection = {
+  const defaultFront: BuilderSection = {
     id: generateClientId('sec_front'),
     name: 'Thông tin chung',
     side: 'FRONT',
-    columns: 2,
+    columns: 1,
     repeatable: false,
     fields: [
       {
         id: generateClientId('fld_word'),
-        schemaAttributeId: wordAttr?.attributeId ?? 1,
+        schemaAttributeId: 1,
         attributeName: 'word',
         fieldLabel: 'Từ vựng',
         semanticRole: 'TARGET_WORD',
@@ -126,44 +120,44 @@ export function createDefaultFallbackSections(schema: TopicSchemaDTO | undefined
         audioAction: false,
         fontSize: 'XL',
         alignment: 'CENTER',
-        color: '#111827',
-        dataType: wordAttr?.dataType ?? 'TEXT',
+        color: '#0F172A',
+        dataType: 'TEXT',
         column: 1,
       },
       {
         id: generateClientId('fld_phonetic'),
-        schemaAttributeId: phoneticAttr?.attributeId ?? 2,
+        schemaAttributeId: 2,
         attributeName: 'phonetic',
         fieldLabel: 'Phiên âm',
-        semanticRole: 'AUDIO',
+        semanticRole: null,
         required: false,
         hideIfEmpty: true,
         audioAction: true,
         fontSize: 'M',
         alignment: 'CENTER',
         color: '#0284C7',
-        dataType: phoneticAttr?.dataType ?? 'TEXT',
-        column: 2,
+        dataType: 'TEXT',
+        column: 1,
       },
       {
-        id: generateClientId('fld_audio'),
-        schemaAttributeId: audioAttr?.attributeId ?? 3,
-        attributeName: 'audio',
-        fieldLabel: 'Phát âm',
-        semanticRole: 'AUDIO',
+        id: generateClientId('fld_pos'),
+        schemaAttributeId: 3,
+        attributeName: 'partOfSpeech',
+        fieldLabel: 'Loại từ',
+        semanticRole: null,
         required: false,
         hideIfEmpty: true,
-        audioAction: true,
-        fontSize: 'M',
+        audioAction: false,
+        fontSize: 'S',
         alignment: 'CENTER',
-        color: '#6B7280',
-        dataType: audioAttr?.dataType ?? 'AUDIO',
-        column: 2,
+        color: '#15803D',
+        dataType: 'TEXT',
+        column: 1,
       },
     ],
   };
 
-  const backSection: BuilderSection = {
+  const defaultBack: BuilderSection = {
     id: generateClientId('sec_back'),
     name: 'Nghĩa & Ví dụ',
     side: 'BACK',
@@ -171,40 +165,360 @@ export function createDefaultFallbackSections(schema: TopicSchemaDTO | undefined
     repeatable: true,
     fields: [
       {
-        id: generateClientId('fld_meaning'),
-        schemaAttributeId: meaningAttr?.attributeId ?? 4,
-        attributeName: 'meaning',
+        id: generateClientId('fld_translation'),
+        schemaAttributeId: 4,
+        attributeName: 'translation',
         fieldLabel: 'Bản dịch / Nghĩa',
-        semanticRole: 'DEFINITION',
+        semanticRole: 'NATIVE_TRANSLATION',
         required: true,
         hideIfEmpty: false,
         audioAction: false,
         fontSize: 'L',
         alignment: 'LEFT',
-        color: '#111827',
-        dataType: meaningAttr?.dataType ?? 'TEXT',
+        color: '#15803D',
+        dataType: 'TEXT',
+        column: 1,
+      },
+      {
+        id: generateClientId('fld_definition'),
+        schemaAttributeId: 5,
+        attributeName: 'definition',
+        fieldLabel: 'Định nghĩa',
+        semanticRole: 'DEFINITION',
+        required: false,
+        hideIfEmpty: true,
+        audioAction: false,
+        fontSize: 'M',
+        alignment: 'LEFT',
+        color: '#334155',
+        dataType: 'TEXT',
         column: 1,
       },
       {
         id: generateClientId('fld_example'),
-        schemaAttributeId: exampleAttr?.attributeId ?? 5,
+        schemaAttributeId: 6,
         attributeName: 'example',
-        fieldLabel: 'Câu ví dụ (Sentence)',
+        fieldLabel: 'Ví dụ',
         semanticRole: 'EXAMPLE_SENTENCE',
         required: false,
         hideIfEmpty: true,
         audioAction: false,
         fontSize: 'M',
         alignment: 'LEFT',
-        color: '#6B7280',
-        dataType: exampleAttr?.dataType ?? 'TEXT',
+        color: '#475569',
+        dataType: 'TEXT',
         column: 1,
       },
     ],
   };
 
   return {
+    frontSections: [defaultFront],
+    backSections: [defaultBack],
+  };
+}
+
+function classifySingleGroupAttribute(attr: SchemaAttributeDTO): {
+  target: 'front' | 'back';
+  field: BuilderField;
+} {
+  const name = (attr.name || '').toLowerCase();
+  const label = attr.label || attr.name;
+
+  if (
+    name === 'word'
+    || name === 'target_word'
+    || name === 'term'
+    || name === 'vocab'
+  ) {
+    return {
+      target: 'front',
+      field: {
+        id: generateClientId('fld_front'),
+        schemaAttributeId: attr.attributeId,
+        attributeName: attr.name,
+        fieldLabel: label,
+        semanticRole: 'TARGET_WORD',
+        required: attr.required,
+        hideIfEmpty: false,
+        audioAction: false,
+        fontSize: 'XL',
+        alignment: 'CENTER',
+        color: '#0F172A',
+        dataType: attr.dataType,
+        column: 1,
+      },
+    };
+  }
+
+  if (
+    name.includes('phonetic')
+    || name.includes('ipa')
+    || name.includes('pronun')
+  ) {
+    return {
+      target: 'front',
+      field: {
+        id: generateClientId('fld_front'),
+        schemaAttributeId: attr.attributeId,
+        attributeName: attr.name,
+        fieldLabel: label,
+        semanticRole: null,
+        required: attr.required,
+        hideIfEmpty: true,
+        audioAction: true,
+        fontSize: 'M',
+        alignment: 'CENTER',
+        color: '#0284C7',
+        dataType: attr.dataType,
+        column: 1,
+      },
+    };
+  }
+
+  if (
+    name.includes('pos')
+    || name.includes('partofspeech')
+    || name.includes('part_of_speech')
+    || name.includes('tag')
+  ) {
+    return {
+      target: 'front',
+      field: {
+        id: generateClientId('fld_front'),
+        schemaAttributeId: attr.attributeId,
+        attributeName: attr.name,
+        fieldLabel: label,
+        semanticRole: null,
+        required: attr.required,
+        hideIfEmpty: true,
+        audioAction: false,
+        fontSize: 'S',
+        alignment: 'CENTER',
+        color: '#15803D',
+        dataType: attr.dataType,
+        column: 1,
+      },
+    };
+  }
+
+  if (name === 'audio' || name === 'audiourl' || name === 'audio_url') {
+    return {
+      target: 'front',
+      field: {
+        id: generateClientId('fld_front'),
+        schemaAttributeId: attr.attributeId,
+        attributeName: attr.name,
+        fieldLabel: label,
+        semanticRole: 'AUDIO',
+        required: attr.required,
+        hideIfEmpty: true,
+        audioAction: true,
+        fontSize: 'M',
+        alignment: 'CENTER',
+        color: '#6B7280',
+        dataType: 'AUDIO',
+        column: 1,
+      },
+    };
+  }
+
+  if (
+    name.includes('trans')
+    || name.includes('meaning')
+    || name.includes('dich')
+    || name.includes('nghia')
+  ) {
+    return {
+      target: 'back',
+      field: {
+        id: generateClientId('fld_back'),
+        schemaAttributeId: attr.attributeId,
+        attributeName: attr.name,
+        fieldLabel: label,
+        semanticRole: 'NATIVE_TRANSLATION',
+        required: attr.required,
+        hideIfEmpty: false,
+        audioAction: false,
+        fontSize: 'L',
+        alignment: 'LEFT',
+        color: '#15803D',
+        dataType: attr.dataType,
+        column: 1,
+      },
+    };
+  }
+
+  if (name.includes('def') || name.includes('explain')) {
+    return {
+      target: 'back',
+      field: {
+        id: generateClientId('fld_back'),
+        schemaAttributeId: attr.attributeId,
+        attributeName: attr.name,
+        fieldLabel: label,
+        semanticRole: 'DEFINITION',
+        required: attr.required,
+        hideIfEmpty: true,
+        audioAction: false,
+        fontSize: 'M',
+        alignment: 'LEFT',
+        color: '#334155',
+        dataType: attr.dataType,
+        column: 1,
+      },
+    };
+  }
+
+  if (name.includes('image') || name.includes('picture') || name.includes('photo')) {
+    return {
+      target: 'back',
+      field: {
+        id: generateClientId('fld_back'),
+        schemaAttributeId: attr.attributeId,
+        attributeName: attr.name,
+        fieldLabel: label,
+        semanticRole: 'IMAGE',
+        required: attr.required,
+        hideIfEmpty: true,
+        audioAction: false,
+        fontSize: 'M',
+        alignment: 'CENTER',
+        color: '#111827',
+        dataType: 'IMAGE',
+        column: 1,
+      },
+    };
+  }
+
+  return {
+    target: 'back',
+    field: {
+      id: generateClientId('fld_back'),
+      schemaAttributeId: attr.attributeId,
+      attributeName: attr.name,
+      fieldLabel: label,
+      semanticRole: null,
+      required: attr.required,
+      hideIfEmpty: true,
+      audioAction: false,
+      fontSize: 'M',
+      alignment: 'LEFT',
+      color: '#475569',
+      dataType: attr.dataType,
+      column: 1,
+    },
+  };
+}
+
+function buildRepeatableGroupSection(group: SchemaAttributeGroupDTO): BuilderSection {
+  const groupFields: BuilderField[] = (group.attributes || []).map((attr) => {
+    const name = (attr.name || '').toLowerCase();
+    const label = attr.label || attr.name;
+    const isSentence = name.includes('sentence') || name.includes('example') || name.includes('cau');
+    const isTranslation = name.includes('trans') || name.includes('dich') || name.includes('meaning');
+
+    return {
+      id: generateClientId('fld_group'),
+      schemaAttributeId: attr.attributeId,
+      attributeName: attr.name,
+      fieldLabel: label,
+      semanticRole: isSentence
+        ? 'EXAMPLE_SENTENCE'
+        : isTranslation
+          ? 'NATIVE_TRANSLATION'
+          : null,
+      required: attr.required,
+      hideIfEmpty: true,
+      audioAction: false,
+      fontSize: isSentence ? 'M' : 'S',
+      alignment: 'LEFT',
+      color: isSentence ? '#1E293B' : '#64748B',
+      dataType: attr.dataType,
+      column: 1,
+    };
+  });
+
+  return {
+    id: generateClientId('sec_group'),
+    name: group.label || group.name || 'Ví dụ & Ngữ cảnh',
+    side: 'BACK',
+    columns: 1,
+    repeatable: true,
+    fields: groupFields,
+  };
+}
+
+export function createDefaultFallbackSections(schema: TopicSchemaDTO | undefined): {
+  frontSections: BuilderSection[];
+  backSections: BuilderSection[];
+} {
+  if (!schema?.groups || schema.groups.length === 0) {
+    return buildDefaultStaticSections();
+  }
+
+  const frontFields: BuilderField[] = [];
+  const backMainFields: BuilderField[] = [];
+  const backSections: BuilderSection[] = [];
+
+  for (const group of schema.groups) {
+    if (!group.multiple) {
+      for (const attr of group.attributes || []) {
+        const { target, field } = classifySingleGroupAttribute(attr);
+        if (target === 'front') {
+          frontFields.push(field);
+        }
+        else {
+          backMainFields.push(field);
+        }
+      }
+    }
+    else {
+      backSections.push(buildRepeatableGroupSection(group));
+    }
+  }
+
+  const frontSection: BuilderSection = {
+    id: generateClientId('sec_front'),
+    name: 'Thông tin từ vựng',
+    side: 'FRONT',
+    columns: 1,
+    repeatable: false,
+    fields: frontFields.length > 0 ? frontFields : [
+      {
+        id: generateClientId('fld_word'),
+        schemaAttributeId: 1,
+        attributeName: 'word',
+        fieldLabel: 'Từ vựng',
+        semanticRole: 'TARGET_WORD',
+        required: true,
+        hideIfEmpty: false,
+        audioAction: false,
+        fontSize: 'XL',
+        alignment: 'CENTER',
+        color: '#0F172A',
+        dataType: 'TEXT',
+        column: 1,
+      },
+    ],
+  };
+
+  const backMainSection: BuilderSection = {
+    id: generateClientId('sec_back_main'),
+    name: 'Giải nghĩa',
+    side: 'BACK',
+    columns: 1,
+    repeatable: false,
+    fields: backMainFields,
+  };
+
+  const allBackSections = [
+    ...(backMainFields.length > 0 ? [backMainSection] : []),
+    ...backSections,
+  ];
+
+  return {
     frontSections: [frontSection],
-    backSections: [backSection],
+    backSections: allBackSections.length > 0 ? allBackSections : [backMainSection],
   };
 }

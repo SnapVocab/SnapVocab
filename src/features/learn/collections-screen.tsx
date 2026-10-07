@@ -115,6 +115,12 @@ export function CollectionsScreen() {
         bottomSheetRef={bottomSheetRef}
         collection={selectedCollection}
         mode={sheetMode}
+        onCreated={(newCol) => {
+          refetch();
+          handleCardPress(newCol);
+        }}
+        onSaveEdit={() => refetch()}
+        onDelete={() => refetch()}
         onStudy={handleCardPress}
       />
     </SafeAreaView>
