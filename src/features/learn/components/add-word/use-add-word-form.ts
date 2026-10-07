@@ -132,6 +132,7 @@ export function useAddWordForm(topicSchema?: TopicSchemaDTO) {
         const ipa = data.pronunciations?.[0]?.ipa || '';
         const meaningsList = data.meanings || [];
         const translationsList = data.translations || [];
+        const nativeTranslation = translationsList.find((t: { translation?: string }) => t.translation?.trim())?.translation?.trim() || '';
 
         setFormData((prev) => {
           const updated: Record<string, any> = { ...prev };
@@ -140,6 +141,9 @@ export function useAddWordForm(topicSchema?: TopicSchemaDTO) {
             if (!group.multiple) {
               const currentGroup = { ...(updated[group.name] || {}) };
               for (const attr of group.attributes || []) {
+                if (group.name === 'main' && attr.name === 'translation' && nativeTranslation && !String(currentGroup[attr.name] ?? '').trim()) {
+                  currentGroup[attr.name] = nativeTranslation;
+                }
                 if (
                   (attr.name === 'phonetic' || attr.name === 'ipa')
                   && ipa

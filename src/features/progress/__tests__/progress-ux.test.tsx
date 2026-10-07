@@ -17,9 +17,13 @@ jest.mock('../api', () => ({ useProgressHistory: jest.fn() }));
 jest.mock('expo-router', () => ({
   useRouter: () => ({ push: jest.fn(), back: jest.fn() }),
 }));
-jest.mock('@/components/ui', () => ({
-  Text: require('react-native').Text,
-}));
+jest.mock('@/components/ui', () => {
+  const RN = require('react-native');
+  return {
+    Text: RN.Text,
+    Button: ({ label, onPress }: { label: string; onPress: () => void }) => <RN.Pressable accessibilityRole="button" onPress={onPress}><RN.Text>{label}</RN.Text></RN.Pressable>,
+  };
+});
 jest.mock('@/components/snapvocab', () => ({
   XPOrb3D: require('react-native').View,
   StreakFlame3D: require('react-native').View,
@@ -78,9 +82,9 @@ describe('progress UX while the backend has no SRS lifecycle', () => {
   });
 
   describe('srs-dependent metrics are not presented as real data', () => {
-    it('vocabulary card shows the saved total and an honest unavailable note, not a state split', () => {
+    it('vocabulary card shows an honest unavailable note and no repeated total or state split', () => {
       render(<LearningStateCard summary={summaryOf({ totalWords: 5, dueCount: 3 })} />);
-      expect(screen.getByText('5 từ đã lưu')).toBeTruthy();
+      expect(screen.queryByText('5 từ đã lưu')).toBeNull();
       expect(screen.getByText(/ôn tập SRS\) sẽ có trong bản cập nhật sau/)).toBeTruthy();
       expect(screen.queryByText('Chưa học')).toBeNull();
       expect(screen.queryByText('Thành thạo')).toBeNull();
@@ -90,7 +94,6 @@ describe('progress UX while the backend has no SRS lifecycle', () => {
 
     it('vocabulary card with no words points to capturing words', () => {
       render(<LearningStateCard summary={summaryOf()} />);
-      expect(screen.getByText('0 từ đã lưu')).toBeTruthy();
       expect(screen.getByText('Khám phá từ mới')).toBeTruthy();
     });
 
@@ -114,10 +117,10 @@ describe('progress UX while the backend has no SRS lifecycle', () => {
       expect(screen.queryByText('Lượt ôn')).toBeNull();
     });
 
-    it('performance shows quiz accuracy and count when quizzes exist', () => {
+    it('performance shows quiz accuracy, not the quiz count already in the activity row', () => {
       render(<AccuracyStatsCard summary={summaryOf({ accuracy: 0.8, completedQuizCount: 3 })} />);
       expect(screen.getByText('80%')).toBeTruthy();
-      expect(screen.getByText('3')).toBeTruthy();
+      expect(screen.queryByText('3')).toBeNull();
       expect(screen.queryByText('Lượt ôn')).toBeNull();
     });
 
@@ -162,10 +165,11 @@ describe('progress UX while the backend has no SRS lifecycle', () => {
       expect(screen.queryByText(/Chưa bắt đầu/)).toBeNull();
     });
 
-    it('active streak shows current and record', () => {
-      render(<StreakStatsCard streak={streakOf({ currentStreak: 3, longestStreak: 9 })} />);
-      expect(screen.getByText('3 ngày học liên tiếp')).toBeTruthy();
+    it('active streak shows the record and a dd/MM/yyyy last-study date, not the current streak again', () => {
+      render(<StreakStatsCard streak={streakOf({ currentStreak: 3, longestStreak: 9, lastStudiedDate: '2026-10-06' })} />);
+      expect(screen.queryByText('3 ngày học liên tiếp')).toBeNull();
       expect(screen.getByText('Kỷ lục: 9 ngày')).toBeTruthy();
+      expect(screen.getByText('Học gần nhất: 06/10/2026')).toBeTruthy();
     });
   });
 
@@ -177,8 +181,8 @@ describe('progress UX while the backend has no SRS lifecycle', () => {
         />,
       );
       expect(screen.getByText('Cấp 1 · Tập sự')).toBeTruthy();
-      expect(screen.getByText('0 / 100 XP')).toBeTruthy();
-      expect(screen.getByText('Còn 100 XP đến cấp tiếp theo')).toBeTruthy();
+      expect(screen.getByText('Tổng XP: 0')).toBeTruthy();
+      expect(screen.getByText('Còn 100 XP lên cấp 2')).toBeTruthy();
     });
 
     it('max level', () => {
@@ -198,6 +202,20 @@ describe('progress UX while the backend has no SRS lifecycle', () => {
       expect(screen.getByText('Tích lũy XP khi hoàn thành bài quiz.')).toBeTruthy();
       expect(screen.queryByText(/Cấp \d/)).toBeNull();
       expect(screen.queryByText(/Tập sự/)).toBeNull();
+    });
+
+    it('a level without a title is still that level, not "no level"', () => {
+      render(
+        <LevelOverviewCard
+          xpOverview={{ totalXp: 150, level: { levelNumber: 2, title: null, minXp: 100, nextLevelXp: 300, progress: 0.25 }, recentEvents: [] }}
+        />,
+      );
+      expect(screen.getByText('Cấp 2')).toBeTruthy();
+    });
+
+    it('level=null still opens the XP history', () => {
+      render(<LevelOverviewCard xpOverview={{ totalXp: 45, level: null, recentEvents: [] }} />);
+      expect(screen.getByLabelText('Xem lịch sử XP')).toBeTruthy();
     });
 
     it('loading renders a skeleton, not 0 XP', () => {
@@ -224,7 +242,7 @@ describe('progress UX while the backend has no SRS lifecycle', () => {
       })));
       render(<ActivityHistoryChart />);
       expect(screen.getByText('7 hoạt động trong khoảng này')).toBeTruthy();
-      expect(screen.getByText('2026-10-04 – 2026-10-10')).toBeTruthy();
+      expect(screen.getByText('04/10/2026 – 10/10/2026')).toBeTruthy();
       expect(screen.queryByTestId('history-bucket-2026-10-03')).toBeNull();
       expect(screen.getByTestId('history-bucket-2026-10-04')).toBeTruthy();
     });
@@ -247,7 +265,19 @@ describe('progress UX while the backend has no SRS lifecycle', () => {
       render(<ActivityHistoryChart />);
       expect(screen.getByText('11 hoạt động trong khoảng này')).toBeTruthy();
       fireEvent.press(screen.getByTestId('history-bucket-2026-10-02'));
-      expect(screen.getByText('2026-10-02 · 8 hoạt động · 1 ngày học')).toBeTruthy();
+      expect(screen.getByText('02/10/2026 · 8 hoạt động · 1 ngày học')).toBeTruthy();
+    });
+
+    it('selected detail follows a refetch instead of keeping the old bucket', () => {
+      mockHistory([{ periodStart: '2026-10-02', eventCount: 2, activeDays: 1 }]);
+      const view = render(<ActivityHistoryChart />);
+      fireEvent.press(screen.getByTestId('history-bucket-2026-10-02'));
+      expect(screen.getByText('02/10/2026 · 2 hoạt động · 1 ngày học')).toBeTruthy();
+
+      mockHistory([{ periodStart: '2026-10-02', eventCount: 3, activeDays: 1 }]);
+      view.rerender(<ActivityHistoryChart />);
+      expect(screen.getByText('02/10/2026 · 3 hoạt động · 1 ngày học')).toBeTruthy();
+      expect(screen.queryByText('02/10/2026 · 2 hoạt động · 1 ngày học')).toBeNull();
     });
 
     it('error shows retry, not the empty state', () => {

@@ -35,7 +35,7 @@ export function QuizResultScreen() {
   }>();
 
   const quizId = params.quizId ? Number(params.quizId) : null;
-  const { data: result, isLoading } = useQuizResult(quizId);
+  const { data: result, isLoading, refetch } = useQuizResult(quizId);
 
   const summary = result?.summary;
   const score = summary?.correctCount ?? 0;
@@ -141,6 +141,47 @@ export function QuizResultScreen() {
     );
   }
 
+  // No server result (e.g. QUIZ_NOT_FINISHED): never render a fake 0/0 completion.
+  if (!result) {
+    return (
+      <SafeAreaView className="flex-1 items-center justify-center gap-4 bg-[#F7F8FA] px-6">
+        <Text className="text-center font-nunito text-[16px] font-extrabold text-mascot-navy">
+          Chưa tải được kết quả bài quiz.
+        </Text>
+        <Pressable onPress={() => void refetch()} className="min-h-12 justify-center rounded-2xl bg-primary-800 px-6 active:opacity-80">
+          <Text className="font-nunito text-[15px] font-extrabold text-white">Thử lại</Text>
+        </Pressable>
+        <Pressable onPress={handleGoHome} className="min-h-12 justify-center px-6 active:opacity-60">
+          <Text className="font-nunito text-[15px] font-extrabold text-mascot-navy">Trang Học</Text>
+        </Pressable>
+      </SafeAreaView>
+    );
+  }
+
+  // Only a COMPLETED quiz has a final score (summary is null otherwise): never show a cancelled or
+  // expired session as a 0/0 completion.
+  if (result.status !== 'COMPLETED' || !summary) {
+    return (
+      <SafeAreaView className="flex-1 items-center justify-center gap-4 bg-[#F7F8FA] px-6">
+        <Snapy pose="suy_nghi" animation="idle" style={{ width: 110, height: 110 }} />
+        <Text className="text-center font-nunito text-[20px] font-extrabold text-mascot-navy">
+          {result.status === 'CANCELLED' ? 'Bài quiz đã hủy' : 'Phiên quiz đã hết hạn'}
+        </Text>
+        <Text className="text-center font-inter text-[14px] leading-relaxed text-neutral-500">
+          {topicName}
+          {' · '}
+          Bài này không được chấm điểm vì chưa hoàn thành.
+        </Text>
+        <Pressable onPress={handleGoHistory} className="min-h-12 justify-center rounded-2xl bg-primary-800 px-6 active:opacity-80">
+          <Text className="font-nunito text-[15px] font-extrabold text-white">Lịch sử Quiz</Text>
+        </Pressable>
+        <Pressable onPress={handleGoHome} className="min-h-12 justify-center px-6 active:opacity-60">
+          <Text className="font-nunito text-[15px] font-extrabold text-mascot-navy">Trang Học</Text>
+        </Pressable>
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView className="flex-1 bg-[#F7F8FA]" edges={['top']}>
 
@@ -172,7 +213,37 @@ export function QuizResultScreen() {
           </Text>
         </View>
 
-        {/* 3. REWARD CENTERPIECE (Honest: no fabricated rewards until M4) */}
+        {/* 3. SCORE (learning result leads, rewards follow) */}
+        <View className="mb-5 items-center">
+          {/* Topic & Direction Info Badge */}
+          <View className="mb-3 flex-row items-center gap-2">
+            <View className="rounded-full border border-neutral-200 bg-white px-3 py-1 shadow-sm">
+              <Text className="font-nunito text-[12px] font-bold text-mascot-navy">
+                {topicName}
+              </Text>
+            </View>
+            <View className="rounded-full border border-primary-200 bg-primary-50 px-2.5 py-1">
+              <Text className="font-inter text-[11px] font-bold text-primary-700">
+                {direction === 'VI_EN' ? '🇻🇳 ➔ 🇬🇧 Việt - Anh' : '🇬🇧 ➔ 🇻🇳 Anh - Việt'}
+              </Text>
+            </View>
+          </View>
+
+          <Text className="font-nunito text-[40px] leading-tight font-extrabold text-mascot-navy">
+            {score}
+            {' '}
+            /
+            {total}
+          </Text>
+          <Text className="font-inter text-[15px] font-bold text-neutral-500">
+            Độ chính xác:
+            {' '}
+            {accuracy}
+            %
+          </Text>
+        </View>
+
+        {/* 4. REWARD CENTERPIECE (Honest: no fabricated rewards until M4) */}
         <Animated.View
           style={{ transform: [{ scale: scaleAnim }], opacity: scaleAnim }}
           className="mx-6 mb-7 items-center rounded-[24px] border-2 border-b-[6px] border-neutral-100 bg-white p-6 shadow-sm shadow-black/5"
@@ -200,58 +271,17 @@ export function QuizResultScreen() {
                 </Text>
               )}
             </View>
-
-            <View className="h-12 w-[1.5px] bg-neutral-100" />
-
-            <View className="items-center">
-              <View className="mb-2 size-14 items-center justify-center rounded-2xl border border-neutral-200 bg-neutral-50">
-                <RewardIcon type="coin" size={42} />
-              </View>
-              <Text className="font-nunito text-[16px] font-extrabold text-neutral-400">
-                +0 Coin
-              </Text>
-            </View>
           </View>
 
           <View className="w-full flex-row items-center justify-center gap-2 rounded-2xl border border-amber-200 bg-amber-50 p-3.5">
             <SparklesIcon size={18} className="text-amber-600" />
             <Text className="text-center font-inter text-[13px] font-medium text-amber-800">
-              Coin được nhận qua nhiệm vụ và rương hằng ngày.
+              Coin được nhận qua nhiệm vụ hằng ngày.
             </Text>
           </View>
         </Animated.View>
 
         <Animated.View style={{ opacity: fadeAnim }}>
-          {/* 4. SCORE & STATISTICS */}
-          <View className="mb-5 items-center">
-            {/* Topic & Direction Info Badge */}
-            <View className="mb-3 flex-row items-center gap-2">
-              <View className="rounded-full border border-neutral-200 bg-white px-3 py-1 shadow-sm">
-                <Text className="font-nunito text-[12px] font-bold text-mascot-navy">
-                  {topicName}
-                </Text>
-              </View>
-              <View className="rounded-full border border-primary-200 bg-primary-50 px-2.5 py-1">
-                <Text className="font-inter text-[11px] font-bold text-primary-700">
-                  {direction === 'VI_EN' ? '🇻🇳 ➔ 🇬🇧 Việt - Anh' : '🇬🇧 ➔ 🇻🇳 Anh - Việt'}
-                </Text>
-              </View>
-            </View>
-
-            <Text className="font-nunito text-[40px] leading-tight font-extrabold text-mascot-navy">
-              {score}
-              {' '}
-              /
-              {total}
-            </Text>
-            <Text className="font-inter text-[15px] font-bold text-neutral-500">
-              Độ chính xác:
-              {' '}
-              {accuracy}
-              %
-            </Text>
-          </View>
-
           <View className="mx-6 mb-7 rounded-3xl border-2 border-neutral-100 bg-white p-5 shadow-sm shadow-black/5">
             <View className="flex-row">
               <View className="flex-1 items-center border-r border-b border-neutral-100 pr-2 pb-4">
@@ -351,7 +381,7 @@ export function QuizResultScreen() {
         >
           <HomeIcon size={20} className="text-neutral-700" />
           <Text className="font-nunito text-[15px] font-extrabold text-neutral-700 uppercase">
-            Trang chủ
+            Trang Học
           </Text>
         </Pressable>
 

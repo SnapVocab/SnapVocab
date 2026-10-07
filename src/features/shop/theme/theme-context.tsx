@@ -1,87 +1,66 @@
-import type { ThemeKey } from '../types';
+import type { SurfacePalette, SurfaceTokens } from '@/components/ui/surface';
 import * as React from 'react';
-import { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import { createContext, use, useEffect, useMemo, useState } from 'react';
+import { DEFAULT_SURFACE, SurfaceProvider } from '@/components/ui/surface';
 import { store } from '@/features/auth/use-auth-store';
 import { storage } from '@/lib/storage';
-
-export type SurfaceTokens = {
-  background: string;
-  surface: string;
-  surfaceMuted: string;
-  border: string;
-  headerBg: string;
-  tabBg: string;
-  text: string;
-  textMuted: string;
-};
 
 export type ThemeDefinition = {
   key: string;
   name: string;
   description: string;
-  surfaceTokens: SurfaceTokens;
+  palette: SurfacePalette;
 };
+
+type Surfaces = Omit<SurfaceTokens, 'text' | 'textMuted'>;
+
+/** A theme re-skins surfaces only; text stays the mode's default (shop.md §6.2: foreground is fixed). */
+function palette(light: Surfaces, dark: Surfaces): SurfacePalette {
+  return {
+    light: { ...DEFAULT_SURFACE.light, ...light },
+    dark: { ...DEFAULT_SURFACE.dark, ...dark },
+  };
+}
+
+/**
+ * Scope (2026-10-06): a purchased theme applies to the Shop area only — Cửa hàng, Kho đồ, Ví Coin and
+ * their modals (via ShopSurface). Tab bar and every other screen keep DEFAULT_SURFACE.
+ */
+export const SHOP_THEME_SCOPE = 'Áp dụng cho Cửa hàng, Kho đồ và Ví Coin.';
 
 export const SHOP_THEMES: Record<string, ThemeDefinition> = {
   DEFAULT: {
     key: 'DEFAULT',
     name: 'Mặc định',
     description: 'Giao diện tiêu chuẩn thân thiện của SnapVocab',
-    surfaceTokens: {
-      background: '#F7F8FA',
-      surface: '#FFFFFF',
-      surfaceMuted: '#F1F5F9',
-      border: '#E2E8F0',
-      headerBg: '#FFFFFF',
-      tabBg: '#FFFFFF',
-      text: '#1B1B3A',
-      textMuted: '#757793',
-    },
+    palette: DEFAULT_SURFACE,
   },
   MIDNIGHT_NEON: {
     key: 'MIDNIGHT_NEON',
     name: 'Đêm Neon Huyền Ảo',
     description: 'Sắc tím đêm cyberpunk huyền bí',
-    surfaceTokens: {
-      background: '#0B0F19',
-      surface: '#151B2B',
-      surfaceMuted: '#1E2638',
-      border: '#2A344A',
-      headerBg: '#151B2B',
-      tabBg: '#151B2B',
-      text: '#F8FAFC',
-      textMuted: '#94A3B8',
-    },
+    palette: palette(
+      { background: '#F5F3FF', surface: '#FFFFFF', surfaceMuted: '#EDE9FE', border: '#DDD6FE', headerBg: '#FFFFFF' },
+      { background: '#0B0F19', surface: '#151B2B', surfaceMuted: '#1E2638', border: '#2A344A', headerBg: '#151B2B' },
+    ),
   },
   SUNSET_AMBER: {
     key: 'SUNSET_AMBER',
     name: 'Hoàng Hôn Hổ Phách',
     description: 'Sắc vàng cam ấm áp của hoàng hôn',
-    surfaceTokens: {
-      background: '#FFFBEB',
-      surface: '#FFFFFF',
-      surfaceMuted: '#FEF3C7',
-      border: '#FDE68A',
-      headerBg: '#FFFFFF',
-      tabBg: '#FFFFFF',
-      text: '#78350F',
-      textMuted: '#B45309',
-    },
+    palette: palette(
+      { background: '#FFFBEB', surface: '#FFFFFF', surfaceMuted: '#FEF3C7', border: '#FDE68A', headerBg: '#FFFFFF' },
+      { background: '#1A1206', surface: '#261A0A', surfaceMuted: '#33230E', border: '#4A3214', headerBg: '#261A0A' },
+    ),
   },
   FOREST_MINT: {
     key: 'FOREST_MINT',
     name: 'Rừng Bạc Hà',
     description: 'Sắc xanh ngọc thư thái của thiên nhiên',
-    surfaceTokens: {
-      background: '#F0FDF4',
-      surface: '#FFFFFF',
-      surfaceMuted: '#DCFCE7',
-      border: '#BBF7D0',
-      headerBg: '#FFFFFF',
-      tabBg: '#FFFFFF',
-      text: '#14532D',
-      textMuted: '#16A34A',
-    },
+    palette: palette(
+      { background: '#F0FDF4', surface: '#FFFFFF', surfaceMuted: '#DCFCE7', border: '#BBF7D0', headerBg: '#FFFFFF' },
+      { background: '#04170E', surface: '#0A2417', surfaceMuted: '#103221', border: '#1A4A31', headerBg: '#0A2417' },
+    ),
   },
 };
 
@@ -146,12 +125,18 @@ export function ShopThemeProvider({ children }: { children: React.ReactNode }) {
   const theme = useMemo(() => getThemeDefinition(themeKey), [themeKey]);
 
   return (
-    <ShopThemeContext.Provider value={{ themeKey, theme, setEquippedTheme }}>
+    <ShopThemeContext value={{ themeKey, theme, setEquippedTheme }}>
       {children}
-    </ShopThemeContext.Provider>
+    </ShopThemeContext>
   );
 }
 
 export function useShopTheme() {
-  return useContext(ShopThemeContext);
+  return use(ShopThemeContext);
+}
+
+/** Wrap a Shop-area screen: it and its modals take the equipped theme's surfaces. */
+export function ShopSurface({ children }: { children: React.ReactNode }) {
+  const { theme } = useShopTheme();
+  return <SurfaceProvider palette={theme.palette}>{children}</SurfaceProvider>;
 }

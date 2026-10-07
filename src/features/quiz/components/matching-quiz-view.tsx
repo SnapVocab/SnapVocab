@@ -1,13 +1,11 @@
 /* eslint-disable max-lines-per-function */
 import type { QuizPlayDTO } from '../types';
 import type { SnapyPose } from '@/components/ui/snapy';
-import { useRouter } from 'expo-router';
 import * as React from 'react';
 import { useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Easing,
-  Modal,
   Pressable,
   Animated as RNAnimated,
   ScrollView,
@@ -19,13 +17,16 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   ClockIcon,
   CloseIcon,
-  LogOutIcon,
 } from '@/components/ui/icons';
 import { Snapy } from '@/components/ui/snapy';
+import { useTts } from '@/lib/hooks/use-tts';
 import { cn } from '@/lib/utils';
-import { useAttemptMatchingPair, useCancelQuiz, useCompleteQuiz } from '../api/quiz-api';
+import { useAttemptMatchingPair } from '../api/quiz-api';
 import { useExpiredSessionHandler } from '../hooks/use-expired-session-handler';
+import { useFinishQuiz } from '../hooks/use-finish-quiz';
+import { classifyQuizError } from '../utils';
 import { generateIdempotencyKey } from '../utils/idempotency';
+import { QuizExitModal } from './quiz-exit-modal';
 
 // Web Audio Chimes
 function playSuccessChime() {
@@ -80,26 +81,23 @@ function playErrorBuzz() {
   }
 }
 
-function pronounceWord(word: string) {
-  if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-    window.speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance(word);
-    utterance.lang = 'en-US';
-    utterance.rate = 0.88;
-    window.speechSynthesis.speak(utterance);
-  }
-}
-
 export type MatchingQuizViewProps = {
   quiz: QuizPlayDTO;
   onExit: () => void;
+  /** Reload the session from the server when it moved on (pair matched elsewhere, terminal). */
+  onResync: () => void;
 };
 
-export function MatchingQuizView({ quiz, onExit }: MatchingQuizViewProps) {
-  const router = useRouter();
-  const matchingRounds = quiz.matchingRounds || [];
+const SCORING_RULE = 'Điểm tính theo lần ghép đầu tiên của mỗi từ. Vẫn cần ghép đúng hết để hoàn tất.';
 
-  const [currentRoundIndex, setCurrentRoundIndex] = useState(0);
+export function MatchingQuizView({ quiz, onExit, onResync }: MatchingQuizViewProps) {
+  const matchingRounds = quiz.matchingRounds || [];
+  const { speak } = useTts();
+
+  // Resume at the first round the server has not completed (D18); the Session screen handles "all done".
+  const [currentRoundIndex, setCurrentRoundIndex] = useState(
+    () => Math.max(0, matchingRounds.findIndex(r => !r.completed)),
+  );
   const activeRound = matchingRounds[currentRoundIndex] || matchingRounds[0];
 
   // Selection state
@@ -129,11 +127,15 @@ export function MatchingQuizView({ quiz, onExit }: MatchingQuizViewProps) {
 
   // Idempotency key for current pending attempt
   const [idempotencyKey, setIdempotencyKey] = useState<string>(() => generateIdempotencyKey());
+  // A pair whose attempt may have been committed: tiles stay locked until the SAME pair with the
+  // SAME key is confirmed, so a replayed response always describes the pair on screen.
+  const [unconfirmedPair, setUnconfirmedPair] = useState<{ left: string; right: string } | null>(null);
+  const [allRoundsDone, setAllRoundsDone] = useState(false);
 
   // Mascot and modal state
   const [mascotPose, setMascotPose] = useState<SnapyPose>('tap_trung');
   const [mascotAnim, setMascotAnim] = useState<string>('idle');
-  const [bubbleText, setBubbleText] = useState<string>('Chạm vào từ tiếng Anh & nghĩa tiếng Việt!');
+  const [bubbleText, setBubbleText] = useState<string>(SCORING_RULE);
   const [showExitModal, setShowExitModal] = useState(false);
 
   // Live Stopwatch
@@ -155,8 +157,7 @@ export function MatchingQuizView({ quiz, onExit }: MatchingQuizViewProps) {
 
   // React Query mutations
   const attemptMutation = useAttemptMatchingPair();
-  const completeMutation = useCompleteQuiz();
-  const cancelMutation = useCancelQuiz();
+  const finishQuiz = useFinishQuiz(quiz.quizId, onResync);
   const handleExpiredSession = useExpiredSessionHandler();
 
   // Reset tiles when round changes
@@ -202,15 +203,12 @@ export function MatchingQuizView({ quiz, onExit }: MatchingQuizViewProps) {
       },
       {
         onSuccess: (data) => {
-          if (data.correct && data.resolved) {
+          setUnconfirmedPair(null);
+          // Reconcile from the response: on a replay it describes the pair the server recorded.
+          if (data.correct) {
             playSuccessChime();
-            const updatedLeft = new Set(matchedLeftKeys);
-            updatedLeft.add(leftKey);
-            setMatchedLeftKeys(updatedLeft);
-
-            const updatedRight = new Set(matchedRightKeys);
-            updatedRight.add(rightKey);
-            setMatchedRightKeys(updatedRight);
+            setMatchedLeftKeys(prev => new Set(prev).add(data.leftTileKey));
+            setMatchedRightKeys(prev => new Set(prev).add(data.rightTileKey));
 
             setSelectedLeftKey(null);
             setSelectedRightKey(null);
@@ -218,47 +216,33 @@ export function MatchingQuizView({ quiz, onExit }: MatchingQuizViewProps) {
 
             setMascotPose('nhay_len');
             setMascotAnim('celebrate');
-            setBubbleText('Ghép đôi chính xác! Tuyệt vời! ✨');
+            // `correct` = this pair is right; `outcome` = what the pair scores (first attempt only).
+            setBubbleText(data.outcome === 'CORRECT'
+              ? 'Đúng ngay lần đầu! ✨'
+              : 'Đã ghép đúng. Cặp này không tính điểm vì lần đầu chưa đúng.');
 
-            // Check round completion
-            const isRoundDone = data.round.completed || updatedLeft.size >= activeRound.totalPairs;
-            if (isRoundDone) {
+            if (data.round.completed) {
               if (currentRoundIndex + 1 < matchingRounds.length) {
-                // Next round available
                 setTimeout(() => {
                   setCurrentRoundIndex(r => r + 1);
                 }, 700);
               }
               else {
-                // All rounds finished! Finalize session
+                setAllRoundsDone(true);
                 setTimeout(() => {
-                  completeMutation.mutate(quiz.quizId, {
-                    onSuccess: () => {
-                      router.replace({
-                        pathname: '/(app)/study/quiz-result' as any,
-                        params: { quizId: String(quiz.quizId) },
-                      });
-                    },
-                    onError: (error) => {
-                      if (handleExpiredSession(error))
-                        return;
-                      router.replace({
-                        pathname: '/(app)/study/quiz-result' as any,
-                        params: { quizId: String(quiz.quizId) },
-                      });
-                    },
-                  });
+                  finishQuiz.finish();
                 }, 700);
               }
             }
           }
           else {
-            // Incorrect match
             playErrorBuzz();
-            setFailedKeys(new Set([leftKey, rightKey]));
+            setFailedKeys(new Set([data.leftTileKey, data.rightTileKey]));
             setMascotPose('bat_ngo');
             setMascotAnim('shake');
-            setBubbleText('Chưa chính xác! Thử lại nhé! 🤔');
+            setBubbleText(data.attemptNo === 1
+              ? 'Chưa đúng! Cặp này không được tính điểm, nhưng hãy ghép lại cho đúng nhé.'
+              : 'Chưa chính xác! Thử lại nhé! 🤔');
 
             setTimeout(() => {
               setSelectedLeftKey(null);
@@ -269,20 +253,35 @@ export function MatchingQuizView({ quiz, onExit }: MatchingQuizViewProps) {
           }
         },
         onError: (error) => {
-          handleExpiredSession(error);
-          // Keep idempotencyKey so retry re-sends same key
+          if (handleExpiredSession(error))
+            return;
+          const kind = classifyQuizError(error);
+          if (kind === 'RESYNC') {
+            onResync();
+          }
+          else if (kind === 'REJECTED') {
+            setSelectedLeftKey(null);
+            setSelectedRightKey(null);
+            setIdempotencyKey(generateIdempotencyKey());
+            setBubbleText('Không gửi được cặp ghép. Hãy chọn lại.');
+          }
+          else {
+            setUnconfirmedPair({ left: leftKey, right: rightKey });
+          }
         },
       },
     );
   };
 
+  const tilesLocked = attemptMutation.isPending || failedKeys.size > 0 || unconfirmedPair !== null || allRoundsDone;
+
   // Handle tile tap: Left
   const handleLeftTap = (tileKey: string, label: string) => {
-    if (matchedLeftKeys.has(tileKey) || failedKeys.size > 0 || attemptMutation.isPending)
+    if (matchedLeftKeys.has(tileKey) || tilesLocked)
       return;
 
     if (quiz.direction === 'EN_VI') {
-      pronounceWord(label);
+      speak(label);
     }
 
     if (selectedLeftKey === tileKey) {
@@ -299,11 +298,11 @@ export function MatchingQuizView({ quiz, onExit }: MatchingQuizViewProps) {
 
   // Handle tile tap: Right
   const handleRightTap = (tileKey: string, label: string) => {
-    if (matchedRightKeys.has(tileKey) || failedKeys.size > 0 || attemptMutation.isPending)
+    if (matchedRightKeys.has(tileKey) || tilesLocked)
       return;
 
     if (quiz.direction === 'VI_EN') {
-      pronounceWord(label);
+      speak(label);
     }
 
     if (selectedRightKey === tileKey) {
@@ -318,12 +317,6 @@ export function MatchingQuizView({ quiz, onExit }: MatchingQuizViewProps) {
     }
   };
 
-  const handleExitConfirm = () => {
-    setShowExitModal(false);
-    cancelMutation.mutate({ quizId: quiz.quizId });
-    onExit();
-  };
-
   // Overall progress across rounds
   const totalPairsOverall = matchingRounds.reduce((acc, r) => acc + r.totalPairs, 0);
   const matchedOverall = (currentRoundIndex * (activeRound?.totalPairs || 5)) + matchedLeftKeys.size;
@@ -336,6 +329,9 @@ export function MatchingQuizView({ quiz, onExit }: MatchingQuizViewProps) {
       <View className="z-10 flex-row items-center justify-between border-b border-neutral-100 bg-[#F7F8FA] px-4 py-3">
         <TouchableOpacity
           onPress={() => setShowExitModal(true)}
+          accessibilityRole="button"
+          accessibilityLabel="Thoát bài quiz"
+          hitSlop={8}
           activeOpacity={0.7}
           className="-ml-2 size-10 items-center justify-center rounded-full"
         >
@@ -404,7 +400,8 @@ export function MatchingQuizView({ quiz, onExit }: MatchingQuizViewProps) {
                   <TouchableOpacity
                     key={tile.key}
                     onPress={() => handleLeftTap(tile.key, tile.label)}
-                    disabled={isMatched || attemptMutation.isPending}
+                    disabled={isMatched || tilesLocked}
+                    accessibilityState={{ selected: isSelected, disabled: isMatched || tilesLocked }}
                     activeOpacity={0.8}
                     className={cn(
                       'min-h-[58px] justify-center rounded-2xl border-2 p-3 transition-all',
@@ -450,7 +447,8 @@ export function MatchingQuizView({ quiz, onExit }: MatchingQuizViewProps) {
                   <TouchableOpacity
                     key={tile.key}
                     onPress={() => handleRightTap(tile.key, tile.label)}
-                    disabled={isMatched || attemptMutation.isPending}
+                    disabled={isMatched || tilesLocked}
+                    accessibilityState={{ selected: isSelected, disabled: isMatched || tilesLocked }}
                     activeOpacity={0.8}
                     className={cn(
                       'min-h-[58px] justify-center rounded-2xl border-2 p-3 transition-all',
@@ -495,39 +493,44 @@ export function MatchingQuizView({ quiz, onExit }: MatchingQuizViewProps) {
         </View>
       )}
 
-      {/* 4. EXIT CONFIRMATION MODAL */}
-      <Modal visible={showExitModal} transparent animationType="fade">
-        <View className="flex-1 items-center justify-center bg-black/50 p-6">
-          <View className="w-full max-w-sm rounded-3xl bg-white p-6 shadow-xl">
-            <View className="mb-4 size-14 items-center justify-center self-center rounded-2xl bg-amber-50">
-              <LogOutIcon size={28} className="text-amber-500" />
-            </View>
-
-            <Text className="mb-2 text-center font-nunito text-[20px] font-extrabold text-mascot-navy">
-              Dừng làm bài Quiz?
-            </Text>
-            <Text className="mb-6 text-center font-inter text-[14px] leading-relaxed text-neutral-500">
-              Tiến trình làm bài này sẽ bị hủy. Bạn có muốn thoát không?
-            </Text>
-
-            <View className="gap-2.5">
-              <Pressable
-                onPress={() => setShowExitModal(false)}
-                className="h-12 w-full items-center justify-center rounded-xl border-b-2 border-primary-700 bg-primary-500 active:bg-primary-600"
-              >
-                <Text className="font-nunito text-[15px] font-extrabold text-white">Tiếp tục làm bài</Text>
-              </Pressable>
-
-              <Pressable
-                onPress={handleExitConfirm}
-                className="h-12 w-full items-center justify-center rounded-xl bg-neutral-100 active:bg-neutral-200"
-              >
-                <Text className="font-nunito text-[15px] font-extrabold text-neutral-600">Thoát</Text>
-              </Pressable>
-            </View>
-          </View>
+      {/* 4. UNCONFIRMED PAIR: resend exactly the same attempt */}
+      {unconfirmedPair && !attemptMutation.isPending && (
+        <View className="gap-2 border-t border-neutral-100 bg-white p-4">
+          <Text accessibilityLiveRegion="polite" className="text-center font-inter text-[13px] font-semibold text-neutral-600">
+            Chưa xác nhận được cặp ghép. Kiểm tra kết nối rồi gửi lại cặp này.
+          </Text>
+          <Pressable
+            onPress={() => submitPairAttempt(unconfirmedPair.left, unconfirmedPair.right)}
+            className="h-12 w-full items-center justify-center rounded-xl border-b-2 border-purple-700 bg-purple-500 active:bg-purple-600"
+          >
+            <Text className="font-nunito text-[15px] font-extrabold text-white">Gửi lại</Text>
+          </Pressable>
         </View>
-      </Modal>
+      )}
+
+      {/* 5. ALL ROUNDS MATCHED: completion stays reachable if the first complete call failed */}
+      {allRoundsDone && (
+        <View className="border-t border-neutral-100 bg-white p-4">
+          <Pressable
+            onPress={finishQuiz.finish}
+            disabled={finishQuiz.isPending}
+            accessibilityState={{ busy: finishQuiz.isPending }}
+            className="h-12 w-full items-center justify-center rounded-xl border-b-2 border-purple-700 bg-purple-500 active:bg-purple-600"
+          >
+            {finishQuiz.isPending
+              ? <ActivityIndicator size="small" color="#FFFFFF" />
+              : <Text className="font-nunito text-[15px] font-extrabold text-white">Hoàn tất bài quiz</Text>}
+          </Pressable>
+        </View>
+      )}
+
+      {/* 6. EXIT CONFIRMATION MODAL */}
+      <QuizExitModal
+        visible={showExitModal}
+        quizId={quiz.quizId}
+        onClose={() => setShowExitModal(false)}
+        onExited={onExit}
+      />
 
     </SafeAreaView>
   );

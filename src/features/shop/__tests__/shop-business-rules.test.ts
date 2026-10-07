@@ -1,8 +1,8 @@
 import type { ShopItemDTO, ShopItemType } from '../types';
 import { generateIdempotencyKey } from '@/features/quiz/utils/idempotency';
 
-describe('Shop & Economy business rules verification', () => {
-  describe('Canonical types strictly limited to 3 items', () => {
+describe('shop & Economy business rules verification', () => {
+  describe('canonical types strictly limited to 3 items', () => {
     it('only allows THEME, AVATAR_FRAME, and XP_BOOSTER', () => {
       const canonicalTypes: ShopItemType[] = ['THEME', 'AVATAR_FRAME', 'XP_BOOSTER'];
       expect(canonicalTypes).toHaveLength(3);
@@ -29,7 +29,7 @@ describe('Shop & Economy business rules verification', () => {
     });
   });
 
-  describe('Idempotency key generation and reuse on retry', () => {
+  describe('idempotency key generation and reuse on retry', () => {
     it('generates a valid UUID v4 format string', () => {
       const key = generateIdempotencyKey();
       const uuidV4Regex = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -53,7 +53,7 @@ describe('Shop & Economy business rules verification', () => {
     });
   });
 
-  describe('Wallet signed amount and source formatting', () => {
+  describe('wallet signed amount and source formatting', () => {
     it('formats earn transactions with + prefix and spend transactions with negative number', () => {
       const earnTx = { amount: 50 };
       const spendTx = { amount: -250 };
@@ -65,7 +65,7 @@ describe('Shop & Economy business rules verification', () => {
     });
   });
 
-  describe('Active booster blocking logic', () => {
+  describe('active booster blocking logic', () => {
     it('disables booster activation when an active booster is running', () => {
       const activeBooster = {
         activationId: 1,

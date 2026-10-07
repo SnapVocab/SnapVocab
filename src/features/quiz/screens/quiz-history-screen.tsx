@@ -3,7 +3,7 @@ import type { QuizHistorySummaryResponse, QuizMode } from '../types';
 import type { HistoryFilterMode } from '../utils';
 import { useRouter } from 'expo-router';
 import * as React from 'react';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   FlatList,
@@ -63,6 +63,16 @@ export function QuizHistoryScreen() {
   const filteredItems = useMemo(() => {
     return filterQuizHistoryItems(allItems, selectedFilter);
   }, [allItems, selectedFilter]);
+
+  // The filter runs on loaded pages only: an empty list has nothing to scroll, so onEndReached never
+  // fires. Keep loading until a match shows up or the server has no more pages.
+  // ponytail: may page through the whole history for a rare mode; add a `mode` param to
+  // GET /api/me/quizzes if histories get long.
+  const searchingMore = filteredItems.length === 0 && !!hasNextPage;
+  useEffect(() => {
+    if (searchingMore && !isFetchingNextPage)
+      void fetchNextPage();
+  }, [searchingMore, isFetchingNextPage, fetchNextPage]);
 
   const handleCardPress = (item: QuizHistorySummaryResponse) => {
     const action = quizHistoryAction(item.status);
@@ -151,6 +161,14 @@ export function QuizHistoryScreen() {
             </View>
           )}
 
+          {item.status === 'CANCELLED' && (
+            <View className="rounded-lg bg-neutral-100 px-2.5 py-1 dark:bg-neutral-700">
+              <Text className="font-nunito text-[11px] font-bold text-neutral-600 dark:text-neutral-300">
+                Đã hủy
+              </Text>
+            </View>
+          )}
+
           {item.status === 'EXPIRED' && (
             <View className="rounded-lg bg-neutral-100 px-2.5 py-1 dark:bg-neutral-700">
               <Text className="font-nunito text-[11px] font-bold text-neutral-600 dark:text-neutral-300">
@@ -178,64 +196,73 @@ export function QuizHistoryScreen() {
 
         {/* 4. Stats Row */}
         <View className="flex-row items-center justify-between">
-          <View className="flex-row items-center gap-3">
-            {/* Accuracy tinted surface */}
-            <View
-              className={twMerge(
-                'min-w-[76px] items-center justify-center rounded-xl px-2.5 py-1.5',
-                isHighAccuracy
-                  ? 'bg-emerald-50 dark:bg-emerald-950/40'
-                  : isMediumAccuracy
-                    ? 'bg-sky-50 dark:bg-sky-950/40'
-                    : 'bg-rose-50 dark:bg-rose-950/40',
-              )}
-            >
-              <Text
+          {/* Only a COMPLETED quiz has final metrics; null is "no score yet", never 0%. */}
+          {item.status !== 'COMPLETED' ? (
+            <Text className="font-inter text-[13px] font-bold text-neutral-500 dark:text-neutral-400">
+              {item.questionCount}
+              {item.mode === 'MATCHING' ? ' cặp' : ' câu'}
+              {' · Chưa có điểm'}
+            </Text>
+          ) : (
+            <View className="flex-row items-center gap-3">
+              {/* Accuracy tinted surface */}
+              <View
                 className={twMerge(
-                  'font-nunito text-[16px] font-black tracking-tight',
+                  'min-w-[76px] items-center justify-center rounded-xl px-2.5 py-1.5',
                   isHighAccuracy
-                    ? 'text-emerald-700 dark:text-emerald-300'
+                    ? 'bg-emerald-50 dark:bg-emerald-950/40'
                     : isMediumAccuracy
-                      ? 'text-sky-700 dark:text-sky-300'
-                      : 'text-rose-700 dark:text-rose-300',
+                      ? 'bg-sky-50 dark:bg-sky-950/40'
+                      : 'bg-rose-50 dark:bg-rose-950/40',
                 )}
               >
-                {accuracy}
-                %
-              </Text>
-              <Text
-                className={twMerge(
-                  'font-inter text-[9.5px] font-semibold tracking-wider uppercase',
-                  isHighAccuracy
-                    ? 'text-emerald-600/80 dark:text-emerald-400/80'
-                    : isMediumAccuracy
-                      ? 'text-sky-600/80 dark:text-sky-400/80'
-                      : 'text-rose-600/80 dark:text-rose-400/80',
-                )}
-              >
-                Chính xác
-              </Text>
-            </View>
+                <Text
+                  className={twMerge(
+                    'font-nunito text-[16px] font-black tracking-tight',
+                    isHighAccuracy
+                      ? 'text-emerald-700 dark:text-emerald-300'
+                      : isMediumAccuracy
+                        ? 'text-sky-700 dark:text-sky-300'
+                        : 'text-rose-700 dark:text-rose-300',
+                  )}
+                >
+                  {accuracy}
+                  %
+                </Text>
+                <Text
+                  className={twMerge(
+                    'font-inter text-[9.5px] font-semibold tracking-wider uppercase',
+                    isHighAccuracy
+                      ? 'text-emerald-600/80 dark:text-emerald-400/80'
+                      : isMediumAccuracy
+                        ? 'text-sky-600/80 dark:text-sky-400/80'
+                        : 'text-rose-600/80 dark:text-rose-400/80',
+                  )}
+                >
+                  Chính xác
+                </Text>
+              </View>
 
-            {/* Counts */}
-            <View className="gap-0.5">
-              <Text className="font-inter text-[13px] font-bold text-neutral-700 dark:text-neutral-200">
-                {item.correctCount ?? 0}
-                /
-                {item.questionCount}
-                {' '}
-                đúng
-                {(item.incorrectCount ?? 0) > 0 && (
-                  <Text className="font-semibold text-rose-600 dark:text-rose-400">
-                    {' · '}
-                    {item.incorrectCount}
-                    {' '}
-                    chưa đạt
-                  </Text>
-                )}
-              </Text>
+              {/* Counts */}
+              <View className="gap-0.5">
+                <Text className="font-inter text-[13px] font-bold text-neutral-700 dark:text-neutral-200">
+                  {item.correctCount ?? 0}
+                  /
+                  {item.questionCount}
+                  {' '}
+                  đúng
+                  {(item.incorrectCount ?? 0) > 0 && (
+                    <Text className="font-semibold text-rose-600 dark:text-rose-400">
+                      {' · '}
+                      {item.incorrectCount}
+                      {' '}
+                      chưa đạt
+                    </Text>
+                  )}
+                </Text>
+              </View>
             </View>
-          </View>
+          )}
 
           {/* Action indicator with clear touch target — an expired session offers no action */}
           {action === 'NONE' ? (
@@ -359,25 +386,33 @@ export function QuizHistoryScreen() {
                       )
                     : null
                 }
-                ListEmptyComponent={(
-                  <View className="items-center justify-center py-16">
-                    <Snapy pose="suy_nghi" animation="idle" style={{ width: 110, height: 110 }} />
-                    <Text className="mt-4 font-nunito text-[18px] font-extrabold text-mascot-navy dark:text-white">
-                      Chưa có bài Quiz nào
-                    </Text>
-                    <Text className="mt-1 px-6 text-center font-inter text-[14px] text-neutral-400">
-                      Hãy bắt đầu một bài Quiz để kiểm tra vốn từ vựng của bạn!
-                    </Text>
-                    <TouchableOpacity
-                      onPress={() => router.push('/(app)/study/quiz-setup' as any)}
-                      className="mt-6 rounded-2xl bg-primary-500 px-6 py-3.5"
-                    >
-                      <Text className="font-nunito text-[15px] font-extrabold text-white uppercase">
-                        Bắt đầu Quiz ngay
-                      </Text>
-                    </TouchableOpacity>
-                  </View>
-                )}
+                ListEmptyComponent={searchingMore
+                  ? (
+                      <View className="items-center py-16">
+                        <ActivityIndicator size="small" color="#0EA5E9" />
+                      </View>
+                    )
+                  : (
+                      <View className="items-center justify-center py-16">
+                        <Snapy pose="suy_nghi" animation="idle" style={{ width: 110, height: 110 }} />
+                        <Text className="mt-4 font-nunito text-[18px] font-extrabold text-mascot-navy dark:text-white">
+                          {selectedFilter === 'ALL'
+                            ? 'Chưa có bài Quiz nào'
+                            : `Chưa có bài ${FILTER_TABS.find(t => t.key === selectedFilter)?.label} nào`}
+                        </Text>
+                        <Text className="mt-1 px-6 text-center font-inter text-[14px] text-neutral-400">
+                          Hãy bắt đầu một bài Quiz để kiểm tra vốn từ vựng của bạn!
+                        </Text>
+                        <TouchableOpacity
+                          onPress={() => router.push('/(app)/study/quiz-setup' as any)}
+                          className="mt-6 rounded-2xl bg-primary-500 px-6 py-3.5"
+                        >
+                          <Text className="font-nunito text-[15px] font-extrabold text-white uppercase">
+                            Bắt đầu Quiz ngay
+                          </Text>
+                        </TouchableOpacity>
+                      </View>
+                    )}
               />
             )}
     </SafeAreaView>

@@ -10,9 +10,13 @@ jest.mock('../api', () => ({ useProgressHistory: jest.fn() }));
 jest.mock('expo-router', () => ({
   useRouter: () => ({ push: jest.fn(), back: jest.fn() }),
 }));
-jest.mock('@/components/ui', () => ({
-  Text: require('react-native').Text,
-}));
+jest.mock('@/components/ui', () => {
+  const RN = require('react-native');
+  return {
+    Text: RN.Text,
+    Button: ({ label, onPress }: { label: string; onPress: () => void }) => <RN.Pressable accessibilityRole="button" onPress={onPress}><RN.Text>{label}</RN.Text></RN.Pressable>,
+  };
+});
 jest.mock('@/components/snapvocab', () => ({
   XPOrb3D: require('react-native').View,
   StreakFlame3D: require('react-native').View,

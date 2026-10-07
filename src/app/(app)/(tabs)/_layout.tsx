@@ -1,6 +1,7 @@
 import { Tabs, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { useSurface } from '@/components/ui';
 import { CameraTabButton } from '@/components/ui/camera-tab-button';
 import {
   CommunityIcon,
@@ -9,7 +10,7 @@ import {
   ProfileIcon,
 } from '@/components/ui/icons';
 import { HomeHeader } from '@/features/home';
-import { useInventory, useShopTheme } from '@/features/shop';
+import { useInventory } from '@/features/shop';
 
 export default function TabLayout() {
   const router = useRouter();
@@ -18,8 +19,8 @@ export default function TabLayout() {
   const { bottom } = useSafeAreaInsets();
   // Fetching inventory syncs the account's equipped theme into ShopThemeProvider on app start / login.
   useInventory();
-  const { themeKey, theme } = useShopTheme();
-  const isDefaultTheme = themeKey === 'DEFAULT';
+  // App-wide chrome: default surfaces for the user's light/dark mode; Shop themes stay inside the Shop area.
+  const surface = useSurface();
 
   return (
     <Tabs
@@ -27,9 +28,9 @@ export default function TabLayout() {
         tabBarActiveTintColor: '#58CC02',
         tabBarInactiveTintColor: '#AFAFAF',
         tabBarStyle: {
-          backgroundColor: theme.surfaceTokens.tabBg,
+          backgroundColor: surface.surface,
           borderTopWidth: 2,
-          borderTopColor: isDefaultTheme ? '#F3F4F6' : theme.surfaceTokens.border,
+          borderTopColor: surface.border,
           height: 64 + bottom,
           paddingBottom: 8 + bottom,
           paddingTop: 8,

@@ -5,7 +5,7 @@ import {
   getRemainingBoosterMs,
 } from '../utils/booster-timer';
 
-describe('Booster countdown with server clock skew compensation', () => {
+describe('booster countdown with server clock skew compensation', () => {
   it('calculates server offset accurately', () => {
     const serverNow = '2026-09-25T08:00:00.000Z';
     // Device is 5 seconds behind server

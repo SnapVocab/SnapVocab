@@ -10,6 +10,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import { Coin3D } from '@/components/snapvocab';
+import { useSurface } from '@/components/ui';
 
 type OutOfCoinModalProps = {
   visible: boolean;
@@ -24,6 +25,7 @@ export function OutOfCoinModal({
   userCoins,
   onClose,
 }: OutOfCoinModalProps) {
+  const s = useSurface();
   const scaleValue = useSharedValue(0.85);
   const opacityValue = useSharedValue(0);
 
@@ -55,7 +57,7 @@ export function OutOfCoinModal({
           style={[
             animatedStyle,
             {
-              backgroundColor: '#FFFFFF',
+              backgroundColor: s.surface,
               borderRadius: 36,
               borderWidth: 2,
               borderColor: '#FED7AA',
@@ -71,8 +73,11 @@ export function OutOfCoinModal({
           {/* Close button */}
           <Pressable
             onPress={onClose}
-            style={{ borderRadius: 20 }}
-            className="absolute top-4 right-4 z-10 size-8 items-center justify-center bg-neutral-100 active:bg-neutral-200"
+            accessibilityRole="button"
+            accessibilityLabel="Đóng"
+            hitSlop={8}
+            style={{ borderRadius: 20, backgroundColor: s.surfaceMuted }}
+            className="absolute top-4 right-4 z-10 size-8 items-center justify-center active:opacity-70"
           >
             <XIcon size={16} color="#757793" />
           </Pressable>
@@ -97,21 +102,26 @@ export function OutOfCoinModal({
           </View>
 
           {/* Title & Guidance */}
-          <Text className="mb-1 text-center font-nunito text-[22px] font-extrabold text-mascot-navy">
+          <Text style={{ color: s.text }} className="mb-1 text-center font-nunito text-[22px] font-extrabold">
             Chưa đủ Coin rồi!
           </Text>
-          <Text className="mb-4 px-2 text-center font-inter text-[13px] leading-relaxed font-medium text-neutral-500">
-            Bạn cần thêm
+          <Text style={{ color: s.textMuted }} className="mb-4 px-2 text-center font-inter text-[13px] leading-relaxed font-medium">
+            {/* The server said "not enough" but the local balance disagrees: it is stale, so no number. */}
+            {missingCoins > 0 ? (
+              <>
+                Bạn cần thêm
+                {' '}
+                <Text className="font-extrabold text-amber-600">
+                  {missingCoins.toLocaleString('vi-VN')}
+                  {' '}
+                  Coin
+                </Text>
+                {' '}
+              </>
+            ) : 'Bạn chưa đủ Coin '}
+            để mua
             {' '}
-            <Text className="font-extrabold text-amber-600">
-              {missingCoins.toLocaleString()}
-              {' '}
-              Coin
-            </Text>
-            {' '}
-            để có thể mở khóa
-            {' '}
-            <Text className="font-bold text-mascot-navy">{item.name}</Text>
+            <Text style={{ color: s.text }} className="font-bold">{item.name}</Text>
             .
           </Text>
 
@@ -148,7 +158,7 @@ export function OutOfCoinModal({
             <Pressable
               onPress={() => {
                 onClose();
-                router.push('/(tabs)/learn' as any);
+                router.push('/missions' as any);
               }}
               style={{
                 borderRadius: 18,
@@ -159,7 +169,7 @@ export function OutOfCoinModal({
             >
               <TargetIcon size={18} color="white" />
               <Text className="font-nunito text-[14px] font-extrabold tracking-wide text-white uppercase">
-                Làm nhiệm vụ kiếm Coin
+                Làm nhiệm vụ hằng ngày
               </Text>
             </Pressable>
 
@@ -168,11 +178,11 @@ export function OutOfCoinModal({
                 onClose();
                 router.push('/(tabs)/learn' as any);
               }}
-              style={{ borderRadius: 16 }}
-              className="h-11 w-full flex-row items-center justify-center gap-2 bg-neutral-100 active:bg-neutral-200"
+              style={{ borderRadius: 16, backgroundColor: s.surfaceMuted }}
+              className="h-11 w-full flex-row items-center justify-center gap-2 active:opacity-70"
             >
-              <BookOpenIcon size={16} color="#757793" />
-              <Text className="font-inter text-[14px] font-bold text-neutral-600">
+              <BookOpenIcon size={16} color={s.textMuted} />
+              <Text style={{ color: s.text }} className="font-inter text-[14px] font-bold">
                 Tiếp tục bài học
               </Text>
             </Pressable>

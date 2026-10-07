@@ -1,14 +1,12 @@
 /* eslint-disable max-lines-per-function */
 import type { QuizPlayDTO } from '../types';
 import type { SnapyPose } from '@/components/ui/snapy';
-import { useRouter } from 'expo-router';
 import * as React from 'react';
 import { useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Dimensions,
   Easing,
-  Modal,
   Pressable,
   Animated as RNAnimated,
   ScrollView,
@@ -23,37 +21,47 @@ import {
   CheckIcon,
   ClockIcon,
   CloseIcon,
-  LogOutIcon,
   VolumeIcon,
   XCircleIcon,
 } from '@/components/ui/icons';
 import { Snapy } from '@/components/ui/snapy';
+import { useTts } from '@/lib/hooks/use-tts';
 import { cn } from '@/lib/utils';
-import { useCancelQuiz, useCheckQuestion, useCompleteQuiz } from '../api/quiz-api';
+import { useCheckQuestion } from '../api/quiz-api';
 import { useExpiredSessionHandler } from '../hooks/use-expired-session-handler';
+import { useFinishQuiz } from '../hooks/use-finish-quiz';
+import { classifyQuizError, firstUnresolvedIndex } from '../utils';
 import { generateIdempotencyKey } from '../utils/idempotency';
+import { QuizExitModal } from './quiz-exit-modal';
 
 type CheckState = 'IDLE' | 'CORRECT' | 'INCORRECT';
 
 export type MultipleChoiceQuizViewProps = {
   quiz: QuizPlayDTO;
   onExit: () => void;
+  /** Reload the session from the server when it moved on (graded elsewhere, terminal). */
+  onResync: () => void;
 };
 
-export function MultipleChoiceQuizView({ quiz, onExit }: MultipleChoiceQuizViewProps) {
-  const router = useRouter();
+export function MultipleChoiceQuizView({ quiz, onExit, onResync }: MultipleChoiceQuizViewProps) {
   const questions = quiz.questions || [];
 
-  const [currentIndex, setCurrentIndex] = useState(0);
+  // Resume at the first question the server has not graded (D18); the Session screen handles "all graded".
+  const [currentIndex, setCurrentIndex] = useState(() => Math.max(0, firstUnresolvedIndex(questions)));
   const [selectedOptKey, setSelectedOptKey] = useState<string | null>(null);
   const [checkState, setCheckState] = useState<CheckState>('IDLE');
   const [correctAnswerText, setCorrectAnswerText] = useState<string>('');
   const [correctOptionKey, setCorrectOptionKey] = useState<string | null>(null);
   const [idempotencyKey, setIdempotencyKey] = useState<string>(() => generateIdempotencyKey());
+  // UNCONFIRMED: the check may have been committed, so the answer stays locked until the same
+  // request (same key + same option) is confirmed. REJECTED: nothing was written, pick again.
+  const [answerNotice, setAnswerNotice] = useState<'UNCONFIRMED' | 'REJECTED' | null>(null);
+  const answerLocked = answerNotice === 'UNCONFIRMED';
+  const advancingRef = useRef(false);
 
   const [mascotPose, setMascotPose] = useState<SnapyPose>('tap_trung');
   const [mascotAnim, setMascotAnim] = useState<string>('idle');
-  const [isSpeaking, setIsSpeaking] = useState(false);
+  const { speak, isPlaying: isSpeaking } = useTts();
   const [showExitModal, setShowExitModal] = useState(false);
 
   // Live Stopwatch State
@@ -88,23 +96,6 @@ export function MultipleChoiceQuizView({ quiz, onExit }: MultipleChoiceQuizViewP
     new RNAnimated.Value(0),
     new RNAnimated.Value(0),
   ]).current;
-
-  // Web Speech API Pronunciation
-  const playPronunciation = (word: string) => {
-    setIsSpeaking(true);
-    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-      window.speechSynthesis.cancel();
-      const utterance = new SpeechSynthesisUtterance(word);
-      utterance.lang = 'en-US';
-      utterance.rate = 0.85;
-      utterance.onend = () => setIsSpeaking(false);
-      utterance.onerror = () => setIsSpeaking(false);
-      window.speechSynthesis.speak(utterance);
-    }
-    else {
-      setTimeout(() => setIsSpeaking(false), 800);
-    }
-  };
 
   useEffect(() => {
     // Entrance Sequence
@@ -147,9 +138,10 @@ export function MultipleChoiceQuizView({ quiz, onExit }: MultipleChoiceQuizViewP
   const currentQ = questions[currentIndex] || questions[0];
   const progressPercent = questions.length > 0 ? (currentIndex / questions.length) * 100 : 0;
 
+  const nextIndex = firstUnresolvedIndex(questions, currentIndex);
+
   const checkMutation = useCheckQuestion();
-  const completeMutation = useCompleteQuiz();
-  const cancelMutation = useCancelQuiz();
+  const finishQuiz = useFinishQuiz(quiz.quizId, onResync);
   const handleExpiredSession = useExpiredSessionHandler();
 
   const handleCheck = () => {
@@ -165,6 +157,7 @@ export function MultipleChoiceQuizView({ quiz, onExit }: MultipleChoiceQuizViewP
       {
         onSuccess: (data) => {
           const isCorrect = data.correct;
+          setAnswerNotice(null);
           setCheckState(isCorrect ? 'CORRECT' : 'INCORRECT');
           setCorrectAnswerText(data.correctAnswer);
           setCorrectOptionKey(data.correctOptionKey || null);
@@ -187,36 +180,33 @@ export function MultipleChoiceQuizView({ quiz, onExit }: MultipleChoiceQuizViewP
           }).start();
         },
         onError: (error) => {
-          handleExpiredSession(error);
-          // Keep idempotencyKey so re-tap retries with same key
+          if (handleExpiredSession(error))
+            return;
+          const kind = classifyQuizError(error);
+          if (kind === 'RESYNC') {
+            onResync();
+          }
+          else if (kind === 'REJECTED') {
+            setIdempotencyKey(generateIdempotencyKey());
+            setAnswerNotice('REJECTED');
+          }
+          else {
+            setAnswerNotice('UNCONFIRMED'); // same key + same locked option on retry
+          }
         },
       },
     );
   };
 
   const handleNext = () => {
-    if (currentIndex + 1 >= questions.length) {
-      if (completeMutation.isPending)
-        return;
-      completeMutation.mutate(quiz.quizId, {
-        onSuccess: () => {
-          router.replace({
-            pathname: '/(app)/study/quiz-result' as any,
-            params: { quizId: String(quiz.quizId) },
-          });
-        },
-        onError: (error) => {
-          if (handleExpiredSession(error))
-            return;
-          // On complete error, still attempt to navigate to result
-          router.replace({
-            pathname: '/(app)/study/quiz-result' as any,
-            params: { quizId: String(quiz.quizId) },
-          });
-        },
-      });
+    // A second tap during the slide would advance twice and skip a question.
+    if (advancingRef.current)
+      return;
+    if (nextIndex === -1) {
+      finishQuiz.finish();
       return;
     }
+    advancingRef.current = true;
 
     // Slide out current question
     RNAnimated.timing(slideAnim, {
@@ -225,7 +215,8 @@ export function MultipleChoiceQuizView({ quiz, onExit }: MultipleChoiceQuizViewP
       easing: Easing.out(Easing.quad),
       useNativeDriver: true,
     }).start(() => {
-      setCurrentIndex(prev => prev + 1);
+      setCurrentIndex(nextIndex);
+      advancingRef.current = false;
       setSelectedOptKey(null);
       setCheckState('IDLE');
       setCorrectAnswerText('');
@@ -246,12 +237,6 @@ export function MultipleChoiceQuizView({ quiz, onExit }: MultipleChoiceQuizViewP
     });
   };
 
-  const handleExitConfirm = () => {
-    setShowExitModal(false);
-    cancelMutation.mutate({ quizId: quiz.quizId });
-    onExit();
-  };
-
   const translateY = bottomBarAnim.interpolate({
     inputRange: [0, 1],
     outputRange: [120, 0],
@@ -265,6 +250,9 @@ export function MultipleChoiceQuizView({ quiz, onExit }: MultipleChoiceQuizViewP
         <View className="z-10 flex-row items-center justify-between border-b border-neutral-100 bg-[#F7F8FA] px-4 py-3">
           <TouchableOpacity
             onPress={() => setShowExitModal(true)}
+            accessibilityRole="button"
+            accessibilityLabel="Thoát bài quiz"
+            hitSlop={8}
             activeOpacity={0.7}
             className="-ml-2 size-10 items-center justify-center rounded-full"
           >
@@ -350,7 +338,9 @@ export function MultipleChoiceQuizView({ quiz, onExit }: MultipleChoiceQuizViewP
               </View>
 
               <TouchableOpacity
-                onPress={() => playPronunciation(currentQ?.prompt || '')}
+                onPress={() => speak(currentQ?.prompt || '', { lang: quiz.direction === 'VI_EN' ? 'vi' : 'en' })}
+                accessibilityRole="button"
+                accessibilityLabel="Nghe phát âm"
                 activeOpacity={0.7}
                 className={cn(
                   'size-12 items-center justify-center rounded-2xl border',
@@ -407,8 +397,13 @@ export function MultipleChoiceQuizView({ quiz, onExit }: MultipleChoiceQuizViewP
                   }}
                 >
                   <TouchableOpacity
-                    onPress={() => !isSubmitted && setSelectedOptKey(opt.key)}
-                    disabled={isSubmitted || checkMutation.isPending}
+                    onPress={() => {
+                      setSelectedOptKey(opt.key);
+                      setAnswerNotice(null);
+                    }}
+                    disabled={isSubmitted || checkMutation.isPending || answerLocked}
+                    accessibilityRole="radio"
+                    accessibilityState={{ selected: isSelected, disabled: isSubmitted || answerLocked }}
                     activeOpacity={0.85}
                     className={cn('flex-row items-center rounded-2xl border-2 p-4', containerStyle)}
                   >
@@ -460,6 +455,13 @@ export function MultipleChoiceQuizView({ quiz, onExit }: MultipleChoiceQuizViewP
       {/* 4. STATIC CHECK BUTTON (IDLE) */}
       {checkState === 'IDLE' && (
         <View className="border-t border-neutral-100 bg-white p-4">
+          {answerNotice && (
+            <Text accessibilityLiveRegion="polite" className="mb-3 text-center font-inter text-[13px] font-semibold text-neutral-600">
+              {answerNotice === 'UNCONFIRMED'
+                ? 'Chưa xác nhận được câu trả lời. Kiểm tra kết nối rồi gửi lại đáp án này.'
+                : 'Không gửi được đáp án. Hãy chọn lại và thử lần nữa.'}
+            </Text>
+          )}
           <Pressable
             onPress={handleCheck}
             disabled={!selectedOptKey || checkMutation.isPending}
@@ -480,7 +482,7 @@ export function MultipleChoiceQuizView({ quiz, onExit }: MultipleChoiceQuizViewP
                     selectedOptKey ? 'text-white' : 'text-neutral-400',
                   )}
                 >
-                  Kiểm tra
+                  {answerLocked ? 'Gửi lại' : 'Kiểm tra'}
                 </Text>
                 <ArrowRightIcon
                   size={18}
@@ -537,21 +539,21 @@ export function MultipleChoiceQuizView({ quiz, onExit }: MultipleChoiceQuizViewP
 
           <Pressable
             onPress={handleNext}
-            disabled={completeMutation.isPending}
+            disabled={finishQuiz.isPending}
             className={cn(
               'h-13 w-full flex-row items-center justify-center gap-2 rounded-2xl border-b-4 active:translate-y-px active:border-b-2',
               checkState === 'CORRECT'
                 ? 'border-success-700 bg-success-500'
                 : 'border-error-700 bg-error-500',
-              completeMutation.isPending && 'opacity-70',
+              finishQuiz.isPending && 'opacity-70',
             )}
           >
-            {completeMutation.isPending ? (
+            {finishQuiz.isPending ? (
               <ActivityIndicator size="small" color="#FFFFFF" />
             ) : (
               <>
                 <Text className="font-nunito text-[16px] font-extrabold text-white uppercase">
-                  {currentIndex + 1 >= questions.length ? 'Hoàn thành' : 'Tiếp tục'}
+                  {nextIndex === -1 ? 'Hoàn thành' : 'Tiếp tục'}
                 </Text>
                 <ArrowRightIcon size={18} className="text-white" />
               </>
@@ -561,38 +563,12 @@ export function MultipleChoiceQuizView({ quiz, onExit }: MultipleChoiceQuizViewP
       )}
 
       {/* 6. EXIT CONFIRMATION MODAL */}
-      <Modal visible={showExitModal} transparent animationType="fade">
-        <View className="flex-1 items-center justify-center bg-black/50 p-6">
-          <View className="w-full max-w-sm rounded-3xl bg-white p-6 shadow-xl">
-            <View className="mb-4 size-14 items-center justify-center self-center rounded-2xl bg-amber-50">
-              <LogOutIcon size={28} className="text-amber-500" />
-            </View>
-
-            <Text className="mb-2 text-center font-nunito text-[20px] font-extrabold text-mascot-navy">
-              Dừng làm bài Quiz?
-            </Text>
-            <Text className="mb-6 text-center font-inter text-[14px] leading-relaxed text-neutral-500">
-              Tiến trình làm bài này sẽ bị hủy. Bạn có muốn thoát không?
-            </Text>
-
-            <View className="gap-2.5">
-              <Pressable
-                onPress={() => setShowExitModal(false)}
-                className="h-12 w-full items-center justify-center rounded-xl border-b-2 border-primary-700 bg-primary-500 active:bg-primary-600"
-              >
-                <Text className="font-nunito text-[15px] font-extrabold text-white">Tiếp tục làm bài</Text>
-              </Pressable>
-
-              <Pressable
-                onPress={handleExitConfirm}
-                className="h-12 w-full items-center justify-center rounded-xl bg-neutral-100 active:bg-neutral-200"
-              >
-                <Text className="font-nunito text-[15px] font-extrabold text-neutral-600">Thoát</Text>
-              </Pressable>
-            </View>
-          </View>
-        </View>
-      </Modal>
+      <QuizExitModal
+        visible={showExitModal}
+        quizId={quiz.quizId}
+        onClose={() => setShowExitModal(false)}
+        onExited={onExit}
+      />
 
     </SafeAreaView>
   );

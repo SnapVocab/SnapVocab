@@ -11,7 +11,7 @@ import { KeyboardProvider } from 'react-native-keyboard-controller';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useThemeConfig } from '@/components/ui/use-theme-config';
 
-import { ShopThemeProvider, useShopTheme } from '@/features/shop';
+import { ShopThemeProvider } from '@/features/shop';
 import { APIProvider } from '@/lib/api';
 import { loadSelectedTheme } from '@/lib/hooks/use-selected-theme';
 import '../global.css';
@@ -75,17 +75,9 @@ function Providers({ children }: { children: React.ReactNode }) {
   );
 }
 
-/** Equipped Shop theme recolors every navigator surface (screen background, headers, cards), not just Shop screens. */
+/** Navigator surfaces follow the user's light/dark mode only; Shop themes are scoped to the Shop area (ShopSurface). */
 function NavigationTheme({ children }: { children: React.ReactNode }) {
-  const base = useThemeConfig();
-  const { themeKey, theme } = useShopTheme();
-  const value = React.useMemo(() => {
-    if (themeKey === 'DEFAULT')
-      return base;
-    const t = theme.surfaceTokens;
-    return { ...base, colors: { ...base.colors, background: t.background, card: t.surface, text: t.text, border: t.border } };
-  }, [base, themeKey, theme]);
-  return <ThemeProvider value={value}>{children}</ThemeProvider>;
+  return <ThemeProvider value={useThemeConfig()}>{children}</ThemeProvider>;
 }
 
 const styles = StyleSheet.create({

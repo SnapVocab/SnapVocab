@@ -209,6 +209,34 @@
     "suggestions": "Suggestions",
     "title": "Look up"
   },
+  "missions": {
+    "action": {
+      "add_word": "Add words",
+      "booster": "Activate booster",
+      "quiz": "Take a quiz",
+      "shop": "Go to shop",
+      "study": "Study now"
+    },
+    "add_word_hint": "Add it to your own topic with a translation. Words counted before will not count again.",
+    "back": "Back",
+    "cached_error": "Connection failed. Showing saved missions; reconnect to refresh.",
+    "claim": "Claim reward",
+    "claim_error": "Reward not confirmed yet. Tap Claim reward to try again.",
+    "claimed": "Reward claimed",
+    "completed_count": "Completed",
+    "ended": "Yesterday's missions have ended. Pull down to load today's missions.",
+    "expired_error": "This mission has expired. Refresh to see today's missions.",
+    "fallback_coin": "Item converted to Coin",
+    "granted": "Claimed +{{coin}} coins, +{{xp}} XP",
+    "item": "Item: {{item}}",
+    "load_error": "Unable to load daily missions. Please try again.",
+    "ready": "Completed",
+    "resets_in": "Resets in {{hours}}h {{minutes}}m",
+    "retry": "Try again",
+    "subtitle": "Complete missions to earn rewards",
+    "title": "Daily missions",
+    "unclaimed_warning": "Claim before missions reset."
+  },
   "profile": {
     "coin": "Coins",
     "coming_soon": "Coming soon",
@@ -220,12 +248,12 @@
     "menu": {
       "achievements": "Achievements",
       "inventory": "Inventory",
-      "wallet": "Wallet"
+      "wallet": "Coin wallet"
     },
     "menu_hints": {
       "achievements": "Badges you have earned",
-      "inventory": "Avatar frames and boosters",
-      "wallet": "Coins and rewards"
+      "inventory": "Avatar frames, themes, boosters",
+      "wallet": "Balance and Coin history"
     },
     "retry": "Try again",
     "settings": "Settings",
@@ -235,11 +263,12 @@
     "xp": "XP"
   },
   "progressUx": {
-    "DAY": "Day",
-    "MONTH": "Month",
-    "WEEK": "Week",
+    "DAY": "{{count}} days",
+    "MONTH": "{{count}} months",
+    "WEEK": "{{count}} weeks",
     "accuracy": "Quiz accuracy",
     "accuracyHint": "Complete your first quiz to see your accuracy.",
+    "accuracyScope": "Across all completed quizzes.",
     "activityTotal": "{{count}} activities in this range",
     "bucket": "{{date}} · {{count}} activities · {{days}} study days",
     "countExplanation": "Reviewing and mastered are groups within your studied words.",
@@ -257,6 +286,7 @@
     "learningAndReviewingExplanation": "Includes words you have started learning but have not yet mastered.",
     "level": "Level {{count}} · {{title}}",
     "levelDetails": "View level and experience",
+    "levelNumber": "Level {{count}}",
     "levelProgress": "Level progress",
     "loadError": "Couldn't load this data. Check your connection and try again.",
     "loading": "Loading activity…",
@@ -271,13 +301,13 @@
     "overviewDue": "Due words",
     "overviewSaved": "Saved words",
     "overviewStreak": "Streak",
-    "performance": "Learning activity",
+    "performance": "Results",
     "performanceEmptyHint": "Complete your first quiz to track your accuracy.",
-    "quickOverview": "Quick overview",
+    "quickOverview": "Activity",
     "quizzes": "Completed quizzes",
     "range": "{{from}} – {{to}}",
     "record": "Best: {{count}} days",
-    "remaining": "{{count}} XP to the next level",
+    "remaining": "{{xp}} XP to level {{level}}",
     "retry": "Retry",
     "reviewNow": "Review now",
     "reviewing": "Reviewing",
@@ -304,6 +334,7 @@
     "startQuiz": "Start Quiz",
     "startStreak": "Learning streak",
     "streak": "{{count}} consecutive study days",
+    "streakA11y": "{{count}}-day study streak, view stats",
     "streakBroken": "Your streak was interrupted",
     "streakBrokenSubtitle": "Best: {{count}} days · Complete a quiz to start again.",
     "streakEmpty": "Complete your first study session today to start a streak.",
@@ -314,13 +345,15 @@
     "studiedRatio": "Studied {{learned}} / {{total}} words",
     "studySaved": "Study saved words",
     "today": "Today",
+    "totalXp": "Total XP: {{xp}}",
     "tryQuizLink": "Try a quiz →",
     "trySaved": "Start with the words you have saved.",
     "unstudied": "Not studied",
     "vocabulary": "Your vocabulary",
     "vocabularyDistribution": "Status distribution",
     "weekLabel": "Week {{date}}",
-    "windowHint": "Showing the latest {{count}} periods."
+    "windowHint": "Showing the latest {{count}} periods.",
+    "xpHistory": "View XP history"
   },
   "quiz": {
     "check": "Check",

@@ -27,3 +27,9 @@ export function deriveVocabularySegments(
     isValidSum: newCount + learningAndReviewingCount + masteredCount === totalWords,
   };
 }
+
+/** "2026-10-06" (or an ISO timestamp) -> "06/10/2026". Unparseable input is returned as-is. */
+export function formatDate(iso: string) {
+  const match = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso);
+  return match ? `${match[3]}/${match[2]}/${match[1]}` : iso;
+}

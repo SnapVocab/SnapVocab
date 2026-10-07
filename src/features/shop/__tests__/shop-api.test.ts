@@ -1,3 +1,4 @@
+/* eslint-disable max-lines-per-function */
 import type {
   ActivationResultDTO,
   EquipmentDTO,
@@ -24,7 +25,7 @@ jest.mock('@/lib/api', () => ({
 
 const mockedClient = client as unknown as jest.Mock;
 
-describe('Shop API layer and backend contracts', () => {
+describe('shop API layer and backend contracts', () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });

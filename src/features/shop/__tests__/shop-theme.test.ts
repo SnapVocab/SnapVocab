@@ -1,10 +1,27 @@
+import { DEFAULT_SURFACE } from '@/components/ui/surface';
 import {
   getThemeDefinition,
   isThemeKnown,
   SHOP_THEMES,
 } from '../theme/theme-context';
 
-describe('Shop Theme registry and unknown key handling', () => {
+/** WCAG 2.x contrast ratio of two #RRGGBB colors. */
+function contrast(a: string, b: string) {
+  const lum = (hex: string) => {
+    const [r, g, bl] = [1, 3, 5].map((i) => {
+      const c = Number.parseInt(hex.slice(i, i + 2), 16) / 255;
+      return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+    });
+    return 0.2126 * r + 0.7152 * g + 0.0722 * bl;
+  };
+  const [hi, lo] = [lum(a), lum(b)].sort((x, y) => y - x);
+  return (hi + 0.05) / (lo + 0.05);
+}
+
+const modes = ['light', 'dark'] as const;
+const cases = Object.values(SHOP_THEMES).flatMap(theme => modes.map(mode => [theme.key, mode] as const));
+
+describe('shop Theme registry and unknown key handling', () => {
   it('correctly recognizes supported themes', () => {
     expect(isThemeKnown('DEFAULT')).toBe(true);
     expect(isThemeKnown('MIDNIGHT_NEON')).toBe(true);
@@ -27,18 +44,20 @@ describe('Shop Theme registry and unknown key handling', () => {
     expect(fallbackDef).toEqual(defaultDef);
   });
 
-  it('provides surface tokens without mutating brand and semantic colors', () => {
-    const theme = SHOP_THEMES.MIDNIGHT_NEON;
-    expect(theme.surfaceTokens).toHaveProperty('background');
-    expect(theme.surfaceTokens).toHaveProperty('surface');
-    expect(theme.surfaceTokens).toHaveProperty('surfaceMuted');
-    expect(theme.surfaceTokens).toHaveProperty('border');
-    expect(theme.surfaceTokens).toHaveProperty('headerBg');
-    expect(theme.surfaceTokens).toHaveProperty('tabBg');
+  // shop.md §6.2: every ThemeDefinition declares light and dark; foreground stays fixed; only surfaces change.
+  it.each(cases)('%s/%s keeps the mode\'s fixed text and only role tokens', (key, mode) => {
+    const tokens = SHOP_THEMES[key].palette[mode];
+    expect(tokens.text).toBe(DEFAULT_SURFACE[mode].text);
+    expect(tokens.textMuted).toBe(DEFAULT_SURFACE[mode].textMuted);
+    expect(Object.keys(tokens).sort()).toEqual(Object.keys(DEFAULT_SURFACE[mode]).sort());
+  });
 
-    // Semantic tokens like primary/danger/coin are not in surfaceTokens
-    expect(theme.surfaceTokens).not.toHaveProperty('primary');
-    expect(theme.surfaceTokens).not.toHaveProperty('danger');
-    expect(theme.surfaceTokens).not.toHaveProperty('coin');
+  // shop.md §6.2: automated contrast ≥ 4.5:1 for text and muted text on every surface, every theme × mode.
+  it.each(cases)('%s/%s text contrast is at least 4.5:1 on every surface', (key, mode) => {
+    const t = SHOP_THEMES[key].palette[mode];
+    for (const bg of [t.background, t.surface, t.surfaceMuted, t.headerBg]) {
+      expect(contrast(t.text, bg)).toBeGreaterThanOrEqual(4.5);
+      expect(contrast(t.textMuted, bg)).toBeGreaterThanOrEqual(4.5);
+    }
   });
 });

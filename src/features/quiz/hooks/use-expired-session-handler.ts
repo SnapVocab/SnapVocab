@@ -4,7 +4,7 @@ import { Alert } from 'react-native';
 import { isQuizSessionExpired } from '../utils';
 
 /**
- * One reaction to QUIZ_SESSION_EXPIRED (D16) for every quiz view: the session cannot be continued,
+ * One reaction to QUIZ_SESSION_EXPIRED (D17) for every quiz view: the session cannot be continued,
  * so tell the learner and send them to Quiz Setup. Returns true when the error was an expiry and
  * was handled here.
  */

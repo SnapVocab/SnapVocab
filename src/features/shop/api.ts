@@ -3,6 +3,7 @@ import type { ApiResponse } from '../auth/api';
 import type {
   ActivationResultDTO,
   EquipmentDTO,
+  EquipmentSlot,
   EquipRequest,
   InventoryDTO,
   ParsedShopError,
@@ -36,13 +37,20 @@ export function parseShopError(error: unknown): ParsedShopError {
     };
   }
 
-  // Network / timeout error
-  const message = (error as Error)?.message || 'Lỗi kết nối máy chủ';
+  // Network / timeout error: the raw axios text ("Network Error", "timeout of …") is not user copy.
   return {
     code: 'NETWORK_ERROR',
-    message,
+    message: 'Không kết nối được máy chủ. Vui lòng kiểm tra mạng và thử lại.',
     statusCode: 0,
   };
+}
+
+/**
+ * No response, or a 5xx: the server may have committed. Retry with the SAME Idempotency-Key
+ * (it replays the committed result); a new key could buy/spend a second time (shop.md §11.1).
+ */
+export function isOutcomeUnknown(error: ParsedShopError): boolean {
+  return error.statusCode === 0 || error.statusCode >= 500;
 }
 
 /**
@@ -72,7 +80,7 @@ export function getFriendlyErrorMessage(code: string, details?: Record<string, u
     case 'CONCURRENT_MODIFICATION':
       return 'Hệ thống đang bận xử lý giao dịch. Vui lòng thử lại sau ít giây.';
     case 'IDEMPOTENCY_KEY_REUSED':
-      return 'Giao dịch trùng lặp đang được xử lý.';
+      return 'Mã giao dịch không hợp lệ cho vật phẩm này. Vui lòng mở lại và thử lại.';
     case 'IDEMPOTENCY_KEY_REQUIRED':
       return 'Lỗi xác thực giao dịch, vui lòng thử lại.';
     default:
@@ -131,7 +139,7 @@ export async function getInventory(): Promise<InventoryDTO> {
  * Equip a THEME or AVATAR_FRAME; replaces the item currently in the slot atomically.
  */
 export async function equipItem(
-  slot: 'THEME' | 'AVATAR_FRAME',
+  slot: EquipmentSlot,
   itemId: number,
 ): Promise<EquipmentDTO> {
   const payload: EquipRequest = { itemId };
@@ -148,7 +156,7 @@ export async function equipItem(
  * Unequip a slot (back to default).
  */
 export async function unequipItem(
-  slot: 'THEME' | 'AVATAR_FRAME',
+  slot: EquipmentSlot,
 ): Promise<EquipmentDTO> {
   const response = await client<ApiResponse<EquipmentDTO>>({
     url: `/api/me/equipment/${slot}`,

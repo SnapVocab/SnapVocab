@@ -209,8 +209,36 @@
     "suggestions": "Gợi ý",
     "title": "Tra từ"
   },
+  "missions": {
+    "action": {
+      "add_word": "Thêm từ",
+      "booster": "Kích hoạt booster",
+      "quiz": "Làm quiz",
+      "shop": "Tới cửa hàng",
+      "study": "Học ngay"
+    },
+    "add_word_hint": "Thêm vào chủ đề của bạn, kèm bản dịch. Từ đã từng được tính sẽ không tính lại.",
+    "back": "Quay lại",
+    "cached_error": "Lỗi kết nối. Đang hiển thị nhiệm vụ đã lưu; kết nối lại để cập nhật.",
+    "claim": "Nhận thưởng",
+    "claim_error": "Chưa xác nhận được thưởng. Nhấn Nhận thưởng để thử lại.",
+    "claimed": "Đã nhận thưởng",
+    "completed_count": "Đã hoàn thành",
+    "ended": "Nhiệm vụ hôm qua đã kết thúc. Kéo xuống để tải nhiệm vụ hôm nay.",
+    "expired_error": "Nhiệm vụ đã hết hạn. Tải lại để xem nhiệm vụ hôm nay.",
+    "fallback_coin": "Đã đổi vật phẩm thành Coin",
+    "granted": "Đã nhận +{{coin}} Coin, +{{xp}} XP",
+    "item": "Vật phẩm: {{item}}",
+    "load_error": "Không tải được nhiệm vụ. Vui lòng thử lại.",
+    "ready": "Hoàn thành",
+    "resets_in": "Làm mới sau {{hours}} giờ {{minutes}} phút",
+    "retry": "Thử lại",
+    "subtitle": "Hoàn thành nhiệm vụ để nhận thưởng",
+    "title": "Nhiệm vụ hàng ngày",
+    "unclaimed_warning": "Nhớ nhận thưởng trước khi nhiệm vụ được làm mới."
+  },
   "profile": {
-    "coin": "Xu",
+    "coin": "Coin",
     "coming_soon": "Sắp có",
     "edit": "Chỉnh sửa hồ sơ",
     "error_description": "Kiểm tra kết nối rồi thử lại.",
@@ -220,12 +248,12 @@
     "menu": {
       "achievements": "Thành tựu",
       "inventory": "Kho đồ",
-      "wallet": "Ví xu"
+      "wallet": "Ví Coin"
     },
     "menu_hints": {
       "achievements": "Huy hiệu bạn đã đạt được",
-      "inventory": "Khung avatar, thẻ tăng tốc",
-      "wallet": "Xu thưởng và phần thưởng"
+      "inventory": "Khung avatar, giao diện, booster",
+      "wallet": "Số dư và lịch sử Coin"
     },
     "retry": "Thử lại",
     "settings": "Cài đặt",
@@ -235,11 +263,12 @@
     "xp": "Điểm XP"
   },
   "progressUx": {
-    "DAY": "Ngày",
-    "MONTH": "Tháng",
-    "WEEK": "Tuần",
+    "DAY": "{{count}} ngày",
+    "MONTH": "{{count}} tháng",
+    "WEEK": "{{count}} tuần",
     "accuracy": "Chính xác quiz",
     "accuracyHint": "Hoàn thành bài quiz đầu tiên để xem độ chính xác.",
+    "accuracyScope": "Tổng hợp toàn bộ quiz đã hoàn thành.",
     "activityTotal": "{{count}} hoạt động trong khoảng này",
     "bucket": "{{date}} · {{count}} hoạt động · {{days}} ngày học",
     "countExplanation": "Đang ôn và thành thạo là các nhóm trong số từ đã học.",
@@ -257,6 +286,7 @@
     "learningAndReviewingExplanation": "Đang học / ôn gồm những từ bạn đã bắt đầu học nhưng chưa thành thạo.",
     "level": "Cấp {{count}} · {{title}}",
     "levelDetails": "Xem cấp độ và kinh nghiệm",
+    "levelNumber": "Cấp {{count}}",
     "levelProgress": "Tiến độ cấp độ",
     "loadError": "Chưa tải được dữ liệu. Kiểm tra kết nối rồi thử lại.",
     "loading": "Đang tải lịch sử…",
@@ -271,13 +301,13 @@
     "overviewDue": "Cần ôn",
     "overviewSaved": "Từ đã lưu",
     "overviewStreak": "Chuỗi ngày",
-    "performance": "Hoạt động học tập",
+    "performance": "Kết quả học tập",
     "performanceEmptyHint": "Hoàn thành bài Quiz đầu tiên để theo dõi độ chính xác.",
-    "quickOverview": "Tổng quan nhanh",
+    "quickOverview": "Hoạt động",
     "quizzes": "Quiz hoàn thành",
     "range": "{{from}} – {{to}}",
     "record": "Kỷ lục: {{count}} ngày",
-    "remaining": "Còn {{count}} XP đến cấp tiếp theo",
+    "remaining": "Còn {{xp}} XP lên cấp {{level}}",
     "retry": "Thử lại",
     "reviewNow": "Ôn tập ngay",
     "reviewing": "Đang ôn",
@@ -304,6 +334,7 @@
     "startQuiz": "Làm bài Quiz",
     "startStreak": "Chuỗi ngày học",
     "streak": "{{count}} ngày học liên tiếp",
+    "streakA11y": "Chuỗi học {{count}} ngày, xem thống kê",
     "streakBroken": "Chuỗi hiện tại đã gián đoạn",
     "streakBrokenSubtitle": "Kỷ lục: {{count}} ngày · Hoàn thành một bài quiz để bắt đầu lại.",
     "streakEmpty": "Hoàn thành phiên học đầu tiên hôm nay để bắt đầu chuỗi.",
@@ -314,13 +345,15 @@
     "studiedRatio": "Đã học {{learned}} / {{total}} từ",
     "studySaved": "Học từ đã lưu",
     "today": "Hôm nay",
+    "totalXp": "Tổng XP: {{xp}}",
     "tryQuizLink": "Thử một bài Quiz →",
     "trySaved": "Bắt đầu với những từ bạn đã lưu.",
     "unstudied": "Chưa học",
     "vocabulary": "Kho từ vựng",
     "vocabularyDistribution": "Phân bố trạng thái",
     "weekLabel": "Tuần {{date}}",
-    "windowHint": "Hiển thị {{count}} mốc gần nhất."
+    "windowHint": "Hiển thị {{count}} mốc gần nhất.",
+    "xpHistory": "Xem lịch sử XP"
   },
   "quiz": {
     "check": "Kiểm tra",

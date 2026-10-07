@@ -3,7 +3,7 @@ import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, View } from 'react-native';
 import Svg, { Rect } from 'react-native-svg';
-import { Text } from '@/components/ui';
+import { Button, Text } from '@/components/ui';
 
 export type LearningActionProps = {
   secondary?: boolean;
@@ -29,26 +29,14 @@ export function LearningAction({
     router.push(route as any);
   };
 
+  // Same CTA as Quiz/Missions: shared Button, white text.
   return (
-    <Pressable
-      accessibilityRole="button"
+    <Button
+      variant={secondary ? 'secondary' : 'primary'}
+      label={label || t('progressUx.start')}
+      textClassName="font-nunito"
       onPress={handlePress}
-      className={`min-h-12 items-center justify-center rounded-2xl px-4 py-3 active:translate-y-0.5 ${
-        secondary
-          ? 'border-2 border-neutral-200 bg-white dark:border-neutral-700 dark:bg-neutral-800'
-          : 'border-b-4 border-primary-700 bg-primary-500'
-      }`}
-    >
-      <Text
-        className={`font-nunito text-base font-extrabold ${
-          secondary
-            ? 'text-neutral-700 dark:text-neutral-200'
-            : 'text-primary-900 dark:text-primary-900'
-        }`}
-      >
-        {label || t('progressUx.start')}
-      </Text>
-    </Pressable>
+    />
   );
 }
 
@@ -60,7 +48,7 @@ export function SectionError({ onRetry, message }: { onRetry: () => void; messag
       accessibilityRole="alert"
       className="mb-3 gap-2 rounded-2xl border border-neutral-100 bg-white p-3.5 dark:border-neutral-800 dark:bg-neutral-900"
     >
-      <Text className="font-inter text-xs text-neutral-500">{message ?? t('progressUx.loadError')}</Text>
+      <Text className="font-inter text-[13px] text-neutral-500">{message ?? t('progressUx.loadError')}</Text>
       <Pressable
         accessibilityRole="button"
         onPress={onRetry}
@@ -74,7 +62,8 @@ export function SectionError({ onRetry, message }: { onRetry: () => void; messag
   );
 }
 
-export function RatioBar({ progress, label }: { progress: number; label: string }) {
+/** XP/level progress is always blue (info-500); pass a color only for other quantities. */
+export function RatioBar({ progress, label, color = '#1CB0F6' }: { progress: number; label: string; color?: string }) {
   const value = Number.isFinite(progress) ? Math.max(0, Math.min(1, progress)) : 0;
   return (
     <View
@@ -84,7 +73,7 @@ export function RatioBar({ progress, label }: { progress: number; label: string 
       className="overflow-hidden rounded-full bg-neutral-200 dark:bg-neutral-700"
     >
       <Svg width="100%" height={10} viewBox="0 0 100 10" preserveAspectRatio="none">
-        <Rect width={value * 100} height={10} fill="#58CC02" />
+        <Rect width={value * 100} height={10} fill={color} />
       </Svg>
     </View>
   );

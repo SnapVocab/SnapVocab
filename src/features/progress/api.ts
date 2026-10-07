@@ -16,6 +16,7 @@ import { client } from '@/lib/api';
 export function invalidateProgress(queryClient: QueryClient) {
   return Promise.all([
     queryClient.invalidateQueries({ queryKey: ['progress'] }),
+    queryClient.invalidateQueries({ queryKey: ['daily-missions'] }),
     queryClient.invalidateQueries({ queryKey: ['gamification', 'xp'] }),
   ]);
 }
@@ -37,6 +38,7 @@ export function useProgressSummary() {
     queryKey: ['progress', 'summary'],
     queryFn: getProgressSummary,
     staleTime: 60 * 1000,
+    refetchOnWindowFocus: true,
   });
 }
 
@@ -57,6 +59,7 @@ export function useStreak() {
     queryKey: ['progress', 'streak'],
     queryFn: getStreak,
     staleTime: 60 * 1000,
+    refetchOnWindowFocus: true,
   });
 }
 
@@ -86,6 +89,7 @@ export function useProgressHistory(period: HistoryPeriod = 'DAY', from?: string,
     queryKey: ['progress', 'history', period, from, to],
     queryFn: () => getProgressHistory(period, from, to),
     staleTime: 60 * 1000,
+    refetchOnWindowFocus: true,
   });
 }
 
@@ -106,6 +110,7 @@ export function useHomeWidget() {
     queryKey: ['progress', 'home-widget'],
     queryFn: getHomeWidget,
     staleTime: 30 * 1000,
+    refetchOnWindowFocus: true,
   });
 }
 
@@ -126,5 +131,6 @@ export function useXpOverview() {
     queryKey: ['gamification', 'xp'],
     queryFn: getXpOverview,
     staleTime: 30 * 1000,
+    refetchOnWindowFocus: true,
   });
 }

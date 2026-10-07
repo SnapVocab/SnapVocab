@@ -5,28 +5,20 @@ import { Text } from '@/components/ui';
 import { deriveVocabularySegments, SRS_ENABLED } from '../utils';
 import { LearningAction, MultiSegmentBar, StatValue } from './progress-primitives';
 
-/** What the backend supports today: saved-word total and quizzes. Learning states need SRS. */
+/** Pre-SRS: the saved total is already in the Activity row, so this is only the note + next step. */
 function SavedWordsCard({ totalWords }: { totalWords: number }) {
   const { t } = useTranslation();
   const empty = totalWords === 0;
 
   return (
-    <View className="mb-3.5 gap-3 rounded-3xl border border-neutral-100 bg-white p-5 shadow-xs dark:border-neutral-800 dark:bg-neutral-900">
-      <Text className="font-nunito text-sm font-bold text-neutral-500 dark:text-neutral-400">
-        {t('progressUx.vocabulary')}
-      </Text>
-      <Text className="font-nunito text-2xl font-black text-neutral-900 dark:text-white">
-        {t('progressUx.saved', { count: totalWords })}
-      </Text>
-      <Text className="font-inter text-xs text-neutral-400 dark:text-neutral-400">
+    <View className="mb-3 gap-3 rounded-2xl border border-neutral-100 bg-white p-4 shadow-2xs dark:border-neutral-800 dark:bg-neutral-900">
+      <Text className="font-inter text-[13px] text-neutral-500 dark:text-neutral-400">
         {t('progressUx.srsUnavailable')}
       </Text>
-      <View className="border-t border-neutral-100 pt-3 dark:border-neutral-800">
-        <LearningAction
-          label={t(empty ? 'progressUx.exploreNewWords' : 'progressUx.startQuiz')}
-          route={empty ? '/camera' : '/study/quiz-setup'}
-        />
-      </View>
+      <LearningAction
+        label={t(empty ? 'progressUx.exploreNewWords' : 'progressUx.startQuiz')}
+        route={empty ? '/camera' : '/study/quiz-setup'}
+      />
     </View>
   );
 }

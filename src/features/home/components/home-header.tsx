@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { useTranslation } from 'react-i18next';
 import { TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text, UserAvatar } from '@/components/ui';
@@ -22,6 +23,7 @@ export function HomeHeader({
   onNotificationPress,
 }: HomeHeaderProps) {
   const insets = useSafeAreaInsets();
+  const { t } = useTranslation();
   const user = useAuthStore(s => s.user);
 
   // Same source as Home/Stats: the live streak (0 after a missed day), not users.streak_days.
@@ -56,6 +58,8 @@ export function HomeHeader({
             <TouchableOpacity
               onPress={onStreakPress}
               activeOpacity={0.7}
+              accessibilityRole="button"
+              accessibilityLabel={typeof streakDays === 'number' ? t('progressUx.streakA11y', { count: streakDays }) : undefined}
               className="flex-row items-center gap-1.5 pr-2.5 active:opacity-60"
             >
               <FlameIcon color="#F97316" width={18} height={18} />

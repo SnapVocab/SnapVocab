@@ -1,20 +1,16 @@
-import type { InventoryItemDTO, ShopItemType } from './types';
+import type { ActiveBoosterDTO, InventoryItemDTO } from './types';
+import type { ShopCategory } from '@/components/shop/shop-category-tabs';
 import { router } from 'expo-router';
 import {
-  AlertTriangleIcon,
-  ArrowLeftIcon,
-  CheckIcon,
   ClockIcon,
   PackageIcon,
   RefreshCwIcon,
-  SparklesIcon,
   ZapIcon,
 } from 'lucide-react-native';
 import * as React from 'react';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
-  Image,
   Pressable,
   RefreshControl,
   ScrollView,
@@ -22,37 +18,61 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { AvatarFrameShowcaseModal } from '@/components/shop/AvatarFrameShowcaseModal';
-import { AvatarFrame } from '@/components/snapvocab';
+import { BoosterActivateModal } from '@/components/shop/booster-activate-modal';
+import { FramePreviewModal, ThemePreviewModal } from '@/components/shop/item-preview-modal';
+import { ShopCategoryTabs } from '@/components/shop/shop-category-tabs';
+import { CardAction, ItemCard } from '@/components/shop/ShopItemCard';
 import { Snapy } from '@/components/Snapy';
-import { useAuthStore } from '@/features/auth/use-auth-store';
-import { generateIdempotencyKey } from '@/features/quiz/utils/idempotency';
-import { cn } from '@/lib/utils';
+import { ScreenHeader, useSurface } from '@/components/ui';
 import {
-  useActivateBoosterMutation,
   useEquipMutation,
   useInventory,
   useUnequipMutation,
 } from './hooks/use-shop-queries';
-import { isThemeKnown, useShopTheme } from './theme/theme-context';
+import { isThemeKnown, ShopSurface } from './theme/theme-context';
 import { formatRemainingTime, getRemainingBoosterMs } from './utils/booster-timer';
 
-type InventoryCategoryFilter = 'all' | ShopItemType;
-
-const CATEGORIES: { id: InventoryCategoryFilter; label: string }[] = [
-  { id: 'all', label: 'Tất cả' },
-  { id: 'AVATAR_FRAME', label: 'Khung Avatar' },
-  { id: 'THEME', label: 'Chủ đề' },
-  { id: 'XP_BOOSTER', label: 'Bổ trợ' },
-];
-
+/** Shop-area screen: it and its modals take the equipped theme's surfaces. */
 export default function InventoryScreen() {
-  const { theme } = useShopTheme();
-  const currentUser = useAuthStore(s => s.user);
+  return (
+    <ShopSurface>
+      <InventoryScreenContent />
+    </ShopSurface>
+  );
+}
 
-  const [activeCategory, setActiveCategory] = useState<InventoryCategoryFilter>('all');
-  const [showShowcase, setShowShowcase] = useState(false);
+/**
+ * Remaining ms of the cached activation on server time, re-rendering every second while it runs.
+ * At 0 it stops ticking and asks the server once; a new response (new offset/activation) restarts it.
+ * Offline, the failed refetch leaves it at 0 instead of retrying every second.
+ */
+function useBoosterCountdown(active: ActiveBoosterDTO | null | undefined, serverOffset: number, refetch: () => unknown) {
+  const [, setTick] = useState(0);
+  const remainingMs = active ? getRemainingBoosterMs(active.expiresAt, serverOffset) : 0;
+  const running = remainingMs > 0;
+
+  useEffect(() => {
+    if (!active)
+      return;
+    if (!running) {
+      void refetch();
+      return;
+    }
+    const interval = setInterval(() => setTick(t => t + 1), 1000);
+    return () => clearInterval(interval);
+  }, [active, serverOffset, running, refetch]);
+
+  return remainingMs;
+}
+
+function InventoryScreenContent() {
+  const s = useSurface();
+
+  const [activeCategory, setActiveCategory] = useState<ShopCategory>('all');
   const [feedbackMessage, setFeedbackMessage] = useState<string | null>(null);
+  const [previewFrameItem, setPreviewFrameItem] = useState<InventoryItemDTO | null>(null);
+  const [previewThemeItem, setPreviewThemeItem] = useState<InventoryItemDTO | null>(null);
+  const [boosterItem, setBoosterItem] = useState<InventoryItemDTO | null>(null);
 
   // Queries & Mutations
   const {
@@ -66,41 +86,25 @@ export default function InventoryScreen() {
 
   const equipMutation = useEquipMutation();
   const unequipMutation = useUnequipMutation();
-  const activateMutation = useActivateBoosterMutation();
 
-  const activeBooster = inventoryData?.activeBooster;
   const items = inventoryData?.items ?? [];
+  const boosterCountdown = useBoosterCountdown(inventoryData?.activeBooster, serverOffset, refetch);
+  // Past its server-time expiry the cached activation is over, even before the refetch lands.
+  const activeBooster = boosterCountdown > 0 ? inventoryData?.activeBooster : null;
 
-  // ==========================================
-  // BOOSTER COUNTDOWN LOGIC
-  // ==========================================
-  const [boosterCountdown, setBoosterCountdown] = useState<number>(0);
-
-  useEffect(() => {
-    if (!activeBooster) {
-      setBoosterCountdown(0);
-      return;
+  // A failed frame image (expired signed URL) refreshes the inventory once per visit, not in a loop.
+  const frameRefetched = useRef(false);
+  const onFrameError = () => {
+    if (!frameRefetched.current) {
+      frameRefetched.current = true;
+      void refetch();
     }
+  };
 
-    const updateTimer = () => {
-      const remainingMs = getRemainingBoosterMs(activeBooster.expiresAt, serverOffset);
-      setBoosterCountdown(remainingMs);
-
-      // When countdown reaches 0: invalidate/refetch inventory as server is authoritative
-      if (remainingMs <= 0) {
-        refetch();
-      }
-    };
-
-    updateTimer();
-    const interval = setInterval(updateTimer, 1000);
-    return () => clearInterval(interval);
-  }, [activeBooster, serverOffset, refetch]);
-
-  // Filter items (hide consumables with quantity <= 0)
+  // Hide used-up boosters, except the one currently running (shop.md §11.2).
   const filteredItems = useMemo(() => {
     return items.filter((item) => {
-      if (item.type === 'XP_BOOSTER' && item.quantity <= 0) {
+      if (item.type === 'XP_BOOSTER' && item.quantity <= 0 && item.itemId !== activeBooster?.itemId) {
         return false;
       }
       if (activeCategory === 'all') {
@@ -108,7 +112,7 @@ export default function InventoryScreen() {
       }
       return item.type === activeCategory;
     });
-  }, [items, activeCategory]);
+  }, [items, activeCategory, activeBooster?.itemId]);
 
   // ==========================================
   // ACTION HANDLERS
@@ -122,7 +126,7 @@ export default function InventoryScreen() {
 
     // Check unknown theme
     if (item.type === 'THEME' && !isThemeKnown(item.config?.themeKey)) {
-      setFeedbackMessage('Cần cập nhật ứng dụng để sử dụng chủ đề này');
+      setFeedbackMessage('Cần cập nhật ứng dụng để dùng giao diện này');
       return;
     }
 
@@ -134,280 +138,84 @@ export default function InventoryScreen() {
     }
   };
 
-  const handleActivateBooster = (item: InventoryItemDTO) => {
-    setFeedbackMessage(null);
-
-    if (activeBooster) {
-      setFeedbackMessage('Chờ booster hiện tại kết thúc');
-      return;
-    }
-
-    if (activateMutation.isPending) {
-      return;
-    }
-
-    const idempotencyKey = generateIdempotencyKey();
-    activateMutation.mutate({
-      itemId: item.itemId,
-      idempotencyKey,
-    });
-  };
-
-  // ==========================================
-  // RENDER ITEM CARD
-  // ==========================================
+  // Same shell as the Shop card; Kho đồ only swaps the description and the action.
   const renderItemCard = (item: InventoryItemDTO) => {
-    const isEquipped = item.equipped;
-    const isTheme = item.type === 'THEME';
-    const isFrame = item.type === 'AVATAR_FRAME';
     const isBooster = item.type === 'XP_BOOSTER';
-
-    const isUnknownTheme = isTheme && !isThemeKnown(item.config?.themeKey);
+    const isUnknownTheme = item.type === 'THEME' && !isThemeKnown(item.config?.themeKey);
     const isActionPending =
       (equipMutation.isPending && equipMutation.variables?.itemId === item.itemId)
-      || (unequipMutation.isPending && unequipMutation.variables?.slot === item.type)
-      || (activateMutation.isPending && activateMutation.variables?.itemId === item.itemId);
+      || (unequipMutation.isPending && unequipMutation.variables?.slot === item.type);
+
+    const description = isUnknownTheme
+      ? 'Cần cập nhật ứng dụng để dùng giao diện này'
+      : isBooster
+        ? `×${item.config?.multiplier ?? 2} XP trong ${item.config?.durationMinutes ?? 30} phút`
+        : undefined;
+
+    const preview = () => {
+      if (item.type === 'AVATAR_FRAME') {
+        setPreviewFrameItem(item);
+      }
+      else if (item.type === 'THEME' && !isUnknownTheme) {
+        setPreviewThemeItem(item);
+      }
+    };
 
     return (
-      <View
+      <ItemCard
         key={item.itemId}
-        className={cn(
-          'mb-4 w-[48%] overflow-hidden rounded-[24px] border-2 bg-white shadow-sm transition-all',
-          isEquipped ? 'border-primary-400 shadow-primary-500/20' : 'border-neutral-100 shadow-black/5',
-        )}
+        item={item}
+        description={description}
+        maxQuantity={item.config?.maxQuantity}
+        onPress={isBooster ? undefined : preview}
+        onFrameError={onFrameError}
       >
-        {/* Artwork Area */}
-        <View
-          className={cn(
-            'relative h-32 items-center justify-center p-3',
-            isEquipped ? 'bg-primary-50' : 'bg-[#F7F8FA]',
-          )}
-        >
-          {/* Quantity Badge for Booster */}
-          {isBooster && item.quantity > 0 && (
-            <View className="absolute top-2 right-2 z-10 rounded-full bg-mascot-navy px-2 py-0.5">
-              <Text className="font-nunito text-[12px] font-extrabold text-white tabular-nums">
-                ×
-                {item.quantity}
-              </Text>
-            </View>
-          )}
-
-          {/* Equipped Status Pill */}
-          {isEquipped && (
-            <View className="absolute top-2 left-2 z-10 flex-row items-center gap-1 rounded-full bg-primary-500 px-2 py-0.5 shadow-sm">
-              <CheckIcon size={12} color="white" />
-              <Text className="font-nunito text-[10px] font-extrabold text-white uppercase">
-                ĐANG DÙNG
-              </Text>
-            </View>
-          )}
-
-          {/* Image Artwork Container */}
-          {isFrame ? (
-            <AvatarFrame
-              frameId={item.code}
-              frameUrl={item.config?.frameUrl}
-              avatarUri={currentUser?.avatarUrl}
-              avatarSource={require('../../assets/images/snapy-happy.png')}
-              size="md"
-              animated
-              showGlow={false}
-              onFrameError={() => refetch()}
-            />
-          ) : item.iconUrl ? (
-            <Image
-              source={{ uri: item.iconUrl }}
-              style={{ width: 72, height: 72 }}
-              resizeMode="contain"
-            />
-          ) : (
-            <Image
-              source={
-                isTheme
-                  ? require('../../assets/images/shop/icon8_clean.png')
-                  : require('../../assets/images/shop/icon1_clean.png')
-              }
-              style={{ width: 72, height: 72 }}
-              resizeMode="contain"
-            />
-          )}
-        </View>
-
-        {/* Info & Action Area */}
-        <View className="p-3">
-          <Text
-            className="font-nunito text-[15px] font-extrabold text-mascot-navy"
-            numberOfLines={1}
-          >
-            {item.name}
-          </Text>
-
-          {/* Unknown Theme Warning */}
-          {isUnknownTheme ? (
-            <View className="my-1.5 flex-row items-center gap-1 rounded-lg bg-amber-50 p-1.5">
-              <AlertTriangleIcon size={12} color="#D97706" />
-              <Text className="flex-1 font-inter text-[10px] font-medium text-amber-700">
-                Cần cập nhật ứng dụng để sử dụng chủ đề này
-              </Text>
-            </View>
-          ) : isBooster ? (
-            <Text className="mt-0.5 mb-2 font-inter text-[12px] font-medium text-neutral-400">
-              Nhân đôi kinh nghiệm trong
-              {' '}
-              {item.config?.durationMinutes ?? 30}
-              {' '}
-              phút
-            </Text>
-          ) : (
-            <Text className="mt-0.5 mb-2 font-inter text-[12px] font-medium text-neutral-400">
-              {isTheme ? 'Chủ đề giao diện' : 'Khung trang trí avatar'}
-            </Text>
-          )}
-
-          {/* Action CTA */}
-          {isBooster ? (
-            <Pressable
-              onPress={() => handleActivateBooster(item)}
-              disabled={Boolean(activeBooster) || isActionPending}
-              className={cn(
-                'h-10 flex-row items-center justify-center rounded-xl border-b-[3px] transition-all',
-                activeBooster
-                  ? 'border-neutral-200 bg-neutral-100 opacity-60'
-                  : 'border-amber-700 bg-amber-500 active:translate-y-[2px] active:border-b',
-              )}
-            >
-              {isActionPending ? (
-                <ActivityIndicator size="small" color="white" />
-              ) : (
-                <Text
-                  className={cn(
-                    'font-nunito text-[12px] font-extrabold uppercase',
-                    activeBooster ? 'text-neutral-500' : 'text-white',
-                  )}
-                >
-                  {activeBooster ? 'Chờ booster kết thúc' : 'SỬ DỤNG'}
-                </Text>
-              )}
-            </Pressable>
-          ) : isUnknownTheme ? (
-            <View className="h-10 items-center justify-center rounded-xl border border-neutral-200 bg-neutral-100">
-              <Text className="font-nunito text-[11px] font-bold text-neutral-400 uppercase">
-                CHƯA HỖ TRỢ
-              </Text>
-            </View>
-          ) : (
-            <Pressable
-              onPress={() => handleToggleEquip(item)}
-              disabled={isActionPending}
-              className={cn(
-                'h-10 flex-row items-center justify-center rounded-xl border-b-[3px] transition-all',
-                isEquipped
-                  ? 'border-neutral-300 bg-neutral-100 active:translate-y-[2px] active:border-b active:bg-neutral-200'
-                  : 'border-primary-700 bg-primary-500 active:translate-y-[2px] active:border-b active:bg-primary-600',
-              )}
-            >
-              {isActionPending ? (
-                <ActivityIndicator size="small" color={isEquipped ? '#15803D' : 'white'} />
-              ) : (
-                <Text
-                  className={cn(
-                    'font-nunito text-[12px] font-extrabold uppercase',
-                    isEquipped ? 'text-neutral-700' : 'text-white',
-                  )}
-                >
-                  {isEquipped ? 'THÁO RA' : isTheme ? 'SỬ DÙNG' : 'TRANG BỊ'}
-                </Text>
-              )}
-            </Pressable>
-          )}
-        </View>
-      </View>
+        {isBooster ? (
+          activeBooster
+            ? <CardAction tone="disabled" label={activeBooster.itemId === item.itemId ? 'Đang chạy' : 'Chờ booster kết thúc'} />
+            : <CardAction tone="primary" label="Kích hoạt" onPress={() => setBoosterItem(item)} />
+        ) : isUnknownTheme ? (
+          <CardAction tone="disabled" label="Chưa hỗ trợ" />
+        ) : item.equipped ? (
+          <CardAction tone="secondary" label="Tháo ra" loading={isActionPending} onPress={() => handleToggleEquip(item)} />
+        ) : (
+          <CardAction
+            tone="primary"
+            label={item.type === 'THEME' ? 'Áp dụng' : 'Trang bị'}
+            loading={isActionPending}
+            onPress={() => handleToggleEquip(item)}
+          />
+        )}
+      </ItemCard>
     );
   };
+
+  // Inventory items are owned by definition; previews then offer equip/apply or "Đang dùng".
+  const toPreview = (item: InventoryItemDTO | null) => (item ? { ...item, owned: true } : null);
 
   return (
     <SafeAreaView
       className="flex-1"
-      style={{ backgroundColor: theme.surfaceTokens.background }}
+      style={{ backgroundColor: s.background }}
       edges={['top']}
     >
-      {/* 1. HEADER */}
-      <View
-        style={{ backgroundColor: theme.surfaceTokens.headerBg, borderColor: theme.surfaceTokens.border }}
-        className="z-10 flex-row items-center justify-between border-b px-4 py-3 shadow-sm shadow-black/5"
-      >
-        <Pressable
-          onPress={() => router.back()}
-          className="-ml-2 size-10 items-center justify-center rounded-full active:bg-neutral-100"
-        >
-          <ArrowLeftIcon size={24} color={theme.surfaceTokens.text} />
-        </Pressable>
+      <ScreenHeader
+        title="Kho đồ"
+        onBack={() => router.back()}
+      />
 
-        <Text
-          style={{ color: theme.surfaceTokens.text }}
-          className="font-nunito text-[18px] font-extrabold"
-        >
-          Kho đồ của bạn
-        </Text>
-
-        <Pressable
-          onPress={() => setShowShowcase(true)}
-          className="flex-row items-center gap-1 rounded-full border border-primary-200 bg-primary-50 px-2.5 py-1 active:scale-95"
-        >
-          <SparklesIcon size={14} color="#2563EB" />
-          <Text className="font-nunito text-[12px] font-extrabold text-primary-700">Phòng thử</Text>
-        </Pressable>
-      </View>
-
-      {/* Feedback banner */}
       {feedbackMessage && (
-        <View className="flex-row items-center justify-between bg-amber-500 px-4 py-2">
-          <Text className="flex-1 font-inter text-[12px] font-bold text-white">
+        <View accessibilityRole="alert" className="flex-row items-center justify-between bg-amber-500 px-4 py-2">
+          <Text className="flex-1 font-inter text-[13px] font-bold text-white">
             {feedbackMessage}
           </Text>
           <Pressable onPress={() => setFeedbackMessage(null)} className="ml-2 px-2 py-0.5">
-            <Text className="font-nunito text-[12px] font-bold text-white">Đóng</Text>
+            <Text className="font-nunito text-[13px] font-bold text-white">Đóng</Text>
           </Pressable>
         </View>
       )}
 
-      {/* 2. CATEGORY TABS */}
-      <View
-        style={{ backgroundColor: theme.surfaceTokens.surface, borderColor: theme.surfaceTokens.border }}
-        className="border-b px-4 py-2"
-      >
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{ gap: 8 }}
-        >
-          {CATEGORIES.map((cat) => {
-            const isActive = activeCategory === cat.id;
-            return (
-              <Pressable
-                key={cat.id}
-                onPress={() => setActiveCategory(cat.id)}
-                className={cn(
-                  'rounded-full px-4 py-1.5 transition-all',
-                  isActive
-                    ? 'border-b-2 border-primary-700 bg-primary-500'
-                    : 'border border-neutral-200 bg-neutral-100 active:bg-neutral-200',
-                )}
-              >
-                <Text
-                  className={cn(
-                    'font-nunito text-[13px] font-extrabold',
-                    isActive ? 'text-white' : 'text-neutral-600',
-                  )}
-                >
-                  {cat.label}
-                </Text>
-              </Pressable>
-            );
-          })}
-        </ScrollView>
-      </View>
+      <ShopCategoryTabs value={activeCategory} onChange={setActiveCategory} />
 
       {/* 3. CONTENT AREA */}
       <ScrollView
@@ -431,18 +239,15 @@ export default function InventoryScreen() {
               </View>
               <View>
                 <Text className="font-nunito text-[16px] font-extrabold text-amber-950">
-                  Thẻ ×
-                  {activeBooster.multiplier}
-                  {' '}
-                  Kinh Nghiệm
+                  {`Đang nhân ×${activeBooster.multiplier} XP`}
                 </Text>
                 <Text className="font-inter text-[12px] font-medium text-amber-800">
-                  Đang hoạt động trong các bài học
+                  Làm Quiz trong thời gian này để nhận thêm XP
                 </Text>
               </View>
             </View>
 
-            <View className="flex-row items-center gap-1.5 rounded-full bg-white px-3 py-1.5 shadow-sm">
+            <View style={{ backgroundColor: s.surface }} className="flex-row items-center gap-1.5 rounded-full px-3 py-1.5 shadow-sm">
               <ClockIcon size={14} color="#D97706" />
               <Text className="font-nunito text-[14px] font-extrabold text-amber-700 tabular-nums">
                 {formatRemainingTime(boosterCountdown)}
@@ -454,17 +259,17 @@ export default function InventoryScreen() {
         {isLoading ? (
           <View className="items-center justify-center py-20">
             <ActivityIndicator size="large" color="#2563EB" />
-            <Text className="mt-3 font-inter text-[14px] font-medium text-neutral-400">
+            <Text style={{ color: s.textMuted }} className="mt-3 font-inter text-[14px] font-medium">
               Đang tải kho đồ...
             </Text>
           </View>
         ) : isError ? (
-          <View className="items-center justify-center rounded-3xl border border-neutral-200 bg-white p-8">
+          <View style={{ backgroundColor: s.surface, borderColor: s.border }} className="items-center justify-center rounded-3xl border p-8">
             <Snapy pose="suy_nghi" animation="idle" className="mb-4 size-24 opacity-80" />
-            <Text className="mb-2 font-nunito text-[18px] font-extrabold text-mascot-navy">
+            <Text style={{ color: s.text }} className="mb-2 font-nunito text-[18px] font-extrabold">
               Không thể tải Kho đồ
             </Text>
-            <Text className="mb-5 text-center font-inter text-[13px] text-neutral-500">
+            <Text style={{ color: s.textMuted }} className="mb-5 text-center font-inter text-[13px]">
               Vui lòng thử lại sau ít giây.
             </Text>
             <Pressable
@@ -479,13 +284,13 @@ export default function InventoryScreen() {
           </View>
         ) : filteredItems.length === 0 ? (
           /* EMPTY STATE */
-          <View className="items-center justify-center rounded-3xl border border-neutral-100 bg-white p-8">
+          <View style={{ backgroundColor: s.surface, borderColor: s.border }} className="items-center justify-center rounded-3xl border p-8">
             <Snapy pose="suy_nghi" animation="idle" className="mb-4 size-28 opacity-90" />
-            <Text className="mb-1 font-nunito text-[20px] font-extrabold text-mascot-navy">
+            <Text style={{ color: s.text }} className="mb-1 font-nunito text-[20px] font-extrabold">
               Kho đồ trống
             </Text>
-            <Text className="mb-6 px-4 text-center font-inter text-[14px] leading-relaxed text-neutral-500">
-              Bạn chưa sở hữu vật phẩm nào trong mục này. Hãy ghé Cửa hàng để trang bị thêm nhé!
+            <Text style={{ color: s.textMuted }} className="mb-6 px-4 text-center font-inter text-[14px] leading-relaxed">
+              Bạn chưa có vật phẩm nào trong mục này. Ghé Cửa hàng để chọn thêm nhé!
             </Text>
             <Pressable
               onPress={() => router.push('/(tabs)/shop' as any)}
@@ -505,11 +310,27 @@ export default function InventoryScreen() {
         )}
       </ScrollView>
 
-      {/* SHOWCASE MODAL */}
-      <AvatarFrameShowcaseModal
-        visible={showShowcase}
-        onClose={() => setShowShowcase(false)}
+      <FramePreviewModal
+        item={toPreview(previewFrameItem)}
+        onClose={() => setPreviewFrameItem(null)}
+        onAction={() => {
+          if (previewFrameItem) {
+            handleToggleEquip(previewFrameItem);
+          }
+          setPreviewFrameItem(null);
+        }}
       />
+      <ThemePreviewModal
+        item={toPreview(previewThemeItem)}
+        onClose={() => setPreviewThemeItem(null)}
+        onAction={() => {
+          if (previewThemeItem) {
+            handleToggleEquip(previewThemeItem);
+          }
+          setPreviewThemeItem(null);
+        }}
+      />
+      <BoosterActivateModal item={boosterItem} onClose={() => setBoosterItem(null)} />
     </SafeAreaView>
   );
 }

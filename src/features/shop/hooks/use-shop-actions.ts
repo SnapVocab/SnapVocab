@@ -1,12 +1,19 @@
-import type { ShopItemDTO } from '../types';
+import type { PurchaseResultDTO, ShopItemDTO } from '../types';
 import { useState } from 'react';
 import { generateIdempotencyKey } from '@/features/quiz/utils/idempotency';
-import { parseShopError } from '../api';
+import { isOutcomeUnknown, parseShopError } from '../api';
 import {
-  useActivateBoosterMutation,
   useEquipMutation,
   usePurchaseMutation,
 } from './use-shop-queries';
+
+/**
+ * Keys of purchases whose outcome is unknown (timeout / no response / 5xx), by item.
+ * Module scope so closing the modal or leaving the Shop does not drop them: reopening the same
+ * item retries with the same key, which replays a committed purchase instead of buying again.
+ * Cleared on a definitive answer (2xx or 4xx). Lost on app restart; the wallet/inventory refetch covers that.
+ */
+const unresolvedPurchaseKeys = new Map<number, string>();
 
 type UseShopActionsProps = {
   coinBalance: number;
@@ -26,25 +33,29 @@ export function useShopActions({
   const [outOfCoinItem, setOutOfCoinItem] = useState<ShopItemDTO | null>(null);
   const [previewThemeItem, setPreviewThemeItem] = useState<ShopItemDTO | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [boosterItem, setBoosterItem] = useState<ShopItemDTO | null>(null);
 
   const [purchaseIntent, setPurchaseIntent] = useState<{
     item: ShopItemDTO;
     idempotencyKey: string;
   } | null>(null);
-  const [isPurchaseSuccess, setIsPurchaseSuccess] = useState(false);
+  // The server's answer, not a flag: quantity/owned/replayed describe the account now.
+  const [purchaseResult, setPurchaseResult] = useState<PurchaseResultDTO | null>(null);
 
   const purchaseMutation = usePurchaseMutation();
   const equipMutation = useEquipMutation();
-  const activateBoosterMutation = useActivateBoosterMutation();
 
   const handleRefresh = async () => {
     await Promise.all([refetchCatalog(), refetchWallet(), refetchInventory()]);
   };
 
   const startPurchaseIntent = (item: ShopItemDTO) => {
-    const idempotencyKey = generateIdempotencyKey();
+    const idempotencyKey = unresolvedPurchaseKeys.get(item.itemId) ?? generateIdempotencyKey();
     setPurchaseIntent({ item, idempotencyKey });
-    setIsPurchaseSuccess(false);
+    setPurchaseResult(null);
+    setErrorMessage(unresolvedPurchaseKeys.has(item.itemId)
+      ? 'Lần mua trước chưa xác nhận được kết quả. Bấm Mua để kiểm tra lại — bạn sẽ không bị trừ Coin hai lần.'
+      : null);
   };
 
   const handleItemPress = (item: ShopItemDTO) => {
@@ -66,13 +77,10 @@ export function useShopActions({
       return;
     }
 
-    if (item.blockReason === 'INSUFFICIENT_COINS' || coinBalance < item.price) {
+    // An unresolved purchase must be checked with its key, even if the balance now looks short.
+    if (!unresolvedPurchaseKeys.has(item.itemId)
+      && (item.blockReason === 'INSUFFICIENT_COINS' || coinBalance < item.price)) {
       setOutOfCoinItem(item);
-      return;
-    }
-
-    if (item.type === 'THEME') {
-      setPreviewThemeItem(item);
       return;
     }
 
@@ -83,18 +91,28 @@ export function useShopActions({
     if (!purchaseIntent || purchaseMutation.isPending) {
       return;
     }
+    const { item, idempotencyKey } = purchaseIntent;
 
     try {
-      await purchaseMutation.mutateAsync({
-        itemId: purchaseIntent.item.itemId,
-        expectedPrice: purchaseIntent.item.price,
-        idempotencyKey: purchaseIntent.idempotencyKey,
+      const result = await purchaseMutation.mutateAsync({
+        itemId: item.itemId,
+        expectedPrice: item.price,
+        idempotencyKey,
       });
-
-      setIsPurchaseSuccess(true);
+      unresolvedPurchaseKeys.delete(item.itemId);
+      setErrorMessage(null);
+      setPurchaseResult(result);
     }
     catch (err) {
       const parsed = parseShopError(err);
+
+      if (isOutcomeUnknown(parsed)) {
+        unresolvedPurchaseKeys.set(item.itemId, idempotencyKey);
+        setErrorMessage('Chưa xác nhận được kết quả mua. Bấm Mua để kiểm tra lại — bạn sẽ không bị trừ Coin hai lần.');
+        void handleRefresh().catch(() => {});
+        return;
+      }
+      unresolvedPurchaseKeys.delete(item.itemId);
 
       if (parsed.code === 'PRICE_CHANGED') {
         const newPrice = parsed.details?.currentPrice as number | undefined;
@@ -107,15 +125,16 @@ export function useShopActions({
         refetchCatalog();
       }
       else if (parsed.code === 'INSUFFICIENT_COINS') {
-        const item = purchaseIntent.item;
         setPurchaseIntent(null);
         setOutOfCoinItem(item);
+        // The local balance said enough; show the server's instead.
+        void refetchWallet();
       }
       else if (parsed.code === 'CONCURRENT_MODIFICATION') {
         setErrorMessage(parsed.message);
         await handleRefresh();
       }
-      else if (parsed.code === 'ITEM_ALREADY_OWNED' || parsed.code === 'ALREADY_OWNED') {
+      else if (parsed.code === 'ITEM_ALREADY_OWNED') {
         setErrorMessage('Bạn đã sở hữu vật phẩm này.');
         setPurchaseIntent(null);
         await handleRefresh();
@@ -136,7 +155,7 @@ export function useShopActions({
       return;
     }
     setPurchaseIntent(null);
-    setIsPurchaseSuccess(false);
+    setPurchaseResult(null);
     setErrorMessage(null);
   };
 
@@ -149,13 +168,10 @@ export function useShopActions({
     }
   };
 
+  // Opens the activation confirm with the quantity the server reported after the purchase.
   const handleActivateNow = (item: ShopItemDTO) => {
-    if (item.type === 'XP_BOOSTER' && !hasActiveBooster) {
-      const activationKey = generateIdempotencyKey();
-      activateBoosterMutation.mutate({
-        itemId: item.itemId,
-        idempotencyKey: activationKey,
-      });
+    if (item.type === 'XP_BOOSTER' && !hasActiveBooster && purchaseResult && purchaseResult.quantity > 0) {
+      setBoosterItem({ ...item, quantity: purchaseResult.quantity });
     }
   };
 
@@ -167,7 +183,7 @@ export function useShopActions({
     errorMessage,
     setErrorMessage,
     purchaseIntent,
-    isPurchaseSuccess,
+    purchaseResult,
     isPurchasing: purchaseMutation.isPending,
     handleRefresh,
     handleItemPress,
@@ -175,6 +191,8 @@ export function useShopActions({
     handleClosePurchaseModal,
     handleEquipNow,
     handleActivateNow,
+    boosterItem,
+    setBoosterItem,
     startPurchaseIntent,
   };
 }

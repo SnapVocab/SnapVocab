@@ -20,6 +20,9 @@ import { meKey } from '@/features/profile/api';
 import { invalidateProgress } from '@/features/progress/api';
 import { client } from '@/lib/api';
 
+/** Prefix of every history query, so one invalidation reaches the mounted list. */
+export const quizHistoryKey = ['quiz-history'] as const;
+
 // ---------------------------------------------------------------------------
 // 1. Create Quiz
 // ---------------------------------------------------------------------------
@@ -55,6 +58,7 @@ export function useCreateQuiz() {
     mutationFn: ({ data, idempotencyKey }) => createQuiz(data, idempotencyKey),
     onSuccess: (data) => {
       queryClient.setQueryData(['quiz', data.quizId], data);
+      queryClient.invalidateQueries({ queryKey: quizHistoryKey });
     },
   });
 }
@@ -178,7 +182,7 @@ export function useCompleteQuiz() {
     onSuccess: (data) => {
       queryClient.setQueryData(['quiz-result', data.quizId], data);
       queryClient.invalidateQueries({ queryKey: ['quiz', data.quizId] });
-      queryClient.invalidateQueries({ queryKey: ['quiz-history'] });
+      queryClient.invalidateQueries({ queryKey: quizHistoryKey });
       // Completing a quiz awards XP and records the day's learning event (streak, history).
       // The server is the only source: no optimistic exp bump that could double-count.
       invalidateProgress(queryClient);
@@ -219,7 +223,7 @@ export function useCancelQuiz() {
     mutationFn: ({ quizId, idempotencyKey }) => cancelQuiz(quizId, idempotencyKey),
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['quiz', data.quizId] });
-      queryClient.invalidateQueries({ queryKey: ['quiz-history'] });
+      queryClient.invalidateQueries({ queryKey: quizHistoryKey });
     },
   });
 }
@@ -270,16 +274,9 @@ export async function getQuizHistory(
   return response.data.data;
 }
 
-export function useQuizHistory(params?: GetQuizHistoryParams) {
-  return useQuery<PaginationObject<QuizHistoryItemDTO[]>, AxiosError>({
-    queryKey: ['quiz-history', params?.page, params?.size],
-    queryFn: () => getQuizHistory(params),
-  });
-}
-
 export function useInfiniteQuizHistory(size = 20) {
   return useInfiniteQuery({
-    queryKey: ['quiz-history-infinite', size],
+    queryKey: [...quizHistoryKey, 'infinite', size],
     queryFn: ({ pageParam = 0 }) => getQuizHistory({ page: pageParam, size }),
     initialPageParam: 0,
     getNextPageParam: (lastPage) => {
@@ -300,7 +297,8 @@ export type QuizAvailableTopic = TopicDTO & {
 };
 
 export function useQuizAvailableTopics() {
-  const { data: collections = [], isLoading: isLoadingCollections } = useCollections();
+  const collectionsQuery = useCollections();
+  const collections = collectionsQuery.data ?? [];
 
   const query = useQuery<QuizAvailableTopic[]>({
     queryKey: ['quiz-available-topics', collections.map(c => c.id)],
@@ -309,22 +307,19 @@ export function useQuizAvailableTopics() {
         return [];
 
       const topicLists = await Promise.all(
+        // A failed collection fails the query: a network error must not read as "no topics".
+        // ponytail: first 100 topics per collection; page through if a collection ever grows past it.
         collections.map(async (col) => {
-          try {
-            const res = await client<ApiResponse<PaginateResponse<TopicDTO>>>({
-              url: `/api/collections/${col.id}/topics`,
-              method: 'GET',
-              params: { size: 100 },
-            });
-            const list = res.data?.data?.data ?? [];
-            return list.map(t => ({
-              ...t,
-              collectionName: col.name,
-            }));
-          }
-          catch {
-            return [];
-          }
+          const res = await client<ApiResponse<PaginateResponse<TopicDTO>>>({
+            url: `/api/collections/${col.id}/topics`,
+            method: 'GET',
+            params: { size: 100 },
+          });
+          const list = res.data?.data?.data ?? [];
+          return list.map(t => ({
+            ...t,
+            collectionName: col.name,
+          }));
         }),
       );
 
@@ -335,6 +330,8 @@ export function useQuizAvailableTopics() {
 
   return {
     ...query,
-    isLoading: isLoadingCollections || query.isLoading,
+    isLoading: collectionsQuery.isLoading || query.isLoading,
+    isError: collectionsQuery.isError || query.isError,
+    refetch: () => (collectionsQuery.isError ? collectionsQuery.refetch() : query.refetch()),
   };
 }

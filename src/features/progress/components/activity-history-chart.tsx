@@ -1,10 +1,11 @@
-import type { HistoryBucket, HistoryPeriod } from '../types';
+import type { HistoryPeriod } from '../types';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, View } from 'react-native';
 import Svg, { Rect } from 'react-native-svg';
 import { Text } from '@/components/ui';
 import { useProgressHistory } from '../api';
+import { formatDate } from '../utils';
 import { SectionError } from './progress-primitives';
 
 const limits = { DAY: 7, WEEK: 4, MONTH: 6 };
@@ -38,13 +39,15 @@ function formatBucketLabel(date: string, period: HistoryPeriod, language: string
 export function ActivityHistoryChart() {
   const { t, i18n } = useTranslation();
   const [period, setPeriod] = useState<HistoryPeriod>('DAY');
-  const [selected, setSelected] = useState<HistoryBucket | null>(null);
+  // Store the key, not the bucket: a refetch must update the detail along with the bar.
+  const [selectedStart, setSelectedStart] = useState<string | null>(null);
 
   const query = useProgressHistory(period);
   const buckets = query.data?.buckets ?? [];
   const visible = [...buckets]
     .sort((a, b) => a.periodStart.localeCompare(b.periodStart))
     .slice(-limits[period]);
+  const selected = visible.find(bucket => bucket.periodStart === selectedStart) ?? null;
 
   // The backend returns a longer default range (30 days / 12 weeks / 12 months); the total and the
   // range label describe only the bars on screen.
@@ -77,8 +80,9 @@ export function ActivityHistoryChart() {
                 accessibilityState={{ selected: isTabActive }}
                 onPress={() => {
                   setPeriod(value);
-                  setSelected(null);
+                  setSelectedStart(null);
                 }}
+                hitSlop={{ top: 12, bottom: 12 }}
                 className={`rounded-lg px-2.5 py-1 ${
                   isTabActive
                     ? 'bg-white shadow-xs dark:bg-neutral-700'
@@ -89,10 +93,10 @@ export function ActivityHistoryChart() {
                   className={`font-inter text-xs font-bold ${
                     isTabActive
                       ? 'text-mascot-navy dark:text-white'
-                      : 'text-neutral-400 dark:text-neutral-400'
+                      : 'text-neutral-600 dark:text-neutral-300'
                   }`}
                 >
-                  {t(`progressUx.${value}`)}
+                  {t(`progressUx.${value}`, { count: limits[value] })}
                 </Text>
               </Pressable>
             );
@@ -115,9 +119,14 @@ export function ActivityHistoryChart() {
           <Text className="font-nunito text-sm font-extrabold text-neutral-800 dark:text-neutral-200">
             {t('progressUx.historyEmpty')}
           </Text>
-          <Text className="text-center font-inter text-xs text-neutral-400 dark:text-neutral-400">
+          <Text className="text-center font-inter text-[13px] text-neutral-500 dark:text-neutral-400">
             {t('progressUx.historyHint')}
           </Text>
+          {visible.length > 0 && query.data && (
+            <Text className="font-inter text-[11px] text-neutral-500 dark:text-neutral-400">
+              {t('progressUx.range', { from: formatDate(visible[0].periodStart), to: formatDate(query.data.to) })}
+            </Text>
+          )}
         </View>
       ) : (
         /* Chart With Data */
@@ -127,8 +136,8 @@ export function ActivityHistoryChart() {
               {t('progressUx.activityTotal', { count: total })}
             </Text>
             {query.data && (
-              <Text className="font-inter text-[11px] text-neutral-400">
-                {t('progressUx.range', { from: visible[0].periodStart, to: query.data.to })}
+              <Text className="font-inter text-[11px] text-neutral-500 dark:text-neutral-400">
+                {t('progressUx.range', { from: formatDate(visible[0].periodStart), to: formatDate(query.data.to) })}
               </Text>
             )}
           </View>
@@ -137,10 +146,11 @@ export function ActivityHistoryChart() {
           <View className="flex-row items-end justify-between border-b border-neutral-100 pt-2 pb-1 dark:border-neutral-800">
             {visible.map((bucket) => {
               const isToday = period === 'DAY' && bucket.periodStart === today;
-              const isSelected = selected?.periodStart === bucket.periodStart;
+              const isSelected = selectedStart === bucket.periodStart;
+              // Linear so bars compare honestly; 1px floor keeps a tiny non-zero visible. Zero = gray baseline.
               const barHeight = bucket.eventCount
-                ? Math.max(8, Math.round((bucket.eventCount / max) * chartHeight))
-                : 3;
+                ? Math.max(1, Math.round((bucket.eventCount / max) * chartHeight))
+                : 2;
 
               return (
                 <Pressable
@@ -148,24 +158,24 @@ export function ActivityHistoryChart() {
                   testID={`history-bucket-${bucket.periodStart}`}
                   accessibilityRole="button"
                   accessibilityLabel={t('progressUx.bucket', {
-                    date: bucket.periodStart,
+                    date: formatDate(bucket.periodStart),
                     count: bucket.eventCount,
                     days: bucket.activeDays,
                   })}
                   accessibilityState={{ selected: isSelected }}
-                  onPress={() => setSelected(bucket)}
+                  onPress={() => setSelectedStart(bucket.periodStart)}
                   hitSlop={4}
                   className="mx-0.5 flex-1 items-center"
                 >
                   {/* Event count on top if selected or active */}
                   <Text
-                    className={`mb-1 font-inter text-[10px] ${
+                    className={`mb-1 font-inter text-[11px] ${
                       isSelected
-                        ? 'font-black text-primary-600 dark:text-primary-400'
-                        : 'font-medium text-neutral-400'
+                        ? 'font-black text-primary-800 dark:text-primary-400'
+                        : 'font-medium text-neutral-500 dark:text-neutral-400'
                     }`}
                   >
-                    {bucket.eventCount > 0 ? bucket.eventCount : ''}
+                    {bucket.eventCount}
                   </Text>
 
                   {/* SVG Bar */}
@@ -196,7 +206,7 @@ export function ActivityHistoryChart() {
                   {/* Date label under bar */}
                   <View
                     className={`mt-1.5 rounded-md px-1 py-0.5 ${
-                      isToday ? 'bg-primary-500' : isSelected ? 'bg-neutral-100 dark:bg-neutral-800' : ''
+                      isToday ? 'bg-primary-800' : isSelected ? 'bg-neutral-100 dark:bg-neutral-800' : ''
                     }`}
                   >
                     <Text
@@ -205,7 +215,7 @@ export function ActivityHistoryChart() {
                           ? 'text-white'
                           : isSelected
                             ? 'text-neutral-900 dark:text-white'
-                            : 'text-neutral-400'
+                            : 'text-neutral-500 dark:text-neutral-400'
                       }`}
                     >
                       {period === 'WEEK'
@@ -225,10 +235,10 @@ export function ActivityHistoryChart() {
             <View className="rounded-xl bg-neutral-50 p-2.5 dark:bg-neutral-800/60">
               <Text
                 accessibilityLiveRegion="polite"
-                className="font-inter text-xs text-neutral-700 dark:text-neutral-200"
+                className="font-inter text-[13px] text-neutral-700 dark:text-neutral-200"
               >
                 {t('progressUx.bucket', {
-                  date: selected.periodStart,
+                  date: formatDate(selected.periodStart),
                   count: selected.eventCount,
                   days: selected.activeDays,
                 })}

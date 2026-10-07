@@ -1,11 +1,10 @@
 import { useRouter } from 'expo-router';
 import * as React from 'react';
-import { RefreshControl, ScrollView, TouchableOpacity, View } from 'react-native';
+import { RefreshControl, ScrollView, View } from 'react-native';
 import { XPOrb3D } from '@/components/snapvocab';
-import { FocusAwareStatusBar, SafeAreaView, Text } from '@/components/ui';
-import { ChevronLeftIcon } from '@/components/ui/icons';
+import { FocusAwareStatusBar, SafeAreaView, ScreenHeader, Text } from '@/components/ui';
 import { useXpOverview } from './api';
-import { RecentXpEventsList, SectionError } from './components';
+import { RatioBar, RecentXpEventsList, SectionError } from './components';
 
 export function LevelProgressScreen() {
   const router = useRouter();
@@ -15,36 +14,22 @@ export function LevelProgressScreen() {
   const totalXp = xpOverview?.totalXp ?? 0;
   const level = xpOverview?.level;
   const levelNumber = level?.levelNumber;
-  const levelTitle = level?.title ?? 'Chưa có cấp độ';
+  // A level without a title is still that level; only a missing level is "no level".
+  const levelTitle = level ? (level.title ?? `Cấp ${level.levelNumber}`) : 'Chưa có cấp độ';
   const progressPercent = level?.progress ? Math.min(100, Math.round(level.progress * 100)) : 0;
   const nextXp = level?.nextLevelXp;
   const remainingXp = nextXp ? Math.max(0, nextXp - totalXp) : 0;
 
   return (
-    <SafeAreaView edges={['top', 'left', 'right']} style={{ flex: 1 }} className="flex-1 bg-neutral-50 dark:bg-neutral-950">
+    <SafeAreaView edges={['top', 'left', 'right']} style={{ flex: 1 }} className="flex-1 bg-[#F7F8FA] dark:bg-neutral-950">
       <FocusAwareStatusBar />
 
-      {/* Top Header */}
-      <View className="flex-row items-center justify-between border-b border-neutral-100 bg-white px-4 py-3.5 dark:border-neutral-800 dark:bg-neutral-900">
-        <TouchableOpacity
-          onPress={() => router.back()}
-          activeOpacity={0.7}
-          className="size-9 items-center justify-center rounded-xl bg-neutral-100 active:bg-neutral-200 dark:bg-neutral-800"
-        >
-          <ChevronLeftIcon color="#64748B" />
-        </TouchableOpacity>
-
-        <Text className="font-nunito text-base font-extrabold text-neutral-900 dark:text-white">
-          Cấp độ & Kinh nghiệm
-        </Text>
-
-        <View className="size-9" />
-      </View>
+      <ScreenHeader title="Cấp độ & Kinh nghiệm" onBack={() => router.back()} />
 
       {/* Content */}
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerClassName="p-4 pb-12"
+        contentContainerClassName="px-5 pt-5 pb-12"
         refreshControl={
           <RefreshControl refreshing={isRefetching} onRefresh={refetch} tintColor="#58CC02" />
         }
@@ -56,14 +41,14 @@ export function LevelProgressScreen() {
         ) : (
           <>
             {/* Hero Level Banner */}
-            <View className="mb-4 items-center rounded-3xl border border-blue-100 bg-linear-to-b from-blue-50 to-white p-6 shadow-sm dark:border-blue-900/40 dark:from-blue-950/40 dark:to-neutral-900">
-              <View className="size-20 items-center justify-center rounded-3xl bg-blue-100/60 dark:bg-blue-900/40">
+            <View className="mb-4 items-center rounded-3xl border border-info-100 bg-linear-to-b from-info-50 to-white p-6 shadow-sm dark:border-info-700/40 dark:from-info-700/20 dark:to-neutral-900">
+              <View className="size-20 items-center justify-center rounded-3xl bg-info-100/60 dark:bg-info-700/30">
                 <XPOrb3D size="lg" animation="float" />
               </View>
 
               <View className="mt-3 flex-row items-center gap-2">
-                {level && (
-                  <View className="rounded-full bg-primary-500 px-3 py-0.5">
+                {level?.title && (
+                  <View className="rounded-full bg-info-700 px-3 py-0.5">
                     <Text className="font-nunito text-xs font-black text-white">
                       CẤP
                       {' '}
@@ -76,41 +61,32 @@ export function LevelProgressScreen() {
                 </Text>
               </View>
 
-              <View className="mt-2 flex-row items-baseline gap-1.5">
-                <Text className="font-nunito text-3xl font-black text-blue-600 dark:text-blue-400">
-                  {totalXp.toLocaleString('vi-VN')}
+              {/* Cumulative XP, not a numerator for the bar: the bar is progress inside this level. */}
+              <View className="mt-2 items-center">
+                <Text className="font-nunito text-3xl font-black text-info-600 dark:text-info-400">
+                  {`${totalXp.toLocaleString('vi-VN')} XP`}
                 </Text>
-                <Text className="font-inter text-sm font-semibold text-neutral-400">
-                  {nextXp ? `/ ${nextXp.toLocaleString('vi-VN')} XP` : 'XP'}
+                <Text className="font-inter text-[13px] font-semibold text-neutral-500">
+                  Tổng XP tích lũy
                 </Text>
               </View>
 
               {/* Level Progress Bar */}
               {nextXp ? (
                 <View className="mt-4 w-full">
-                  <View className="h-3 w-full overflow-hidden rounded-full bg-neutral-100 dark:bg-neutral-800">
-                    <View
-                      style={{ width: `${progressPercent}%` }}
-                      className="h-full rounded-full bg-blue-500"
-                    />
-                  </View>
+                  <RatioBar progress={level?.progress ?? 0} label={`Tiến độ cấp ${levelNumber}`} />
 
                   <View className="mt-2 flex-row justify-between">
-                    <Text className="font-inter text-xs text-neutral-400">
-                      {progressPercent}
-                      % hoàn thành
+                    <Text className="font-inter text-[13px] text-neutral-500">
+                      {`${progressPercent}% cấp ${levelNumber}`}
                     </Text>
-                    <Text className="font-inter text-xs font-bold text-blue-600 dark:text-blue-400">
-                      Cần thêm
-                      {' '}
-                      {remainingXp.toLocaleString('vi-VN')}
-                      {' '}
-                      XP
+                    <Text className="font-inter text-[13px] font-bold text-info-700 dark:text-info-400">
+                      {`Còn ${remainingXp.toLocaleString('vi-VN')} XP lên cấp ${(levelNumber ?? 0) + 1}`}
                     </Text>
                   </View>
                 </View>
               ) : (
-                <Text className="mt-2 font-inter text-xs font-semibold text-emerald-600 dark:text-emerald-400">
+                <Text className="mt-2 font-inter text-[13px] font-semibold text-emerald-600 dark:text-emerald-400">
                   {level ? 'Bạn đã đạt cấp cao nhất hiện có.' : 'XP vẫn được ghi nhận. Mốc cấp độ chưa được thiết lập.'}
                 </Text>
               )}

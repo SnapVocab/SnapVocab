@@ -59,13 +59,13 @@ export function MascotAdviceCard({ summary, streak }: MascotAdviceCardProps) {
       <Snapy
         pose={isContextual ? 'happy' : 'chao_mung'}
         animation="none"
-        className="size-9"
+        className="size-14"
       />
       <View className="flex-1 gap-0.5">
-        <Text className="font-nunito text-xs font-bold text-neutral-900 dark:text-neutral-100">
+        <Text className="font-nunito text-sm font-extrabold text-neutral-900 dark:text-neutral-100">
           {title}
         </Text>
-        <Text className="font-inter text-xs text-neutral-600 dark:text-neutral-400">
+        <Text className="font-inter text-[13px] text-neutral-600 dark:text-neutral-400">
           {body}
         </Text>
       </View>

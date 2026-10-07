@@ -1,3 +1,4 @@
+import type { Href } from 'expo-router';
 import type { HomeWidgetDTO } from '@/features/progress/types';
 import { useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
@@ -9,7 +10,7 @@ import {
   View,
 } from 'react-native';
 import { Snapy } from '@/components/Snapy';
-import { FocusAwareStatusBar, SafeAreaView, Text } from '@/components/ui';
+import { Button, FocusAwareStatusBar, SafeAreaView, Text } from '@/components/ui';
 import { ChevronRightIcon } from '@/components/ui/icons';
 import { useAuthStore } from '@/features/auth/use-auth-store';
 import {
@@ -20,6 +21,7 @@ import {
   SectionError,
   SRS_ENABLED,
   useHomeWidget,
+  useStreak,
   useXpOverview,
 } from '@/features/progress';
 import {
@@ -32,6 +34,8 @@ export function HomeScreen() {
   const queryClient = useQueryClient();
   const user = useAuthStore(s => s.user);
   const widget = useHomeWidget();
+  // Same query as HomeHeader's flame, so the greeting and the header never disagree.
+  const streakQuery = useStreak();
   const xp = useXpOverview();
   const [isRefreshing, setIsRefreshing] = React.useState(false);
 
@@ -54,7 +58,7 @@ export function HomeScreen() {
 
   const displayName = user?.firstName || user?.email?.split('@')[0] || 'bạn';
   // Undefined while loading or on error: the greeting then stays neutral instead of claiming a 0.
-  const streak = widget.data?.currentStreak;
+  const streak = streakQuery.data?.currentStreak;
   const dueCount = SRS_ENABLED ? widget.data?.dueCount : undefined;
 
   return (
@@ -114,6 +118,8 @@ export function HomeScreen() {
         {xp.isError
           ? <SectionError onRetry={() => void xp.refetch()} />
           : <LevelOverviewCard xpOverview={xp.data} isLoading={xp.isLoading} />}
+
+        <Button tx="missions.title" variant="outline" onPress={() => router.push('/missions' as Href)} />
 
         {/* QUICK STUDY MODES GRID (2x2) */}
         <View className="mt-2">

@@ -1,7 +1,10 @@
+import type { Href } from 'expo-router';
 import type { ReactNode } from 'react';
 import type { User } from '../auth/api';
+import type { InventoryItemDTO } from '@/features/shop/types';
 import { useRouter } from 'expo-router';
 import { ScrollView } from 'react-native';
+import { AvatarFrame } from '@/components/snapvocab';
 import {
   Button,
   FocusAwareStatusBar,
@@ -24,6 +27,8 @@ import {
 } from '@/components/ui/icons';
 import { useAuthStore } from '@/features/auth/use-auth-store';
 import { useStreak } from '@/features/progress/api';
+import { useInventory } from '@/features/shop/hooks/use-shop-queries';
+import { isBoosterLive } from '@/features/shop/utils/booster-timer';
 import { translate } from '@/lib/i18n';
 import { useMe } from './api';
 import { formatDate, fullName, initials } from './display';
@@ -39,6 +44,10 @@ export function ProfileScreen() {
   const streak = useStreak();
   // Render the stored copy while the fresh one loads, so the screen never blanks.
   const user = data ?? stored;
+  // Equipped frame and running booster come from the inventory (shop.md §11.3); no extra API.
+  const inventory = useInventory();
+  const frame = inventory.data?.items.find(i => i.type === 'AVATAR_FRAME' && i.equipped);
+  const boosterLive = isBoosterLive(inventory.data?.activeBooster, inventory.serverOffset);
 
   if (!user) {
     return (
@@ -93,7 +102,7 @@ export function ProfileScreen() {
         contentContainerStyle={{ padding: 16, paddingBottom: 150 }}
         showsVerticalScrollIndicator={false}
       >
-        <IdentityCard user={user} />
+        <IdentityCard user={user} frame={frame} />
 
         <View className="mt-4 flex-row gap-3">
           <StatTile
@@ -105,7 +114,7 @@ export function ProfileScreen() {
           <StatTile
             icon={<StarIcon color={iconColor.stat.xp} />}
             tint="bg-reward-50 border-reward-100 dark:bg-reward-500/15 dark:border-reward-500/30"
-            value={user.exp ?? 0}
+            value={boosterLive ? `${user.exp ?? 0} ×2` : user.exp ?? 0}
             labelTx="profile.xp"
           />
           <StatTile
@@ -116,7 +125,7 @@ export function ProfileScreen() {
           />
         </View>
 
-        {/* Gamification screens are not built yet; the rows show what is coming. */}
+        {/* Wallet and inventory are live; achievements still show what is coming. */}
         <View className="mt-5 overflow-hidden rounded-3xl border border-neutral-200/80 bg-white shadow-sm shadow-black/5 dark:border-neutral-800 dark:bg-neutral-900">
           <ComingSoonRow
             icon={<TrophyIcon color={iconColor.stat.trophy} width={20} height={20} />}
@@ -131,6 +140,7 @@ export function ProfileScreen() {
             tx="profile.menu.wallet"
             hintTx="profile.menu_hints.wallet"
             chevron={iconColor.muted}
+            onPress={() => router.push('/profile/wallet' as Href)}
           />
           <ComingSoonRow
             icon={<BoxIcon color={iconColor.stat.inventory} width={20} height={20} />}
@@ -138,6 +148,7 @@ export function ProfileScreen() {
             tx="profile.menu.inventory"
             hintTx="profile.menu_hints.inventory"
             chevron={iconColor.muted}
+            onPress={() => router.push('/profile/inventory' as Href)}
             last
           />
         </View>
@@ -174,19 +185,32 @@ function HeaderButton({
   );
 }
 
-function IdentityCard({ user }: { user: User }) {
+function IdentityCard({ user, frame }: { user: User; frame?: InventoryItemDTO }) {
   const name = fullName(user);
   const joined = formatDate(user.createdAt);
 
   return (
     <View className="items-center rounded-3xl border border-neutral-200/80 bg-white p-5 shadow-sm shadow-black/5 dark:border-neutral-800 dark:bg-neutral-900">
-      <View className="mb-3 size-28 items-center justify-center rounded-full border-2 border-primary-400 bg-primary-50/50 p-1.5 dark:bg-primary-500/10">
-        <View className="size-full items-center justify-center overflow-hidden rounded-full bg-primary-500">
-          {user.avatarUrl
-            ? <Image source={{ uri: user.avatarUrl }} contentFit="cover" style={{ width: '100%', height: '100%' }} />
-            : <Text className="font-nunito text-3xl font-extrabold text-white">{initials(name)}</Text>}
+      {frame ? (
+        // Same renderer as the Shop preview, so the bought frame looks the same here.
+        <AvatarFrame
+          frameId={frame.code}
+          frameUrl={frame.config?.frameUrl}
+          avatarUri={user.avatarUrl}
+          initials={initials(name)}
+          size="xl"
+          showGlow={false}
+          className="mb-3"
+        />
+      ) : (
+        <View className="mb-3 size-28 items-center justify-center rounded-full border-2 border-primary-400 bg-primary-50/50 p-1.5 dark:bg-primary-500/10">
+          <View className="size-full items-center justify-center overflow-hidden rounded-full bg-primary-500">
+            {user.avatarUrl
+              ? <Image source={{ uri: user.avatarUrl }} contentFit="cover" style={{ width: '100%', height: '100%' }} />
+              : <Text className="font-nunito text-3xl font-extrabold text-white">{initials(name)}</Text>}
+          </View>
         </View>
-      </View>
+      )}
 
       <Text className="mb-1 text-center font-nunito text-[22px] font-extrabold text-mascot-navy dark:text-white">
         {name}
@@ -241,6 +265,7 @@ function ComingSoonRow({
   hintTx,
   chevron,
   last,
+  onPress,
 }: {
   icon: ReactNode;
   tint: string;
@@ -248,20 +273,29 @@ function ComingSoonRow({
   hintTx: 'profile.menu_hints.achievements' | 'profile.menu_hints.wallet' | 'profile.menu_hints.inventory';
   chevron: string;
   last?: boolean;
+  /** Present = the screen exists: row navigates and drops the "coming soon" badge. */
+  onPress?: () => void;
 }) {
   return (
-    <View className={`flex-row items-center p-4 ${last ? '' : 'border-b border-neutral-100 dark:border-neutral-800'}`}>
+    <Pressable
+      accessibilityRole={onPress ? 'button' : undefined}
+      onPress={onPress}
+      disabled={!onPress}
+      className={`flex-row items-center p-4 active:bg-neutral-50 dark:active:bg-neutral-800 ${last ? '' : 'border-b border-neutral-100 dark:border-neutral-800'}`}
+    >
       <View className={`mr-3.5 size-10 items-center justify-center rounded-xl border ${tint}`}>
         {icon}
       </View>
       <View className="flex-1">
-        <Text className="text-[15px] font-bold text-neutral-600 dark:text-neutral-200" tx={tx} />
-        <Text className="text-xs font-medium text-neutral-400" tx={hintTx} />
+        <Text className={`text-[15px] font-bold ${onPress ? 'text-mascot-navy' : 'text-neutral-600'} dark:text-neutral-200`} tx={tx} />
+        <Text className="text-[13px] font-medium text-neutral-400" tx={hintTx} />
       </View>
-      <View className="mr-1 rounded-full bg-neutral-100 px-2 py-0.5 dark:bg-neutral-800">
-        <Text className="text-[11px] font-bold text-neutral-500 dark:text-neutral-300" tx="profile.coming_soon" />
-      </View>
+      {!onPress && (
+        <View className="mr-1 rounded-full bg-neutral-100 px-2 py-0.5 dark:bg-neutral-800">
+          <Text className="text-[11px] font-bold text-neutral-500 dark:text-neutral-300" tx="profile.coming_soon" />
+        </View>
+      )}
       <ChevronRightIcon color={chevron} width={18} height={18} />
-    </View>
+    </Pressable>
   );
 }

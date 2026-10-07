@@ -34,15 +34,16 @@ export function AccuracyStatsCard({ summary, isLoading }: AccuracyStatsCardProps
           <Text className="font-nunito text-sm font-extrabold text-neutral-800 dark:text-neutral-200">
             {t('progressUx.noPerformanceData')}
           </Text>
-          <Text className="font-inter text-xs text-neutral-400 dark:text-neutral-400">
+          <Text className="font-inter text-[13px] text-neutral-500 dark:text-neutral-400">
             {t('progressUx.performanceEmptyHint')}
           </Text>
           <Pressable
             accessibilityRole="button"
             onPress={() => router.push('/study/quiz-setup')}
+            hitSlop={{ top: 14, bottom: 14, right: 12 }}
             className="mt-0.5 self-start"
           >
-            <Text className="font-nunito text-xs font-extrabold text-info-600 dark:text-info-400">
+            <Text className="font-nunito text-[13px] font-extrabold text-primary-800 dark:text-primary-400">
               {t('progressUx.tryQuizLink')}
             </Text>
           </Pressable>
@@ -57,41 +58,48 @@ export function AccuracyStatsCard({ summary, isLoading }: AccuracyStatsCardProps
         {t('progressUx.performance')}
       </Text>
 
+      {/* Quiz count is already in the Activity row (unless SRS replaces it there with "due"). */}
       <View className="flex-row items-center divide-x divide-neutral-200/60 rounded-2xl border border-neutral-100 bg-white p-3.5 dark:divide-neutral-800 dark:border-neutral-800 dark:bg-neutral-900">
         <View className="flex-1 items-center px-2">
-          <Text className="font-nunito text-2xl font-black text-mascot-navy dark:text-white">
+          <Text className="font-nunito text-2xl font-black text-primary-700 dark:text-primary-400">
             {summary.accuracy !== null
               ? `${Math.round(summary.accuracy * 100)}%`
               : '--'}
           </Text>
-          <Text className="font-inter text-xs font-semibold text-neutral-400">
+          <Text className="font-inter text-[13px] font-semibold text-neutral-500 dark:text-neutral-400">
             {t('progressUx.accuracy')}
           </Text>
         </View>
 
-        <View className="flex-1 items-center px-2">
-          <Text className="font-nunito text-2xl font-black text-info-600 dark:text-info-400">
-            {summary.completedQuizCount}
-          </Text>
-          <Text className="font-inter text-xs font-semibold text-neutral-400">
-            {t('progressUx.quizzes')}
-          </Text>
-        </View>
-
         {SRS_ENABLED && (
-          <View className="flex-1 items-center px-2">
-            <Text className="font-nunito text-2xl font-black text-primary-600 dark:text-primary-400">
-              {summary.reviewCount}
-            </Text>
-            <Text className="font-inter text-xs font-semibold text-neutral-400">
-              {t('progressUx.reviews')}
-            </Text>
-          </View>
+          <>
+            <View className="flex-1 items-center px-2">
+              <Text className="font-nunito text-2xl font-black text-neutral-900 dark:text-white">
+                {summary.completedQuizCount}
+              </Text>
+              <Text className="font-inter text-[13px] font-semibold text-neutral-500">
+                {t('progressUx.quizzes')}
+              </Text>
+            </View>
+            <View className="flex-1 items-center px-2">
+              <Text className="font-nunito text-2xl font-black text-neutral-900 dark:text-white">
+                {summary.reviewCount}
+              </Text>
+              <Text className="font-inter text-[13px] font-semibold text-neutral-500">
+                {t('progressUx.reviews')}
+              </Text>
+            </View>
+          </>
         )}
       </View>
 
+      {/* Lifetime and weighted by question units; the history period tabs do not filter it. */}
+      <Text className="font-inter text-xs text-neutral-500 dark:text-neutral-400">
+        {t('progressUx.accuracyScope')}
+      </Text>
+
       {summary.accuracy === null && (
-        <Text className="font-inter text-[11px] text-neutral-400">
+        <Text className="font-inter text-xs text-neutral-500">
           {t('progressUx.accuracyHint')}
         </Text>
       )}

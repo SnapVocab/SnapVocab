@@ -1,13 +1,11 @@
 import type { CoinSourceType, WalletTransactionDTO } from './types';
 import { router } from 'expo-router';
 import {
-  ArrowLeftIcon,
   CoinsIcon,
   GiftIcon,
   RefreshCwIcon,
   ShieldAlertIcon,
   ShoppingCartIcon,
-  StarIcon,
   TargetIcon,
 } from 'lucide-react-native';
 import * as React from 'react';
@@ -23,10 +21,10 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Coin3D } from '@/components/snapvocab';
 import { Snapy } from '@/components/Snapy';
-import { useAuthStore } from '@/features/auth/use-auth-store';
+import { ScreenHeader, useSurface } from '@/components/ui';
 import { cn } from '@/lib/utils';
 import { useCoinBalance, useInfiniteWallet } from './hooks/use-shop-queries';
-import { useShopTheme } from './theme/theme-context';
+import { ShopSurface } from './theme/theme-context';
 
 function getSourceInfo(sourceType: CoinSourceType) {
   switch (sourceType) {
@@ -66,11 +64,15 @@ function getSourceInfo(sourceType: CoinSourceType) {
 function formatRelativeDate(isoString: string): string {
   try {
     const date = new Date(isoString);
+    if (Number.isNaN(date.getTime()))
+      return '';
     const now = new Date();
     const diffMs = now.getTime() - date.getTime();
     const diffMins = Math.floor(diffMs / 60000);
     const diffHours = Math.floor(diffMins / 60);
-    const diffDays = Math.floor(diffHours / 24);
+    // Calendar days, not 24h blocks: 25h before 01:00 is the day before yesterday, not "Hôm qua".
+    const startOfDay = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+    const diffDays = Math.round((startOfDay(now) - startOfDay(date)) / 86400000);
 
     if (diffMins < 1)
       return 'Vừa xong';
@@ -94,9 +96,17 @@ function formatRelativeDate(isoString: string): string {
   }
 }
 
+/** Shop-area screen: it and its modals take the equipped theme's surfaces. */
 export default function WalletScreen() {
-  const { theme } = useShopTheme();
-  const currentUser = useAuthStore(s => s.user);
+  return (
+    <ShopSurface>
+      <WalletScreenContent />
+    </ShopSurface>
+  );
+}
+
+function WalletScreenContent() {
+  const s = useSurface();
 
   // Single source of truth shared with the coin pill (purchase writes it synchronously).
   const { balance: displayedBalance, refetch: refetchBalance } = useCoinBalance();
@@ -119,12 +129,6 @@ export default function WalletScreen() {
     return data.pages.flatMap(page => page.transactions);
   }, [data]);
 
-  // XP level calculation helper (using user exp)
-  const userExp = currentUser?.exp ?? 0;
-  const currentLevel = Math.max(1, Math.floor(userExp / 500) + 1);
-  const currentLevelExp = userExp % 500;
-  const maxLevelExp = 500;
-
   const renderTransaction = (tx: WalletTransactionDTO) => {
     const isEarn = tx.amount > 0;
     const info = getSourceInfo(tx.sourceType);
@@ -132,13 +136,15 @@ export default function WalletScreen() {
     return (
       <View
         key={tx.id}
-        className="flex-row items-center border-b border-neutral-100 bg-white p-4"
+        style={{ backgroundColor: s.surface, borderColor: s.border }}
+        className="flex-row items-center border-b p-4"
       >
         {/* Icon */}
         <View
+          style={isEarn ? undefined : { backgroundColor: s.surfaceMuted }}
           className={cn(
             'mr-4 size-12 items-center justify-center rounded-2xl border',
-            isEarn ? 'border-reward-100 bg-reward-50' : 'border-neutral-100 bg-neutral-50',
+            isEarn ? 'border-reward-100 bg-reward-50' : 'border-transparent',
           )}
         >
           {info.icon}
@@ -146,13 +152,13 @@ export default function WalletScreen() {
 
         {/* Content */}
         <View className="flex-1">
-          <Text className="mb-0.5 font-inter text-[15px] font-bold text-mascot-navy">
+          <Text style={{ color: s.text }} className="mb-0.5 font-inter text-[15px] font-bold">
             {tx.description || info.label}
           </Text>
-          <Text className="font-inter text-[13px] font-medium text-neutral-400">
+          <Text style={{ color: s.textMuted }} className="font-inter text-[13px] font-medium">
             {info.label}
           </Text>
-          <Text className="mt-1 font-inter text-[11px] font-medium text-neutral-400">
+          <Text style={{ color: s.textMuted }} className="mt-1 font-inter text-[12px] font-medium">
             {formatRelativeDate(tx.createdAt)}
           </Text>
         </View>
@@ -160,14 +166,12 @@ export default function WalletScreen() {
         {/* Amount */}
         <View className="ml-2 items-end">
           <Text
-            className={cn(
-              'font-nunito text-[16px] font-extrabold tabular-nums',
-              isEarn ? 'text-success-600' : 'text-neutral-600',
-            )}
+            style={isEarn ? undefined : { color: s.text }}
+            className={cn('font-nunito text-[16px] font-extrabold tabular-nums', isEarn && 'text-success-600')}
           >
-            {isEarn ? `+${tx.amount}` : tx.amount}
+            {isEarn ? `+${tx.amount.toLocaleString('vi-VN')}` : tx.amount.toLocaleString('vi-VN')}
           </Text>
-          <Text className="mt-0.5 font-inter text-[10px] font-bold text-neutral-400 uppercase">
+          <Text style={{ color: s.textMuted }} className="mt-0.5 font-inter text-[11px] font-bold uppercase">
             Coin
           </Text>
         </View>
@@ -178,35 +182,23 @@ export default function WalletScreen() {
   return (
     <SafeAreaView
       className="flex-1"
-      style={{ backgroundColor: theme.surfaceTokens.background }}
+      style={{ backgroundColor: s.background }}
       edges={['top']}
     >
-      {/* 1. HEADER */}
-      <View
-        style={{ backgroundColor: theme.surfaceTokens.headerBg, borderColor: theme.surfaceTokens.border }}
-        className="z-10 flex-row items-center justify-between border-b px-4 py-3 shadow-sm shadow-black/5"
-      >
-        <Pressable
-          onPress={() => router.back()}
-          className="-ml-2 size-10 items-center justify-center rounded-full active:bg-neutral-100"
-        >
-          <ArrowLeftIcon size={24} color={theme.surfaceTokens.text} />
-        </Pressable>
-
-        <Text
-          style={{ color: theme.surfaceTokens.text }}
-          className="font-nunito text-[18px] font-extrabold"
-        >
-          Ví của bạn
-        </Text>
-
-        <Pressable
-          onPress={() => router.push('/(tabs)/shop' as any)}
-          className="rounded-full border border-reward-200 bg-reward-50 px-3 py-1 active:scale-95"
-        >
-          <Text className="font-nunito text-[12px] font-extrabold text-reward-700">Cửa hàng</Text>
-        </Pressable>
-      </View>
+      {/* Coin only: level/XP lives in Progress, from the backend's level table. */}
+      <ScreenHeader
+        title="Ví Coin"
+        onBack={() => router.back()}
+        right={(
+          <Pressable
+            accessibilityRole="button"
+            onPress={() => router.push('/(tabs)/shop' as any)}
+            className="rounded-full border border-reward-200 bg-reward-50 px-3 py-1.5 active:scale-95"
+          >
+            <Text className="font-nunito text-[13px] font-extrabold text-reward-700">Cửa hàng</Text>
+          </Pressable>
+        )}
+      />
 
       <ScrollView
         contentContainerStyle={{ padding: 16, paddingBottom: 60 }}
@@ -226,15 +218,15 @@ export default function WalletScreen() {
         {/* ========================================= */}
         {/* 2. COIN BALANCE CARD (Authoritative Balance) */}
         {/* ========================================= */}
-        <View className="mb-6 items-center justify-center rounded-[32px] border-2 border-b-[6px] border-reward-200 bg-white p-6 shadow-sm shadow-reward-500/10">
-          <Text className="mb-3 font-nunito text-[13px] font-extrabold tracking-widest text-neutral-400 uppercase">
+        <View style={{ backgroundColor: s.surface }} className="mb-8 items-center justify-center rounded-[32px] border-2 border-b-[6px] border-reward-200 p-6 shadow-sm shadow-reward-500/10">
+          <Text style={{ color: s.textMuted }} className="mb-3 font-nunito text-[13px] font-extrabold tracking-widest uppercase">
             SỐ DƯ HIỆN TẠI
           </Text>
 
           <View className="flex-row items-center justify-center gap-3">
             <Coin3D size="lg" />
-            <Text className="font-nunito text-[48px] leading-tight font-extrabold text-mascot-navy tabular-nums">
-              {displayedBalance.toLocaleString()}
+            <Text style={{ color: s.text }} className="font-nunito text-[48px] leading-tight font-extrabold tabular-nums">
+              {displayedBalance.toLocaleString('vi-VN')}
             </Text>
           </View>
           <Text className="mt-1 font-inter text-[15px] font-bold tracking-wider text-reward-600 uppercase">
@@ -243,61 +235,23 @@ export default function WalletScreen() {
         </View>
 
         {/* ========================================= */}
-        {/* 3. XP SUMMARY CARD */}
-        {/* ========================================= */}
-        <View className="mb-8 rounded-[24px] border border-primary-200 bg-primary-50 p-5">
-          <View className="mb-4 flex-row items-center justify-between">
-            <View className="flex-row items-center gap-2">
-              <StarIcon size={20} fill="#3B82F6" color="#2563EB" />
-              <Text className="font-inter text-[15px] font-extrabold text-primary-800">
-                Kinh nghiệm
-              </Text>
-            </View>
-            <View className="rounded-lg border border-primary-100 bg-white px-3 py-1">
-              <Text className="font-nunito text-[13px] font-extrabold text-primary-600 uppercase">
-                Cấp
-                {' '}
-                {currentLevel}
-              </Text>
-            </View>
-          </View>
-
-          <View className="flex-row items-center gap-3">
-            <View className="h-3 flex-1 overflow-hidden rounded-full border border-primary-100 bg-white">
-              <View
-                className="h-full rounded-full bg-primary-500"
-                style={{ width: `${Math.min(100, (currentLevelExp / maxLevelExp) * 100)}%` }}
-              />
-            </View>
-            <Text className="font-nunito text-[14px] font-extrabold text-primary-800 tabular-nums">
-              {currentLevelExp}
-              {' '}
-              /
-              {maxLevelExp}
-              {' '}
-              XP
-            </Text>
-          </View>
-        </View>
-
-        {/* ========================================= */}
         {/* 4. TRANSACTION HISTORY */}
         {/* ========================================= */}
-        <Text className="mb-4 ml-1 font-nunito text-[16px] font-extrabold tracking-widest text-mascot-navy uppercase">
+        <Text style={{ color: s.text }} className="mb-4 ml-1 font-nunito text-[16px] font-extrabold">
           Lịch sử giao dịch
         </Text>
 
         {isLoading ? (
           <View className="items-center justify-center py-10">
             <ActivityIndicator size="large" color="#2563EB" />
-            <Text className="mt-3 font-inter text-[13px] text-neutral-400">
+            <Text style={{ color: s.textMuted }} className="mt-3 font-inter text-[13px]">
               Đang tải lịch sử giao dịch...
             </Text>
           </View>
         ) : isError ? (
-          <View className="items-center justify-center rounded-3xl border border-neutral-100 bg-white p-8">
+          <View style={{ backgroundColor: s.surface, borderColor: s.border }} className="items-center justify-center rounded-3xl border p-8">
             <Snapy pose="suy_nghi" animation="idle" className="mb-3 size-20 opacity-80" />
-            <Text className="mb-2 font-nunito text-[16px] font-extrabold text-mascot-navy">
+            <Text style={{ color: s.text }} className="mb-2 font-nunito text-[16px] font-extrabold">
               Không thể tải lịch sử giao dịch
             </Text>
             <Pressable
@@ -310,18 +264,18 @@ export default function WalletScreen() {
           </View>
         ) : transactions.length === 0 ? (
           /* EMPTY STATE */
-          <View className="items-center justify-center rounded-3xl border border-neutral-100 bg-white p-8">
+          <View style={{ backgroundColor: s.surface, borderColor: s.border }} className="items-center justify-center rounded-3xl border p-8">
             <Snapy pose="suy_nghi" animation="idle" className="mb-4 size-24 opacity-80" />
-            <Text className="mb-2 font-nunito text-[18px] font-extrabold text-mascot-navy">
+            <Text style={{ color: s.text }} className="mb-2 font-nunito text-[18px] font-extrabold">
               Chưa có giao dịch nào
             </Text>
-            <Text className="px-4 text-center font-inter text-[14px] font-medium text-neutral-500">
+            <Text style={{ color: s.textMuted }} className="px-4 text-center font-inter text-[14px] font-medium">
               Hãy hoàn thành bài học và nhiệm vụ để kiếm thêm Coin nhé!
             </Text>
           </View>
         ) : (
           /* TRANSACTION LIST */
-          <View className="overflow-hidden rounded-[24px] border border-neutral-100 bg-white shadow-sm shadow-black/5">
+          <View style={{ backgroundColor: s.surface, borderColor: s.border }} className="overflow-hidden rounded-[24px] border shadow-sm shadow-black/5">
             {transactions.map(renderTransaction)}
 
             {/* Load More Button / Indicator */}
@@ -329,7 +283,8 @@ export default function WalletScreen() {
               <Pressable
                 onPress={() => fetchNextPage()}
                 disabled={isFetchingNextPage}
-                className="items-center justify-center border-t border-neutral-100 p-3.5 active:bg-neutral-50"
+                style={{ borderColor: s.border }}
+                className="items-center justify-center border-t p-3.5 active:opacity-70"
               >
                 {isFetchingNextPage ? (
                   <ActivityIndicator size="small" color="#2563EB" />

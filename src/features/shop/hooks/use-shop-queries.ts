@@ -3,6 +3,7 @@ import type { AxiosError } from 'axios';
 import type {
   ActivationResultDTO,
   EquipmentDTO,
+  EquipmentSlot,
   InventoryDTO,
   PurchaseResultDTO,
   ShopItemDTO,
@@ -10,8 +11,7 @@ import type {
   WalletDTO,
 } from '../types';
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useRef } from 'react';
-import { showErrorMessage } from '@/components/ui';
+import { showErrorMessage, showSuccessMessage } from '@/components/ui';
 import { useAuthStore } from '@/features/auth/use-auth-store';
 import {
   activateItem,
@@ -29,11 +29,24 @@ import { calculateServerOffset } from '../utils/booster-timer';
 export const shopKeys = {
   all: ['shop'] as const,
   catalog: (type?: ShopItemType) => ['shop', 'catalog', type ?? 'all'] as const,
+  /** Prefix of every catalog key (all + each category): invalidate with this. */
+  catalogs: () => ['shop', 'catalog'] as const,
   inventory: () => ['shop', 'inventory'] as const,
   wallet: (cursor?: number | null, size?: number) => ['shop', 'wallet', cursor ?? 'first', size ?? 20] as const,
   infiniteWallet: (size?: number) => ['shop', 'wallet', 'infinite', size ?? 20] as const,
   coinBalance: () => ['shop', 'coinBalance'] as const,
 };
+
+/**
+ * The server balance is the only truth: mirror it everywhere Coin is shown
+ * (auth store → Home, coin cache → Shop/Wallet, me cache → Profile). Never add/subtract locally.
+ */
+function syncCoinBalance(queryClient: QueryClient, balance: number) {
+  useAuthStore.getState().updateUser({ coin: balance });
+  queryClient.setQueryData<WalletDTO>(shopKeys.coinBalance(), old =>
+    old ? { ...old, balance } : { balance, transactions: [], nextCursor: null });
+  queryClient.setQueryData<{ coin?: number }>(['me'], old => old && { ...old, coin: balance });
+}
 
 /**
  * Hook to fetch shop catalog with optional category filtering
@@ -42,23 +55,23 @@ export function useShopCatalog(type?: ShopItemType) {
   return useQuery<ShopItemDTO[], AxiosError>({
     queryKey: shopKeys.catalog(type),
     queryFn: () => getShopItems(type),
+    // Read-only, so safe to refresh on resume (price, sale window, signed icon URLs go stale).
+    refetchOnWindowFocus: true,
   });
 }
 
 /**
  * Hook to fetch user inventory, equipment, active booster and server time.
- * Calculates serverOffset accurately at the time response is received.
+ * The receive time travels with the cached data, so every observer derives the same server offset.
  */
 export function useInventory() {
   const { setEquippedTheme } = useShopTheme();
-  const serverOffsetRef = useRef<number>(0);
 
-  const query = useQuery<InventoryDTO, AxiosError>({
+  const query = useQuery<InventoryDTO & { receivedAt: number }, AxiosError>({
     queryKey: shopKeys.inventory(),
+    refetchOnWindowFocus: true,
     queryFn: async () => {
-      const deviceNow = Date.now();
       const data = await getInventory();
-      serverOffsetRef.current = calculateServerOffset(data.serverNow, deviceNow);
 
       // Auto-sync equipped theme with ThemeProvider
       const equippedTheme = data.items.find(
@@ -71,13 +84,13 @@ export function useInventory() {
         setEquippedTheme('DEFAULT');
       }
 
-      return data;
+      return { ...data, receivedAt: Date.now() };
     },
   });
 
   return {
     ...query,
-    serverOffset: serverOffsetRef.current,
+    serverOffset: query.data ? calculateServerOffset(query.data.serverNow, query.data.receivedAt) : 0,
   };
 }
 
@@ -85,12 +98,12 @@ export function useInventory() {
  * Hook to fetch wallet balance and initial transactions
  */
 export function useWallet(cursor?: number | null, size: number = 20) {
+  const queryClient = useQueryClient();
   return useQuery<WalletDTO, AxiosError>({
     queryKey: shopKeys.wallet(cursor, size),
     queryFn: async () => {
       const data = await getWallet(cursor, size);
-      // Synchronize with auth user coin
-      useAuthStore.getState().updateUser({ coin: data.balance });
+      syncCoinBalance(queryClient, data.balance);
       return data;
     },
   });
@@ -100,11 +113,12 @@ export function useWallet(cursor?: number | null, size: number = 20) {
  * Infinite query for wallet transactions history
  */
 export function useInfiniteWallet(pageSize: number = 20) {
+  const queryClient = useQueryClient();
   return useInfiniteQuery<WalletDTO, AxiosError>({
     queryKey: shopKeys.infiniteWallet(pageSize),
     queryFn: async ({ pageParam }) => {
       const data = await getWallet(pageParam as number | null, pageSize);
-      useAuthStore.getState().updateUser({ coin: data.balance });
+      syncCoinBalance(queryClient, data.balance);
       return data;
     },
     initialPageParam: null as number | null,
@@ -113,7 +127,8 @@ export function useInfiniteWallet(pageSize: number = 20) {
 }
 
 /**
- * Unified coin balance hook - single source of truth across Shop, Wallet, Header
+ * Coin balance for Shop/Wallet. Every response carrying a balance goes through syncCoinBalance,
+ * so this cache, the auth store and the me cache agree.
  */
 export function useCoinBalance() {
   const user = useAuthStore(s => s.user);
@@ -123,29 +138,18 @@ export function useCoinBalance() {
     queryKey: shopKeys.coinBalance(),
     queryFn: async () => {
       const data = await getWallet(null, 1);
-      useAuthStore.getState().updateUser({ coin: data.balance });
+      syncCoinBalance(queryClient, data.balance);
       return data;
     },
     // Stale time 10s to minimize unnecessary requests while maintaining freshness
     staleTime: 10000,
+    refetchOnWindowFocus: true,
   });
 
-  const balance = query.data?.balance ?? user?.coin ?? 0;
-
-  const setLocalCoin = (newCoin: number) => {
-    useAuthStore.getState().updateUser({ coin: newCoin });
-    queryClient.setQueryData(shopKeys.coinBalance(), (old: WalletDTO | undefined) => {
-      if (!old)
-        return { balance: newCoin, transactions: [], nextCursor: null };
-      return { ...old, balance: newCoin };
-    });
-  };
-
   return {
-    balance,
+    balance: query.data?.balance ?? user?.coin ?? 0,
     isLoading: query.isLoading,
     refetch: query.refetch,
-    setLocalCoin,
   };
 }
 
@@ -163,16 +167,9 @@ export function usePurchaseMutation() {
     mutationFn: ({ itemId, expectedPrice, idempotencyKey }) =>
       purchaseShopItem(itemId, expectedPrice, idempotencyKey),
     onSuccess: (data) => {
-      // 1. Synchronize coin balance everywhere immediately
-      useAuthStore.getState().updateUser({ coin: data.coinBalance });
-      queryClient.setQueryData(shopKeys.coinBalance(), (old: WalletDTO | undefined) => {
-        if (!old)
-          return { balance: data.coinBalance, transactions: [], nextCursor: null };
-        return { ...old, balance: data.coinBalance };
-      });
-
-      // 2. Invalidate catalog, inventory, and wallet queries
-      queryClient.invalidateQueries({ queryKey: shopKeys.catalog() });
+      void queryClient.invalidateQueries({ queryKey: ['daily-missions'] });
+      syncCoinBalance(queryClient, data.coinBalance);
+      queryClient.invalidateQueries({ queryKey: shopKeys.catalogs() });
       queryClient.invalidateQueries({ queryKey: shopKeys.inventory() });
       queryClient.invalidateQueries({ queryKey: ['shop', 'wallet'] });
       queryClient.invalidateQueries({ queryKey: shopKeys.coinBalance() });
@@ -190,7 +187,7 @@ export function useEquipMutation() {
   return useMutation<
     EquipmentDTO,
     unknown,
-    { slot: 'THEME' | 'AVATAR_FRAME'; itemId: number }
+    { slot: EquipmentSlot; itemId: number }
   >({
     mutationFn: ({ slot, itemId }) => equipItem(slot, itemId),
     onSuccess: (data) => {
@@ -198,8 +195,9 @@ export function useEquipMutation() {
         const themeKey = data.item?.config?.themeKey as string;
         setEquippedTheme(themeKey || 'DEFAULT');
       }
+      showSuccessMessage(data.slot === 'THEME' ? 'Đã áp dụng giao diện' : 'Đã trang bị khung avatar');
       queryClient.invalidateQueries({ queryKey: shopKeys.inventory() });
-      queryClient.invalidateQueries({ queryKey: shopKeys.catalog() });
+      queryClient.invalidateQueries({ queryKey: shopKeys.catalogs() });
     },
     onError: error => onItemActionError(queryClient, error),
   });
@@ -215,15 +213,16 @@ export function useUnequipMutation() {
   return useMutation<
     EquipmentDTO,
     unknown,
-    { slot: 'THEME' | 'AVATAR_FRAME' }
+    { slot: EquipmentSlot }
   >({
     mutationFn: ({ slot }) => unequipItem(slot),
     onSuccess: (data) => {
       if (data.slot === 'THEME') {
         setEquippedTheme('DEFAULT');
       }
+      showSuccessMessage(data.slot === 'THEME' ? 'Đã về giao diện mặc định' : 'Đã tháo khung avatar');
       queryClient.invalidateQueries({ queryKey: shopKeys.inventory() });
-      queryClient.invalidateQueries({ queryKey: shopKeys.catalog() });
+      queryClient.invalidateQueries({ queryKey: shopKeys.catalogs() });
     },
     onError: error => onItemActionError(queryClient, error),
   });
@@ -243,7 +242,10 @@ export function useActivateBoosterMutation() {
     mutationFn: ({ itemId, idempotencyKey }) =>
       activateItem(itemId, idempotencyKey),
     onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ['daily-missions'] });
       queryClient.invalidateQueries({ queryKey: shopKeys.inventory() });
+      // Spending a card changes quantity, hence the Booster's max-quantity block in the catalog.
+      queryClient.invalidateQueries({ queryKey: shopKeys.catalogs() });
     },
     onError: error => onItemActionError(queryClient, error),
   });
@@ -253,5 +255,5 @@ export function useActivateBoosterMutation() {
 function onItemActionError(queryClient: QueryClient, error: unknown) {
   showErrorMessage(parseShopError(error).message);
   queryClient.invalidateQueries({ queryKey: shopKeys.inventory() });
-  queryClient.invalidateQueries({ queryKey: shopKeys.catalog() });
+  queryClient.invalidateQueries({ queryKey: shopKeys.catalogs() });
 }

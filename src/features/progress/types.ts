@@ -40,7 +40,8 @@ export type HomeWidgetDTO = {
 
 export type LevelInfo = {
   levelNumber: number;
-  title: string;
+  /** `levels.title` is nullable in the DB. */
+  title: string | null;
   minXp: number;
   nextLevelXp: number | null;
   progress: number;

@@ -38,6 +38,11 @@ export function getRemainingBoosterMs(expiresAtIso: string, serverOffsetMs: numb
   return Math.max(0, expiresAt - estimatedServerNow);
 }
 
+/** A cached activation is only "active" until its server-time expiry; the object alone may be stale. */
+export function isBoosterLive(active: { expiresAt: string } | null | undefined, serverOffsetMs: number): boolean {
+  return Boolean(active) && getRemainingBoosterMs(active!.expiresAt, serverOffsetMs) > 0;
+}
+
 /**
  * Formats milliseconds remaining into MM:SS or HH:MM:SS display string.
  */

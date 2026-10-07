@@ -69,36 +69,32 @@ function getSourceInfo(sourceType: XpSourceType): {
   }
 }
 
+// Elapsed time, not calendar days: 25h ago can be two calendar days back, so never say "Hôm qua".
 function formatRelativeTime(dateStr: string): string {
-  try {
-    const diffMs = Date.now() - new Date(dateStr).getTime();
-    const diffMinutes = Math.floor(diffMs / 60000);
-    if (diffMinutes < 1)
-      return 'Vừa xong';
-    if (diffMinutes < 60)
-      return `${diffMinutes} phút trước`;
-    const diffHours = Math.floor(diffMinutes / 60);
-    if (diffHours < 24)
-      return `${diffHours} giờ trước`;
-    const diffDays = Math.floor(diffHours / 24);
-    if (diffDays === 1)
-      return 'Hôm qua';
-    return `${diffDays} ngày trước`;
-  }
-  catch {
+  const time = new Date(dateStr).getTime();
+  if (Number.isNaN(time))
     return dateStr;
-  }
+  const diffMs = Date.now() - time;
+  const diffMinutes = Math.floor(diffMs / 60000);
+  if (diffMinutes < 1)
+    return 'Vừa xong';
+  if (diffMinutes < 60)
+    return `${diffMinutes} phút trước`;
+  const diffHours = Math.floor(diffMinutes / 60);
+  if (diffHours < 24)
+    return `${diffHours} giờ trước`;
+  return `${Math.floor(diffHours / 24)} ngày trước`;
 }
 
 export function RecentXpEventsList({ events }: RecentXpEventsListProps) {
   if (!events || events.length === 0) {
     return (
       <View className="mb-4 rounded-3xl border border-neutral-100 bg-white p-5 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
-        <Text className="font-nunito text-xs font-black tracking-wider text-neutral-400 uppercase">
+        <Text className="font-nunito text-xs font-black tracking-wider text-neutral-500 uppercase dark:text-neutral-400">
           Lịch sử nhận kinh nghiệm gần đây
         </Text>
         <View className="mt-4 items-center justify-center py-6">
-          <Text className="font-inter text-xs text-neutral-400">
+          <Text className="font-inter text-[13px] text-neutral-500">
             Chưa có sự kiện nhận XP nào gần đây
           </Text>
         </View>
@@ -108,7 +104,7 @@ export function RecentXpEventsList({ events }: RecentXpEventsListProps) {
 
   return (
     <View className="mb-4 rounded-3xl border border-neutral-100 bg-white p-5 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
-      <Text className="font-nunito text-xs font-black tracking-wider text-neutral-400 uppercase">
+      <Text className="font-nunito text-xs font-black tracking-wider text-neutral-500 uppercase dark:text-neutral-400">
         Lịch sử nhận kinh nghiệm gần đây
       </Text>
 
@@ -118,25 +114,25 @@ export function RecentXpEventsList({ events }: RecentXpEventsListProps) {
 
           return (
             <View key={`${evt.createdAt}-${idx}`} className="flex-row items-center justify-between py-3">
-              <View className="flex-row items-center gap-3">
+              <View className="mr-2 flex-1 flex-row items-center gap-3">
                 <View className={`size-9 items-center justify-center rounded-xl ${info.bgColor}`}>
                   {info.icon(info.iconColor)}
                 </View>
 
-                <View>
+                <View className="flex-1">
                   <Text className="font-nunito text-sm font-bold text-neutral-800 dark:text-neutral-100">
                     {info.title}
                   </Text>
-                  <Text className="font-inter text-[11px] text-neutral-400">
+                  <Text className="font-inter text-[11px] text-neutral-500 dark:text-neutral-400">
                     {formatRelativeTime(evt.createdAt)}
                   </Text>
                 </View>
               </View>
 
-              <View className="dark:bg-primary-950/40 rounded-full bg-primary-50 px-2.5 py-1">
-                <Text className="font-nunito text-xs font-black text-primary-600 dark:text-primary-400">
+              <View className="shrink-0 rounded-full bg-info-50 px-2.5 py-1 dark:bg-info-700/30">
+                <Text className="font-nunito text-xs font-black text-info-800 dark:text-info-400">
                   +
-                  {evt.amount}
+                  {evt.amount.toLocaleString('vi-VN')}
                   {' '}
                   XP
                 </Text>

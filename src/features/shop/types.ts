@@ -9,11 +9,13 @@ export type ThemeKey = 'DEFAULT' | 'MIDNIGHT_NEON' | 'SUNSET_AMBER' | 'FOREST_MI
 
 export type ShopItemStatus = 'DRAFT' | 'PUBLISHED' | 'ARCHIVED';
 
+/** Catalog eligibility (ShopItemDTO.BlockReason); purchase rejections use ShopErrorCode instead. */
 export type BlockReason =
   | 'ALREADY_OWNED'
-  | 'ITEM_ALREADY_OWNED'
   | 'MAX_QUANTITY_REACHED'
   | 'INSUFFICIENT_COINS';
+
+export type EquipmentSlot = 'THEME' | 'AVATAR_FRAME';
 
 export type ItemConfig = {
   themeKey?: ThemeKey | string | null;
@@ -28,7 +30,7 @@ export type ShopItemDTO = {
   code: string;
   type: ShopItemType;
   name: string;
-  description: string;
+  description: string | null;
   iconUrl: string | null;
   price: number;
   availableUntil: string | null;
@@ -80,7 +82,7 @@ export type InventoryDTO = {
 };
 
 export type EquipmentDTO = {
-  slot: ShopItemType;
+  slot: EquipmentSlot;
   item: InventoryItemDTO | null;
 };
 
