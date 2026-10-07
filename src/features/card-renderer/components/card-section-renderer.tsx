@@ -23,11 +23,13 @@ export function CardSectionRenderer({ section, data }: Props) {
     [instanceCount, section.id],
   );
 
+  const showSectionHeader = Boolean(section.name && section.name.trim());
+
   return (
-    <View className="my-2 w-full">
-      {/* Section Header (optional name if informative) */}
-      {section.name && section.name !== 'Thông tin chung' && section.name !== 'Nghĩa & Ví dụ' && (
-        <View className="mb-2 border-b border-neutral-100 pb-1 dark:border-neutral-800">
+    <View className="my-1.5 w-full">
+      {/* Section Header (rendered if user gave this section a name) */}
+      {showSectionHeader && (
+        <View className="mb-2 border-b border-neutral-100/80 pb-1 dark:border-neutral-800/80">
           <Text className="font-nunito text-xs font-black tracking-wider text-neutral-400 uppercase dark:text-neutral-500">
             {section.name}
           </Text>

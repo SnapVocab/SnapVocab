@@ -93,7 +93,7 @@ export function parseElementsToSections({
 
       currentSection = {
         id: generateClientId('sec'),
-        name: el.sectionLabel || defaultSectionName,
+        name: el.sectionLabel || '',
         side,
         columns: 1,
         repeatable: el.repeatable ?? false,

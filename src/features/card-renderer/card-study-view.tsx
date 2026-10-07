@@ -3,7 +3,7 @@ import { useRouter } from 'expo-router';
 import * as React from 'react';
 import { Pressable, ScrollView, View } from 'react-native';
 import { Button } from '@/components/ui/button';
-import { ChevronLeftIcon } from '@/components/ui/icons';
+import { CheckIcon, ChevronLeftIcon, RotateCwIcon, TrophyIcon } from '@/components/ui/icons';
 import { Text } from '@/components/ui/text';
 import { CardActionToolbar } from './components/card-action-toolbar';
 import { DynamicCardRenderer } from './dynamic-card-renderer';
@@ -83,20 +83,22 @@ export function CardStudyView({
     const xp = remCount * 10 + 20;
 
     return (
-      <View className="flex-1 justify-between bg-background p-6">
+      <View className="flex-1 justify-between bg-slate-50 p-6 dark:bg-neutral-950">
         <View className="items-center pt-8">
-          <Text className="text-6xl">🎉</Text>
-          <Text className="mt-4 font-nunito text-2xl font-black text-mascot-navy dark:text-white">
+          <View className="size-20 items-center justify-center rounded-3xl border-2 border-amber-300/80 bg-amber-100/80 shadow-md dark:border-amber-700/80 dark:bg-amber-950/80">
+            <TrophyIcon width={40} height={40} color="#D97706" />
+          </View>
+          <Text className="mt-5 font-nunito text-2xl font-black tracking-tight text-mascot-navy dark:text-white">
             HOÀN THÀNH BÀI HỌC!
           </Text>
-          <Text className="mt-1 font-inter text-sm text-neutral-500 dark:text-neutral-400">
+          <Text className="mt-1 font-inter text-sm font-medium text-neutral-500 dark:text-neutral-400">
             Bạn đã xuất sắc ôn tập xong danh sách thẻ từ
           </Text>
 
           {/* Stats Grid */}
           <View className="mt-8 w-full flex-row items-center justify-between gap-3">
             {/* Accuracy */}
-            <View className="flex-1 items-center rounded-2xl border border-neutral-200/80 bg-white p-4 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
+            <View className="flex-1 items-center rounded-2xl border border-neutral-200/80 bg-white p-4 shadow-xs dark:border-neutral-800 dark:bg-neutral-900">
               <Text className="font-nunito text-2xl font-black text-primary-600 dark:text-primary-400">
                 {accuracy}
                 %
@@ -107,7 +109,7 @@ export function CardStudyView({
             </View>
 
             {/* Remembered */}
-            <View className="flex-1 items-center rounded-2xl border border-emerald-200/80 bg-emerald-50/50 p-4 shadow-sm dark:border-emerald-900/60 dark:bg-emerald-950/40">
+            <View className="flex-1 items-center rounded-2xl border border-emerald-200/80 bg-emerald-50/50 p-4 shadow-xs dark:border-emerald-900/60 dark:bg-emerald-950/40">
               <Text className="font-nunito text-2xl font-black text-emerald-600 dark:text-emerald-400">
                 {remCount}
               </Text>
@@ -117,7 +119,7 @@ export function CardStudyView({
             </View>
 
             {/* XP */}
-            <View className="flex-1 items-center rounded-2xl border border-amber-200/80 bg-amber-50/50 p-4 shadow-sm dark:border-amber-900/60 dark:bg-amber-950/40">
+            <View className="flex-1 items-center rounded-2xl border border-amber-200/80 bg-amber-50/50 p-4 shadow-xs dark:border-amber-900/60 dark:bg-amber-950/40">
               <Text className="font-nunito text-2xl font-black text-amber-600 dark:text-amber-400">
                 +
                 {xp}
@@ -132,12 +134,14 @@ export function CardStudyView({
         {/* Action Buttons */}
         <View className="w-full gap-3 pb-6">
           <Button
-            label="Luyện tập lại 🔄"
+            label="Luyện tập lại"
             variant="outline"
+            icon={<RotateCwIcon color="#4D7C0F" width={18} height={18} />}
             onPress={handleRestart}
           />
           <Button
-            label="Hoàn tất bài học ✅"
+            label="Hoàn tất bài học"
+            icon={<CheckIcon color="#FFFFFF" width={18} height={18} />}
             onPress={handleBack}
           />
         </View>
