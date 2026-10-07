@@ -68,10 +68,10 @@ export function useCollectionDetail() {
   } = useInfiniteTopicItems(isInsideTopic ? currentParentId : undefined, 20);
 
   const items: TopicItemData[] = React.useMemo(() => {
-    return itemsResponse?.pages.flatMap((page: { data: TopicItemData[] }) => page.data) ?? [];
+    return itemsResponse?.pages.flatMap(page => page.data) ?? [];
   }, [itemsResponse]);
 
-  const totalItemsCount = itemsResponse?.pages[0]?.meta.total ?? items.length;
+  const totalItemsCount = items.length;
   const totalTopicsCount = topicsResponse?.pages[0]?.meta.total ?? topics.length;
 
   // Search filtered topics

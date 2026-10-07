@@ -77,3 +77,9 @@ export type AddTopicItemParams = {
   topicId: number | string;
   data: CreateTopicItemDTO;
 };
+
+export type CursorPaginationResponse<T> = {
+  data: T[];
+  nextCursor: number | null;
+  hasNext: boolean;
+};
