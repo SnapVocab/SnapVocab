@@ -15,14 +15,14 @@ const ATTRIBUTE_ALIASES: Record<string, string[]> = {
   ipa: ['phonetic', 'ipa', 'pronunciation', 'phien_am', 'phienAm'],
   partofspeech: ['partOfSpeech', 'part_of_speech', 'pos', 'tag', 'type', 'word_class', 'wordClass', 'loai_tu', 'loaiTu'],
   pos: ['partOfSpeech', 'part_of_speech', 'pos', 'tag', 'type', 'loai_tu', 'loaiTu'],
-  translation: ['translation', 'native_translation', 'nativeTranslation', 'meaning', 'back', 'vietnamese', 'dich', 'nghia'],
-  meaning: ['meaning', 'definition', 'translation', 'native_translation', 'nativeTranslation', 'back', 'nghia'],
-  definition: ['definition', 'meaning', 'dinh_nghia', 'dinhNghia', 'explain', 'explanation'],
-  definition_translation: ['definition_translation', 'definitionTranslation', 'dich_dinh_nghia', 'dichDinhNghia', 'translation'],
+  translation: ['translation', 'native_translation', 'nativeTranslation', 'vietnamese', 'dich', 'nghia'],
+  meaning: ['meaning', 'definition', 'explain', 'explanation', 'giai_nghia', 'giaiNghia'],
+  definition: ['definition', 'dinh_nghia', 'dinhNghia', 'explain', 'explanation', 'meaning'],
+  definition_translation: ['definition_translation', 'definitionTranslation', 'dich_dinh_nghia', 'dichDinhNghia', 'definition_trans'],
   content: ['content', 'sentence', 'example', 'example_sentence', 'exampleSentence', 'text', 'cau_vi_du', 'cauViDu'],
   example: ['content', 'sentence', 'example', 'example_sentence', 'exampleSentence', 'text', 'cau_vi_du', 'cauViDu'],
   sentence: ['content', 'sentence', 'example', 'example_sentence', 'exampleSentence', 'text', 'cau_vi_du', 'cauViDu'],
-  exampletranslation: ['translation', 'exampleTranslation', 'example_translation', 'sentenceTranslation', 'sentence_translation', 'meaning', 'dich_vi_du'],
+  example_translation: ['example_translation', 'exampleTranslation', 'sentenceTranslation', 'sentence_translation', 'dich_vi_du', 'dichViDu', 'translation'],
   audio: ['audio', 'audioUrl', 'audio_url', 'sound', 'voice'],
   image: ['image', 'imageUrl', 'image_url', 'picture', 'photo', 'illustration'],
   level: ['level', 'cefr', 'cap_do', 'capDo'],
@@ -30,7 +30,7 @@ const ATTRIBUTE_ALIASES: Record<string, string[]> = {
   antonyms: ['antonyms', 'antonym', 'trai_nghia', 'traiNghia'],
 };
 
-function getValueFromObject(obj: Record<string, any>, key: string): any {
+export function getValueFromObject(obj: Record<string, any>, key: string): any {
   if (!obj || typeof obj !== 'object') {
     return undefined;
   }
@@ -65,7 +65,7 @@ function getValueFromObject(obj: Record<string, any>, key: string): any {
 }
 
 /**
- * Extracts a map of group data from TopicItemData
+ * Extracts a map of group data from TopicItemData dynamically
  */
 export function extractGroups(
   data: TopicItemData | Record<string, any> | null | undefined,
@@ -81,13 +81,51 @@ export function extractGroups(
 }
 
 /**
- * Resolves a field's value from data
+ * Resolves the primary target word from data dynamically without hardcoding group names
+ */
+export function resolveTargetWord(
+  data: TopicItemData | Record<string, any> | null | undefined,
+): string {
+  if (!data) {
+    return '';
+  }
+  const groups = extractGroups(data);
+
+  // 1. Look in single object groups for 'word' or 'target_word'
+  for (const groupVal of Object.values(groups)) {
+    if (groupVal && typeof groupVal === 'object' && !Array.isArray(groupVal)) {
+      const found = getValueFromObject(groupVal, 'word') || getValueFromObject(groupVal, 'target_word');
+      if (found) {
+        return String(found).trim();
+      }
+    }
+  }
+
+  // 2. Direct root access
+  const direct = getValueFromObject(data as Record<string, any>, 'word') || (data as any)?.target_word;
+  if (direct) {
+    return String(direct).trim();
+  }
+
+  return '';
+}
+
+export type ResolveFieldOptions = {
+  instanceIndex?: number;
+  isRepeatableSection?: boolean;
+};
+
+/**
+ * Resolves a field's value from data dynamically based on Schema & Template metadata (Frappe-style)
  */
 export function resolveFieldValue(
   field: BuilderField,
   data?: TopicItemData | Record<string, any> | null,
-  instanceIndex = 0,
+  options: ResolveFieldOptions | number = 0,
 ): ResolvedFieldValue {
+  const instanceIndex = typeof options === 'number' ? options : (options.instanceIndex ?? 0);
+  const isRepeatableSection = typeof options === 'number' ? false : (options.isRepeatableSection ?? false);
+
   if (!data) {
     const mockVal = getMockFieldValue(field);
     return {
@@ -101,86 +139,106 @@ export function resolveFieldValue(
   const groups = extractGroups(data);
   const attrName = field.attributeName || '';
   const semanticRole = field.semanticRole;
+  const groupName = field.groupName;
 
   let value: any;
 
-  // 1. If repeatable array exists (e.g. examples), try the current instance first
-  for (const groupKey of Object.keys(groups)) {
-    const groupVal = groups[groupKey];
-    if (Array.isArray(groupVal)) {
-      const targetInstance = groupVal[instanceIndex];
-      if (targetInstance && typeof targetInstance === 'object') {
-        const found = getValueFromObject(targetInstance, attrName);
-        if (found !== undefined) {
-          value = found;
-          break;
+  // 1. Direct metadata lookup using field's parent Schema Group
+  if (groupName && groups[groupName] !== undefined) {
+    const targetGroup = groups[groupName];
+    if (Array.isArray(targetGroup)) {
+      const row = targetGroup[instanceIndex];
+      if (row && typeof row === 'object') {
+        value = getValueFromObject(row, attrName);
+      }
+    }
+    else if (targetGroup && typeof targetGroup === 'object') {
+      value = getValueFromObject(targetGroup, attrName);
+    }
+  }
+
+  // 2. Dynamic group scan if not resolved by direct groupName
+  if (value === undefined) {
+    if (isRepeatableSection || field.groupMultiple) {
+      // Search inside array groups at instanceIndex
+      for (const groupVal of Object.values(groups)) {
+        if (Array.isArray(groupVal)) {
+          const row = groupVal[instanceIndex];
+          if (row && typeof row === 'object') {
+            const found = getValueFromObject(row, attrName);
+            if (found !== undefined) {
+              value = found;
+              break;
+            }
+          }
+        }
+      }
+    }
+    else {
+      // Search inside single object groups ONLY
+      for (const groupVal of Object.values(groups)) {
+        if (groupVal && typeof groupVal === 'object' && !Array.isArray(groupVal)) {
+          const found = getValueFromObject(groupVal, attrName);
+          if (found !== undefined) {
+            value = found;
+            break;
+          }
         }
       }
     }
   }
 
-  // 2. Check in single groups
+  // 3. Root object direct property fallback
   if (value === undefined) {
-    for (const groupKey of Object.keys(groups)) {
-      const groupVal = groups[groupKey];
-      if (groupVal && typeof groupVal === 'object' && !Array.isArray(groupVal)) {
-        const found = getValueFromObject(groupVal, attrName);
-        if (found !== undefined) {
-          value = found;
-          break;
-        }
-      }
+    const directVal = (data as Record<string, any>)[attrName];
+    if (directVal !== undefined && (isRepeatableSection || !Array.isArray(directVal))) {
+      value = directVal;
     }
   }
 
-  // 3. Direct root access
-  if (value === undefined) {
-    value = getValueFromObject(data as Record<string, any>, attrName);
-  }
-
-  // 4. Fallback matching via SemanticRole if attribute name didn't match directly
+  // 4. Semantic Role Fallback (Dynamic matching across single / array groups)
   if (value === undefined && semanticRole) {
-    const mainGroup
-      = groups.main
-        || groups.vocabulary
-        || Object.values(groups).find(g => typeof g === 'object' && !Array.isArray(g))
-        || groups;
-
-    const examplesGroup = groups.examples || groups.example;
-    const currentInstance = Array.isArray(examplesGroup) ? examplesGroup[instanceIndex] : null;
-
-    if (semanticRole === 'TARGET_WORD' && mainGroup) {
-      value = getValueFromObject(mainGroup, 'word');
-    }
-    else if (semanticRole === 'NATIVE_TRANSLATION') {
-      if (currentInstance && (field.attributeName?.includes('example') || field.fieldLabel?.includes('ví dụ'))) {
-        value = getValueFromObject(currentInstance, 'translation');
-      }
-      else if (mainGroup) {
-        value = getValueFromObject(mainGroup, 'translation') || getValueFromObject(mainGroup, 'definition_translation');
+    if (isRepeatableSection || field.groupMultiple) {
+      for (const groupVal of Object.values(groups)) {
+        if (Array.isArray(groupVal)) {
+          const row = groupVal[instanceIndex];
+          if (row && typeof row === 'object') {
+            if (semanticRole === 'EXAMPLE_SENTENCE') {
+              value = getValueFromObject(row, 'content') || getValueFromObject(row, 'sentence') || getValueFromObject(row, 'example');
+            }
+            else if (semanticRole === 'NATIVE_TRANSLATION') {
+              value = getValueFromObject(row, 'translation') || getValueFromObject(row, 'meaning');
+            }
+            if (value !== undefined) {
+              break;
+            }
+          }
+        }
       }
     }
-    else if (semanticRole === 'DEFINITION' && mainGroup) {
-      value = getValueFromObject(mainGroup, 'definition') || getValueFromObject(mainGroup, 'meaning');
-    }
-    else if (semanticRole === 'EXAMPLE_SENTENCE') {
-      if (currentInstance) {
-        value = getValueFromObject(currentInstance, 'content') || getValueFromObject(currentInstance, 'sentence');
+    else {
+      for (const groupVal of Object.values(groups)) {
+        if (groupVal && typeof groupVal === 'object' && !Array.isArray(groupVal)) {
+          if (semanticRole === 'TARGET_WORD') {
+            value = getValueFromObject(groupVal, 'word') || getValueFromObject(groupVal, 'target_word');
+          }
+          else if (semanticRole === 'NATIVE_TRANSLATION') {
+            value = getValueFromObject(groupVal, 'translation');
+          }
+          else if (semanticRole === 'DEFINITION') {
+            value = getValueFromObject(groupVal, 'definition') || getValueFromObject(groupVal, 'meaning');
+          }
+          else if (semanticRole === 'AUDIO') {
+            value = getValueFromObject(groupVal, 'audio') || '';
+          }
+          else if (semanticRole === 'IMAGE') {
+            value = getValueFromObject(groupVal, 'image');
+          }
+          if (value !== undefined) {
+            break;
+          }
+        }
       }
-      else if (mainGroup) {
-        value = getValueFromObject(mainGroup, 'sentence') || getValueFromObject(mainGroup, 'example');
-      }
-    }
-    else if ((semanticRole as any) === 'PRONUNCIATION' || attrName.includes('phonetic') || attrName.includes('ipa')) {
-      if (mainGroup) {
-        value = getValueFromObject(mainGroup, 'phonetic') || getValueFromObject(mainGroup, 'ipa');
-      }
-    }
-    else if (semanticRole === 'AUDIO' && mainGroup) {
-      value = getValueFromObject(mainGroup, 'audio') || '';
-    }
-    else if (semanticRole === 'IMAGE' && mainGroup) {
-      value = getValueFromObject(mainGroup, 'image');
     }
   }
 
@@ -196,7 +254,7 @@ export function resolveFieldValue(
 }
 
 /**
- * Calculates how many instances exist for a repeatable section (e.g. list of examples)
+ * Calculates how many instances exist for a repeatable section dynamically (Frappe-style)
  */
 export function getSectionInstanceCount(
   section: BuilderSection,
@@ -208,20 +266,25 @@ export function getSectionInstanceCount(
 
   const groups = extractGroups(data);
 
-  // Look for any array in groups (like examples)
-  for (const groupKey of Object.keys(groups)) {
-    const groupVal = groups[groupKey];
+  // 1. If section maps to a specific schema group that is an array
+  if (section.groupName && Array.isArray(groups[section.groupName])) {
+    return groups[section.groupName].length;
+  }
+
+  // 2. If any field in the section belongs to a schema group that is an array
+  for (const field of section.fields) {
+    if (field.groupName && Array.isArray(groups[field.groupName])) {
+      return groups[field.groupName].length;
+    }
+  }
+
+  // 3. Dynamic scan: find any array group in data that has matching attribute values
+  for (const groupVal of Object.values(groups)) {
     if (Array.isArray(groupVal) && groupVal.length > 0) {
-      // Check if any field matches or section is an example/repeatable group
       const hasMatchingField = section.fields.some(f =>
-        groupVal.some(item => item && getValueFromObject(item, f.attributeName) !== undefined),
+        groupVal.some(item => item && typeof item === 'object' && getValueFromObject(item, f.attributeName) !== undefined),
       );
-      if (
-        hasMatchingField
-        || groupKey.toLowerCase().includes('example')
-        || section.name.toLowerCase().includes('ví dụ')
-        || section.name.toLowerCase().includes('example')
-      ) {
+      if (hasMatchingField) {
         return groupVal.length;
       }
     }

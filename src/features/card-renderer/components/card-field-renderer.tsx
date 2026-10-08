@@ -6,89 +6,140 @@ import { Image } from '@/components/ui/image';
 import { Text } from '@/components/ui/text';
 import { useTts } from '@/lib/hooks/use-tts';
 import { FONT_SIZE_MAP } from '../types';
-import { extractGroups, resolveFieldValue } from '../utils/data-resolver';
+import { resolveFieldValue, resolveTargetWord } from '../utils/data-resolver';
 
 type Props = {
   field: BuilderField;
   data?: TopicItemData | Record<string, any> | null;
   instanceIndex?: number;
+  isRepeatableSection?: boolean;
 };
 
-export function CardFieldRenderer({ field, data, instanceIndex = 0 }: Props) {
-  const { text, isEmpty, isImage } = resolveFieldValue(
+/**
+ * Normalizes phonetic string by cleanly stripping any outer slashes,
+ * brackets, backslashes, quotes, whitespace
+ */
+function cleanPhoneticString(raw?: string | null): string {
+  if (!raw) {
+    return '';
+  }
+  let s = raw.trim();
+  // Strip outer enclosing slashes, brackets, backslashes, quotes
+  while (
+    s.length > 0
+    && (s.startsWith('/')
+      || s.startsWith('\\')
+      || s.startsWith('[')
+      || s.startsWith(']')
+      || s.startsWith('"')
+      || s.startsWith('\''))
+  ) {
+    s = s.slice(1).trim();
+  }
+  while (
+    s.length > 0
+    && (s.endsWith('/')
+      || s.endsWith('\\')
+      || s.endsWith('[')
+      || s.endsWith(']')
+      || s.endsWith('"')
+      || s.endsWith('\''))
+  ) {
+    s = s.slice(0, -1).trim();
+  }
+  if (!s || s === 'null' || s === 'undefined') {
+    return '';
+  }
+  return s;
+}
+
+export function CardFieldRenderer({
+  field,
+  data,
+  instanceIndex = 0,
+  isRepeatableSection = false,
+}: Props) {
+  const { text, isEmpty, isImage, isAudio } = resolveFieldValue(
     field,
     data,
-    instanceIndex,
+    { instanceIndex, isRepeatableSection },
   );
   const { speak, isPlaying } = useTts();
 
-  const groups = extractGroups(data);
-  const targetWord = (groups.main as any)?.word || (data as any)?.word || '';
+  const targetWord = resolveTargetWord(data);
 
   const attrLower = (field.attributeName || '').toLowerCase();
+  const labelLower = (field.fieldLabel || '').toLowerCase();
+
   const isTargetWord = field.semanticRole === 'TARGET_WORD'
     || attrLower === 'word'
     || attrLower === 'target_word';
-  const isPhonetic = field.attributeName?.toLowerCase().includes('phonetic')
-    || field.attributeName?.toLowerCase().includes('ipa')
-    || field.fieldLabel?.toLowerCase().includes('phiên âm')
-    || field.fieldLabel?.toLowerCase().includes('phonetic');
-  const isLevel = attrLower.includes('level')
-    || attrLower.includes('cefr')
-    || field.fieldLabel?.toLowerCase().includes('cấp độ');
-  const isPos = attrLower.includes('pos')
-    || attrLower.includes('partofspeech')
-    || attrLower.includes('tag')
-    || field.fieldLabel?.toLowerCase().includes('loại từ');
-  const isTranslation = field.semanticRole === 'NATIVE_TRANSLATION'
-    || attrLower.includes('trans')
-    || attrLower.includes('nghia')
-    || attrLower.includes('dich');
-  const isDefinition = field.semanticRole === 'DEFINITION'
-    || attrLower.includes('def')
-    || field.fieldLabel?.toLowerCase().includes('định nghĩa');
-  const isExample = field.semanticRole === 'EXAMPLE_SENTENCE'
-    || attrLower.includes('example')
-    || attrLower.includes('sentence');
+  const isPhonetic = attrLower.includes('phonetic')
+    || attrLower.includes('ipa')
+    || labelLower.includes('phiên âm')
+    || labelLower.includes('phonetic');
 
   const handleSpeak = () => {
-    const speakText = text || targetWord;
+    const speakText = (isTargetWord ? text : targetWord) || text;
     if (speakText) {
       speak(speakText);
     }
   };
 
   const isDedicatedAudio
-    = (field.dataType === 'AUDIO' || field.semanticRole === 'AUDIO')
+    = (isAudio || field.dataType === 'AUDIO' || field.semanticRole === 'AUDIO')
       && !isTargetWord
-      && !isPhonetic
-      && !isTranslation;
+      && !isPhonetic;
 
-  if (isEmpty && field.hideIfEmpty && !isDedicatedAudio) {
+  // Clean phonetic: strip outer slashes/brackets/etc. cleanly
+  const rawText = text?.trim() || '';
+  const cleanPhonetic = isPhonetic ? cleanPhoneticString(rawText) : rawText;
+  const isPhoneticEmpty = isPhonetic && !cleanPhonetic;
+  const isFieldEmpty = isEmpty || isPhoneticEmpty;
+
+  if (isFieldEmpty && field.hideIfEmpty && !isDedicatedAudio) {
     return null;
   }
 
-  const baseFontSize = FONT_SIZE_MAP[field.fontSize] || 16;
-  const fontSize = isTargetWord
-    ? Math.max(baseFontSize, 26)
-    : isTranslation
-      ? Math.max(baseFontSize, 20)
-      : isPhonetic
-        ? Math.max(baseFontSize, 15)
-        : baseFontSize;
-
+  const fontSize = FONT_SIZE_MAP[field.fontSize] || 16;
   const textAlign = (field.alignment?.toLowerCase() || 'left') as 'left' | 'center' | 'right';
   const color = field.color || undefined;
+
+  const horizontalAlignClass
+    = textAlign === 'center'
+      ? 'items-center text-center'
+      : textAlign === 'right'
+        ? 'items-end text-right'
+        : 'items-start text-left';
+
+  const justifyContentStyle = {
+    justifyContent:
+      textAlign === 'center'
+        ? 'center'
+        : textAlign === 'right'
+          ? 'flex-end'
+          : 'flex-start',
+  } as const;
 
   // 1. Image field
   if (isImage && text) {
     return (
-      <View className="my-2.5 w-full items-center justify-center overflow-hidden rounded-3xl border border-neutral-200/80 bg-neutral-100 dark:border-neutral-800 dark:bg-neutral-900">
-        <Image
-          source={{ uri: text }}
-          className="h-44 w-full rounded-3xl"
-          contentFit="cover"
-        />
+      <View className={`my-1.5 w-full ${horizontalAlignClass}`}>
+        {field.fieldLabel ? (
+          <Text
+            style={{ textAlign }}
+            className="mb-1.5 font-inter text-[10.5px] font-extrabold tracking-wider text-neutral-400 uppercase dark:text-neutral-500"
+          >
+            {field.fieldLabel}
+          </Text>
+        ) : null}
+        <View className="h-44 w-full overflow-hidden rounded-2xl border border-neutral-200/80 bg-neutral-100 dark:border-neutral-800 dark:bg-neutral-900">
+          <Image
+            source={{ uri: text }}
+            className="size-full"
+            contentFit="cover"
+          />
+        </View>
       </View>
     );
   }
@@ -96,33 +147,23 @@ export function CardFieldRenderer({ field, data, instanceIndex = 0 }: Props) {
   // 2. Dedicated Audio Button
   if (isDedicatedAudio) {
     return (
-      <View
-        className="my-1.5 w-full flex-row"
-        style={{
-          justifyContent:
-            textAlign === 'center'
-              ? 'center'
-              : textAlign === 'right'
-                ? 'flex-end'
-                : 'flex-start',
-        }}
-      >
+      <View className="my-1.5 w-full" style={justifyContentStyle}>
         <Pressable
           onPress={handleSpeak}
           hitSlop={10}
-          className={`flex-row items-center gap-2 rounded-2xl border px-3.5 py-2 shadow-2xs active:scale-95 ${
+          className={`flex-row items-center gap-2 rounded-2xl border-2 border-b-[3px] px-4 py-2.5 shadow-2xs active:translate-y-px active:border-b-2 ${
             isPlaying
               ? 'border-lime-500 bg-lime-500'
-              : 'border-lime-200/90 bg-lime-50 active:bg-lime-100 dark:border-lime-900/60 dark:bg-lime-950/70'
+              : 'border-lime-200/90 border-b-lime-300 bg-lime-50 active:bg-lime-100 dark:border-lime-800 dark:border-b-lime-900 dark:bg-lime-950/70'
           }`}
         >
           <VolumeIcon
-            width={16}
-            height={16}
+            width={18}
+            height={18}
             color={isPlaying ? '#FFFFFF' : '#4D7C0F'}
           />
           <Text
-            className={`font-inter text-xs font-black ${
+            className={`font-nunito text-xs font-black tracking-wide ${
               isPlaying
                 ? 'text-white'
                 : 'text-lime-800 dark:text-lime-300'
@@ -135,159 +176,59 @@ export function CardFieldRenderer({ field, data, instanceIndex = 0 }: Props) {
     );
   }
 
-  // 3. Level Badge (e.g. A1, A2, B1, B2, C1, C2)
-  if (isLevel && text) {
-    return (
-      <View
-        className="my-1 w-full flex-row"
-        style={{
-          justifyContent:
-            textAlign === 'center'
-              ? 'center'
-              : textAlign === 'right'
-                ? 'flex-end'
-                : 'flex-start',
-        }}
-      >
-        <View className="flex-row items-center gap-1 rounded-full border border-emerald-200/90 bg-emerald-50/90 px-3 py-0.5 dark:border-emerald-900/60 dark:bg-emerald-950/60">
-          <Text className="font-inter text-[11px] font-black tracking-wider text-emerald-700 uppercase dark:text-emerald-300">
-            {text}
-          </Text>
-        </View>
-      </View>
-    );
-  }
-
-  // 4. Part of Speech Badge
-  if (isPos && text) {
-    return (
-      <View
-        className="my-1 w-full flex-row"
-        style={{
-          justifyContent:
-            textAlign === 'center'
-              ? 'center'
-              : textAlign === 'right'
-                ? 'flex-end'
-                : 'flex-start',
-        }}
-      >
-        <View className="rounded-xl border border-lime-200/80 bg-lime-100/70 px-3 py-1 dark:border-lime-900/60 dark:bg-lime-950/60">
-          <Text className="font-inter text-xs font-black text-lime-800 dark:text-lime-300">
-            {text}
-          </Text>
-        </View>
-      </View>
-    );
-  }
-
-  // 5. Definition Callout
-  if (isDefinition && text) {
-    return (
-      <View className="my-2 w-full rounded-2xl border-l-4 border-lime-500 bg-lime-50/50 py-2.5 pr-3 pl-3.5 dark:bg-lime-950/30">
-        {field.fieldLabel && field.fieldLabel !== field.attributeName && (
-          <Text
-            style={{ textAlign }}
-            className="mb-0.5 font-inter text-[11px] font-bold tracking-wider text-lime-800 uppercase dark:text-lime-400"
-          >
-            {field.fieldLabel}
-          </Text>
-        )}
-        <Text
-          style={[
-            { fontSize: Math.min(fontSize, 16), textAlign },
-            color ? { color } : undefined,
-          ]}
-          className="font-inter font-medium text-slate-700 dark:text-neutral-200"
-        >
-          {text}
-        </Text>
-      </View>
-    );
-  }
-
-  // 6. Example Sentence
-  if (isExample && text) {
-    return (
-      <View className="my-1.5 w-full rounded-2xl border border-neutral-200/60 bg-slate-50/80 p-3.5 dark:border-neutral-800/80 dark:bg-neutral-900/50">
-        <Text
-          style={[
-            { fontSize, textAlign },
-            color ? { color } : undefined,
-          ]}
-          className="font-inter font-medium text-slate-800 italic dark:text-neutral-200"
-        >
-          &ldquo;
-          {text}
-          &rdquo;
-        </Text>
-      </View>
-    );
-  }
-
-  // Formatted display text (for phonetic, wrap in /.../ if not already present)
+  // Formatted display text (for phonetic, properly format /IPA/)
   let displayText = text || (field.hideIfEmpty ? '' : '—');
-  if (isPhonetic && text && !text.startsWith('/') && !text.startsWith('[')) {
-    displayText = `/${text}/`;
+  if (isPhonetic) {
+    if (cleanPhonetic) {
+      displayText = `/${cleanPhonetic}/`;
+    }
+    else {
+      displayText = field.hideIfEmpty ? '' : '—';
+    }
   }
 
-  // 7. Standard text / Word / Phonetic
+  // 3. Standard dynamic text field (Word, Translation, Phonetic, Level, Definition, Example, etc.)
   return (
-    <View className="my-1 w-full">
-      {/* Field Label (subtle caption) */}
-      {field.fieldLabel
-        && field.fieldLabel !== field.attributeName
-        && !isTargetWord
-        && !isPhonetic
-        && !isLevel
-        && !isTranslation && (
+    <View className={`my-1 w-full ${horizontalAlignClass}`}>
+      {/* Field Label (Frappe-style subtle uppercase caption) */}
+      {field.fieldLabel ? (
         <Text
           style={{ textAlign }}
-          className="mb-0.5 font-inter text-[11px] font-bold tracking-wider text-neutral-400 uppercase dark:text-neutral-500"
+          className="mb-1 font-inter text-[10.5px] font-extrabold tracking-wider text-neutral-400 uppercase dark:text-neutral-500"
         >
           {field.fieldLabel}
         </Text>
-      )}
+      ) : null}
 
       <View
-        className="flex-row items-center gap-2.5"
-        style={{
-          justifyContent:
-            textAlign === 'center'
-              ? 'center'
-              : textAlign === 'right'
-                ? 'flex-end'
-                : 'flex-start',
-        }}
+        className="w-full flex-row items-center gap-2.5"
+        style={justifyContentStyle}
       >
         <Text
           style={[
             { fontSize, textAlign },
             color ? { color } : undefined,
           ]}
-          className={`font-nunito ${
-            isTargetWord
-              ? 'font-black tracking-tight text-mascot-navy dark:text-white'
-              : isPhonetic
-                ? 'font-bold text-sky-600 dark:text-sky-400'
-                : isTranslation
-                  ? 'font-black text-emerald-700 dark:text-emerald-400'
-                  : 'font-semibold text-neutral-800 dark:text-white'
+          className={`shrink ${
+            isPhonetic
+              ? 'font-sans font-semibold tracking-wide text-sky-600 dark:text-sky-400'
+              : isTargetWord
+                ? 'font-nunito font-black tracking-tight text-mascot-navy dark:text-white'
+                : 'font-nunito font-bold text-neutral-800 dark:text-white'
           }`}
         >
           {displayText}
         </Text>
 
         {/* Audio Action SVG Button on text fields like phonetic / word */}
-        {field.audioAction && (
+        {field.audioAction && (displayText || targetWord) ? (
           <Pressable
             onPress={handleSpeak}
             hitSlop={10}
-            android_ripple={{ color: 'transparent' }}
-            className={`size-8 items-center justify-center rounded-full shadow-2xs active:scale-95 ${
+            className={`size-8 items-center justify-center rounded-full border-2 border-b-[3px] shadow-2xs active:translate-y-px active:border-b-2 ${
               isPlaying
-                ? 'bg-lime-500'
-                : 'border border-lime-200/80 bg-lime-100/90 active:bg-lime-200 dark:border-lime-900/60 dark:bg-lime-950/80'
+                ? 'border-lime-600 bg-lime-500'
+                : 'border-lime-300 border-b-lime-400 bg-lime-100 active:bg-lime-200 dark:border-lime-800 dark:border-b-lime-900 dark:bg-lime-950/80'
             }`}
           >
             <VolumeIcon
@@ -296,7 +237,7 @@ export function CardFieldRenderer({ field, data, instanceIndex = 0 }: Props) {
               color={isPlaying ? '#FFFFFF' : '#4D7C0F'}
             />
           </Pressable>
-        )}
+        ) : null}
       </View>
     </View>
   );

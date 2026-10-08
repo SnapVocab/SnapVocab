@@ -26,61 +26,68 @@ export function CardSectionRenderer({ section, data }: Props) {
   const showSectionHeader = Boolean(section.name && section.name.trim());
 
   return (
-    <View className="my-1.5 w-full">
-      {/* Section Header (rendered if user gave this section a name) */}
+    <View className="my-2.5 w-full">
+      {/* Section Header */}
       {showSectionHeader && (
-        <View className="mb-2 border-b border-neutral-100/80 pb-1 dark:border-neutral-800/80">
-          <Text className="font-nunito text-xs font-black tracking-wider text-neutral-400 uppercase dark:text-neutral-500">
-            {section.name}
-          </Text>
+        <View className="mb-3.5 flex-row items-center justify-between border-b border-neutral-200/60 pb-2 dark:border-neutral-800">
+          <View className="flex-row items-center gap-2">
+            <View className="h-3.5 w-1 rounded-full bg-primary-500" />
+            <Text className="font-nunito text-xs font-black tracking-wider text-neutral-400 uppercase dark:text-neutral-500">
+              {section.name}
+            </Text>
+          </View>
         </View>
       )}
 
-      {/* Render Instances (1 or multiple if repeatable) */}
+      {/* Render Section Instances */}
       {instanceIndices.map(inst => (
         <View
           key={inst.key}
           className={`w-full ${
             inst.index > 0
-              ? 'mt-3 border-t border-dashed border-neutral-200/80 pt-3 dark:border-neutral-700/80'
+              ? 'mt-4 border-t border-dashed border-neutral-200/80 pt-4 dark:border-neutral-700/80'
               : ''
           }`}
         >
           {isTwoColumns ? (
-            <View className="w-full flex-row items-start justify-between gap-3">
-              {/* Column 1 (Left - 50%) */}
-              <View className="flex-1">
+            /* 2-Column layout: vertically centered along cross-axis, fields gap-3.5 */
+            <View className="w-full flex-row items-center justify-between gap-4">
+              {/* Column 1 (Left 50%) */}
+              <View className="flex-1 justify-center gap-3.5">
                 {col1Fields.map(field => (
                   <CardFieldRenderer
                     key={`${field.id}-${inst.key}`}
                     field={field}
                     data={data}
                     instanceIndex={inst.index}
+                    isRepeatableSection={section.repeatable}
                   />
                 ))}
               </View>
 
-              {/* Column 2 (Right - 50%) */}
-              <View className="flex-1">
+              {/* Column 2 (Right 50%) */}
+              <View className="flex-1 justify-center gap-3.5">
                 {col2Fields.map(field => (
                   <CardFieldRenderer
                     key={`${field.id}-${inst.key}`}
                     field={field}
                     data={data}
                     instanceIndex={inst.index}
+                    isRepeatableSection={section.repeatable}
                   />
                 ))}
               </View>
             </View>
           ) : (
-            /* Single Column (100% width) */
-            <View className="w-full">
+            /* Single Column layout (100% width) */
+            <View className="w-full justify-center gap-3.5">
               {section.fields.map(field => (
                 <CardFieldRenderer
                   key={`${field.id}-${inst.key}`}
                   field={field}
                   data={data}
                   instanceIndex={inst.index}
+                  isRepeatableSection={section.repeatable}
                 />
               ))}
             </View>

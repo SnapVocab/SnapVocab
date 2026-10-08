@@ -100,6 +100,8 @@ export type BuilderField = {
   id: string; // Unique Client ID (e.g. UUID)
   schemaAttributeId: number; // Linked attribute ID from backend schema
   attributeName: string; // e.g. 'word', 'phonetic', 'meaning', 'example'
+  groupName?: string; // Parent Schema group name from metadata (e.g. 'main', 'meaning', 'examples')
+  groupMultiple?: boolean; // Whether the group is repeatable
   fieldLabel: string; // Display label (e.g. 'Từ vựng', 'Phiên âm', 'Bản dịch / Nghĩa')
   semanticRole: SemanticRole | null;
   required: boolean; // "Bắt buộc điền thông tin" toggle
@@ -127,6 +129,7 @@ export type BuilderSection = {
   side: CardSide; // 'FRONT' | 'BACK'
   columns: ColumnLayout; // 1 (100%) or 2 (50% - 50%)
   repeatable: boolean; // "Cho phép lặp lại (Danh sách 1-n)" toggle
+  groupName?: string; // The schema group this section maps to
   fields: BuilderField[]; // Fields belonging to this section
 };
 
