@@ -20,6 +20,8 @@ jest.mock('@/features/progress/api', () => ({
 }));
 jest.mock('@/features/auth/use-auth-store', () => ({
   useAuthStore: (select: (s: unknown) => unknown) => select({ user: mockUser }),
+  // lib/api/provider subscribes at import time (reached through ProfileScreen -> shop api).
+  store: { subscribe: () => () => {} },
 }));
 jest.mock('@/features/profile/api', () => ({
   useMe: () => ({ data: mockUser, isLoading: false, refetch: jest.fn(), isRefetching: false }),
