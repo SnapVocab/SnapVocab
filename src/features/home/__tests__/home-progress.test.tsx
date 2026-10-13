@@ -107,7 +107,7 @@ describe('home and profile show only what the backend supports', () => {
     expect(screen.queryByText(/đến hạn/)).toBeNull();
     expect(screen.queryByText(/đã được ôn tập/)).toBeNull();
     expect(screen.queryByText('Flashcard')).toBeNull();
-    expect(screen.getByText('Lịch sử Quiz')).toBeTruthy();
+    expect(screen.getByText('home.daily_mission')).toBeTruthy();
   });
 
   it('loading: no fake zeros and no success state', () => {
