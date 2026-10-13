@@ -1,51 +1,40 @@
+import type { BottomSheetModal } from '@gorhom/bottom-sheet';
 import type { Collection } from './types';
 import { useRouter } from 'expo-router';
-import { useCallback, useMemo } from 'react';
-import { Pressable, ScrollView } from 'react-native';
+import { useCallback, useRef, useState } from 'react';
+import { RefreshControl, ScrollView } from 'react-native';
 import Animated, { FadeIn } from 'react-native-reanimated';
-import { FocusAwareStatusBar, SafeAreaView, Text, View } from '@/components/ui';
+import { Button, FocusAwareStatusBar, SafeAreaView, Text, View } from '@/components/ui';
 import { translate } from '@/lib/i18n';
-import { getItem, setItem } from '@/lib/storage';
+import { setItem } from '@/lib/storage';
 import { useCollections } from './api';
-import { CollectionCard, SkeletonCollectionCard } from './components';
-
-const LAST_STUDIED_COLLECTION_KEY = 'last_studied_collection_id';
+import {
+  CollectionCard,
+  CollectionEmptyState,
+  CollectionErrorState,
+  CollectionOptionsBottomSheet,
+  CollectionSwitcher,
+  SkeletonCollectionList,
+} from './components';
 
 export function LearnScreen() {
   const router = useRouter();
-  const { data: collections, isLoading } = useCollections();
+  const [viewType, setViewType] = useState<'USER' | 'SYSTEM'>('USER');
+  const [selectedCollection, setSelectedCollection] = useState<Collection | null>(null);
+  const [sheetMode, setSheetMode] = useState<'OPTIONS' | 'CREATE'>('OPTIONS');
+  const bottomSheetRef = useRef<BottomSheetModal>(null);
 
-  const activeCollection = useMemo(() => {
-    if (!collections || collections.length === 0) {
-      return null;
-    }
-
-    const lastStudiedId = getItem<number>(LAST_STUDIED_COLLECTION_KEY);
-    if (lastStudiedId) {
-      const found = collections.find(c => c.id === lastStudiedId);
-      if (found) {
-        return found;
-      }
-    }
-
-    // Otherwise, pick the most recently updated user collection
-    const userCollections = collections.filter(c => c.type === 'USER');
-    if (userCollections.length > 0) {
-      return [...userCollections].sort((a, b) => {
-        const dateA = new Date(a.updatedAt || a.createdAt || 0).getTime();
-        const dateB = new Date(b.updatedAt || b.createdAt || 0).getTime();
-        return dateB - dateA;
-      })[0];
-    }
-
-    // Fallback to default system collection
-    const systemCollections = collections.filter(c => c.type === 'SYSTEM');
-    return systemCollections[0] ?? null;
-  }, [collections]);
+  const {
+    data: collections,
+    isError,
+    isLoading,
+    isRefetching,
+    refetch,
+  } = useCollections({ type: viewType });
 
   const handleCardPress = useCallback(
     (collection: Collection) => {
-      setItem(LAST_STUDIED_COLLECTION_KEY, collection.id);
+      setItem('last_studied_collection_id', collection.id);
       router.push({
         pathname: '/(app)/collections/[id]',
         params: {
@@ -59,55 +48,107 @@ export function LearnScreen() {
     [router],
   );
 
+  const handleOptionsPress = useCallback((collection: Collection) => {
+    setSelectedCollection(collection);
+    setSheetMode('OPTIONS');
+    bottomSheetRef.current?.present();
+  }, []);
+
+  const handleCreatePress = useCallback(() => {
+    setSelectedCollection(null);
+    setSheetMode('CREATE');
+    bottomSheetRef.current?.present();
+  }, []);
+
+  const handleCreated = useCallback(
+    (newCollection: Collection) => {
+      refetch();
+      handleCardPress(newCollection);
+    },
+    [refetch, handleCardPress],
+  );
+
   return (
     <SafeAreaView style={{ flex: 1 }} className="flex-1 bg-background">
       <FocusAwareStatusBar />
-      <View className="px-4 pt-4">
-        <Text className="font-nunito text-[24px] font-extrabold tracking-tight text-neutral-800">
-          {translate('learn.title')}
+
+      {/* Screen Header */}
+      <View className="border-b border-neutral-100 bg-white px-5 py-4 dark:border-neutral-800 dark:bg-neutral-900">
+        <Text className="font-nunito text-2xl font-black text-mascot-navy dark:text-white">
+          {translate('learn.collections.title')}
+        </Text>
+        <Text className="mt-0.5 font-inter text-[13px] font-medium text-neutral-500 dark:text-neutral-400">
+          {translate('learn.collections.subtitle')}
         </Text>
       </View>
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerClassName="p-4 pb-8">
-        {/* Section Header: Collections */}
-        <View className="flex-row items-center justify-between">
-          <Text className="font-nunito text-xs font-extrabold tracking-wider text-neutral-400 uppercase">
-            {translate('learn.collections.title')}
-          </Text>
-          <Pressable onPress={() => router.push('/collections')} hitSlop={8}>
-            <Text className="font-inter text-xs font-bold text-neutral-500">
-              {`${translate('learn.view_all')} →`}
-            </Text>
-          </Pressable>
+
+      <View className="flex-1 px-4 pt-3">
+        {/* Switcher Tab: Mine / System */}
+        <View className="mb-3">
+          <CollectionSwitcher viewType={viewType} onChange={setViewType} />
         </View>
 
-        {/* Active Collection Card (1 item) */}
-        <View className="mt-3">
-          {isLoading && <SkeletonCollectionCard />}
+        {/* Scrollable Collection Cards List */}
+        <ScrollView
+          className="flex-1"
+          showsVerticalScrollIndicator={false}
+          contentContainerClassName="pt-1 pb-24"
+          refreshControl={
+            <RefreshControl refreshing={isRefetching} onRefresh={refetch} />
+          }
+        >
+          {/* Loading State */}
+          {isLoading && !collections && <SkeletonCollectionList count={4} />}
 
-          {!isLoading && activeCollection && (
-            <Animated.View entering={FadeIn.duration(200)}>
-              <CollectionCard
-                name={activeCollection.name}
-                translation={activeCollection.translation}
-                isSystemCollection={activeCollection.type === 'SYSTEM'}
-                showOption={false}
-                onPress={() => handleCardPress(activeCollection)}
-              />
+          {/* Error State */}
+          {isError && !collections && (
+            <CollectionErrorState isRetrying={isRefetching} onRetry={() => refetch()} />
+          )}
+
+          {/* Empty State */}
+          {!isLoading && !isError && collections && collections.length === 0 && (
+            <CollectionEmptyState />
+          )}
+
+          {/* Data List State */}
+          {collections && collections.length > 0 && (
+            <Animated.View key={viewType} entering={FadeIn.duration(200)} className="gap-3">
+              {collections.map(item => (
+                <CollectionCard
+                  key={item.id}
+                  name={item.name}
+                  translation={item.translation}
+                  isSystemCollection={item.type === 'SYSTEM'}
+                  onPress={() => handleCardPress(item)}
+                  onOptionsPress={() => handleOptionsPress(item)}
+                />
+              ))}
             </Animated.View>
           )}
+        </ScrollView>
 
-          {!isLoading && !activeCollection && (
-            <Pressable
-              onPress={() => router.push('/collections')}
-              className="items-center justify-center rounded-2xl border border-dashed border-neutral-300 p-6 dark:border-neutral-700"
-            >
-              <Text className="font-nunito text-sm font-bold text-neutral-400">
-                {translate('learn.collections.empty_title')}
-              </Text>
-            </Pressable>
-          )}
-        </View>
-      </ScrollView>
+        {/* Floating / Bottom Action Button */}
+        {viewType === 'USER' && (
+          <View className="absolute inset-x-4 bottom-4">
+            <Button
+              variant="primary"
+              label={translate('learn.collections.create_new_collection')}
+              onPress={handleCreatePress}
+            />
+          </View>
+        )}
+      </View>
+
+      {/* Collection Options / Create Bottom Sheet */}
+      <CollectionOptionsBottomSheet
+        bottomSheetRef={bottomSheetRef}
+        collection={selectedCollection}
+        mode={sheetMode}
+        onCreated={handleCreated}
+        onSaveEdit={() => refetch()}
+        onDelete={() => refetch()}
+        onStudy={handleCardPress}
+      />
     </SafeAreaView>
   );
 }

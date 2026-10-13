@@ -2,6 +2,7 @@ import type { BottomSheetModal } from '@gorhom/bottom-sheet';
 import type { Collection, TopicDTO, TopicItemData } from './types';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import * as React from 'react';
+import { useSchema, useTopicSchema } from '@/features/template-builder/api';
 import { useCollection, useInfiniteCollectionTopics, useInfiniteTopicItems } from './api';
 import { extractTopicItemDisplay } from './components/collection-detail/topic-item-utils';
 
@@ -27,7 +28,11 @@ export function useCollectionDetail() {
 
   const [parentStack, setParentStack] = React.useState<ParentBreadcrumb[]>([]);
   const [searchQuery, setSearchQuery] = React.useState('');
+  const [previewItem, setPreviewItem] = React.useState<TopicItemData | null>(null);
+  const [previewIndex, setPreviewIndex] = React.useState<number>(0);
+
   const bottomSheetRef = React.useRef<BottomSheetModal>(null);
+  const previewBottomSheetRef = React.useRef<BottomSheetModal>(null);
 
   const currentParent = parentStack[parentStack.length - 1] ?? null;
   const currentParentId = currentParent ? currentParent.id : null;
@@ -68,10 +73,26 @@ export function useCollectionDetail() {
   } = useInfiniteTopicItems(isInsideTopic ? currentParentId : undefined, 20);
 
   const items: TopicItemData[] = React.useMemo(() => {
-    return itemsResponse?.pages.flatMap((page: { data: TopicItemData[] }) => page.data) ?? [];
+    return itemsResponse?.pages.flatMap(page => page.data) ?? [];
   }, [itemsResponse]);
 
-  const totalItemsCount = itemsResponse?.pages[0]?.meta.total ?? items.length;
+  // 4. Query Topic Schema & Active Template for flashcard rendering
+  const { data: topicSchema } = useTopicSchema(
+    isInsideTopic && currentParentId ? currentParentId : undefined,
+  );
+  const { data: fullSchema } = useSchema(topicSchema?.schemaId);
+
+  const activeTemplate = React.useMemo(() => {
+    if (!fullSchema?.templates || fullSchema.templates.length === 0) {
+      return undefined;
+    }
+    return (
+      fullSchema.templates.find(t => t.isDefault)
+      || fullSchema.templates[0]
+    );
+  }, [fullSchema]);
+
+  const totalItemsCount = items.length;
   const totalTopicsCount = topicsResponse?.pages[0]?.meta.total ?? topics.length;
 
   // Search filtered topics
@@ -161,6 +182,37 @@ export function useCollectionDetail() {
     }
   }, [isInsideTopic, refetchTopics, refetchItems]);
 
+  const handlePreviewItem = React.useCallback(
+    (item: TopicItemData, index?: number) => {
+      setPreviewItem(item);
+      if (index !== undefined) {
+        setPreviewIndex(index);
+      }
+      else {
+        const idx = filteredItems.findIndex(i => i.topicItemId === item.topicItemId);
+        setPreviewIndex(idx >= 0 ? idx : 0);
+      }
+      previewBottomSheetRef.current?.present();
+    },
+    [filteredItems],
+  );
+
+  const handleNextPreview = React.useCallback(() => {
+    if (previewIndex < filteredItems.length - 1) {
+      const nextIdx = previewIndex + 1;
+      setPreviewIndex(nextIdx);
+      setPreviewItem(filteredItems[nextIdx]);
+    }
+  }, [previewIndex, filteredItems]);
+
+  const handlePrevPreview = React.useCallback(() => {
+    if (previewIndex > 0) {
+      const prevIdx = previewIndex - 1;
+      setPreviewIndex(prevIdx);
+      setPreviewItem(filteredItems[prevIdx]);
+    }
+  }, [previewIndex, filteredItems]);
+
   const handleOptionsPress = React.useCallback(() => {
     bottomSheetRef.current?.present();
   }, []);
@@ -221,6 +273,12 @@ export function useCollectionDetail() {
     searchQuery,
     setSearchQuery,
     bottomSheetRef,
+    previewBottomSheetRef,
+    previewItem,
+    previewIndex,
+    topicSchema,
+    fullSchema,
+    activeTemplate,
     headerTitle,
     headerSubtitle,
     collectionTitle,
@@ -229,6 +287,9 @@ export function useCollectionDetail() {
     firstTopicName: firstTopic?.name ?? '',
     handleDeleteSuccess,
     handleTopicPress,
+    handlePreviewItem,
+    handleNextPreview,
+    handlePrevPreview,
     handleBack,
     handleBreadcrumbPress,
     handleEndReached,

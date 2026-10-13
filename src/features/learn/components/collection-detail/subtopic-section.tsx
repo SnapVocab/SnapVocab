@@ -18,15 +18,19 @@ export function SubtopicSection({ subtopics, onSelectTopic }: Props) {
   return (
     <View className="mb-4">
       {/* Section Header */}
-      <View className="mb-2.5 flex-row items-center">
+      <View className="mb-2.5 flex-row items-center justify-between">
         <View className="flex-row items-center gap-1.5">
-          <FolderIcon width={16} height={16} color="#D97706" />
-          <Text className="font-nunito text-sm font-black text-mascot-navy dark:text-white">
-            {translate('learn.topic.subtopics_title', { defaultValue: 'Chủ đề con' })}
-            {' '}
-            (
+          <View className="size-6 items-center justify-center rounded-lg bg-amber-100 dark:bg-amber-950/60">
+            <FolderIcon width={14} height={14} color="#D97706" />
+          </View>
+          <Text className="font-nunito text-xs font-black tracking-wider text-amber-900 uppercase dark:text-amber-300">
+            {translate('learn.topic.subtopics_title')}
+          </Text>
+        </View>
+
+        <View className="rounded-full bg-amber-100 px-2 py-0.5 dark:bg-amber-950/60">
+          <Text className="font-nunito text-[11px] font-black text-amber-800 dark:text-amber-300">
             {subtopics.length}
-            )
           </Text>
         </View>
       </View>
@@ -35,23 +39,22 @@ export function SubtopicSection({ subtopics, onSelectTopic }: Props) {
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
-        contentContainerClassName="gap-2.5 pr-4"
+        contentContainerClassName="gap-3 pr-4"
       >
         {subtopics.map(topic => (
           <Pressable
             key={String(topic.id)}
             onPress={() => onSelectTopic(topic)}
-            android_ripple={{ color: 'transparent' }}
-            className="w-44 justify-between rounded-2xl border border-amber-200/80 bg-amber-50/70 p-3 shadow-xs active:opacity-75 dark:border-neutral-700 dark:bg-neutral-800/80"
+            className="w-48 justify-between rounded-2xl border-2 border-b-4 border-amber-300/90 border-b-amber-400 bg-amber-50/80 p-3.5 active:translate-y-[2px] active:border-b-2 dark:border-amber-800 dark:border-b-amber-900 dark:bg-amber-950/40"
           >
             <View>
               <View className="flex-row items-center justify-between">
-                <View className="size-7 items-center justify-center rounded-xl bg-amber-100 dark:bg-neutral-700">
-                  <FolderIcon width={14} height={14} color="#D97706" />
+                <View className="size-8 items-center justify-center rounded-xl border-2 border-b-[3px] border-amber-300 border-b-amber-400 bg-white dark:border-amber-700 dark:border-b-amber-800 dark:bg-neutral-800">
+                  <FolderIcon width={16} height={16} color="#D97706" />
                 </View>
                 {topic.hasChildren && (
-                  <View className="rounded-md bg-amber-200/60 px-1.5 py-0.5 dark:bg-neutral-700">
-                    <Text className="font-inter text-[10px] font-bold text-amber-900 dark:text-amber-300">
+                  <View className="rounded-full border border-amber-300/80 bg-amber-200/70 px-2 py-0.5 dark:border-amber-700 dark:bg-amber-900/60">
+                    <Text className="font-nunito text-[10px] font-black text-amber-900 dark:text-amber-200">
                       +
                     </Text>
                   </View>
@@ -60,7 +63,7 @@ export function SubtopicSection({ subtopics, onSelectTopic }: Props) {
 
               <Text
                 numberOfLines={1}
-                className="mt-2 font-nunito text-sm font-black text-mascot-navy dark:text-white"
+                className="mt-2.5 font-nunito text-[15px] font-black text-mascot-navy dark:text-white"
               >
                 {topic.name}
               </Text>
@@ -68,16 +71,16 @@ export function SubtopicSection({ subtopics, onSelectTopic }: Props) {
               {topic.translation ? (
                 <Text
                   numberOfLines={1}
-                  className="mt-0.5 font-inter text-xs text-neutral-500 dark:text-neutral-400"
+                  className="mt-0.5 font-inter text-xs font-medium text-neutral-500 dark:text-neutral-400"
                 >
                   {topic.translation}
                 </Text>
               ) : null}
             </View>
 
-            <View className="mt-2 flex-row items-center justify-between border-t border-amber-100/80 pt-1.5 dark:border-neutral-700">
-              <Text className="font-inter text-[11px] font-semibold text-amber-700 dark:text-amber-400">
-                Mở chủ đề
+            <View className="mt-3 flex-row items-center justify-between rounded-xl border border-amber-200/90 bg-white/90 px-2.5 py-1.5 dark:border-neutral-700 dark:bg-neutral-800">
+              <Text className="font-nunito text-[11.5px] font-extrabold text-amber-800 dark:text-amber-300">
+                {translate('learn.topic.open_topic')}
               </Text>
               <ChevronRightIcon width={12} height={12} color="#D97706" />
             </View>

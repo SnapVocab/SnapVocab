@@ -43,6 +43,8 @@ export default antfu(
       'uniwind-types.d.ts',
       'migration/*',
       'AGENTS.md',
+      '.agent/**',
+      '.agents/**',
       // Docs whose fenced code samples are illustrative snippets, not valid
       // standalone modules (multiple sibling JSX elements, etc).
       'claude.md',

@@ -9,7 +9,7 @@ import type {
   TopicItemData,
   UpdateCollectionDTO,
 } from './types';
-import type { PaginateResponse } from '@/lib/api/types';
+import type { CursorPaginationResponse, PaginateResponse } from '@/lib/api';
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { invalidateProgress } from '@/features/progress/api';
 import { client } from '@/lib/api';
@@ -219,6 +219,8 @@ export function useAddTopicItem() {
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['topic-items', variables.topicId] });
       queryClient.invalidateQueries({ queryKey: ['topic-items', String(variables.topicId)] });
+      queryClient.invalidateQueries({ queryKey: ['topic-items-cursor', variables.topicId] });
+      queryClient.invalidateQueries({ queryKey: ['topic-items-cursor', String(variables.topicId)] });
       queryClient.invalidateQueries({ queryKey: ['topic-items-infinite', variables.topicId] });
       queryClient.invalidateQueries({ queryKey: ['topic-items-infinite', String(variables.topicId)] });
       queryClient.invalidateQueries({ queryKey: ['collections'] });
@@ -244,22 +246,27 @@ export function useTopicItems(topicId?: number | string, page = 0, size = 20) {
   });
 }
 
-export function useInfiniteTopicItems(topicId?: number | string | null, size = 20) {
-  return useInfiniteQuery<PaginateResponse<TopicItemData>, AxiosError>({
-    queryKey: ['topic-items-infinite', topicId, size],
-    queryFn: async ({ pageParam = 0 }) => {
-      const response = await client<ApiResponse<PaginateResponse<TopicItemData>>>({
-        url: `/api/topics/${topicId}`,
+export function useInfiniteTopicItems(topicId?: number | string | null, limit = 20) {
+  return useInfiniteQuery<CursorPaginationResponse<TopicItemData>, AxiosError>({
+    queryKey: ['topic-items-cursor', topicId, limit],
+    queryFn: async ({ pageParam }) => {
+      const response = await client<ApiResponse<CursorPaginationResponse<TopicItemData>>>({
+        url: `/api/topics/${topicId}/cursor`,
         method: 'GET',
-        params: { page: pageParam, size },
+        params: {
+          cursor: pageParam ?? undefined,
+          limit,
+        },
       });
 
       return response.data.data;
     },
-    initialPageParam: 0,
+    initialPageParam: null as number | null,
     getNextPageParam: (lastPage) => {
-      const { page, pages } = lastPage.meta;
-      return page + 1 < pages ? page + 1 : undefined;
+      if (!lastPage.hasNext || lastPage.nextCursor === null || lastPage.nextCursor === undefined) {
+        return undefined;
+      }
+      return lastPage.nextCursor;
     },
     enabled: topicId !== undefined && topicId !== null && topicId !== '',
   });
