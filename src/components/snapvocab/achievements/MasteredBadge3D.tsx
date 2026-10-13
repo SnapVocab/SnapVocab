@@ -4,13 +4,10 @@ import Svg, { Circle, Defs, LinearGradient, Path, RadialGradient, Stop } from 'r
 import { GameVisual } from '../core/GameVisual';
 import { resolveVisualSize } from '../core/SnapVocabVisualSize';
 
-export type MasteredBadge3DProps = {
-  state?: 'completed' | 'in_progress';
-} & GameVisualProps;
+export type MasteredBadge3DProps = GameVisualProps;
 
 export function MasteredBadge3D({
   size = 'md',
-  state = 'completed',
   style,
   testID,
   accessibilityLabel = 'Mastered Badge',

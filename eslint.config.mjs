@@ -88,6 +88,7 @@ export default antfu(
             'AchievementBadge3D',
             'AchievementTrophy3D',
             'MasteredBadge3D',
+            'MissionIcon3D',
             'GameVisual',
             'SnapVocabVisualSize',
             'visualTokens',

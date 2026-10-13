@@ -4,13 +4,10 @@ import Svg, { Circle, Defs, Ellipse, G, LinearGradient, Path, RadialGradient, Re
 import { GameVisual } from '../core/GameVisual';
 import { resolveVisualSize } from '../core/SnapVocabVisualSize';
 
-export type AchievementTrophy3DProps = {
-  rarity?: 'common' | 'rare' | 'epic' | 'legendary';
-} & GameVisualProps;
+export type AchievementTrophy3DProps = GameVisualProps;
 
 export function AchievementTrophy3D({
   size = 'lg',
-  rarity = 'legendary',
   style,
   testID,
   accessibilityLabel = 'Achievement Trophy',
