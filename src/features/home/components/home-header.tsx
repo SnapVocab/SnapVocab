@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Pressable, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text, UserAvatar } from '@/components/ui';
@@ -54,6 +55,8 @@ export function HomeHeader({
           {/* Streak 3D Badge */}
           <Pressable
             onPress={onStreakPress}
+            accessibilityRole="button"
+            accessibilityLabel={typeof streakDays === 'number' ? t('progressUx.streakA11y', { count: streakDays }) : undefined}
             className="flex-row items-center gap-1.5 rounded-2xl border-2 border-b-[3px] border-orange-200 border-b-orange-400 bg-orange-50 px-2.5 py-1.5 active:translate-y-px active:border-b-2 dark:border-orange-800 dark:border-b-orange-900 dark:bg-orange-950/40"
           >
             <FlameIcon color="#F97316" width={18} height={18} />
