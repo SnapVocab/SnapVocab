@@ -2,7 +2,9 @@ import type { BottomSheetModal } from '@gorhom/bottom-sheet';
 import type { Collection, TopicDTO, TopicItemData } from './types';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import * as React from 'react';
+import { Alert } from 'react-native';
 import { useSchema, useTopicSchema } from '@/features/template-builder/api';
+import { translate } from '@/lib/i18n';
 import { useCollection, useInfiniteCollectionTopics, useInfiniteTopicItems } from './api';
 import { extractTopicItemDisplay } from './components/collection-detail/topic-item-utils';
 
@@ -129,6 +131,13 @@ export function useCollectionDetail() {
       { id: topic.id, name: topic.name, translation: topic.translation },
     ]);
     setSearchQuery('');
+  }, []);
+
+  const handleStudyTopic = React.useCallback((topic: TopicDTO) => {
+    Alert.alert(
+      translate('learn.hub.study_coming_title'),
+      translate('learn.topic.study_coming_desc', { name: topic.name }),
+    );
   }, []);
 
   const handleBack = React.useCallback(() => {
@@ -287,6 +296,7 @@ export function useCollectionDetail() {
     firstTopicName: firstTopic?.name ?? '',
     handleDeleteSuccess,
     handleTopicPress,
+    handleStudyTopic,
     handlePreviewItem,
     handleNextPreview,
     handlePrevPreview,

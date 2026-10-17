@@ -213,8 +213,13 @@
       "open_vocab_book": "Mở sổ từ",
       "retention_rate": "Độ bền: {{percent}}%",
       "srs_session_badge": "Phiên ôn tập SRS",
+      "start_study": "Bắt đầu học hôm nay",
+      "study_coming_desc": "Phiên ôn tập hằng ngày sẽ xuất hiện ở đây khi tính năng học được kết nối.",
+      "study_coming_title": "Sắp có phần học",
       "study_modes_count": "{{count}} chế độ",
       "study_modes_title": "Bạn muốn học thế nào?",
+      "study_today_desc": "Ôn các thẻ đến hạn và học từ mới trong một phiên tập trung.",
+      "study_today_title": "Sẵn sàng ôn nhanh chưa?",
       "your_vocab_title": "Từ vựng của bạn"
     },
     "learn": "Học tiếp",
@@ -227,6 +232,9 @@
       "add_word": "Thêm từ vựng",
       "open_topic": "Mở chủ đề",
       "search_words_placeholder": "Tìm kiếm từ vựng, nghĩa...",
+      "study_coming_desc": "Phiên học {{name}} sẽ gồm các thẻ trong chủ đề này và các chủ đề con.",
+      "study_short": "Học",
+      "study_topic": "Học {{name}}",
       "subtopics_title": "Chủ đề con",
       "words_list_title": "Danh sách từ & thẻ"
     },
@@ -409,7 +417,6 @@
     "change_password": "Đổi mật khẩu",
     "daily_goal": "Mục tiêu mỗi ngày",
     "daily_goal_unit": "{{count}} từ",
-    "done": "Xong",
     "error": "Lưu cài đặt thất bại. Vui lòng thử lại.",
     "language": "Ngôn ngữ",
     "learning": "Học tập",
@@ -431,6 +438,12 @@
     "title": "Cài đặt",
     "turn_off": "Tắt nhắc",
     "version": "Phiên bản {{version}}"
+  },
+  "shop": {
+    "coming_description": "Khám phá vật phẩm và giao diện để cá nhân hóa trải nghiệm SnapVocab của bạn.",
+    "coming_title": "Cửa hàng đang được chuẩn bị",
+    "subtitle": "Tạo dấu ấn riêng cho hành trình học của bạn.",
+    "title": "Cửa hàng"
   },
   "template_builder": {
     "add_field": {

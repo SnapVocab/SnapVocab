@@ -3,12 +3,13 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { CameraTabButton } from '@/components/ui/camera-tab-button';
 import {
-  CommunityIcon,
   Home as HomeIcon,
   LearnIcon,
   ProfileIcon,
+  ShoppingBagIcon,
 } from '@/components/ui/icons';
 import { HomeHeader } from '@/features/home';
+import { translate } from '@/lib/i18n';
 
 export default function TabLayout() {
   // Edge-to-edge: the system gesture/nav bar draws over the app, so the tab bar
@@ -66,14 +67,15 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="community"
+        name="shop"
         options={{
-          title: 'Community',
+          title: translate('shop.title'),
           headerShown: false,
-          tabBarIcon: ({ color }) => <CommunityIcon color={color} />,
-          tabBarButtonTestID: 'community-tab',
+          tabBarIcon: ({ color }) => <ShoppingBagIcon color={color} />,
+          tabBarButtonTestID: 'shop-tab',
         }}
       />
+      <Tabs.Screen name="community" options={{ href: null }} />
       <Tabs.Screen
         name="profile"
         options={{

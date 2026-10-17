@@ -213,8 +213,13 @@
       "open_vocab_book": "Open wordbook",
       "retention_rate": "Retention: {{percent}}%",
       "srs_session_badge": "SRS Review Session",
+      "start_study": "Start today’s study",
+      "study_coming_desc": "Your daily review session will be available here once study is connected.",
+      "study_coming_title": "Study is coming soon",
       "study_modes_count": "{{count}} modes",
       "study_modes_title": "How do you want to study?",
+      "study_today_desc": "Review due cards and learn new words in one focused session.",
+      "study_today_title": "Ready for a quick review?",
       "your_vocab_title": "Your Vocabulary"
     },
     "learn": "Continue",
@@ -227,6 +232,9 @@
       "add_word": "Add Word",
       "open_topic": "Open topic",
       "search_words_placeholder": "Search words, translations...",
+      "study_coming_desc": "A session for {{name}} will include its cards and cards in its subtopics.",
+      "study_short": "Study",
+      "study_topic": "Study {{name}}",
       "subtopics_title": "Subtopics",
       "words_list_title": "Words & Cards"
     },
@@ -409,7 +417,6 @@
     "change_password": "Change password",
     "daily_goal": "Daily goal",
     "daily_goal_unit": "{{count}} words",
-    "done": "Done",
     "error": "Could not save the setting. Please try again.",
     "language": "Language",
     "learning": "Learning",
@@ -431,6 +438,12 @@
     "title": "Settings",
     "turn_off": "Turn off",
     "version": "Version {{version}}"
+  },
+  "shop": {
+    "coming_description": "Browse cosmetics and learning items to personalize your SnapVocab experience.",
+    "coming_title": "The shop is getting ready",
+    "subtitle": "Make your learning journey your own.",
+    "title": "Shop"
   },
   "template_builder": {
     "add_field": {

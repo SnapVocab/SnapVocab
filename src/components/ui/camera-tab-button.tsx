@@ -2,6 +2,7 @@ import type { BottomTabBarButtonProps } from '@react-navigation/bottom-tabs';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Pressable, StyleSheet, useColorScheme, View } from 'react-native';
 
+import colors from '@/components/ui/colors';
 import { CameraIcon } from '@/components/ui/icons';
 
 export function CameraTabButton({ onPress, accessibilityState }: BottomTabBarButtonProps) {
@@ -26,7 +27,9 @@ export function CameraTabButton({ onPress, accessibilityState }: BottomTabBarBut
           ]}
         >
           <LinearGradient
-            colors={focused ? ['#FF7A00', '#E05A00'] : ['#FF8A00', '#FF5E00']}
+            colors={focused
+              ? [colors.primary[600], colors.primary[700]]
+              : [colors.primary[500], colors.primary[600]]}
             style={styles.gradient}
           >
             <CameraIcon color="#FFFFFF" width={30} height={30} />
@@ -55,7 +58,7 @@ const styles = StyleSheet.create({
     borderWidth: 3.5,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#FF8A00',
+    shadowColor: colors.primary[500],
     shadowOffset: { width: 0, height: 5 },
     shadowOpacity: 0.4,
     shadowRadius: 8,

@@ -1,23 +1,22 @@
 import type { TopicDTO } from '../../types';
 import { Pressable, View } from 'react-native';
 import { Text } from '@/components/ui';
-import { BookIcon, ChevronRightIcon, FolderIcon } from '@/components/ui/icons';
+import { BookIcon, ChevronRightIcon, FolderIcon, PlayIcon } from '@/components/ui/icons';
+import { translate } from '@/lib/i18n';
 
 type Props = {
   item: TopicDTO;
   onPress?: () => void;
+  onStudyPress?: () => void;
 };
 
-export default function TopicCard({ item, onPress }: Props) {
+export default function TopicCard({ item, onPress, onStudyPress }: Props) {
   const isFolder = item.hasChildren;
 
   return (
-    <Pressable
-      onPress={onPress}
-      className="dark:border-neutral-750 dark:border-b-neutral-850 flex-row items-center justify-between rounded-2xl border-2 border-b-4 border-neutral-200/90 border-b-neutral-300 bg-white p-3.5 active:translate-y-[2px] active:border-b-2 dark:bg-neutral-900"
-    >
+    <View className="flex-row items-center rounded-2xl border-2 border-b-4 border-neutral-200/90 border-b-neutral-300 bg-white p-3.5 dark:border-neutral-700 dark:border-b-neutral-800 dark:bg-neutral-900">
       {/* Left icon + Topic Info */}
-      <View className="mr-3 flex-1 flex-row items-center gap-3.5">
+      <Pressable onPress={onPress} className="mr-2 flex-1 flex-row items-center gap-3.5 active:opacity-70">
         {/* Icon with 3D bevel */}
         <View
           className={`size-12 items-center justify-center rounded-2xl border-2 border-b-[3px] ${
@@ -57,13 +56,30 @@ export default function TopicCard({ item, onPress }: Props) {
               )
             : null}
         </View>
-      </View>
+      </Pressable>
 
-      {/* Right chevron */}
-      <View className="size-9 items-center justify-center rounded-xl border border-neutral-200/60 bg-neutral-100/60 dark:border-neutral-700 dark:bg-neutral-800">
-        <ChevronRightIcon width={16} height={16} color="#71717A" />
+      <View className="flex-row items-center gap-2">
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={translate('learn.topic.study_topic', { name: item.name })}
+          onPress={onStudyPress}
+          className="h-10 flex-row items-center gap-1.5 rounded-xl border-2 border-b-[3px] border-emerald-200 border-b-emerald-300 bg-emerald-50 px-2.5 active:translate-y-px dark:border-emerald-800 dark:border-b-emerald-900 dark:bg-emerald-950/50"
+        >
+          <PlayIcon width={13} height={13} fill="#16A34A" />
+          <Text className="font-nunito text-xs font-black text-emerald-700 dark:text-emerald-300">
+            {translate('learn.topic.study_short')}
+          </Text>
+        </Pressable>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={translate('learn.topic.open_topic')}
+          onPress={onPress}
+          className="size-9 items-center justify-center rounded-xl border border-neutral-200/60 bg-neutral-100/60 dark:border-neutral-700 dark:bg-neutral-800"
+        >
+          <ChevronRightIcon width={16} height={16} color="#71717A" />
+        </Pressable>
       </View>
-    </Pressable>
+    </View>
   );
 }
 
