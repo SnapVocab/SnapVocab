@@ -1,4 +1,5 @@
 import { Pressable, View } from 'react-native';
+import { useUniwind } from 'uniwind';
 import { Text } from '@/components/ui';
 import { ChevronRightIcon, FolderIcon, MoreVerticalIcon } from '@/components/ui/icons';
 
@@ -20,11 +21,15 @@ export default function CollectionCard({
   showOption = true,
 }: Props) {
   const canShowOption = showOption && !isSystemCollection;
+  const { theme } = useUniwind();
+  const cardSurfaceClasses = theme === 'dark'
+    ? 'border-[#46505C] border-b-[#667382] bg-[#22252B]'
+    : 'border-neutral-200/90 border-b-neutral-300 bg-white';
 
   return (
     <Pressable
       onPress={onPress}
-      className="dark:border-neutral-750 dark:border-b-neutral-850 flex-row items-center justify-between rounded-2xl border-2 border-b-4 border-neutral-200/90 border-b-neutral-300 bg-white p-3.5 active:translate-y-[2px] active:border-b-2 dark:bg-neutral-900"
+      className={`flex-row items-center justify-between rounded-2xl border-2 border-b-4 p-3.5 active:translate-y-[2px] active:border-b-2 ${cardSurfaceClasses}`}
     >
       {/* Left section: Folder Icon + Title / Translation (Clickable) */}
       <View className="mr-3 flex-1 flex-row items-center gap-3.5">
@@ -69,13 +74,13 @@ export default function CollectionCard({
                 onOptionsPress?.();
               }}
               hitSlop={12}
-              className="size-10 items-center justify-center rounded-xl border-2 border-b-[3px] border-neutral-200/80 border-b-neutral-300 bg-neutral-100/80 active:translate-y-px active:border-b-2 dark:border-neutral-700 dark:border-b-neutral-800 dark:bg-neutral-800"
+              className="size-10 items-center justify-center rounded-xl border-2 border-b-[3px] border-neutral-200/80 border-b-neutral-300 bg-neutral-100/80 active:translate-y-px active:border-b-2 dark:border-[#46505C] dark:border-b-[#667382] dark:bg-[#292E36]"
             >
               <MoreVerticalIcon width={16} height={16} color="#71717A" />
             </Pressable>
           )
         : (
-            <View className="size-10 items-center justify-center rounded-xl border border-neutral-200/60 bg-neutral-100/60 dark:border-neutral-700 dark:bg-neutral-800">
+            <View className="size-10 items-center justify-center rounded-xl border-2 border-b-[3px] border-neutral-200/60 border-b-neutral-300 bg-neutral-100/60 dark:border-[#46505C] dark:border-b-[#667382] dark:bg-[#292E36]">
               <ChevronRightIcon width={16} height={16} color="#71717A" />
             </View>
           )}

@@ -1,3 +1,4 @@
+export * from './back-button';
 export * from './bouncing-dots';
 export * from './button';
 export * from './card';
@@ -9,6 +10,7 @@ export * from './input';
 export * from './link';
 export * from './mascot';
 export * from './otp-input';
+export * from './pressable';
 export * from './screen-header';
 export * from './speed-dial';
 export * from './surface';
@@ -16,5 +18,5 @@ export * from './text';
 export * from './user-avatar';
 export * from './utils';
 
-export { ActivityIndicator, Pressable, ScrollView, TouchableOpacity, View } from 'react-native';
+export { ActivityIndicator, ScrollView, TouchableOpacity, View } from 'react-native';
 export { SafeAreaView } from 'react-native-safe-area-context';

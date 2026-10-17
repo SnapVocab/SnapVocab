@@ -7,20 +7,18 @@ import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
 import * as z from 'zod';
 
 import {
+  BackButton,
   Button,
   FocusAwareStatusBar,
   Input,
-  Pressable,
   SafeAreaView,
   showErrorMessage,
   showSuccessMessage,
   Text,
   View,
 } from '@/components/ui';
-import { ChevronLeftIcon } from '@/components/ui/icons';
 import { translate } from '@/lib/i18n';
 import { useChangePassword } from './api';
-import { useIconColors } from './use-icon-colors';
 
 const schema = z
   .object({
@@ -45,7 +43,6 @@ type FormValues = z.infer<typeof schema>;
 /** Settings → Account. Signing out other devices happens on the server. */
 export function ChangePasswordScreen() {
   const router = useRouter();
-  const iconColor = useIconColors();
   const changePassword = useChangePassword();
 
   // onTouched: the first warning waits until the field is left, then follows
@@ -80,17 +77,11 @@ export function ChangePasswordScreen() {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1 }} className="flex-1 bg-background" edges={['top']}>
+    <SafeAreaView style={{ flex: 1 }} className="flex-1 bg-background" edges={['top', 'bottom']}>
       <FocusAwareStatusBar />
 
       <View className="h-14 flex-row items-center border-b border-neutral-100 bg-white px-4 dark:border-neutral-800 dark:bg-neutral-900">
-        <Pressable
-          onPress={() => router.back()}
-          testID="change-password-back"
-          className="-ml-1 size-10 items-center justify-center rounded-full active:bg-neutral-100"
-        >
-          <ChevronLeftIcon color={iconColor.header} />
-        </Pressable>
+        <BackButton onPress={() => router.back()} testID="change-password-back" className="-ml-1" />
         <Text
           className="mr-9 flex-1 text-center font-nunito text-lg font-extrabold text-mascot-navy dark:text-white"
           tx="change_password.title"
@@ -99,7 +90,7 @@ export function ChangePasswordScreen() {
 
       <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
         <ScrollView
-          contentContainerStyle={{ padding: 16, paddingBottom: 40 }}
+          contentContainerStyle={{ padding: 16, paddingBottom: 32 }}
           keyboardShouldPersistTaps="handled"
         >
           <Text className="mb-4 text-sm text-neutral-500" tx="change_password.subtitle" />

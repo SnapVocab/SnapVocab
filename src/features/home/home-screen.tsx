@@ -20,7 +20,7 @@ import {
   useXpOverview,
 } from '@/features/progress';
 import { translate } from '@/lib/i18n';
-import { HomeSearchBar } from './components';
+import { HomeSearchBar, StudyTodayCard } from './components';
 
 // Same chunky 3D surface as HomeSearchBar.
 const CARD_3D = 'mb-4 rounded-2xl border-2 border-b-4 border-neutral-200/90 border-b-neutral-300 bg-white dark:border-neutral-700 dark:border-b-neutral-800 dark:bg-neutral-900';
@@ -91,6 +91,7 @@ export function HomeScreen() {
         </View>
 
         <HomeSearchBar />
+        <StudyTodayCard />
 
         {/* Vocabulary widget (tappable -> /stats) */}
         {widget.isLoading

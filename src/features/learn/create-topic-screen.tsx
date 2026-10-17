@@ -5,6 +5,7 @@ import * as React from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { KeyboardAvoidingView, Platform, Pressable, ScrollView, View } from 'react-native';
 import {
+  BackButton,
   Button,
   FocusAwareStatusBar,
   Input,
@@ -14,7 +15,7 @@ import {
   Text,
 } from '@/components/ui';
 import colors from '@/components/ui/colors';
-import { ChevronLeftIcon, LayoutGridIcon, SlidersIcon } from '@/components/ui/icons';
+import { LayoutGridIcon, SlidersIcon } from '@/components/ui/icons';
 import { translate } from '@/lib/i18n';
 import { useCreateTopic } from './api';
 import { createTopicSchema } from './components/topic/create-topic-validation';
@@ -85,13 +86,7 @@ export function CreateTopicScreen() {
 
       {/* Header */}
       <View className="flex-row items-center justify-between border-b border-neutral-100 px-4 pt-1 pb-3 dark:border-neutral-800">
-        <Pressable
-          onPress={() => router.back()}
-          hitSlop={8}
-          className="size-10 items-center justify-center rounded-xl bg-neutral-100 active:opacity-70 dark:bg-neutral-800"
-        >
-          <ChevronLeftIcon color={colors.mascot.navy} width={20} height={20} />
-        </Pressable>
+        <BackButton onPress={() => router.back()} />
 
         <View className="flex-1 items-center px-2">
           <Text className="text-center font-nunito text-lg font-black text-mascot-navy dark:text-white">

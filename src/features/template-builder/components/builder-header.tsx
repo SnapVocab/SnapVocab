@@ -1,8 +1,8 @@
 import { useRouter } from 'expo-router';
 import * as React from 'react';
-import { Pressable, TouchableOpacity, View } from 'react-native';
-import colors from '@/components/ui/colors';
-import { ChevronLeftIcon, EyeIcon } from '@/components/ui/icons';
+import { TouchableOpacity, View } from 'react-native';
+import { BackButton } from '@/components/ui';
+import { EyeIcon } from '@/components/ui/icons';
 import { Text } from '@/components/ui/text';
 import { translate } from '@/lib/i18n/utils';
 import { useTemplateBuilderStore } from '../use-template-builder-store';
@@ -24,13 +24,7 @@ export function BuilderHeader({
   return (
     <View className="flex-row items-center justify-between border-b border-neutral-200 bg-white px-4 py-3 dark:border-neutral-800 dark:bg-neutral-900">
       <View className="flex-row items-center">
-        <Pressable
-          onPress={() => router.back()}
-          className="size-10 items-center justify-center rounded-xl bg-neutral-100 active:opacity-70 dark:bg-neutral-800"
-          hitSlop={8}
-        >
-          <ChevronLeftIcon color={colors.mascot.navy} width={20} height={20} />
-        </Pressable>
+        <BackButton onPress={() => router.back()} />
 
         <View className="ml-3">
           <View className="flex-row items-center">

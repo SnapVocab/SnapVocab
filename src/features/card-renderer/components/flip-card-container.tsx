@@ -1,8 +1,10 @@
 import type { CardSide } from '../types';
 import * as React from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
   interpolate,
+  runOnJS,
   useAnimatedStyle,
   useSharedValue,
   withTiming,
@@ -27,7 +29,9 @@ export function FlipCardContainer({
   minHeight = 420,
   className = '',
 }: Props) {
-  const [internalSide, setInternalSide] = React.useState<CardSide>(controlledSide ?? 'FRONT');
+  const [internalSide, setInternalSide] = React.useState<CardSide>(
+    controlledSide ?? 'FRONT',
+  );
   const currentSide = controlledSide ?? internalSide;
 
   // 0 = FRONT (0deg), 1 = BACK (180deg)
@@ -47,6 +51,21 @@ export function FlipCardContainer({
     }
     onFlip?.(nextSide);
   }, [isInteractive, currentSide, controlledSide, onFlip]);
+
+  // Tap flips the card; movement beyond the tap threshold is left to the nested
+  // ScrollView so long card content can be read without accidentally flipping.
+  const tapGesture = React.useMemo(
+    () =>
+      Gesture.Tap()
+        .maxDuration(300)
+        .maxDistance(8)
+        .enabled(isInteractive)
+        .onEnd((_event, success) => {
+          if (success)
+            runOnJS(toggleFlip)();
+        }),
+    [isInteractive, toggleFlip],
+  );
 
   // Front face animation (0deg -> 180deg)
   const frontAnimatedStyle = useAnimatedStyle(() => {
@@ -69,38 +88,29 @@ export function FlipCardContainer({
   });
 
   return (
-    <Pressable
-      onPress={toggleFlip}
-      disabled={!isInteractive}
-      android_ripple={{ color: 'transparent' }}
-      className={`w-full ${className}`}
-    >
-      <View style={{ minHeight }} className="w-full">
-        {/* Front Face */}
-        <Animated.View
-          style={[
-            StyleSheet.absoluteFillObject,
-            frontAnimatedStyle,
-          ]}
-          className="rounded-3xl border-2 border-neutral-200/90 bg-white shadow-md dark:border-neutral-700 dark:bg-neutral-900"
-          pointerEvents={currentSide === 'FRONT' ? 'auto' : 'none'}
-        >
-          {frontContent}
-        </Animated.View>
+    <GestureDetector gesture={tapGesture}>
+      <View className={`w-full ${className}`}>
+        <View style={{ minHeight }} className="w-full">
+          {/* Front Face */}
+          <Animated.View
+            style={[StyleSheet.absoluteFillObject, frontAnimatedStyle]}
+            className="overflow-hidden rounded-[28px] border border-neutral-200 bg-white shadow-xl shadow-slate-900/10 dark:border-neutral-700 dark:bg-neutral-900 dark:shadow-black/30"
+            pointerEvents={currentSide === 'FRONT' ? 'auto' : 'none'}
+          >
+            {frontContent}
+          </Animated.View>
 
-        {/* Back Face */}
-        <Animated.View
-          style={[
-            StyleSheet.absoluteFillObject,
-            backAnimatedStyle,
-          ]}
-          className="rounded-3xl border-2 border-neutral-200/90 bg-white shadow-md dark:border-neutral-700 dark:bg-neutral-900"
-          pointerEvents={currentSide === 'BACK' ? 'auto' : 'none'}
-        >
-          {backContent}
-        </Animated.View>
+          {/* Back Face */}
+          <Animated.View
+            style={[StyleSheet.absoluteFillObject, backAnimatedStyle]}
+            className="overflow-hidden rounded-[28px] border border-neutral-200 bg-white shadow-xl shadow-slate-900/10 dark:border-neutral-700 dark:bg-neutral-900 dark:shadow-black/30"
+            pointerEvents={currentSide === 'BACK' ? 'auto' : 'none'}
+          >
+            {backContent}
+          </Animated.View>
+        </View>
       </View>
-    </Pressable>
+    </GestureDetector>
   );
 }
 

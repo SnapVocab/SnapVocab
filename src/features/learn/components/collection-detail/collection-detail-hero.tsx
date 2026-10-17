@@ -1,4 +1,5 @@
 import { View } from 'react-native';
+import { useUniwind } from 'uniwind';
 import { Button, Text } from '@/components/ui';
 import { AccuracyIcon, FlameIcon, FlashcardIcon, FolderIcon, PlayIcon } from '@/components/ui/icons';
 import { translate } from '@/lib/i18n';
@@ -23,10 +24,18 @@ export default function CollectionDetailHero({
   onStudyPress,
 }: Props) {
   const isSystem = type === 'SYSTEM';
-  const progressPercent = totalWords > 0 ? Math.min(100, Math.round((masteredWords / totalWords) * 100)) : 0;
+  const { theme } = useUniwind();
+  const cardSurfaceClasses = theme === 'dark'
+    ? 'border-[#363B43] border-b-[#181A1F] bg-[#22252B]'
+    : 'border-neutral-200/90 border-b-neutral-300 bg-white';
+  const progressPercent = totalWords > 0
+    ? Math.min(100, Math.round((masteredWords / totalWords) * 100))
+    : 0;
 
   return (
-    <View className="dark:border-neutral-750 dark:border-b-neutral-850 rounded-3xl border-2 border-b-4 border-neutral-200/90 border-b-neutral-300 bg-white p-5 shadow-xs dark:bg-neutral-900">
+    <View
+      className={`rounded-3xl border-2 border-b-4 p-5 shadow-xs ${cardSurfaceClasses}`}
+    >
       {/* Top row: Folder Icon + Collection Info + Type Badge */}
       <View className="flex-row items-start justify-between gap-3">
         <View className="flex-1 flex-row items-center gap-3.5">

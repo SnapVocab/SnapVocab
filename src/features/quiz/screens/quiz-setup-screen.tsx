@@ -6,7 +6,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import * as React from 'react';
 import { useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, Alert, Pressable, ScrollView, Text, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ScreenHeader } from '@/components/ui';
 import {
   AlertTriangleIcon,
@@ -64,6 +64,7 @@ export const PRESET_COUNTS: (5 | 10 | 20)[] = [5, 10, 20];
 
 export function QuizSetupScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const params = useLocalSearchParams<{
     topicId?: string;
     topicName?: string;
@@ -557,7 +558,10 @@ export function QuizSetupScreen() {
       </ScrollView>
 
       {/* STICKY BOTTOM CTA */}
-      <View className="absolute inset-x-0 bottom-0 border-t border-neutral-100 bg-white p-5 shadow-lg shadow-black/5">
+      <View
+        style={{ bottom: insets.bottom }}
+        className="absolute inset-x-0 border-t border-neutral-100 bg-white p-5 shadow-lg shadow-black/5"
+      >
         <Pressable
           onPress={handleStartQuiz}
           disabled={!selectedTopicId || isBusy}

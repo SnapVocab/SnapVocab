@@ -1,16 +1,18 @@
 import { Tabs, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { useSurface } from '@/components/ui';
+import { useColorMode, useSurface } from '@/components/ui';
 import { CameraTabButton } from '@/components/ui/camera-tab-button';
+import colors from '@/components/ui/colors';
 import {
-  CommunityIcon,
   Home as HomeIcon,
   LearnIcon,
   ProfileIcon,
+  ShoppingBagIcon,
 } from '@/components/ui/icons';
 import { HomeHeader } from '@/features/home';
 import { useInventory } from '@/features/shop';
+import { translate } from '@/lib/i18n';
 
 export default function TabLayout() {
   const router = useRouter();
@@ -21,12 +23,13 @@ export default function TabLayout() {
   useInventory();
   // App-wide chrome: default surfaces for the user's light/dark mode; Shop themes stay inside the Shop area.
   const surface = useSurface();
+  const isDark = useColorMode() === 'dark';
 
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: '#58CC02',
-        tabBarInactiveTintColor: '#AFAFAF',
+        tabBarActiveTintColor: isDark ? colors.darkTheme.accent : '#58CC02',
+        tabBarInactiveTintColor: isDark ? colors.darkTheme.mutedForeground : '#AFAFAF',
         tabBarStyle: {
           backgroundColor: surface.surface,
           borderTopWidth: 2,
@@ -44,7 +47,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Home',
+          title: translate('home.tab_label'),
           headerShown: true,
           header: () => (
             <HomeHeader
@@ -60,7 +63,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="learn"
         options={{
-          title: 'Learn',
+          title: translate('learn.tab_label'),
           headerShown: false,
           tabBarIcon: ({ color }) => <LearnIcon color={color} />,
           tabBarButtonTestID: 'learn-tab',
@@ -79,29 +82,22 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="community"
+        name="shop"
         options={{
-          title: 'Community',
+          title: translate('shop.title'),
           headerShown: false,
-          tabBarIcon: ({ color }) => <CommunityIcon color={color} />,
-          tabBarButtonTestID: 'community-tab',
+          tabBarIcon: ({ color }) => <ShoppingBagIcon color={color} />,
+          tabBarButtonTestID: 'shop-tab',
         }}
       />
+      <Tabs.Screen name="community" options={{ href: null }} />
       <Tabs.Screen
         name="profile"
         options={{
-          title: 'Profile',
+          title: translate('profile.tab_label'),
           headerShown: false,
           tabBarIcon: ({ color }) => <ProfileIcon color={color} />,
           tabBarButtonTestID: 'profile-tab',
-        }}
-      />
-      <Tabs.Screen
-        name="shop"
-        options={{
-          href: null,
-          title: 'Shop',
-          headerShown: false,
         }}
       />
     </Tabs>

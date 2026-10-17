@@ -3,6 +3,8 @@ import type { Collection } from '../../types';
 import { BottomSheetBackdrop, BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet';
 import * as React from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useUniwind } from 'uniwind';
+import colors from '@/components/ui/colors';
 import { CollectionCreateForm } from './collection-create-form';
 import { CollectionDeleteConfirm } from './collection-delete-confirm';
 import { CollectionEditForm } from './collection-edit-form';
@@ -28,6 +30,8 @@ export function CollectionOptionsBottomSheet({
   onStudy,
 }: Props) {
   const insets = useSafeAreaInsets();
+  const { theme } = useUniwind();
+  const isDark = theme === 'dark';
   const [currentView, setCurrentView] = React.useState<'MENU' | 'EDIT' | 'DELETE'>('MENU');
 
   const handleDismiss = () => {
@@ -78,9 +82,9 @@ export function CollectionOptionsBottomSheet({
       android_keyboardInputMode="adjustResize"
       backdropComponent={renderBackdrop}
       onDismiss={handleDismiss}
-      handleIndicatorStyle={{ backgroundColor: '#CBD5E1', width: 36, height: 4 }}
+      handleIndicatorStyle={{ backgroundColor: isDark ? colors.darkTheme.border : '#CBD5E1', width: 36, height: 4 }}
       backgroundStyle={{
-        backgroundColor: '#FFFFFF',
+        backgroundColor: isDark ? colors.darkTheme.surface : '#FFFFFF',
         borderTopLeftRadius: 28,
         borderTopRightRadius: 28,
       }}
