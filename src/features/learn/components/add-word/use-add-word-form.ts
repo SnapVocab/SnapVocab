@@ -132,6 +132,9 @@ export function useAddWordForm(topicSchema?: TopicSchemaDTO) {
         const ipa = data.pronunciations?.[0]?.ipa || '';
         const meaningsList = data.meanings || [];
         const translationsList = data.translations || [];
+        const primaryTranslation = translationsList[0]?.translation || '';
+        const primaryDefinition = meaningsList[0]?.definition || '';
+        const primaryExample = meaningsList[0]?.example || '';
 
         setFormData((prev) => {
           const updated: Record<string, any> = { ...prev };
@@ -140,20 +143,38 @@ export function useAddWordForm(topicSchema?: TopicSchemaDTO) {
             if (!group.multiple) {
               const currentGroup = { ...(updated[group.name] || {}) };
               for (const attr of group.attributes || []) {
-                if (
-                  (attr.name === 'phonetic' || attr.name === 'ipa')
-                  && ipa
+                const attrName = attr.name.toLowerCase();
+                if ((attrName === 'phonetic' || attrName === 'ipa') && ipa && !currentGroup[attr.name]) {
+                  currentGroup[attr.name] = ipa;
+                }
+                else if (
+                  (attrName === 'translation' || attrName.includes('nghia') || attrName.includes('vietnamese'))
+                  && primaryTranslation
                   && !currentGroup[attr.name]
                 ) {
-                  currentGroup[attr.name] = ipa;
+                  currentGroup[attr.name] = primaryTranslation;
+                }
+                else if (
+                  (attrName === 'definition' || attrName.includes('def'))
+                  && primaryDefinition
+                  && !currentGroup[attr.name]
+                ) {
+                  currentGroup[attr.name] = primaryDefinition;
+                }
+                else if (
+                  (attrName === 'example' || attrName.includes('sentence'))
+                  && primaryExample
+                  && !currentGroup[attr.name]
+                ) {
+                  currentGroup[attr.name] = primaryExample;
                 }
               }
               updated[group.name] = currentGroup;
             }
             else if (
-              group.name.includes('meaning')
+              group.name.includes('example')
+              || group.name.includes('meaning')
               || group.name.includes('definition')
-              || group.name.includes('nghia')
             ) {
               const newItems: Record<string, any>[] = [];
 
@@ -161,38 +182,23 @@ export function useAddWordForm(topicSchema?: TopicSchemaDTO) {
                 for (const m of meaningsList.slice(0, 3)) {
                   const item: Record<string, any> = {};
                   for (const attr of group.attributes || []) {
-                    if (attr.name.includes('def') || attr.name.includes('meaning')) {
-                      item[attr.name] = m.definition || '';
-                    }
-                    else if (attr.name.includes('example')) {
+                    const attrName = attr.name.toLowerCase();
+                    if (attrName.includes('content') || attrName.includes('example') || attrName.includes('sentence')) {
                       item[attr.name] = m.example || '';
                     }
-                    else if (attr.name.includes('pos') || attr.name.includes('part')) {
+                    else if (attrName.includes('def') || attrName.includes('meaning')) {
+                      item[attr.name] = m.definition || '';
+                    }
+                    else if (attrName.includes('pos') || attrName.includes('part')) {
                       item[attr.name] = m.pos || '';
                     }
                     else {
                       item[attr.name] = '';
                     }
                   }
-                  newItems.push(item);
-                }
-              }
-              else if (translationsList.length > 0) {
-                for (const t of translationsList.slice(0, 3)) {
-                  const item: Record<string, any> = {};
-                  for (const attr of group.attributes || []) {
-                    if (
-                      attr.name.includes('meaning')
-                      || attr.name.includes('translation')
-                      || attr.name.includes('def')
-                    ) {
-                      item[attr.name] = t.translation || '';
-                    }
-                    else {
-                      item[attr.name] = '';
-                    }
+                  if (Object.values(item).some(Boolean)) {
+                    newItems.push(item);
                   }
-                  newItems.push(item);
                 }
               }
 

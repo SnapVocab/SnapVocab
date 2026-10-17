@@ -154,7 +154,7 @@ export function CardStudyView({
   return (
     <View className="flex-1 bg-slate-50 dark:bg-neutral-950">
       {/* Top Header & Progress */}
-      <View className="border-b border-neutral-200/70 bg-white px-4 py-3 dark:border-neutral-800 dark:bg-neutral-900">
+      <View className="border-b border-neutral-200/70 bg-white px-5 pt-3 pb-4 dark:border-neutral-800 dark:bg-neutral-900">
         <View className="flex-row items-center justify-between">
           <Pressable
             onPress={handleBack}
@@ -165,11 +165,11 @@ export function CardStudyView({
             <ChevronLeftIcon width={20} height={20} color="#757793" />
           </Pressable>
 
-          <View className="items-center">
+          <View className="mx-3 flex-1 items-center">
             <Text className="font-nunito text-base font-extrabold text-mascot-navy dark:text-white" numberOfLines={1}>
               {topicName}
             </Text>
-            <Text className="font-inter text-xs font-bold text-neutral-400">
+            <Text className="mt-0.5 font-inter text-xs font-bold text-neutral-400">
               {currentIndex + 1}
               {' '}
               /
@@ -180,11 +180,17 @@ export function CardStudyView({
             </Text>
           </View>
 
-          <View className="size-10" />
+          <View className="min-w-10 flex-row items-center justify-center gap-1 rounded-full border border-reward-200 bg-reward-50 px-2.5 py-2 dark:border-reward-700 dark:bg-amber-950/40">
+            <TrophyIcon width={13} height={13} color="#D97706" />
+            <Text className="font-nunito text-xs font-black text-reward-700 dark:text-reward-300">
+              {rememberedIds.size * 10}
+            </Text>
+            <Text className="font-inter text-[9px] font-extrabold text-reward-700 dark:text-reward-300">XP</Text>
+          </View>
         </View>
 
         {/* Progress Bar */}
-        <View className="mt-3 h-2 w-full overflow-hidden rounded-full bg-neutral-100 dark:bg-neutral-800">
+        <View className="mt-4 h-2.5 w-full overflow-hidden rounded-full bg-neutral-100 dark:bg-neutral-800">
           <View
             style={{ width: `${progressPercent}%` }}
             className="h-full rounded-full bg-primary-500"
@@ -210,7 +216,7 @@ export function CardStudyView({
       </ScrollView>
 
       {/* Bottom Action Toolbar */}
-      <View className="border-t border-neutral-200/70 bg-white px-4 pb-6 dark:border-neutral-800 dark:bg-neutral-900">
+      <View className="border-t border-neutral-200/70 bg-white px-4 pt-1 pb-6 dark:border-neutral-800 dark:bg-neutral-900">
         <CardActionToolbar
           onForgot={() => advanceCard(false)}
           onFlip={handleFlip}

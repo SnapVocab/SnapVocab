@@ -1,4 +1,10 @@
 {
+  "card_renderer": {
+    "back": "Answer",
+    "card": "VOCABULARY CARD",
+    "front": "Recall",
+    "tap_to_flip": "Tap to flip"
+  },
   "change_password": {
     "confirm": "Confirm new password",
     "confirm_placeholder": "Re-enter the new password",

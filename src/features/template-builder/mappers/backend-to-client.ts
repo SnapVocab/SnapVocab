@@ -124,13 +124,17 @@ export function parseElementsToSections({
       }
 
       const fieldDto = el.field;
-      const { attribute, groupLabel, repeatable } = findAttributeInSchema(
+      const { attribute, groupName, groupLabel, repeatable } = findAttributeInSchema(
         schema,
         fieldDto.schemaAttributeId,
       );
 
       if (repeatable && !currentSection.repeatable) {
         currentSection.repeatable = true;
+      }
+
+      if (groupName && !currentSection.groupName) {
+        currentSection.groupName = groupName;
       }
 
       if (
@@ -145,6 +149,8 @@ export function parseElementsToSections({
         id: generateClientId('field'),
         schemaAttributeId: fieldDto.schemaAttributeId,
         attributeName: attribute?.name ?? 'custom_field',
+        groupName,
+        groupMultiple: repeatable,
         fieldLabel: fieldDto.fieldLabel || attribute?.label || 'Trường dữ liệu',
         semanticRole: fieldDto.semanticRole ?? null,
         required: attribute?.required ?? false,
