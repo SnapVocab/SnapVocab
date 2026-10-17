@@ -7,6 +7,7 @@ import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
 import * as z from 'zod';
 
 import {
+  BackButton,
   Button,
   FocusAwareStatusBar,
   Image,
@@ -18,12 +19,11 @@ import {
   Text,
   View,
 } from '@/components/ui';
-import { CameraIcon, ChevronLeftIcon } from '@/components/ui/icons';
+import { CameraIcon } from '@/components/ui/icons';
 import { useAuthStore } from '@/features/auth/use-auth-store';
 import { translate } from '@/lib/i18n';
 import { useMe, useUpdateProfile, useUploadAvatar } from './api';
 import { fullName, initials } from './display';
-import { useIconColors } from './use-icon-colors';
 
 const MAX_BIO = 200;
 
@@ -42,7 +42,6 @@ export function EditProfileScreen() {
   const { data } = useMe();
   const user = data ?? stored;
 
-  const iconColor = useIconColors();
   const updateProfile = useUpdateProfile();
   const uploadAvatar = useUploadAvatar();
 
@@ -98,17 +97,11 @@ export function EditProfileScreen() {
   const name = fullName(user);
 
   return (
-    <SafeAreaView style={{ flex: 1 }} className="flex-1 bg-background" edges={['top']}>
+    <SafeAreaView style={{ flex: 1 }} className="flex-1 bg-background" edges={['top', 'bottom']}>
       <FocusAwareStatusBar />
 
       <View className="h-14 flex-row items-center border-b border-neutral-100 bg-white px-4 dark:border-neutral-800 dark:bg-neutral-900">
-        <Pressable
-          onPress={() => router.back()}
-          testID="edit-profile-back"
-          className="-ml-1 size-10 items-center justify-center rounded-full active:bg-neutral-100"
-        >
-          <ChevronLeftIcon color={iconColor.header} />
-        </Pressable>
+        <BackButton onPress={() => router.back()} testID="edit-profile-back" className="-ml-1" />
         <Text
           className="mr-9 flex-1 text-center font-nunito text-lg font-extrabold text-mascot-navy dark:text-white"
           tx="edit_profile.title"
@@ -117,7 +110,7 @@ export function EditProfileScreen() {
 
       <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
         <ScrollView
-          contentContainerStyle={{ padding: 16, paddingBottom: 40 }}
+          contentContainerStyle={{ padding: 16, paddingBottom: 32 }}
           keyboardShouldPersistTaps="handled"
         >
           <View className="items-center rounded-3xl border border-neutral-200/80 bg-white p-6 shadow-sm shadow-black/5 dark:border-neutral-800 dark:bg-neutral-900">

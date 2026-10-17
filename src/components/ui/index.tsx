@@ -1,3 +1,4 @@
+export * from './back-button';
 export * from './bouncing-dots';
 export * from './button';
 export * from './card';

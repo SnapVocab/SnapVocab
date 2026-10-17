@@ -1,14 +1,14 @@
 import { useRouter } from 'expo-router';
 import * as React from 'react';
 import { ActivityIndicator, Pressable, ScrollView, View } from 'react-native';
-import { SafeAreaView, Text } from '@/components/ui';
+import { BackButton, SafeAreaView, Text } from '@/components/ui';
 import {
-  ChevronLeftIcon,
   ChevronRightIcon,
   FlameIcon,
   FolderIcon,
 } from '@/components/ui/icons';
 import { useCollections } from '@/features/learn/api';
+import { translate } from '@/lib/i18n';
 
 export function StudySelectScreen() {
   const router = useRouter();
@@ -27,16 +27,9 @@ export function StudySelectScreen() {
       edges={['top', 'bottom']}
     >
       <View className="flex-row items-center bg-white px-4 py-3 dark:bg-neutral-900">
-        <Pressable
-          onPress={() => router.back()}
-          hitSlop={10}
-          android_ripple={{ color: 'transparent' }}
-          className="size-10 items-center justify-center rounded-xl bg-neutral-100 active:opacity-70 dark:bg-neutral-800"
-        >
-          <ChevronLeftIcon width={20} height={20} color="#757793" />
-        </Pressable>
+        <BackButton onPress={() => router.back()} hitSlop={10} />
         <Text className="ml-3 flex-1 font-nunito text-xl font-black text-mascot-navy dark:text-white">
-          Choose your quest
+          {translate('learn.hub.study_choose_collection')}
         </Text>
       </View>
       <ScrollView
@@ -46,36 +39,32 @@ export function StudySelectScreen() {
         <View className="mb-2 overflow-hidden rounded-[28px] border-2 border-b-[5px] border-emerald-200 border-b-emerald-400 bg-emerald-100 p-5 dark:border-emerald-900 dark:border-b-emerald-950 dark:bg-emerald-950/60">
           <View className="flex-row items-center justify-between">
             <View className="flex-1 pr-3">
-              <Text className="font-nunito text-2xl font-black text-mascot-navy dark:text-white">
-                Ready to level up?
-              </Text>
-              <Text className="mt-1 font-inter text-sm/5 text-emerald-900/80 dark:text-emerald-100/80">
-                Pick a collection and keep your learning streak going.
+              <Text className="font-nunito text-lg/6 font-black text-mascot-navy dark:text-white">
+                {translate('learn.hub.study_choose_collection_desc')}
               </Text>
             </View>
             <View className="size-14 items-center justify-center rounded-2xl border-2 border-b-4 border-amber-200 border-b-amber-400 bg-amber-50 dark:bg-amber-950/50">
               <FlameIcon width={28} height={28} color="#F97316" />
             </View>
           </View>
-          <View className="mt-4 flex-row items-center gap-2 rounded-xl bg-white/70 px-3 py-2 dark:bg-black/20">
-            <FolderIcon width={16} height={16} color="#059669" />
-            <Text className="font-nunito text-xs font-extrabold text-emerald-900 dark:text-emerald-100">
-              Topics and subtopics share one daily goal
-            </Text>
-          </View>
         </View>
         {isLoading && (
-          <View className="items-center py-12">
+          <View className="items-center py-10">
             <ActivityIndicator size="large" color="#16A34A" />
+            <Text className="mt-3 font-inter text-sm text-neutral-500 dark:text-neutral-400">
+              {translate('learn.hub.study_loading_queue')}
+            </Text>
           </View>
         )}
         {isError && (
           <Pressable
             onPress={() => refetch()}
-            className="rounded-2xl bg-rose-50 p-4 dark:bg-rose-950/40"
+            accessibilityRole="button"
+            accessibilityLabel={translate('learn.hub.study_collections_error')}
+            className="rounded-2xl border-2 border-rose-100 bg-rose-50 p-4 dark:border-rose-900 dark:bg-rose-950/40"
           >
-            <Text className="font-nunito font-bold text-rose-700 dark:text-rose-300">
-              Could not load collections. Tap to retry.
+            <Text className="text-center font-nunito font-bold text-rose-700 dark:text-rose-300">
+              {translate('learn.hub.study_collections_error')}
             </Text>
           </Pressable>
         )}
@@ -109,9 +98,12 @@ export function StudySelectScreen() {
           </Pressable>
         ))}
         {!isLoading && !isError && collections?.length === 0 && (
-          <Text className="py-10 text-center font-inter text-neutral-500">
-            No collections available yet.
-          </Text>
+          <View className="items-center py-10">
+            <FolderIcon width={28} height={28} color="#9CA3AF" />
+            <Text className="mt-3 text-center font-inter text-neutral-500 dark:text-neutral-400">
+              {translate('learn.hub.study_no_collections')}
+            </Text>
+          </View>
         )}
       </ScrollView>
     </SafeAreaView>

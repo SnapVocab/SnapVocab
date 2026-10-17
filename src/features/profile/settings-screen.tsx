@@ -7,6 +7,7 @@ import { useState } from 'react';
 import { Alert, ScrollView } from 'react-native';
 
 import {
+  BackButton,
   FocusAwareStatusBar,
   Mascot,
   Pressable,
@@ -17,7 +18,6 @@ import {
 } from '@/components/ui';
 import {
   BellIcon,
-  ChevronLeftIcon,
   ClockRotateIcon,
   GlobeIcon,
   LogOutIcon,
@@ -86,17 +86,11 @@ export function SettingsScreen() {
   const reminder = formatTimeOfDay(settings?.srsReminderAt);
 
   return (
-    <SafeAreaView style={{ flex: 1 }} className="flex-1 bg-background" edges={['top']}>
+    <SafeAreaView style={{ flex: 1 }} className="flex-1 bg-background" edges={['top', 'bottom']}>
       <FocusAwareStatusBar />
 
       <View className="h-14 flex-row items-center border-b border-neutral-100 bg-white px-4 dark:border-neutral-800 dark:bg-neutral-900">
-        <Pressable
-          onPress={() => router.back()}
-          testID="settings-back"
-          className="-ml-1 size-10 items-center justify-center rounded-full active:bg-neutral-100"
-        >
-          <ChevronLeftIcon color={iconColor.header} />
-        </Pressable>
+        <BackButton onPress={() => router.back()} testID="settings-back" className="-ml-1" />
         <Text
           className="mr-9 flex-1 text-center font-nunito text-lg font-extrabold text-mascot-navy dark:text-white"
           tx="settings.title"
@@ -104,7 +98,7 @@ export function SettingsScreen() {
       </View>
 
       <ScrollView
-        contentContainerStyle={{ padding: 16, paddingBottom: 40 }}
+        contentContainerStyle={{ padding: 16, paddingBottom: 32 }}
         showsVerticalScrollIndicator={false}
       >
         <SettingsSection tx="settings.account">

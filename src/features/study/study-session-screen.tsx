@@ -3,8 +3,9 @@ import type { CardSide } from '@/features/card-renderer/types';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import * as React from 'react';
 import { ActivityIndicator, Alert, View } from 'react-native';
-import { Pressable, SafeAreaView, Text } from '@/components/ui';
-import { ChevronLeftIcon, RotateCwIcon } from '@/components/ui/icons';
+import { BackButton, Pressable, SafeAreaView, Text } from '@/components/ui';
+import { RotateCwIcon, TrophyIcon } from '@/components/ui/icons';
+import { Snapy } from '@/components/ui/snapy';
 import { DynamicCardRenderer } from '@/features/card-renderer/dynamic-card-renderer';
 import { useCollection } from '@/features/learn/api';
 import { useSchema, useTopicSchema } from '@/features/template-builder/api';
@@ -67,15 +68,19 @@ export function StudySessionScreen() {
   );
   const [side, setSide] = React.useState<CardSide>('FRONT');
   const [reviewedThisSession, setReviewedThisSession] = React.useState(0);
-  const cards = (queueQuery.data?.cards ?? []).filter(
-    card => !removedCardIds.has(card.item.topicItemId),
-  );
   const studiedToday =
     latestReview?.studiedToday ?? queueQuery.data?.studiedToday ?? 0;
   const dailyGoal = latestReview?.dailyGoal ?? queueQuery.data?.dailyGoal ?? 0;
   const remainingToday =
     latestReview?.remainingToday ?? queueQuery.data?.remainingToday ?? 0;
+  const cards =
+    dailyGoal > 0 && remainingToday <= 0
+      ? []
+      : (queueQuery.data?.cards ?? []).filter(
+          card => !removedCardIds.has(card.item.topicItemId),
+        );
   const currentCard = cards[0];
+  const goalComplete = dailyGoal > 0 && remainingToday <= 0;
   const { data: topicSchema, isLoading: isTopicSchemaLoading } = useTopicSchema(
     currentCard?.topicId,
   );
@@ -88,43 +93,40 @@ export function StudySessionScreen() {
       fullSchema?.templates?.[0],
     [fullSchema],
   );
-  const handleRate = React.useCallback(
-    async (rating: FsrsRating) => {
-      if (!currentCard || submitRating.isPending)
-        return;
-      try {
-        const result = await submitRating.mutateAsync({
-          ...scope,
-          topicItemId: currentCard.item.topicItemId,
-          rating,
-        });
-        setLatestReview(result);
-        setReviewedThisSession(value => value + 1);
-        setRemovedCardIds(previous =>
-          new Set(previous).add(currentCard.item.topicItemId),
+  const handleRate = async (rating: FsrsRating) => {
+    if (!currentCard || submitRating.isPending)
+      return;
+    try {
+      const result = await submitRating.mutateAsync({
+        ...scope,
+        topicItemId: currentCard.item.topicItemId,
+        rating,
+      });
+      setLatestReview(result);
+      setReviewedThisSession(value => value + 1);
+      setRemovedCardIds(previous =>
+        new Set(previous).add(currentCard.item.topicItemId),
+      );
+      setSide('FRONT');
+    }
+    catch (error: any) {
+      const code = error?.response?.data?.error;
+      if (code === 'DAILY_QUOTA_REACHED') {
+        Alert.alert(
+          'Daily goal reached',
+          'You have used today\'s collection quota.',
         );
-        setSide('FRONT');
       }
-      catch (error: any) {
-        const code = error?.response?.data?.error;
-        if (code === 'DAILY_QUOTA_REACHED') {
-          Alert.alert(
-            'Daily goal reached',
-            'You have used today\'s collection quota.',
-          );
-        }
-        else {
-          Alert.alert(
-            'Could not save review',
-            error?.response?.data?.error ||
-            error?.message ||
-            'Please try again.',
-          );
-        }
+      else {
+        Alert.alert(
+          'Could not save review',
+          error?.response?.data?.error ||
+          error?.message ||
+          'Please try again.',
+        );
       }
-    },
-    [currentCard, scope, submitRating],
-  );
+    }
+  };
   const refreshQueue = async () => {
     const result = await queueQuery.refetch();
     if (result.data) {
@@ -150,15 +152,14 @@ export function StudySessionScreen() {
         className="flex-1 bg-[#F7F8F2] dark:bg-neutral-950"
       >
         <View className="flex-1 items-center justify-center px-8">
-          <View className="items-center rounded-[32px] border-2 border-b-[6px] border-emerald-200 border-b-emerald-400 bg-white px-9 py-8 dark:border-emerald-900 dark:border-b-emerald-950 dark:bg-neutral-900">
-            <ActivityIndicator size="large" color="#16A34A" />
-            <Text className="mt-4 font-nunito text-lg font-black text-mascot-navy dark:text-white">
-              Loading study queue...
-            </Text>
-            <Text className="mt-1 text-center font-inter text-sm text-neutral-500 dark:text-neutral-400">
-              Getting your next cards ready
-            </Text>
-          </View>
+          <Snapy pose="tap_trung" animation="idle" style={{ width: 120, height: 120 }} />
+          <ActivityIndicator size="large" color="#16A34A" className="mt-4" />
+          <Text className="mt-4 font-nunito text-lg font-black text-mascot-navy dark:text-white">
+            {translate('learn.hub.study_loading_queue')}
+          </Text>
+          <Text className="mt-1 text-center font-inter text-sm text-neutral-500 dark:text-neutral-400">
+            {translate('learn.hub.study_loading_ready')}
+          </Text>
         </View>
       </SafeAreaView>
     );
@@ -170,14 +171,18 @@ export function StudySessionScreen() {
         style={{ flex: 1 }}
         className="flex-1 items-center justify-center bg-[#F7F8F2] p-6 dark:bg-neutral-950"
       >
-        <Text className="text-center font-nunito text-lg font-black text-mascot-navy dark:text-white">
-          Could not load this study session.
+        <Snapy pose="bat_ngo" animation="none" style={{ width: 112, height: 112 }} />
+        <Text className="mt-4 text-center font-nunito text-lg font-black text-mascot-navy dark:text-white">
+          {translate('learn.hub.study_queue_error')}
         </Text>
         <Pressable
           onPress={() => queueQuery.refetch()}
-          className="mt-5 rounded-xl bg-emerald-600 px-5 py-3"
+          accessibilityRole="button"
+          className="mt-5 min-h-12 justify-center rounded-2xl border-2 border-b-4 border-emerald-400 border-b-emerald-700 bg-emerald-500 px-6 active:translate-y-px active:border-b-2"
         >
-          <Text className="font-nunito font-extrabold text-white">Retry</Text>
+          <Text className="text-center font-nunito font-extrabold text-white">
+            {translate('learn.hub.study_retry')}
+          </Text>
         </Pressable>
       </SafeAreaView>
     );
@@ -190,18 +195,8 @@ export function StudySessionScreen() {
     >
       <View className="bg-white px-4 pt-2 pb-4 dark:bg-neutral-900">
         <View className="flex-row items-center gap-3">
-          <Pressable
-            onPress={() => router.back()}
-            hitSlop={8}
-            android_ripple={{ color: 'transparent' }}
-            className="size-10 items-center justify-center rounded-2xl border-2 border-b-[3px] border-neutral-200 border-b-neutral-300 bg-white active:translate-y-px active:border-b-2 dark:border-neutral-700 dark:border-b-neutral-800 dark:bg-neutral-800"
-          >
-            <ChevronLeftIcon width={20} height={20} color="#757793" />
-          </Pressable>
+          <BackButton onPress={() => router.back()} className="mr-0.5" />
           <View className="flex-1">
-            <Text className="font-inter text-[10px] font-black tracking-[1.5px] text-emerald-600 uppercase dark:text-emerald-400">
-              DAILY QUEST
-            </Text>
             <Text
               className="font-nunito text-lg font-black text-mascot-navy dark:text-white"
               numberOfLines={1}
@@ -209,21 +204,16 @@ export function StudySessionScreen() {
               {title}
             </Text>
             <Text className="mt-0.5 font-inter text-xs font-semibold text-neutral-500 dark:text-neutral-400">
-              {studiedToday}
-              /
-              {dailyGoal}
-              {' '}
-              today |
-              {remainingToday}
-              {' '}
-              left
+              {translate('learn.hub.study_progress', {
+                studied: studiedToday,
+                goal: dailyGoal,
+                remaining: remainingToday,
+              })}
             </Text>
           </View>
-          <View className="rounded-2xl border-2 border-b-[3px] border-amber-200 border-b-amber-400 bg-amber-50 px-3 py-1.5 dark:border-amber-900 dark:border-b-amber-950 dark:bg-amber-950/50">
+          <View className="rounded-xl bg-emerald-50 px-3 py-2 dark:bg-emerald-950/50">
             <Text className="font-nunito text-xs font-black text-emerald-700 dark:text-emerald-300">
-              {cards.length}
-              {' '}
-              cards
+              {translate('learn.hub.study_due_count', { count: cards.length })}
             </Text>
           </View>
         </View>
@@ -262,7 +252,7 @@ export function StudySessionScreen() {
               >
                 <RotateCwIcon width={17} height={17} color="#64748B" />
                 <Text className="font-nunito font-black text-emerald-800 dark:text-emerald-200">
-                  Show answer
+                  {translate('learn.hub.study_show_answer')}
                 </Text>
               </Pressable>
             )}
@@ -283,37 +273,40 @@ export function StudySessionScreen() {
                       style={{ color: rating.color }}
                       className="font-nunito text-xs font-black"
                     >
-                      {submitRating.isPending ? 'Saving...' : rating.title}
+                      {submitRating.isPending ? translate('learn.hub.study_saving') : rating.title}
                     </Text>
                   </Pressable>
                 ))}
               </View>
             ) : (
               <Text className="text-center font-inter text-xs font-semibold text-neutral-400">
-                Turn over the card to rate your answer.
+                {translate('learn.hub.study_rate_prompt')}
               </Text>
             )}
           </View>
         </>
       ) : (
         <View className="flex-1 items-center justify-center px-7">
-          <View className="size-24 items-center justify-center rounded-[30px] border-2 border-b-[6px] border-amber-200 border-b-amber-400 bg-amber-50 dark:border-amber-900 dark:border-b-amber-950 dark:bg-amber-950/50">
-            <Text className="text-5xl">
-              {remainingToday === 0 ? '\u{1F3C6}' : '\u{2728}'}
-            </Text>
-          </View>
+          {goalComplete ? (
+            <View className="size-24 items-center justify-center rounded-[30px] border-2 border-b-[6px] border-amber-200 border-b-amber-400 bg-amber-50 dark:border-amber-900 dark:border-b-amber-950 dark:bg-amber-950/50">
+              <TrophyIcon width={42} height={42} color="#D97706" />
+            </View>
+          ) : (
+            <Snapy pose="proud" animation="none" style={{ width: 112, height: 112 }} />
+          )}
           <Text className="mt-5 text-center font-nunito text-2xl font-black text-mascot-navy dark:text-white">
-            {reviewedThisSession > 0
-              ? 'Session complete!'
-              : 'Nothing due right now'}
+            {goalComplete
+              ? translate('learn.hub.study_goal_complete')
+              : reviewedThisSession > 0
+                ? translate('learn.hub.study_session_complete')
+                : translate('learn.hub.study_caught_up')}
           </Text>
-          <Text className="mt-2 text-center font-inter text-sm/5 text-neutral-500 dark:text-neutral-400">
-            {studiedToday}
-            /
-            {dailyGoal}
-            {' '}
-            cards counted today. Repeated reviews of
-            the same card do not use more quota.
+          <Text className="mt-2 max-w-sm text-center font-inter text-sm/5 text-neutral-500 dark:text-neutral-400">
+            {goalComplete
+              ? translate('learn.hub.study_goal_complete_desc')
+              : reviewedThisSession > 0
+                ? translate('learn.hub.study_session_complete_desc')
+                : translate('learn.hub.study_caught_up_desc')}
           </Text>
           <Pressable
             onPress={refreshQueue}
@@ -321,7 +314,7 @@ export function StudySessionScreen() {
             className="mt-6 rounded-2xl border-2 border-b-[5px] border-emerald-400 border-b-emerald-700 bg-emerald-500 px-6 py-3 active:translate-y-px active:border-b-2"
           >
             <Text className="font-nunito font-black text-white">
-              {queueQuery.isFetching ? 'Checking...' : 'Check queue again'}
+              {queueQuery.isFetching ? translate('learn.hub.study_checking') : translate('learn.hub.study_check_again')}
             </Text>
           </Pressable>
         </View>

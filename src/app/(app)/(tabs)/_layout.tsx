@@ -1,7 +1,9 @@
 import { Tabs } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-
+import { useUniwind } from 'uniwind';
 import { CameraTabButton } from '@/components/ui/camera-tab-button';
+
+import colors from '@/components/ui/colors';
 import {
   Home as HomeIcon,
   LearnIcon,
@@ -15,16 +17,18 @@ export default function TabLayout() {
   // Edge-to-edge: the system gesture/nav bar draws over the app, so the tab bar
   // grows by the bottom inset instead of letting it cover the labels.
   const { bottom } = useSafeAreaInsets();
+  const { theme } = useUniwind();
+  const isDark = theme === 'dark';
 
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: '#58CC02',
-        tabBarInactiveTintColor: '#AFAFAF',
+        tabBarActiveTintColor: isDark ? colors.darkTheme.accent : '#58CC02',
+        tabBarInactiveTintColor: isDark ? colors.darkTheme.mutedForeground : '#AFAFAF',
         tabBarStyle: {
-          backgroundColor: '#FFFFFF',
+          backgroundColor: isDark ? colors.darkTheme.surface : '#FFFFFF',
           borderTopWidth: 2,
-          borderTopColor: '#F3F4F6',
+          borderTopColor: isDark ? colors.darkTheme.border : '#F3F4F6',
           height: 64 + bottom,
           paddingBottom: 8 + bottom,
           paddingTop: 8,
@@ -38,7 +42,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Home',
+          title: translate('home.tab_label'),
           headerShown: true,
           header: () => <HomeHeader />,
           tabBarIcon: ({ color }) => <HomeIcon color={color} />,
@@ -48,7 +52,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="learn"
         options={{
-          title: 'Learn',
+          title: translate('learn.tab_label'),
           headerShown: false,
           tabBarIcon: ({ color }) => <LearnIcon color={color} />,
           tabBarButtonTestID: 'learn-tab',
@@ -79,7 +83,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="profile"
         options={{
-          title: 'Profile',
+          title: translate('profile.tab_label'),
           headerShown: false,
           tabBarIcon: ({ color }) => <ProfileIcon color={color} />,
           tabBarButtonTestID: 'profile-tab',

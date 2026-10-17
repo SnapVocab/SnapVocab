@@ -16,9 +16,9 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { twMerge } from 'tailwind-merge';
+import { BackButton } from '@/components/ui';
 import {
   ArrowRightIcon,
-  ChevronLeftIcon,
   EditIcon,
   LayersIcon,
   LayoutGridIcon,
@@ -258,15 +258,10 @@ export function QuizHistoryScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-[#F7F8FA] dark:bg-neutral-900" edges={['top']}>
+    <SafeAreaView className="flex-1 bg-[#F7F8FA] dark:bg-neutral-900" edges={['top', 'bottom']}>
       {/* 1. HEADER */}
       <View className="flex-row items-center justify-between border-b border-neutral-100 bg-white px-4 py-3 dark:border-neutral-800 dark:bg-neutral-900">
-        <Pressable
-          onPress={() => router.back()}
-          className="-ml-2 size-10 items-center justify-center rounded-full active:bg-neutral-100 dark:active:bg-neutral-800"
-        >
-          <ChevronLeftIcon width={24} height={24} fill="#1E2A44" />
-        </Pressable>
+        <BackButton onPress={() => router.back()} className="-ml-2" />
         <Text className="font-nunito text-[18px] font-extrabold text-mascot-navy dark:text-white">
           Lịch sử Quiz
         </Text>
