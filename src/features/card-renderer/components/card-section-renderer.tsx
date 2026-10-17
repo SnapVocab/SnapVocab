@@ -26,16 +26,18 @@ export function CardSectionRenderer({ section, data }: Props) {
   const showSectionHeader = Boolean(section.name && section.name.trim());
 
   return (
-    <View className="my-2.5 w-full">
+    <View className="my-2 w-full">
       {/* Section Header */}
       {showSectionHeader && (
-        <View className="mb-3.5 flex-row items-center justify-between border-b border-neutral-200/60 pb-2 dark:border-neutral-800">
-          <View className="flex-row items-center gap-2">
-            <View className="h-3.5 w-1 rounded-full bg-primary-500" />
-            <Text className="font-nunito text-xs font-black tracking-wider text-neutral-400 uppercase dark:text-neutral-500">
+        <View className="mb-3 flex-row items-center gap-2.5">
+          <View className="h-px flex-1 bg-neutral-100 dark:bg-neutral-800" />
+          <View className="flex-row items-center gap-1.5 rounded-full bg-primary-50 px-2.5 py-1 dark:bg-primary-900/30">
+            <View className="size-1.5 rounded-full bg-primary-500" />
+            <Text className="font-inter text-[9px] font-extrabold tracking-[1px] text-primary-700 uppercase dark:text-primary-300">
               {section.name}
             </Text>
           </View>
+          <View className="h-px flex-1 bg-neutral-100 dark:bg-neutral-800" />
         </View>
       )}
 
@@ -45,15 +47,15 @@ export function CardSectionRenderer({ section, data }: Props) {
           key={inst.key}
           className={`w-full ${
             inst.index > 0
-              ? 'mt-4 border-t border-dashed border-neutral-200/80 pt-4 dark:border-neutral-700/80'
+              ? 'mt-3 border-t border-dashed border-neutral-200/80 pt-3 dark:border-neutral-700/80'
               : ''
           }`}
         >
           {isTwoColumns ? (
             /* 2-Column layout: vertically centered along cross-axis, fields gap-3.5 */
-            <View className="w-full flex-row items-center justify-between gap-4">
+            <View className="w-full flex-row items-start justify-between gap-3">
               {/* Column 1 (Left 50%) */}
-              <View className="flex-1 justify-center gap-3.5">
+              <View className="flex-1 justify-start gap-3">
                 {col1Fields.map(field => (
                   <CardFieldRenderer
                     key={`${field.id}-${inst.key}`}
@@ -66,7 +68,7 @@ export function CardSectionRenderer({ section, data }: Props) {
               </View>
 
               {/* Column 2 (Right 50%) */}
-              <View className="flex-1 justify-center gap-3.5">
+              <View className="flex-1 justify-start gap-3">
                 {col2Fields.map(field => (
                   <CardFieldRenderer
                     key={`${field.id}-${inst.key}`}
@@ -80,7 +82,7 @@ export function CardSectionRenderer({ section, data }: Props) {
             </View>
           ) : (
             /* Single Column layout (100% width) */
-            <View className="w-full justify-center gap-3.5">
+            <View className="w-full justify-center gap-3">
               {section.fields.map(field => (
                 <CardFieldRenderer
                   key={`${field.id}-${inst.key}`}

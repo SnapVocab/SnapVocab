@@ -133,10 +133,10 @@ export function CardFieldRenderer({
             {field.fieldLabel}
           </Text>
         ) : null}
-        <View className="h-44 w-full overflow-hidden rounded-2xl border border-neutral-200/80 bg-neutral-100 dark:border-neutral-800 dark:bg-neutral-900">
+        <View className="h-48 w-full overflow-hidden rounded-[22px] border border-neutral-200 bg-neutral-100 p-1 dark:border-neutral-700 dark:bg-neutral-800">
           <Image
             source={{ uri: text }}
-            className="size-full"
+            className="size-full rounded-[18px]"
             contentFit="cover"
           />
         </View>
@@ -189,12 +189,12 @@ export function CardFieldRenderer({
 
   // 3. Standard dynamic text field (Word, Translation, Phonetic, Level, Definition, Example, etc.)
   return (
-    <View className={`my-1 w-full ${horizontalAlignClass}`}>
+    <View className={`my-1.5 w-full ${horizontalAlignClass}`}>
       {/* Field Label (Frappe-style subtle uppercase caption) */}
       {field.fieldLabel ? (
         <Text
           style={{ textAlign }}
-          className="mb-1 font-inter text-[10.5px] font-extrabold tracking-wider text-neutral-400 uppercase dark:text-neutral-500"
+          className={`mb-1 font-inter text-[10px] font-bold tracking-[1px] uppercase ${isTargetWord ? 'text-primary-700 dark:text-primary-300' : 'text-neutral-400 dark:text-neutral-500'}`}
         >
           {field.fieldLabel}
         </Text>

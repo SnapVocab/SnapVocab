@@ -82,7 +82,7 @@ export function FlipCardContainer({
             StyleSheet.absoluteFillObject,
             frontAnimatedStyle,
           ]}
-          className="rounded-3xl border-2 border-neutral-200/90 bg-white shadow-md dark:border-neutral-700 dark:bg-neutral-900"
+          className="overflow-hidden rounded-[28px] border border-neutral-200 bg-white shadow-xl shadow-slate-900/10 dark:border-neutral-700 dark:bg-neutral-900 dark:shadow-black/30"
           pointerEvents={currentSide === 'FRONT' ? 'auto' : 'none'}
         >
           {frontContent}
@@ -94,7 +94,7 @@ export function FlipCardContainer({
             StyleSheet.absoluteFillObject,
             backAnimatedStyle,
           ]}
-          className="rounded-3xl border-2 border-neutral-200/90 bg-white shadow-md dark:border-neutral-700 dark:bg-neutral-900"
+          className="overflow-hidden rounded-[28px] border border-neutral-200 bg-white shadow-xl shadow-slate-900/10 dark:border-neutral-700 dark:bg-neutral-900 dark:shadow-black/30"
           pointerEvents={currentSide === 'BACK' ? 'auto' : 'none'}
         >
           {backContent}

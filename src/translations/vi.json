@@ -1,4 +1,10 @@
 {
+  "card_renderer": {
+    "back": "Mặt sau",
+    "card": "THẺ TỪ VỰNG",
+    "front": "Mặt trước",
+    "tap_to_flip": "Chạm để lật thẻ"
+  },
   "change_password": {
     "confirm": "Xác nhận mật khẩu mới",
     "confirm_placeholder": "Nhập lại mật khẩu mới",
