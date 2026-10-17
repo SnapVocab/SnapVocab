@@ -131,6 +131,18 @@ export function useCollectionDetail() {
     setSearchQuery('');
   }, []);
 
+  const handleStudyTopic = React.useCallback((topic: TopicDTO) => {
+    router.push({
+      pathname: '/(app)/study/session',
+      params: {
+        collectionId: String(id),
+        collectionName: collectionData?.name || paramName || '',
+        topicId: String(topic.id),
+        topicName: topic.name,
+      },
+    } as any);
+  }, [router, id, collectionData?.name, paramName]);
+
   const handleBack = React.useCallback(() => {
     if (parentStack.length > 0) {
       setParentStack(prev => prev.slice(0, -1));
@@ -287,6 +299,7 @@ export function useCollectionDetail() {
     firstTopicName: firstTopic?.name ?? '',
     handleDeleteSuccess,
     handleTopicPress,
+    handleStudyTopic,
     handlePreviewItem,
     handleNextPreview,
     handlePrevPreview,

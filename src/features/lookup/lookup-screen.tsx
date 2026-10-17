@@ -10,9 +10,8 @@ import {
   View,
 } from 'react-native';
 import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
-import { FocusAwareStatusBar, SafeAreaView, Text } from '@/components/ui';
+import { BackButton, FocusAwareStatusBar, SafeAreaView, Text } from '@/components/ui';
 import {
-  ChevronLeftIcon,
   ChevronRightIcon,
   ClockIcon,
   CloseIcon,
@@ -115,14 +114,7 @@ export function LookupScreen() {
 
       {/* Screen Header */}
       <View className="flex-row items-center justify-between border-b border-neutral-100 bg-white px-4 py-3 dark:border-neutral-800 dark:bg-neutral-900">
-        <TouchableOpacity
-          onPress={() => router.back()}
-          activeOpacity={0.7}
-          hitSlop={12}
-          className="size-10 items-center justify-center rounded-full active:bg-neutral-100 dark:active:bg-neutral-800"
-        >
-          <ChevronLeftIcon color="#0F172A" width={24} height={24} />
-        </TouchableOpacity>
+        <BackButton onPress={() => router.back()} hitSlop={12} />
 
         <Text className="font-nunito text-lg font-black text-mascot-navy dark:text-white">
           {translate('lookup.title')}

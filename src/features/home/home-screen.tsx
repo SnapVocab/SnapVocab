@@ -1,5 +1,5 @@
 import { FocusAwareStatusBar, SafeAreaView, ScrollView } from '@/components/ui';
-import { HomeSearchBar } from './components';
+import { HomeSearchBar, StudyTodayCard } from './components';
 
 export function HomeScreen() {
   return (
@@ -8,6 +8,7 @@ export function HomeScreen() {
       <ScrollView className="flex-1 px-4 pt-4" showsVerticalScrollIndicator={false}>
         {/* Search Bar */}
         <HomeSearchBar />
+        <StudyTodayCard />
       </ScrollView>
     </SafeAreaView>
   );

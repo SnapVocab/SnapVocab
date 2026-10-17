@@ -48,18 +48,18 @@ const variantStyles: Record<
   { container: string; text: string; indicator: string }
 > = {
   default: {
-    container: 'bg-primary-500 border-b-[4px] border-primary-700 active:translate-y-[2px] active:border-b-[2px]',
-    text: 'text-white font-extrabold tracking-wider uppercase',
+    container: 'bg-primary-500 border-b-[4px] border-primary-700 active:translate-y-[2px] active:border-b-[2px] dark:bg-[#91B86C] dark:border-b-[#557044] dark:active:bg-[#83AA60]',
+    text: 'text-white font-extrabold tracking-wider uppercase dark:text-[#1B2416]',
     indicator: '#ffffff',
   },
   brand: {
-    container: 'bg-primary-500 border-b-[4px] border-primary-700 active:translate-y-[2px] active:border-b-[2px]',
-    text: 'text-white font-extrabold tracking-wider uppercase',
+    container: 'bg-primary-500 border-b-[4px] border-primary-700 active:translate-y-[2px] active:border-b-[2px] dark:bg-[#91B86C] dark:border-b-[#557044] dark:active:bg-[#83AA60]',
+    text: 'text-white font-extrabold tracking-wider uppercase dark:text-[#1B2416]',
     indicator: '#ffffff',
   },
   primary: {
-    container: 'bg-primary-500 border-b-[4px] border-primary-700 active:translate-y-[2px] active:border-b-[2px]',
-    text: 'text-white font-extrabold tracking-wider uppercase',
+    container: 'bg-primary-500 border-b-[4px] border-primary-700 active:translate-y-[2px] active:border-b-[2px] dark:bg-[#91B86C] dark:border-b-[#557044] dark:active:bg-[#83AA60]',
+    text: 'text-white font-extrabold tracking-wider uppercase dark:text-[#1B2416]',
     indicator: '#ffffff',
   },
   purple: {
@@ -68,13 +68,13 @@ const variantStyles: Record<
     indicator: '#ffffff',
   },
   secondary: {
-    container: 'bg-white border-2 border-neutral-200 border-b-[4px] border-b-neutral-300 active:translate-y-[2px] active:border-b-[2px]',
-    text: 'text-neutral-800 font-extrabold tracking-wider uppercase',
+    container: 'bg-white border-2 border-neutral-200 border-b-[4px] border-b-neutral-300 active:translate-y-[2px] active:border-b-[2px] dark:bg-[#292E36] dark:border-[#46505C] dark:border-b-[#667382]',
+    text: 'text-neutral-800 font-extrabold tracking-wider uppercase dark:text-white',
     indicator: '#1E2A44',
   },
   white: {
-    container: 'bg-white border-2 border-neutral-200 border-b-[4px] border-b-neutral-300 active:translate-y-[2px] active:border-b-[2px]',
-    text: 'text-neutral-800 font-extrabold tracking-wider uppercase',
+    container: 'bg-white border-2 border-neutral-200 border-b-[4px] border-b-neutral-300 active:translate-y-[2px] active:border-b-[2px] dark:bg-[#292E36] dark:border-[#46505C] dark:border-b-[#667382]',
+    text: 'text-neutral-800 font-extrabold tracking-wider uppercase dark:text-white',
     indicator: '#1E2A44',
   },
   info: {
@@ -118,8 +118,8 @@ const variantStyles: Record<
     indicator: '#ffffff',
   },
   outline: {
-    container: 'bg-white border-2 border-primary-500 border-b-[4px] border-b-primary-700 active:translate-y-[2px] active:border-b-[2px]',
-    text: 'text-primary-600 font-extrabold tracking-wider uppercase',
+    container: 'bg-white border-2 border-primary-500 border-b-[4px] border-b-primary-700 active:translate-y-[2px] active:border-b-[2px] dark:bg-[#292E36] dark:border-[#46505C] dark:border-b-[#667382]',
+    text: 'text-primary-600 font-extrabold tracking-wider uppercase dark:text-white',
     indicator: '#58CC02',
   },
   ghost: {
@@ -188,7 +188,7 @@ export function Button({
   const textClasses = twMerge(
     currentVariant.text,
     currentSize.text,
-    'text-center',
+    'text-center dark:text-white',
     textClassName,
   );
 

@@ -31,6 +31,7 @@ export function CollectionDetailContent({ detail }: Props) {
     isItemsRefetching,
     isRefreshing,
     handleTopicPress,
+    handleStudyTopic,
     handleEndReached,
     handleRefresh,
     refetchTopics,
@@ -50,6 +51,7 @@ export function CollectionDetailContent({ detail }: Props) {
         subtopics={topics}
         totalCount={isInsideTopic ? totalItemsCount : totalTopicsCount}
         onSelectTopic={handleTopicPress}
+        onStudyTopic={handleStudyTopic}
       />
     ),
     [
@@ -60,6 +62,7 @@ export function CollectionDetailContent({ detail }: Props) {
       totalItemsCount,
       totalTopicsCount,
       handleTopicPress,
+      handleStudyTopic,
     ],
   );
 
@@ -151,7 +154,11 @@ export function CollectionDetailContent({ detail }: Props) {
           data={isTopicsLoading ? [] : filteredTopics}
           keyExtractor={item => String(item.id)}
           renderItem={({ item }) => (
-            <TopicCard item={item} onPress={() => handleTopicPress(item)} />
+            <TopicCard
+              item={item}
+              onPress={() => handleTopicPress(item)}
+              onStudyPress={() => handleStudyTopic(item)}
+            />
           )}
           ItemSeparatorComponent={() => <View className="h-2.5" />}
           ListHeaderComponent={ListHeader}

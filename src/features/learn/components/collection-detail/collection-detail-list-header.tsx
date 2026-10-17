@@ -13,6 +13,7 @@ type Props = {
   subtopics: TopicDTO[];
   totalCount: number;
   onSelectTopic: (topic: TopicDTO) => void;
+  onStudyTopic: (topic: TopicDTO) => void;
 };
 
 export function CollectionDetailListHeader({
@@ -22,6 +23,7 @@ export function CollectionDetailListHeader({
   subtopics,
   totalCount,
   onSelectTopic,
+  onStudyTopic,
 }: Props) {
   return (
     <View className="mb-3">
@@ -53,6 +55,7 @@ export function CollectionDetailListHeader({
         <SubtopicSection
           subtopics={subtopics}
           onSelectTopic={onSelectTopic}
+          onStudyTopic={onStudyTopic}
         />
       )}
 

@@ -1,11 +1,11 @@
 import type { ScanFailure } from './scan-errors';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useRef, useState } from 'react';
-import { Pressable, ScrollView } from 'react-native';
+import { ScrollView } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { Button, FocusAwareStatusBar, Mascot, SafeAreaView, showErrorMessage, Text, View } from '@/components/ui';
-import { CameraIcon, ChevronLeftIcon, SparklesIcon } from '@/components/ui/icons';
+import { BackButton, Button, FocusAwareStatusBar, Mascot, SafeAreaView, showErrorMessage, Text, View } from '@/components/ui';
+import { CameraIcon, SparklesIcon } from '@/components/ui/icons';
 import { translate } from '@/lib/i18n';
 import { useScanStatus, useStartScan } from './api';
 import { DetectedItemCard } from './components/detected-item-card';
@@ -71,13 +71,7 @@ export function ScanResultScreen() {
 
   const header = (
     <View className="h-14 flex-row items-center border-b border-neutral-100 bg-white px-4 dark:border-neutral-800 dark:bg-neutral-900">
-      <Pressable
-        onPress={backToCamera}
-        testID="scan-result-back"
-        className="size-10 items-center justify-center rounded-full active:bg-neutral-100"
-      >
-        <ChevronLeftIcon color="#1E2A44" />
-      </Pressable>
+      <BackButton onPress={backToCamera} testID="scan-result-back" />
       <Text
         className="flex-1 text-center font-nunito text-lg font-extrabold text-mascot-navy dark:text-white"
         tx="scan.result.title"

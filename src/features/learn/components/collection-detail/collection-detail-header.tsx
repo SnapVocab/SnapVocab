@@ -1,7 +1,8 @@
 import { useRouter } from 'expo-router';
 import { Pressable, View } from 'react-native';
-import { Text } from '@/components/ui';
-import { ChevronLeftIcon, MoreVerticalIcon } from '@/components/ui/icons';
+import { BackButton, Text } from '@/components/ui';
+
+import { MoreVerticalIcon } from '@/components/ui/icons';
 import { translate } from '@/lib/i18n';
 
 type Props = {
@@ -24,14 +25,7 @@ export default function CollectionDetailHeader({
 
   return (
     <View className="flex-row items-center justify-between border-b border-neutral-100 px-3 py-4 dark:border-neutral-800">
-      <Pressable
-        onPress={handleBack}
-        hitSlop={12}
-        android_ripple={{ color: 'transparent' }}
-        className="size-10 items-center justify-center rounded-xl bg-neutral-100 active:opacity-60 dark:bg-neutral-800"
-      >
-        <ChevronLeftIcon width={20} height={20} color="#757793" />
-      </Pressable>
+      <BackButton onPress={handleBack} hitSlop={12} />
 
       <View className="pointer-events-none absolute inset-x-14 items-center">
         <Text
@@ -42,7 +36,7 @@ export default function CollectionDetailHeader({
         </Text>
         {subtitle && (
           <Text
-            className="font-inter text-[12px] font-medium text-neutral-500"
+            className="font-inter text-[12px] font-medium text-neutral-500 dark:text-neutral-400"
             numberOfLines={1}
           >
             {subtitle}

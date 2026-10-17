@@ -1,9 +1,9 @@
 import type { CardSide, CardStudyViewProps, StudySessionResult } from './types';
 import { useRouter } from 'expo-router';
 import * as React from 'react';
-import { Pressable, ScrollView, View } from 'react-native';
-import { Button } from '@/components/ui/button';
-import { CheckIcon, ChevronLeftIcon, RotateCwIcon, TrophyIcon } from '@/components/ui/icons';
+import { ScrollView, View } from 'react-native';
+import { BackButton, Button } from '@/components/ui';
+import { CheckIcon, RotateCwIcon, TrophyIcon } from '@/components/ui/icons';
 import { Text } from '@/components/ui/text';
 import { CardActionToolbar } from './components/card-action-toolbar';
 import { DynamicCardRenderer } from './dynamic-card-renderer';
@@ -156,14 +156,7 @@ export function CardStudyView({
       {/* Top Header & Progress */}
       <View className="border-b border-neutral-200/70 bg-white px-5 pt-3 pb-4 dark:border-neutral-800 dark:bg-neutral-900">
         <View className="flex-row items-center justify-between">
-          <Pressable
-            onPress={handleBack}
-            hitSlop={8}
-            android_ripple={{ color: 'transparent' }}
-            className="size-10 items-center justify-center rounded-xl bg-neutral-100 active:opacity-60 dark:bg-neutral-800"
-          >
-            <ChevronLeftIcon width={20} height={20} color="#757793" />
-          </Pressable>
+          <BackButton onPress={handleBack} />
 
           <View className="mx-3 flex-1 items-center">
             <Text className="font-nunito text-base font-extrabold text-mascot-navy dark:text-white" numberOfLines={1}>

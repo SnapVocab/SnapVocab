@@ -12,7 +12,7 @@ import {
   Text,
   View,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   CheckCircleIcon,
   HomeIcon,
@@ -29,6 +29,7 @@ const { height, width } = Dimensions.get('window');
 
 export function QuizResultScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
 
   const params = useLocalSearchParams<{
     quizId?: string;
@@ -332,7 +333,10 @@ export function QuizResultScreen() {
       </ScrollView>
 
       {/* 6. BOTTOM ACTIONS */}
-      <View className="absolute inset-x-0 bottom-0 flex-row gap-3 border-t border-neutral-100 bg-white p-4 shadow-lg shadow-black/5">
+      <View
+        style={{ bottom: insets.bottom }}
+        className="absolute inset-x-0 flex-row gap-3 border-t border-neutral-100 bg-white p-4 shadow-lg shadow-black/5"
+      >
         <Pressable
           onPress={handleGoHome}
           className="h-13 flex-1 flex-row items-center justify-center gap-2 rounded-2xl border-b-4 border-neutral-200 bg-neutral-100 active:translate-y-px active:border-b-2 active:bg-neutral-200"

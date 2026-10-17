@@ -6,12 +6,12 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import * as React from 'react';
 import { useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, Alert, Pressable, ScrollView, Text, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { BackButton } from '@/components/ui';
 import {
   AlertTriangleIcon,
   ArrowRightIcon,
   CheckCircleIcon,
-  ChevronLeftIcon,
   ChevronRightIcon,
   EditIcon,
   LayersIcon,
@@ -64,6 +64,7 @@ export const PRESET_COUNTS: (5 | 10 | 20)[] = [5, 10, 20];
 
 export function QuizSetupScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const params = useLocalSearchParams<{
     topicId?: string;
     topicName?: string;
@@ -259,12 +260,7 @@ export function QuizSetupScreen() {
 
       {/* 1. HEADER */}
       <View className="z-10 flex-row items-center justify-between border-b border-neutral-100 bg-white px-4 py-3">
-        <Pressable
-          onPress={navigateBackSafely}
-          className="-ml-2 size-10 items-center justify-center rounded-full active:bg-neutral-100"
-        >
-          <ChevronLeftIcon size={28} className="text-mascot-navy" />
-        </Pressable>
+        <BackButton onPress={navigateBackSafely} className="-ml-2" />
         <Text className="flex-1 pr-8 text-center font-nunito text-[18px] font-extrabold text-mascot-navy">
           Thiết lập Quiz
         </Text>
@@ -541,7 +537,10 @@ export function QuizSetupScreen() {
       </ScrollView>
 
       {/* STICKY BOTTOM CTA */}
-      <View className="absolute inset-x-0 bottom-0 border-t border-neutral-100 bg-white p-5 shadow-lg shadow-black/5">
+      <View
+        style={{ bottom: insets.bottom }}
+        className="absolute inset-x-0 border-t border-neutral-100 bg-white p-5 shadow-lg shadow-black/5"
+      >
         <Pressable
           onPress={handleStartQuiz}
           disabled={!selectedTopicId || isBusy}

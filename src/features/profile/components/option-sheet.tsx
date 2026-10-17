@@ -96,7 +96,6 @@ export function OptionSheet<T extends string | number>({
           {clearTx && onClear && (
             <Button tx={clearTx} variant="outline" fullWidth onPress={onClear} className="mb-2" />
           )}
-          <Button tx="settings.done" variant="ghost" fullWidth onPress={onClose} />
         </Pressable>
       </Pressable>
     </Modal>

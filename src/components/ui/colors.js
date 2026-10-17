@@ -1,6 +1,15 @@
 module.exports = {
   white: '#ffffff',
   black: '#000000',
+  darkTheme: {
+    background: '#181A1F',
+    surface: '#22252B',
+    raised: '#292E36',
+    border: '#363B43',
+    foreground: '#F3F4F6',
+    mutedForeground: '#A5AAB3',
+    accent: '#9BCB72',
+  },
   charcoal: {
     50: '#F2F2F2',
     100: '#E5E5E5',

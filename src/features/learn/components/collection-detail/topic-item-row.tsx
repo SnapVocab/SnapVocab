@@ -1,6 +1,7 @@
 import type { TopicItemData } from '../../types';
 import * as React from 'react';
 import { Pressable, View } from 'react-native';
+import { useUniwind } from 'uniwind';
 import { Text } from '@/components/ui';
 import { ChevronRightIcon, VolumeIcon } from '@/components/ui/icons';
 import { useTts } from '@/lib/hooks/use-tts';
@@ -12,6 +13,10 @@ type Props = {
 };
 
 export function TopicItemRow({ item, onPress }: Props) {
+  const { theme } = useUniwind();
+  const cardSurfaceClasses = theme === 'dark'
+    ? 'border-[#46505C] border-b-[#667382] bg-[#22252B]'
+    : 'border-neutral-200/90 border-b-neutral-300 bg-white';
   const { word, phonetic, partOfSpeech, translation } = React.useMemo(
     () => extractTopicItemDisplay(item),
     [item],
@@ -41,7 +46,7 @@ export function TopicItemRow({ item, onPress }: Props) {
   return (
     <Pressable
       onPress={onPress}
-      className="dark:border-neutral-750 dark:border-b-neutral-850 flex-row items-center justify-between rounded-2xl border-2 border-b-4 border-neutral-200/90 border-b-neutral-300 bg-white px-4 py-3.5 shadow-2xs active:translate-y-[2px] active:border-b-2 dark:bg-neutral-900"
+      className={`flex-row items-center justify-between rounded-2xl border-2 border-b-4 px-4 py-3.5 shadow-2xs active:translate-y-[2px] active:border-b-2 ${cardSurfaceClasses}`}
     >
       {/* Left Column: Word, Phonetic, POS & Translation */}
       <View className="flex-1 pr-3">
@@ -95,7 +100,7 @@ export function TopicItemRow({ item, onPress }: Props) {
           />
         </Pressable>
 
-        <View className="size-8 items-center justify-center rounded-lg bg-neutral-100/60 dark:bg-neutral-800">
+        <View className="size-9 items-center justify-center rounded-xl border-2 border-b-[3px] border-neutral-200/60 border-b-neutral-300 bg-neutral-100/60 dark:border-[#46505C] dark:border-b-[#667382] dark:bg-[#292E36]">
           <ChevronRightIcon width={14} height={14} color="#94A3B8" />
         </View>
       </View>
