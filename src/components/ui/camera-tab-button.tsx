@@ -1,12 +1,14 @@
 import type { BottomTabBarButtonProps } from '@react-navigation/bottom-tabs';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Pressable, StyleSheet, useColorScheme, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
+import { useUniwind } from 'uniwind';
 
 import colors from '@/components/ui/colors';
 import { CameraIcon } from '@/components/ui/icons';
 
 export function CameraTabButton({ onPress, accessibilityState }: BottomTabBarButtonProps) {
-  const isDark = useColorScheme() === 'dark';
+  const { theme } = useUniwind();
+  const isDark = theme === 'dark';
   const focused = accessibilityState?.selected;
 
   return (
@@ -21,15 +23,15 @@ export function CameraTabButton({ onPress, accessibilityState }: BottomTabBarBut
           style={[
             styles.outerRing,
             {
-              backgroundColor: isDark ? '#171717' : '#FFFFFF',
-              borderColor: isDark ? '#171717' : '#FFFFFF',
+              backgroundColor: isDark ? colors.darkTheme.background : '#FFFFFF',
+              borderColor: isDark ? colors.darkTheme.background : '#FFFFFF',
             },
           ]}
         >
           <LinearGradient
             colors={focused
-              ? [colors.primary[600], colors.primary[700]]
-              : [colors.primary[500], colors.primary[600]]}
+              ? (isDark ? ['#6F984C', '#587A3C'] : [colors.primary[600], colors.primary[700]])
+              : (isDark ? ['#91B86C', '#779F56'] : [colors.primary[500], colors.primary[600]])}
             style={styles.gradient}
           >
             <CameraIcon color="#FFFFFF" width={30} height={30} />
@@ -58,9 +60,9 @@ const styles = StyleSheet.create({
     borderWidth: 3.5,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: colors.primary[500],
+    shadowColor: colors.darkTheme.accent,
     shadowOffset: { width: 0, height: 5 },
-    shadowOpacity: 0.4,
+    shadowOpacity: 0.28,
     shadowRadius: 8,
     elevation: 10,
   },

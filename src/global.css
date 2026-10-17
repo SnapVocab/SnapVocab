@@ -173,20 +173,32 @@
   --color-destructive-foreground: #ffffff;
 }
 
-/* Dark mode colors */
-@media (prefers-color-scheme: dark) {
-  @theme {
-    --color-background: #0D0E1A;
-    --color-foreground: #EEEFF3;
+/* Theme-aware semantic and neutral colors. The dark palette uses soft slate surfaces. */
+@layer theme {
+  :root {
+    @variant dark {
+      --color-background: #181A1F;
+      --color-foreground: #F3F4F6;
+      --color-card: #22252B;
+      --color-card-foreground: #F3F4F6;
+      --color-muted: #2B2F36;
+      --color-muted-foreground: #A5AAB3;
+      --color-border: #363B43;
+      --color-input: #363B43;
+      --color-ring: #9BCB72;
 
-    --color-card: #171A2F;
-    --color-card-foreground: #EEEFF3;
-
-    --color-muted: #2A2C47;
-    --color-muted-foreground: #9597AD;
-
-    --color-border: #3D3F5E;
-    --color-input: #3D3F5E;
+      --color-neutral-50: #F3F4F6;
+      --color-neutral-100: #E5E7EB;
+      --color-neutral-200: #D1D5DB;
+      --color-neutral-300: #AEB4BE;
+      --color-neutral-400: #939AA5;
+      --color-neutral-500: #747C88;
+      --color-neutral-600: #565E69;
+      --color-neutral-700: #3A414B;
+      --color-neutral-800: #292E36;
+      --color-neutral-900: #1B1E24;
+      --color-neutral-950: #15171B;
+    }
   }
 }
 

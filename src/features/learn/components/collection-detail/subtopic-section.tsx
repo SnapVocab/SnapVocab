@@ -30,7 +30,7 @@ export function SubtopicSection({ subtopics, onSelectTopic, onStudyTopic }: Prop
         </View>
 
         <View className="rounded-full bg-amber-100 px-2 py-0.5 dark:bg-amber-950/60">
-          <Text className="font-nunito text-[11px] font-black text-amber-800 dark:text-amber-300">
+          <Text className="font-nunito text-[11px] font-black text-amber-800 dark:text-white">
             {subtopics.length}
           </Text>
         </View>
@@ -45,7 +45,7 @@ export function SubtopicSection({ subtopics, onSelectTopic, onStudyTopic }: Prop
         {subtopics.map(topic => (
           <View
             key={String(topic.id)}
-            className="w-48 justify-between rounded-2xl border-2 border-b-4 border-amber-300/90 border-b-amber-400 bg-amber-50/80 p-3.5 dark:border-amber-800 dark:border-b-amber-900 dark:bg-amber-950/40"
+            className="w-48 justify-between rounded-2xl border-2 border-b-4 border-amber-300/90 border-b-amber-400 bg-amber-50/80 p-3.5 dark:border-amber-700 dark:border-b-amber-600 dark:bg-amber-950/40"
           >
             <Pressable onPress={() => onSelectTopic(topic)} className="active:opacity-70">
               <View className="flex-row items-center justify-between">
@@ -81,9 +81,9 @@ export function SubtopicSection({ subtopics, onSelectTopic, onStudyTopic }: Prop
             <View className="mt-3 flex-row gap-2">
               <Pressable
                 onPress={() => onSelectTopic(topic)}
-                className="flex-1 flex-row items-center justify-center gap-1 rounded-xl border border-amber-200/90 bg-white/90 p-2 dark:border-neutral-700 dark:bg-neutral-800"
+                className="flex-1 flex-row items-center justify-center gap-1 rounded-xl border-2 border-b-[3px] border-amber-200/90 border-b-amber-300 bg-white/90 p-2 dark:border-[#46505C] dark:border-b-[#667382] dark:bg-[#292E36]"
               >
-                <Text className="font-nunito text-[11px] font-extrabold text-amber-800 dark:text-amber-300">
+                <Text className="font-nunito text-[11px] font-extrabold text-amber-800 dark:text-white">
                   {translate('learn.topic.open_topic')}
                 </Text>
                 <ChevronRightIcon width={12} height={12} color="#D97706" />

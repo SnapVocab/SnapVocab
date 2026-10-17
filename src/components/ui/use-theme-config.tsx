@@ -11,11 +11,11 @@ const DarkTheme: Theme = {
   ..._DarkTheme,
   colors: {
     ..._DarkTheme.colors,
-    primary: colors.primary[300],
-    background: colors.neutral[900],
-    text: colors.neutral[100],
-    border: colors.neutral[600],
-    card: colors.neutral[800],
+    primary: colors.darkTheme.accent,
+    background: colors.darkTheme.background,
+    text: colors.darkTheme.foreground,
+    border: colors.darkTheme.border,
+    card: colors.darkTheme.surface,
   },
 };
 
