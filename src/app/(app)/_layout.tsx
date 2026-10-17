@@ -17,6 +17,8 @@ export default function AppLayout() {
       <Stack.Screen name="collections" />
       <Stack.Screen name="collections/[id]" />
       <Stack.Screen name="collections/create-topic" />
+      <Stack.Screen name="study/select" />
+      <Stack.Screen name="study/session" />
       <Stack.Screen name="scan-result" />
       <Stack.Screen name="template-builder" />
     </Stack>

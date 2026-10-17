@@ -2,9 +2,7 @@ import type { BottomSheetModal } from '@gorhom/bottom-sheet';
 import type { Collection, TopicDTO, TopicItemData } from './types';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import * as React from 'react';
-import { Alert } from 'react-native';
 import { useSchema, useTopicSchema } from '@/features/template-builder/api';
-import { translate } from '@/lib/i18n';
 import { useCollection, useInfiniteCollectionTopics, useInfiniteTopicItems } from './api';
 import { extractTopicItemDisplay } from './components/collection-detail/topic-item-utils';
 
@@ -134,11 +132,16 @@ export function useCollectionDetail() {
   }, []);
 
   const handleStudyTopic = React.useCallback((topic: TopicDTO) => {
-    Alert.alert(
-      translate('learn.hub.study_coming_title'),
-      translate('learn.topic.study_coming_desc', { name: topic.name }),
-    );
-  }, []);
+    router.push({
+      pathname: '/(app)/study/session',
+      params: {
+        collectionId: String(id),
+        collectionName: collectionData?.name || paramName || '',
+        topicId: String(topic.id),
+        topicName: topic.name,
+      },
+    } as any);
+  }, [router, id, collectionData?.name, paramName]);
 
   const handleBack = React.useCallback(() => {
     if (parentStack.length > 0) {

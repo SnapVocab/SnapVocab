@@ -1,9 +1,11 @@
-import { Alert, View } from 'react-native';
+import { useRouter } from 'expo-router';
+import { View } from 'react-native';
 import { Button, Text } from '@/components/ui';
 import { FlashcardIcon, PlayIcon } from '@/components/ui/icons';
 import { translate } from '@/lib/i18n';
 
 export function StudyTodayCard() {
+  const router = useRouter();
   return (
     <View className="mb-4 overflow-hidden rounded-3xl border-2 border-b-[5px] border-emerald-300 border-b-emerald-500 bg-emerald-50 p-5 dark:border-emerald-800 dark:border-b-emerald-950 dark:bg-emerald-950/40">
       <View className="flex-row items-start justify-between">
@@ -24,10 +26,7 @@ export function StudyTodayCard() {
           label={translate('learn.hub.start_study')}
           variant="primary"
           icon={<PlayIcon width={16} height={16} fill="#FFFFFF" />}
-          onPress={() => Alert.alert(
-            translate('learn.hub.study_coming_title'),
-            translate('learn.hub.study_coming_desc'),
-          )}
+          onPress={() => router.push('/(app)/study/select' as any)}
         />
       </View>
     </View>
