@@ -1,6 +1,6 @@
 import type { ShopItemDTO } from '@/features/shop/types';
 import { router } from 'expo-router';
-import { BookOpenIcon, SparklesIcon, TargetIcon, XIcon } from 'lucide-react-native';
+import { BookOpenIcon, TargetIcon, XIcon } from 'lucide-react-native';
 import * as React from 'react';
 import { Image, Modal, Pressable, Text, View } from 'react-native';
 import Animated, {

@@ -2,7 +2,6 @@ import type { StyleProp, ViewStyle } from 'react-native';
 import type { SnapVocabVisualSize } from './core/SnapVocabVisualSize';
 import * as React from 'react';
 import { AchievementTrophy3D } from './achievements/AchievementTrophy3D';
-import { MasteredBadge3D } from './achievements/MasteredBadge3D';
 import { Coin3D } from './rewards/Coin3D';
 import { Gem3D } from './rewards/Gem3D';
 import { RewardChest3D } from './rewards/RewardChest3D';

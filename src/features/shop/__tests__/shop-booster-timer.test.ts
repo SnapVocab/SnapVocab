@@ -1,7 +1,6 @@
 import {
   calculateServerOffset,
   formatRemainingTime,
-  getEstimatedServerTime,
   getRemainingBoosterMs,
 } from '../utils/booster-timer';
 
