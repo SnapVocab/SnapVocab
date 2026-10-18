@@ -197,6 +197,10 @@ export function Button({
       ref={ref}
       disabled={isDisabled}
       className={containerClasses}
+      // Keep the action's name while loading dots replace the text.
+      accessibilityRole="button"
+      accessibilityLabel={resolvedText}
+      accessibilityState={{ disabled: isDisabled, busy: !!loading }}
       {...props}
     >
       {loading

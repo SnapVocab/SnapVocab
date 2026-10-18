@@ -45,7 +45,9 @@ jobs:
         uses: ./.github/actions/setup-node-pnpm-install
 
       - name: Run prebuild
-        run: pnpm run prebuild
+        run: |
+          cp .env.example .env
+          pnpm run prebuild
 
       - name: 🚑 Run Doctor Checks
         run: |

@@ -1,11 +1,11 @@
-import type { CreateQuizRequest, QuizHistorySummaryResponse, QuizMode, QuizStatus } from './types';
+import type { CreateQuizRequest, QuizHistorySummaryResponse, QuizMode, QuizPlayDTO, QuizStatus } from './types';
 
 export * from './utils/idempotency';
 
 export type HistoryFilterMode = 'ALL' | QuizMode;
 
 /**
- * Formats `durationSeconds` from the Result API (D14) as mm:ss, or hh:mm:ss from one hour up.
+ * Formats `durationSeconds` from the Result API (D15) as mm:ss, or hh:mm:ss from one hour up.
  * The play-screen stopwatch is UX only and is never the source of this value.
  */
 export function formatQuizDuration(durationSeconds?: number | null): string {
@@ -21,10 +21,49 @@ export function formatQuizDuration(durationSeconds?: number | null): string {
     : `${pad(minutes)}:${pad(seconds)}`;
 }
 
-/** True when the backend closed this session on its 24h TTL (D16), so it cannot be continued. */
+type QuizApiError = { response?: { status?: number; data?: { error?: string } } };
+
+/** True when the backend closed this session on its 24h TTL (D17), so it cannot be continued. */
 export function isQuizSessionExpired(error: unknown): boolean {
-  const code = (error as { response?: { data?: { error?: string } } })?.response?.data?.error;
-  return code === 'QUIZ_SESSION_EXPIRED';
+  return (error as QuizApiError)?.response?.data?.error === 'QUIZ_SESSION_EXPIRED';
+}
+
+/** The client's copy of the session is behind the server: reload Play state instead of retrying. */
+const RESYNC_CODES = new Set([
+  'QUESTION_ALREADY_CHECKED',
+  'MATCHING_LEFT_ALREADY_RESOLVED',
+  'MATCHING_TILE_ALREADY_MATCHED',
+  'QUIZ_NOT_IN_PROGRESS',
+  'QUIZ_HAS_UNRESOLVED_UNITS',
+]);
+
+/**
+ * How a failed check / attempt / complete must be recovered:
+ * - EXPIRED: session is gone (410).
+ * - RESYNC: server state moved on (graded elsewhere, terminal, unresolved units) → reload Play.
+ * - REJECTED: other 4xx — the server wrote nothing, so a new answer with a new key is safe.
+ * - UNCONFIRMED: no response or 5xx — the server may have committed; only the SAME request with
+ *   the SAME key may be retried, otherwise the replayed grading would not match the shown answer.
+ */
+export function classifyQuizError(error: unknown): 'EXPIRED' | 'RESYNC' | 'REJECTED' | 'UNCONFIRMED' {
+  const response = (error as QuizApiError)?.response;
+  if (response?.data?.error === 'QUIZ_SESSION_EXPIRED')
+    return 'EXPIRED';
+  if (response?.data?.error && RESYNC_CODES.has(response.data.error))
+    return 'RESYNC';
+  return response?.status && response.status < 500 ? 'REJECTED' : 'UNCONFIRMED';
+}
+
+/** Index of the first MCQ/Fill question the server has not graded yet, or -1 when all are resolved. */
+export function firstUnresolvedIndex(questions: QuizPlayDTO['questions'], after = -1): number {
+  return questions.findIndex((q, i) => i > after && !q.resolved);
+}
+
+/** Every unit is resolved server-side, so the only thing left is to complete the quiz. */
+export function isQuizFullyResolved(quiz: QuizPlayDTO): boolean {
+  return quiz.mode === 'MATCHING'
+    ? quiz.matchingRounds.length > 0 && quiz.matchingRounds.every(r => r.completed)
+    : quiz.questions.length > 0 && quiz.questions.every(q => q.resolved);
 }
 
 export function formatQuizSubmittedDate(submittedAt?: string | null): string {
@@ -60,7 +99,7 @@ export function formatQuizAccuracy(accuracy?: number | null): number {
 }
 
 /**
- * What a history row offers (D16): a session is resumable only while IN_PROGRESS — the backend has
+ * What a history row offers (D17): a session is resumable only while IN_PROGRESS — the backend has
  * already turned anything past its 24h TTL into EXPIRED, which offers nothing.
  */
 export function quizHistoryAction(status: QuizStatus): 'RESUME' | 'REVIEW' | 'NONE' {

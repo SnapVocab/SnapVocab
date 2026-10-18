@@ -7,7 +7,7 @@ import * as React from 'react';
 import { useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, Alert, Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
-import { BackButton } from '@/components/ui';
+import { ScreenHeader } from '@/components/ui';
 import {
   AlertTriangleIcon,
   ArrowRightIcon,
@@ -45,7 +45,7 @@ export const QUIZ_MODES = [
   {
     id: 'MATCHING' as QuizMode,
     label: 'Ghép đôi từ vựng',
-    desc: 'Nối các cặp từ tiếng Anh với nghĩa tiếng Việt',
+    desc: 'Nối các cặp từ tiếng Anh với nghĩa tiếng Việt. Điểm tính theo lần ghép đầu tiên.',
     badge: 'Phổ biến',
     icon: LayersIcon,
     available: true,
@@ -91,7 +91,12 @@ export function QuizSetupScreen() {
   const [selectedTopicId, setSelectedTopicId] = useState<number | undefined>(requestedTopicId);
   const bottomSheetRef = useRef<BottomSheetModal>(null);
 
-  const { data: availableTopics = [], isLoading: isLoadingTopics } = useQuizAvailableTopics();
+  const {
+    data: availableTopics = [],
+    isLoading: isLoadingTopics,
+    isError: isTopicsError,
+    refetch: refetchTopics,
+  } = useQuizAvailableTopics();
 
   const selectedTopic = useMemo(() => {
     if (!selectedTopicId)
@@ -172,7 +177,13 @@ export function QuizSetupScreen() {
           onPress: () => cancelMutation.mutate(
             { quizId: unfinished.quizId },
             {
-              onSuccess: () => createQuiz(request),
+              // A new intent: the current key may be the one that created `unfinished`, and
+              // reusing it would replay that (now cancelled) quiz instead of creating one.
+              onSuccess: () => {
+                const key = generateIdempotencyKey();
+                setIdempotencyKey(key);
+                createQuiz(request, key);
+              },
               onError: () => setErrorMessage('Không thể huỷ bài Quiz đang làm dở. Vui lòng thử lại.'),
             },
           ),
@@ -216,14 +227,19 @@ export function QuizSetupScreen() {
       confirmUnfinished(unfinished, request);
       return;
     }
-    createQuiz(request);
+    createQuiz(request, idempotencyKey);
   };
 
-  const createQuiz = (request: CreateQuizRequest) => {
+  // The key is kept across failures (a lost response replays the same quiz) and rotated once the
+  // intent succeeded: Setup stays mounted under Session, so the next "Bắt đầu" is a new quiz.
+  const createQuiz = (request: CreateQuizRequest, key: string) => {
     createMutation.mutate(
-      { data: request, idempotencyKey },
+      { data: request, idempotencyKey: key },
       {
-        onSuccess: data => openSession(data.quizId),
+        onSuccess: (data) => {
+          setIdempotencyKey(generateIdempotencyKey());
+          openSession(data.quizId);
+        },
         onError: (err: any) => {
           const errorType = err.response?.data?.error;
           const errData = err.response?.data?.data;
@@ -231,9 +247,10 @@ export function QuizSetupScreen() {
           if (errorType === 'QUIZ_INSUFFICIENT_ELIGIBLE_ITEMS') {
             const eligible = errData?.eligibleCount ?? 0;
             const requested = errData?.requestedCount ?? questionCount;
-            setErrorMessage(
-              `Chủ đề này chỉ có ${eligible} từ vựng đủ điều kiện để tạo Quiz ${requested} câu. Vui lòng chọn số lượng câu ít hơn (5 câu) hoặc thêm từ vựng.`,
-            );
+            const smaller = PRESET_COUNTS.filter(c => c <= eligible).at(-1);
+            setErrorMessage(smaller
+              ? `Chủ đề này chỉ có ${eligible} từ vựng đủ điều kiện, chưa đủ cho Quiz ${requested} câu. Hãy chọn ${smaller} câu hoặc thêm từ vựng.`
+              : `Chủ đề này chỉ có ${eligible} từ vựng đủ điều kiện, cần ít nhất 5 từ để tạo Quiz. Hãy thêm từ vựng hoặc chọn chủ đề khác.`);
           }
           else if (errorType === 'TOPIC_TEMPLATE_NOT_CONFIGURED') {
             setErrorMessage('Chủ đề này chưa cấu hình mẫu thẻ học phù hợp để tạo Quiz.');
@@ -242,9 +259,7 @@ export function QuizSetupScreen() {
             setErrorMessage('Không đủ đáp án phân biệt để tạo các lựa chọn trắc nghiệm cho chủ đề này.');
           }
           else {
-            setErrorMessage(
-              err.response?.data?.message || 'Không thể tạo bài Quiz. Vui lòng kiểm tra lại kết nối và thử lại.',
-            );
+            setErrorMessage('Không thể tạo bài Quiz. Vui lòng kiểm tra lại kết nối và thử lại.');
           }
         },
       },
@@ -259,12 +274,7 @@ export function QuizSetupScreen() {
     <SafeAreaView className="flex-1 bg-[#F7F8FA]" edges={['top']}>
 
       {/* 1. HEADER */}
-      <View className="z-10 flex-row items-center justify-between border-b border-neutral-100 bg-white px-4 py-3">
-        <BackButton onPress={navigateBackSafely} className="-ml-2" />
-        <Text className="flex-1 pr-8 text-center font-nunito text-[18px] font-extrabold text-mascot-navy">
-          Thiết lập Quiz
-        </Text>
-      </View>
+      <ScreenHeader title="Thiết lập Quiz" onBack={navigateBackSafely} />
 
       <ScrollView
         contentContainerStyle={{ padding: 20, paddingBottom: 130 }}
@@ -286,6 +296,17 @@ export function QuizSetupScreen() {
           <Text className="mb-3 font-inter text-[13px] font-medium text-neutral-400">
             Chủ đề bạn sẽ rèn luyện phản xạ trong bài Quiz
           </Text>
+
+          {isTopicsError && (
+            <View className="mb-3 flex-row items-center justify-between gap-3 rounded-2xl border border-red-200 bg-red-50 p-3.5">
+              <Text className="flex-1 font-inter text-[13px] font-semibold text-red-700">
+                Không tải được danh sách chủ đề.
+              </Text>
+              <Pressable onPress={() => void refetchTopics()} className="min-h-10 justify-center px-2 active:opacity-60">
+                <Text className="font-nunito text-[13px] font-extrabold text-red-700">Thử lại</Text>
+              </Pressable>
+            </View>
+          )}
 
           {selectedTopicId && selectedTopicName ? (
             <Pressable

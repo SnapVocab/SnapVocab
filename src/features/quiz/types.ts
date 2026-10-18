@@ -2,7 +2,7 @@ export type QuizMode = 'MCQ' | 'MATCHING' | 'FILL_BLANK';
 
 export type QuizDirection = 'EN_VI' | 'VI_EN';
 
-/** EXPIRED = system closed an unfinished session on its 24h TTL (D16), not a learner cancel. */
+/** EXPIRED = system closed an unfinished session on its 24h TTL (D17), not a learner cancel. */
 export type QuizStatus = 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED' | 'EXPIRED';
 
 export type QuizOutcome = 'UNCOMMITTED' | 'CORRECT' | 'INCORRECT';
@@ -95,7 +95,8 @@ export type QuizPlayDTO = {
   quizId: number;
   status: QuizStatus;
   mode: QuizMode;
-  direction: QuizDirection;
+  /** Null for FILL_BLANK, which has no direction. */
+  direction: QuizDirection | null;
   topicId: number;
   topicName: string;
   requestedCount: number;
@@ -175,14 +176,17 @@ export type QuizResultDTO = {
   quizId: number;
   status: QuizStatus;
   mode: QuizMode;
-  direction: QuizDirection;
+  direction: QuizDirection | null;
   topicId: number;
   topicName: string;
-  summary: QuizResultSummary;
+  /** Null unless status is COMPLETED: a cancelled/expired quiz has no final score. */
+  summary: QuizResultSummary | null;
   completedAt?: string | null;
   cancelledAt?: string | null;
-  /** Backend-calculated completedAt - createdAt (D14); null unless the quiz is COMPLETED. */
+  /** Backend-calculated completedAt - createdAt (D15); null unless the quiz is COMPLETED. */
   durationSeconds?: number | null;
+  /** XP written by the backend on complete; `bonusAmount > 0` when an XP Booster was active. Null when 0 correct. */
+  xp?: { baseAmount: number; bonusAmount: number; amount: number } | null;
   items: QuizResultItem[];
 };
 
@@ -205,7 +209,7 @@ export type QuizHistoryItemDTO = {
   topicId: number;
   topicName: string;
   mode: QuizMode;
-  direction: QuizDirection;
+  direction: QuizDirection | null;
   status: QuizStatus;
   questionCount: number;
   correctCount: number | null;

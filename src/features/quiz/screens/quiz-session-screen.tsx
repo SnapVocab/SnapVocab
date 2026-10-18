@@ -8,7 +8,44 @@ import { useQuiz } from '../api/quiz-api';
 import { FillBlankQuizView } from '../components/fill-blank-quiz-view';
 import { MatchingQuizView } from '../components/matching-quiz-view';
 import { MultipleChoiceQuizView } from '../components/multiple-choice-quiz-view';
-import { isQuizSessionExpired } from '../utils';
+import { useFinishQuiz } from '../hooks/use-finish-quiz';
+import { isQuizFullyResolved, isQuizSessionExpired } from '../utils';
+
+type NoticeAction = { label: string; onPress: () => void; busy?: boolean };
+
+function SessionNotice({ title, message, primary, onBack }: {
+  title: string;
+  message: string;
+  primary: NoticeAction;
+  onBack: () => void;
+}) {
+  return (
+    <SafeAreaView className="flex-1 items-center justify-center bg-[#F7F8FA] p-6">
+      <Snapy pose="bat_ngo" animation="shake" style={{ width: 120, height: 120 }} className="mb-6" />
+      <Text className="text-center font-nunito text-[20px] font-extrabold text-mascot-navy">{title}</Text>
+      <Text className="mt-2 mb-6 px-6 text-center font-inter text-[14px] leading-relaxed text-neutral-500">{message}</Text>
+
+      <View className="w-full max-w-xs gap-3">
+        <Pressable
+          onPress={primary.onPress}
+          disabled={primary.busy}
+          className="h-12 w-full items-center justify-center rounded-xl border-b-2 border-primary-700 bg-primary-500 active:bg-primary-600"
+        >
+          {primary.busy
+            ? <ActivityIndicator size="small" color="#FFFFFF" />
+            : <Text className="font-nunito text-[15px] font-extrabold text-white">{primary.label}</Text>}
+        </Pressable>
+
+        <Pressable
+          onPress={onBack}
+          className="h-12 w-full items-center justify-center rounded-xl bg-neutral-200 active:bg-neutral-300"
+        >
+          <Text className="font-nunito text-[15px] font-extrabold text-neutral-700">Quay lại</Text>
+        </Pressable>
+      </View>
+    </SafeAreaView>
+  );
+}
 
 export function QuizSessionScreen() {
   const router = useRouter();
@@ -33,11 +70,19 @@ export function QuizSessionScreen() {
     }
   };
 
-  const { data: quiz, isLoading, isError, error, refetch } = useQuiz(quizId);
+  const { data: quiz, isError, error, refetch, isFetchedAfterMount } = useQuiz(quizId);
   const expired = isQuizSessionExpired(error);
 
-  // 1. LOADING STATE
-  if (isLoading) {
+  // Views seed their position from the Play DTO once, so they must mount on server-fresh state and
+  // remount after a resync (server moved on: graded elsewhere, terminal, unresolved units).
+  const [epoch, setEpoch] = React.useState(0);
+  const resync = React.useCallback(() => {
+    void refetch().then(() => setEpoch(e => e + 1));
+  }, [refetch]);
+  const finishQuiz = useFinishQuiz(quizId ?? 0, resync);
+
+  // 1. LOADING STATE — cached Play data may be stale (answers made since), so wait for a fresh fetch.
+  if (quizId !== null && !isFetchedAfterMount && !isError) {
     return (
       <SafeAreaView className="flex-1 items-center justify-center bg-[#F7F8FA] p-6 dark:bg-neutral-900">
         <Snapy pose="tap_trung" animation="idle" style={{ width: 120, height: 120 }} className="mb-6" />
@@ -52,7 +97,7 @@ export function QuizSessionScreen() {
     );
   }
 
-  // 2. ERROR / NOT FOUND STATE
+  // 2. ERROR / NOT FOUND STATE — retrying an expired session can never succeed, so offer a new quiz (D17).
   if (isError || !quiz) {
     return (
       <SafeAreaView className="flex-1 items-center justify-center bg-[#F7F8FA] p-6 dark:bg-neutral-900">
@@ -90,14 +135,52 @@ export function QuizSessionScreen() {
     );
   }
 
-  // 3. RENDER ACTIVE QUIZ MODE
+  // 3. TERMINAL SESSION — never offer answering on a finished quiz.
+  if (quiz.status === 'COMPLETED') {
+    return (
+      <SessionNotice
+        title="Bài quiz đã hoàn thành"
+        message="Bài này đã được chấm xong."
+        primary={{
+          label: 'Xem kết quả',
+          onPress: () => router.replace({ pathname: '/(app)/study/quiz-result' as any, params: { quizId: String(quiz.quizId) } }),
+        }}
+        onBack={navigateBackSafely}
+      />
+    );
+  }
+  if (quiz.status !== 'IN_PROGRESS') {
+    return (
+      <SessionNotice
+        title={quiz.status === 'CANCELLED' ? 'Bài quiz đã hủy' : 'Phiên quiz đã hết hạn'}
+        message="Bài này không thể làm tiếp. Bạn có thể tạo một bài mới."
+        primary={{ label: 'Tạo bài mới', onPress: () => router.replace('/(app)/study/quiz-setup' as any) }}
+        onBack={navigateBackSafely}
+      />
+    );
+  }
+
+  // 4. EVERY UNIT RESOLVED BUT NOT COMPLETED (resume after a failed complete).
+  if (isQuizFullyResolved(quiz)) {
+    return (
+      <SessionNotice
+        title="Bạn đã làm xong tất cả câu"
+        message="Hoàn tất để lưu kết quả và nhận XP."
+        primary={{ label: 'Hoàn tất bài quiz', onPress: finishQuiz.finish, busy: finishQuiz.isPending }}
+        onBack={navigateBackSafely}
+      />
+    );
+  }
+
+  // 5. RENDER ACTIVE QUIZ MODE
+  const viewProps = { quiz, onExit: navigateBackSafely, onResync: resync };
   if (quiz.mode === 'MATCHING') {
-    return <MatchingQuizView quiz={quiz} onExit={navigateBackSafely} />;
+    return <MatchingQuizView key={epoch} {...viewProps} />;
   }
 
   if (quiz.mode === 'FILL_BLANK') {
-    return <FillBlankQuizView quiz={quiz} onExit={navigateBackSafely} />;
+    return <FillBlankQuizView key={epoch} {...viewProps} />;
   }
 
-  return <MultipleChoiceQuizView quiz={quiz} onExit={navigateBackSafely} />;
+  return <MultipleChoiceQuizView key={epoch} {...viewProps} />;
 }

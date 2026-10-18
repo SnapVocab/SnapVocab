@@ -232,7 +232,7 @@ describe('quiz v2 authoritative backend API contracts', () => {
         method: 'POST',
       });
       expect(result.status).toBe('COMPLETED');
-      expect(result.summary.accuracy).toBe(0.8);
+      expect(result.summary?.accuracy).toBe(0.8);
     });
 
     it('sends POST /api/me/quizzes/{quizId}/cancel with optional idempotency key', async () => {

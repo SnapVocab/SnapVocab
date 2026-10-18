@@ -1,8 +1,8 @@
-import { Tabs } from 'expo-router';
+import { Tabs, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useUniwind } from 'uniwind';
-import { CameraTabButton } from '@/components/ui/camera-tab-button';
 
+import { useColorMode, useSurface } from '@/components/ui';
+import { CameraTabButton } from '@/components/ui/camera-tab-button';
 import colors from '@/components/ui/colors';
 import {
   Home as HomeIcon,
@@ -11,14 +11,19 @@ import {
   ShoppingBagIcon,
 } from '@/components/ui/icons';
 import { HomeHeader } from '@/features/home';
+import { useInventory } from '@/features/shop';
 import { translate } from '@/lib/i18n';
 
 export default function TabLayout() {
+  const router = useRouter();
   // Edge-to-edge: the system gesture/nav bar draws over the app, so the tab bar
   // grows by the bottom inset instead of letting it cover the labels.
   const { bottom } = useSafeAreaInsets();
-  const { theme } = useUniwind();
-  const isDark = theme === 'dark';
+  // Fetching inventory syncs the account's equipped theme into ShopThemeProvider on app start / login.
+  useInventory();
+  // App-wide chrome: default surfaces for the user's light/dark mode; Shop themes stay inside the Shop area.
+  const surface = useSurface();
+  const isDark = useColorMode() === 'dark';
 
   return (
     <Tabs
@@ -26,9 +31,9 @@ export default function TabLayout() {
         tabBarActiveTintColor: isDark ? colors.darkTheme.accent : '#58CC02',
         tabBarInactiveTintColor: isDark ? colors.darkTheme.mutedForeground : '#AFAFAF',
         tabBarStyle: {
-          backgroundColor: isDark ? colors.darkTheme.surface : '#FFFFFF',
+          backgroundColor: surface.surface,
           borderTopWidth: 2,
-          borderTopColor: isDark ? colors.darkTheme.border : '#F3F4F6',
+          borderTopColor: surface.border,
           height: 64 + bottom,
           paddingBottom: 8 + bottom,
           paddingTop: 8,
@@ -44,7 +49,13 @@ export default function TabLayout() {
         options={{
           title: translate('home.tab_label'),
           headerShown: true,
-          header: () => <HomeHeader />,
+          header: () => (
+            <HomeHeader
+              onStreakPress={() => router.push('/stats')}
+              onCoinPress={() => router.push('/profile/wallet')}
+              onAvatarPress={() => router.push('/profile')}
+            />
+          ),
           tabBarIcon: ({ color }) => <HomeIcon color={color} />,
           tabBarButtonTestID: 'home-tab',
         }}

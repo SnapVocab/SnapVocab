@@ -29,7 +29,7 @@ client.interceptors.response.use(
           });
           const { access_token, refresh_token } = data.data;
           store.getState().updateTokens(access_token, refresh_token);
-          originalRequest.headers.Authorization = `Bearer ${data.access_token}`;
+          originalRequest.headers.Authorization = `Bearer ${access_token}`;
           return client(originalRequest);
         }
         catch {

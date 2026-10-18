@@ -132,7 +132,7 @@ export function useAddWordForm(topicSchema?: TopicSchemaDTO) {
         const ipa = data.pronunciations?.[0]?.ipa || '';
         const meaningsList = data.meanings || [];
         const translationsList = data.translations || [];
-        const primaryTranslation = translationsList[0]?.translation || '';
+        const primaryTranslation = translationsList.find((t: { translation?: string }) => t.translation?.trim())?.translation?.trim() || '';
         const primaryDefinition = meaningsList[0]?.definition || '';
         const primaryExample = meaningsList[0]?.example || '';
 

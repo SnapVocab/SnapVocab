@@ -6,10 +6,10 @@ import { Image } from '@/components/ui/image';
 export type FoxPose = 'wave' | 'celebrate' | 'sad' | 'read';
 
 const poses: Record<FoxPose, number> = {
-  wave: require('@assets/fox-wave.png'),
-  celebrate: require('@assets/fox-celebrate.png'),
-  sad: require('@assets/fox-sad.png'),
-  read: require('@assets/fox-read.png'),
+  wave: require('@assets/images/snapy-welcome.png'),
+  celebrate: require('@assets/images/snapy-happy.png'),
+  sad: require('@assets/images/snapy-curious.png'),
+  read: require('@assets/images/snapy-reading.png'),
 };
 
 type MascotProps = {

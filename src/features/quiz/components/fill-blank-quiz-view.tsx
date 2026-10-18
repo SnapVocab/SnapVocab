@@ -1,14 +1,12 @@
 /* eslint-disable max-lines-per-function */
 import type { QuizPlayDTO } from '../types';
 import type { SnapyPose } from '@/components/ui/snapy';
-import { useRouter } from 'expo-router';
 import * as React from 'react';
 import { useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Dimensions,
   Easing,
-  Modal,
   Pressable,
   Animated as RNAnimated,
   ScrollView,
@@ -24,44 +22,43 @@ import {
   ClockIcon,
   CloseIcon,
   EditIcon,
-  LogOutIcon,
   VolumeIcon,
   XCircleIcon,
 } from '@/components/ui/icons';
 import { Snapy } from '@/components/ui/snapy';
+import { useTts } from '@/lib/hooks/use-tts';
 import { cn } from '@/lib/utils';
-import { useCancelQuiz, useCheckQuestion, useCompleteQuiz } from '../api/quiz-api';
+import { useCheckQuestion } from '../api/quiz-api';
 import { useExpiredSessionHandler } from '../hooks/use-expired-session-handler';
+import { useFinishQuiz } from '../hooks/use-finish-quiz';
+import { classifyQuizError, firstUnresolvedIndex } from '../utils';
 import { generateIdempotencyKey } from '../utils/idempotency';
-
-// Web Speech API Pronunciation
-function speakSentence(text: string) {
-  if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-    window.speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = 'en-US';
-    utterance.rate = 0.85;
-    window.speechSynthesis.speak(utterance);
-  }
-}
+import { QuizExitModal } from './quiz-exit-modal';
 
 export type FillBlankQuizViewProps = {
   quiz: QuizPlayDTO;
   onExit: () => void;
+  /** Reload the session from the server when it moved on (graded elsewhere, terminal). */
+  onResync: () => void;
 };
 
-export function FillBlankQuizView({ quiz, onExit }: FillBlankQuizViewProps) {
-  const router = useRouter();
+export function FillBlankQuizView({ quiz, onExit, onResync }: FillBlankQuizViewProps) {
   const { width } = Dimensions.get('window');
   const questions = quiz.questions || [];
 
-  const [currentIndex, setCurrentIndex] = useState(0);
+  // Resume at the first question the server has not graded (D18); the Session screen handles "all graded".
+  const [currentIndex, setCurrentIndex] = useState(() => Math.max(0, firstUnresolvedIndex(questions)));
   const [inputText, setInputText] = useState('');
   const [checkState, setCheckState] = useState<'IDLE' | 'CORRECT' | 'INCORRECT'>('IDLE');
   const [correctAnswerText, setCorrectAnswerText] = useState<string>('');
   const [showExitModal, setShowExitModal] = useState(false);
-  const [isSpeaking, setIsSpeaking] = useState(false);
+  const { speak, isPlaying: isSpeaking } = useTts();
   const [idempotencyKey, setIdempotencyKey] = useState<string>(() => generateIdempotencyKey());
+  // UNCONFIRMED: the check may have been committed, so the answer stays locked until the same
+  // request (same key + same text) is confirmed. REJECTED: nothing was written, edit and resend.
+  const [answerNotice, setAnswerNotice] = useState<'UNCONFIRMED' | 'REJECTED' | null>(null);
+  const answerLocked = answerNotice === 'UNCONFIRMED';
+  const advancingRef = useRef(false);
 
   // Live Stopwatch State
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
@@ -91,18 +88,17 @@ export function FillBlankQuizView({ quiz, onExit }: FillBlankQuizViewProps) {
   const currentQ = questions[currentIndex] || questions[0];
   const progressPercent = questions.length > 0 ? (currentIndex / questions.length) * 100 : 0;
 
+  const nextIndex = firstUnresolvedIndex(questions, currentIndex);
+
   const checkMutation = useCheckQuestion();
-  const completeMutation = useCompleteQuiz();
-  const cancelMutation = useCancelQuiz();
+  const finishQuiz = useFinishQuiz(quiz.quizId, onResync);
   const handleExpiredSession = useExpiredSessionHandler();
 
   // Play sentence audio
   const handlePlayAudio = () => {
     if (!currentQ?.prompt)
       return;
-    setIsSpeaking(true);
-    speakSentence(currentQ.prompt.replace(/_____/g, 'blank'));
-    setTimeout(() => setIsSpeaking(false), 2000);
+    speak(currentQ.prompt.replace(/_____/g, 'blank'));
   };
 
   // Check Answer
@@ -119,6 +115,7 @@ export function FillBlankQuizView({ quiz, onExit }: FillBlankQuizViewProps) {
       {
         onSuccess: (data) => {
           const isCorrect = data.correct;
+          setAnswerNotice(null);
           setCheckState(isCorrect ? 'CORRECT' : 'INCORRECT');
           setCorrectAnswerText(data.correctAnswer);
 
@@ -127,7 +124,7 @@ export function FillBlankQuizView({ quiz, onExit }: FillBlankQuizViewProps) {
             setMascotAnim('celebrate');
             setBubbleText('Xuất sắc! Bạn đã điền chính xác! 🎉');
             if (data.correctAnswer) {
-              speakSentence(currentQ.prompt.replace(/_____/g, data.correctAnswer));
+              speak(currentQ.prompt.replace(/_____/g, data.correctAnswer));
             }
           }
           else {
@@ -156,8 +153,19 @@ export function FillBlankQuizView({ quiz, onExit }: FillBlankQuizViewProps) {
           }).start();
         },
         onError: (error) => {
-          handleExpiredSession(error);
-          // Keep idempotencyKey so retry sends same key
+          if (handleExpiredSession(error))
+            return;
+          const kind = classifyQuizError(error);
+          if (kind === 'RESYNC') {
+            onResync();
+          }
+          else if (kind === 'REJECTED') {
+            setIdempotencyKey(generateIdempotencyKey());
+            setAnswerNotice('REJECTED');
+          }
+          else {
+            setAnswerNotice('UNCONFIRMED'); // same key + same locked text on retry
+          }
         },
       },
     );
@@ -165,27 +173,14 @@ export function FillBlankQuizView({ quiz, onExit }: FillBlankQuizViewProps) {
 
   // Advance to next question or complete
   const handleNext = () => {
-    if (currentIndex + 1 >= questions.length) {
-      if (completeMutation.isPending)
-        return;
-      completeMutation.mutate(quiz.quizId, {
-        onSuccess: () => {
-          router.replace({
-            pathname: '/(app)/study/quiz-result' as any,
-            params: { quizId: String(quiz.quizId) },
-          });
-        },
-        onError: (error) => {
-          if (handleExpiredSession(error))
-            return;
-          router.replace({
-            pathname: '/(app)/study/quiz-result' as any,
-            params: { quizId: String(quiz.quizId) },
-          });
-        },
-      });
+    // A second tap during the slide would advance twice and skip a question.
+    if (advancingRef.current)
+      return;
+    if (nextIndex === -1) {
+      finishQuiz.finish();
       return;
     }
+    advancingRef.current = true;
 
     // Slide out
     RNAnimated.timing(slideAnim, {
@@ -194,7 +189,8 @@ export function FillBlankQuizView({ quiz, onExit }: FillBlankQuizViewProps) {
       easing: Easing.out(Easing.quad),
       useNativeDriver: true,
     }).start(() => {
-      setCurrentIndex(prev => prev + 1);
+      setCurrentIndex(nextIndex);
+      advancingRef.current = false;
       setInputText('');
       setCheckState('IDLE');
       setCorrectAnswerText('');
@@ -215,12 +211,6 @@ export function FillBlankQuizView({ quiz, onExit }: FillBlankQuizViewProps) {
     });
   };
 
-  const handleExitConfirm = () => {
-    setShowExitModal(false);
-    cancelMutation.mutate({ quizId: quiz.quizId });
-    onExit();
-  };
-
   const translateY = bottomBarAnim.interpolate({
     inputRange: [0, 1],
     outputRange: [140, 0],
@@ -233,6 +223,9 @@ export function FillBlankQuizView({ quiz, onExit }: FillBlankQuizViewProps) {
       <View className="z-10 flex-row items-center justify-between border-b border-neutral-100 bg-[#F7F8FA] px-4 py-3">
         <TouchableOpacity
           onPress={() => setShowExitModal(true)}
+          accessibilityRole="button"
+          accessibilityLabel="Thoát bài quiz"
+          hitSlop={8}
           activeOpacity={0.7}
           className="-ml-2 size-10 items-center justify-center rounded-full"
         >
@@ -303,6 +296,8 @@ export function FillBlankQuizView({ quiz, onExit }: FillBlankQuizViewProps) {
 
               <TouchableOpacity
                 onPress={handlePlayAudio}
+                accessibilityRole="button"
+                accessibilityLabel="Nghe câu"
                 activeOpacity={0.7}
                 className={cn(
                   'size-10 items-center justify-center rounded-xl border',
@@ -326,10 +321,15 @@ export function FillBlankQuizView({ quiz, onExit }: FillBlankQuizViewProps) {
             </Text>
             <TextInput
               value={inputText}
-              onChangeText={setInputText}
-              placeholder="Gõ từ vựng tại đây..."
+              onChangeText={(text) => {
+                setInputText(text);
+                setAnswerNotice(null);
+              }}
+              onSubmitEditing={handleCheck}
+              returnKeyType="done"
+              placeholder="Gõ từ hoặc cụm từ bị che..."
               placeholderTextColor="#9CA3AF"
-              editable={checkState === 'IDLE' && !checkMutation.isPending}
+              editable={checkState === 'IDLE' && !checkMutation.isPending && !answerLocked}
               autoCapitalize="none"
               autoCorrect={false}
               className={cn(
@@ -349,6 +349,13 @@ export function FillBlankQuizView({ quiz, onExit }: FillBlankQuizViewProps) {
       {/* 3. STATIC BOTTOM CHECK BUTTON (IDLE) */}
       {checkState === 'IDLE' && (
         <View className="border-t border-neutral-100 bg-white p-4">
+          {answerNotice && (
+            <Text accessibilityLiveRegion="polite" className="mb-3 text-center font-inter text-[13px] font-semibold text-neutral-600">
+              {answerNotice === 'UNCONFIRMED'
+                ? 'Chưa xác nhận được câu trả lời. Kiểm tra kết nối rồi gửi lại đáp án này.'
+                : 'Không gửi được đáp án. Hãy thử lại.'}
+            </Text>
+          )}
           <Pressable
             onPress={handleCheck}
             disabled={!inputText.trim() || checkMutation.isPending}
@@ -369,7 +376,7 @@ export function FillBlankQuizView({ quiz, onExit }: FillBlankQuizViewProps) {
                     inputText.trim() ? 'text-white' : 'text-neutral-400',
                   )}
                 >
-                  Kiểm tra
+                  {answerLocked ? 'Gửi lại' : 'Kiểm tra'}
                 </Text>
                 <ArrowRightIcon
                   size={18}
@@ -425,21 +432,21 @@ export function FillBlankQuizView({ quiz, onExit }: FillBlankQuizViewProps) {
 
           <Pressable
             onPress={handleNext}
-            disabled={completeMutation.isPending}
+            disabled={finishQuiz.isPending}
             className={cn(
               'h-13 w-full flex-row items-center justify-center gap-2 rounded-2xl border-b-4 active:translate-y-px active:border-b-2',
               checkState === 'CORRECT'
                 ? 'border-success-700 bg-success-500'
                 : 'border-error-700 bg-error-500',
-              completeMutation.isPending && 'opacity-70',
+              finishQuiz.isPending && 'opacity-70',
             )}
           >
-            {completeMutation.isPending ? (
+            {finishQuiz.isPending ? (
               <ActivityIndicator size="small" color="#FFFFFF" />
             ) : (
               <>
                 <Text className="font-nunito text-[16px] font-extrabold text-white uppercase">
-                  {currentIndex + 1 >= questions.length ? 'Hoàn thành' : 'Tiếp tục'}
+                  {nextIndex === -1 ? 'Hoàn thành' : 'Tiếp tục'}
                 </Text>
                 <ArrowRightIcon size={18} className="text-white" />
               </>
@@ -449,38 +456,12 @@ export function FillBlankQuizView({ quiz, onExit }: FillBlankQuizViewProps) {
       )}
 
       {/* 5. EXIT CONFIRMATION MODAL */}
-      <Modal visible={showExitModal} transparent animationType="fade">
-        <View className="flex-1 items-center justify-center bg-black/50 p-6">
-          <View className="w-full max-w-sm rounded-3xl bg-white p-6 shadow-xl">
-            <View className="mb-4 size-14 items-center justify-center self-center rounded-2xl bg-amber-50">
-              <LogOutIcon size={28} className="text-amber-500" />
-            </View>
-
-            <Text className="mb-2 text-center font-nunito text-[20px] font-extrabold text-mascot-navy">
-              Dừng làm bài Quiz?
-            </Text>
-            <Text className="mb-6 text-center font-inter text-[14px] leading-relaxed text-neutral-500">
-              Tiến trình làm bài này sẽ bị hủy. Bạn có muốn thoát không?
-            </Text>
-
-            <View className="gap-2.5">
-              <Pressable
-                onPress={() => setShowExitModal(false)}
-                className="h-12 w-full items-center justify-center rounded-xl border-b-2 border-primary-700 bg-primary-500 active:bg-primary-600"
-              >
-                <Text className="font-nunito text-[15px] font-extrabold text-white">Tiếp tục làm bài</Text>
-              </Pressable>
-
-              <Pressable
-                onPress={handleExitConfirm}
-                className="h-12 w-full items-center justify-center rounded-xl bg-neutral-100 active:bg-neutral-200"
-              >
-                <Text className="font-nunito text-[15px] font-extrabold text-neutral-600">Thoát</Text>
-              </Pressable>
-            </View>
-          </View>
-        </View>
-      </Modal>
+      <QuizExitModal
+        visible={showExitModal}
+        quizId={quiz.quizId}
+        onClose={() => setShowExitModal(false)}
+        onExited={onExit}
+      />
 
     </SafeAreaView>
   );

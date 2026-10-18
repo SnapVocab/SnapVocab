@@ -20,7 +20,7 @@ import { Button } from '@/components/ui';
 | `purple` | Tím đậm | Bài học thử thách, Nâng cấp VIP, Quiz đặc biệt |
 | `mascot` (hoặc `orange`) | Cam Mascot | Tính năng nổi bật, Camera Scanner, Nhiệm vụ |
 | `info` (hoặc `blue`) | Xanh dương | Thông tin, Xem từ điển, Ngữ pháp |
-| `reward` (hoặc `gold`) | Vàng kim | Nhận thưởng, Đổi quà, Rương kho báu |
+| `reward` (hoặc `gold`) | Vàng kim | Nhận thưởng nhiệm vụ, Coin, XP, Badge |
 | `danger` | Đỏ | Đăng xuất, Xóa dữ liệu, Bỏ cuộc |
 | `secondary` | Trắng viền xám | Hành động phụ (Quay lại, Hủy, Bỏ qua) |
 | `outline` | Nền trong suốt | Đặt trên nền tối / nền ảnh |

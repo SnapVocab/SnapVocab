@@ -1,1 +1,1 @@
-export { ShopScreen as default } from '@/features/community/shop-screen';
+export { ShopScreen as default } from '@/features/shop';

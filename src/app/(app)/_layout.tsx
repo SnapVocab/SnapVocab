@@ -21,6 +21,11 @@ export default function AppLayout() {
       <Stack.Screen name="study/session" />
       <Stack.Screen name="scan-result" />
       <Stack.Screen name="template-builder" />
+      <Stack.Screen name="shop" />
+      <Stack.Screen name="profile/inventory" />
+      <Stack.Screen name="profile/wallet" />
+      <Stack.Screen name="stats" />
+      <Stack.Screen name="level-progress" />
     </Stack>
   );
 }

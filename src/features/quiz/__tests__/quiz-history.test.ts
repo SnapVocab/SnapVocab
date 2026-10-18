@@ -10,7 +10,7 @@ import {
 } from '../utils';
 
 describe('quiz-history feature and helper functions', () => {
-  // D14: the value comes from QuizResultDTO.durationSeconds, never from the play-screen stopwatch.
+  // D15: the value comes from QuizResultDTO.durationSeconds, never from the play-screen stopwatch.
   describe('formatQuizDuration', () => {
     it('formats missing or non-positive duration as 00:00', () => {
       expect(formatQuizDuration(0)).toBe('00:00');
@@ -33,7 +33,7 @@ describe('quiz-history feature and helper functions', () => {
   });
 
   describe('isQuizSessionExpired', () => {
-    it('detects the QUIZ_SESSION_EXPIRED error code (D16)', () => {
+    it('detects the QUIZ_SESSION_EXPIRED error code (D17)', () => {
       expect(isQuizSessionExpired({ response: { data: { error: 'QUIZ_SESSION_EXPIRED' } } })).toBe(true);
     });
 
@@ -49,7 +49,7 @@ describe('quiz-history feature and helper functions', () => {
       expect(quizHistoryAction('IN_PROGRESS')).toBe('RESUME');
     });
 
-    it('offers nothing for an EXPIRED session (D16)', () => {
+    it('offers nothing for an EXPIRED session (D17)', () => {
       expect(quizHistoryAction('EXPIRED')).toBe('NONE');
     });
 
