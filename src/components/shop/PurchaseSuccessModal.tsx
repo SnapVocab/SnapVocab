@@ -15,8 +15,8 @@ import Animated, {
 import { AvatarFrame, Coin3D } from '@/components/snapvocab';
 import { Button, useSurface } from '@/components/ui';
 import { useAuthStore } from '@/features/auth/use-auth-store';
-import { SHOP_THEME_SCOPE } from '@/features/shop/theme/theme-context';
-import { SHOP_TYPE_LABEL } from './shop-category-tabs';
+import { translate } from '@/lib/i18n';
+import { shopTypeLabel } from './shop-category-tabs';
 
 type PurchaseSuccessModalProps = {
   visible: boolean;
@@ -84,7 +84,7 @@ export function PurchaseSuccessModal({
   const isBooster = item.type === 'XP_BOOSTER';
 
   const effect = isBooster
-    ? `×${item.config?.multiplier ?? 2} XP trong ${item.config?.durationMinutes ?? 30} phút. Thời gian tính từ lúc bạn kích hoạt, không phải lúc mua.`
+    ? translate('shop.purchase.booster_effect', { multiplier: item.config?.multiplier ?? 2, minutes: item.config?.durationMinutes ?? 30 })
     : null;
 
   // One primary next step (use the item), one quiet secondary.
@@ -94,13 +94,13 @@ export function PurchaseSuccessModal({
   };
   const goInventory = closeThen(() => router.push('/profile/inventory' as any));
   const primary = (isTheme || isFrame) && onEquipNow
-    ? { label: isTheme ? 'Áp dụng giao diện' : 'Trang bị khung', onPress: closeThen(() => onEquipNow(item)) }
+    ? { label: translate(isTheme ? 'shop.actions.apply_theme' : 'shop.actions.equip_frame'), onPress: closeThen(() => onEquipNow(item)) }
     : isBooster && !hasActiveBooster && onActivateNow && (result?.quantity ?? 0) > 0
-      ? { label: 'Kích hoạt booster', onPress: closeThen(() => onActivateNow(item)) }
-      : { label: 'Xem Kho đồ', onPress: goInventory };
+      ? { label: translate('shop.actions.activate_booster'), onPress: closeThen(() => onActivateNow(item)) }
+      : { label: translate('shop.purchase.view_inventory'), onPress: goInventory };
   const secondary = primary.onPress === goInventory
-    ? { label: 'Tiếp tục mua sắm', onPress: onClose }
-    : { label: 'Xem Kho đồ', onPress: goInventory };
+    ? { label: translate('shop.purchase.keep_shopping'), onPress: onClose }
+    : { label: translate('shop.purchase.view_inventory'), onPress: goInventory };
 
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
@@ -155,16 +155,16 @@ export function PurchaseSuccessModal({
               </View>
 
               <Text style={{ color: s.text }} className="z-10 mb-1 text-center font-nunito text-[22px] font-extrabold">
-                {result?.replayed ? 'Giao dịch đã hoàn tất' : 'Mua thành công!'}
+                {translate(result?.replayed ? 'shop.purchase.replayed_title' : 'shop.purchase.success_title')}
               </Text>
               <Text style={{ color: s.textMuted }} className="z-10 mb-5 px-3 text-center font-inter text-[14px] leading-relaxed font-medium">
-                {result?.replayed ? 'Lần mua trước đã được ghi nhận:' : 'Đã thêm'}
+                {translate(result?.replayed ? 'shop.purchase.replayed_prefix' : 'shop.purchase.success_prefix')}
                 {' '}
                 <Text style={{ color: s.text }} className="font-bold">{item.name}</Text>
                 {' '}
-                {result?.replayed ? 'đã có trong Kho đồ.' : 'vào Kho đồ.'}
-                {isBooster && result ? ` Hiện có ${result.quantity} thẻ.` : ''}
-                {result ? ` Số dư: ${result.coinBalance.toLocaleString('vi-VN')} Coin.` : ''}
+                {translate(result?.replayed ? 'shop.purchase.replayed_suffix' : 'shop.purchase.success_suffix')}
+                {isBooster && result ? ` ${translate('shop.purchase.quantity', { quantity: result.quantity })}` : ''}
+                {result ? ` ${translate('shop.purchase.new_balance', { balance: result.coinBalance.toLocaleString('vi-VN') })}` : ''}
               </Text>
 
               <View className="z-10 w-full gap-2">
@@ -182,7 +182,7 @@ export function PurchaseSuccessModal({
               >
                 <SparklesIcon size={13} color="#FF8A00" />
                 <Text style={{ color: s.text }} className="font-nunito text-[12px] font-extrabold tracking-wider uppercase">
-                  Xác nhận mua
+                  {translate('shop.purchase.confirm_title')}
                 </Text>
               </View>
 
@@ -231,7 +231,7 @@ export function PurchaseSuccessModal({
                   {item.name}
                 </Text>
                 <Text style={{ color: s.textMuted }} className="font-inter text-[12px] font-bold tracking-wider uppercase">
-                  {SHOP_TYPE_LABEL[item.type]}
+                  {shopTypeLabel(item.type)}
                 </Text>
                 {item.description ? (
                   <Text style={{ color: s.textMuted }} className="mt-2 px-2 text-center font-inter text-[13px] leading-relaxed">
@@ -240,7 +240,7 @@ export function PurchaseSuccessModal({
                 ) : null}
                 {isTheme && (
                   <Text style={{ color: s.text }} className="mt-1.5 px-2 text-center font-inter text-[13px] font-semibold">
-                    {SHOP_THEME_SCOPE}
+                    {translate('shop.theme.scope')}
                   </Text>
                 )}
                 {effect && (
@@ -261,7 +261,7 @@ export function PurchaseSuccessModal({
                 className="mb-5 w-full p-3.5"
               >
                 <View className="mb-2 flex-row items-center justify-between">
-                  <Text style={{ color: s.textMuted }} className="font-inter text-[13px] font-medium">Giá:</Text>
+                  <Text style={{ color: s.textMuted }} className="font-inter text-[13px] font-medium">{translate('shop.purchase.price')}</Text>
                   <View className="flex-row items-center gap-1.5">
                     <Coin3D size="xs" />
                     <Text style={{ color: s.text }} className="font-nunito text-[15px] font-extrabold tabular-nums">
@@ -271,7 +271,7 @@ export function PurchaseSuccessModal({
                 </View>
 
                 <View className="mb-2.5 flex-row items-center justify-between">
-                  <Text style={{ color: s.textMuted }} className="font-inter text-[13px] font-medium">Số dư hiện tại:</Text>
+                  <Text style={{ color: s.textMuted }} className="font-inter text-[13px] font-medium">{translate('shop.purchase.balance_now')}</Text>
                   <View className="flex-row items-center gap-1.5">
                     <Coin3D size="xs" />
                     <Text style={{ color: s.textMuted }} className="font-nunito text-[15px] font-extrabold tabular-nums">
@@ -283,7 +283,7 @@ export function PurchaseSuccessModal({
                 <View style={{ height: 1, backgroundColor: s.border }} className="my-1 w-full" />
 
                 <View className="mt-2 flex-row items-center justify-between">
-                  <Text style={{ color: s.text }} className="font-inter text-[13px] font-bold">Số dư sau mua:</Text>
+                  <Text style={{ color: s.text }} className="font-inter text-[13px] font-bold">{translate('shop.purchase.balance_after')}</Text>
                   <View className="flex-row items-center gap-1.5">
                     <Coin3D size="xs" />
                     <Text className="font-nunito text-[16px] font-extrabold text-reward-600 tabular-nums">
@@ -300,8 +300,8 @@ export function PurchaseSuccessModal({
               )}
 
               <View className="w-full flex-row gap-3">
-                <Button variant="secondary" label="Hủy" textClassName="font-nunito" className="flex-1" fullWidth={false} disabled={isPurchasing} onPress={onClose} />
-                <Button variant="primary" label="Mua" textClassName="font-nunito" className="flex-1" fullWidth={false} loading={isPurchasing} onPress={onConfirm} />
+                <Button variant="secondary" label={translate('shop.purchase.cancel')} textClassName="font-nunito" className="flex-1" fullWidth={false} disabled={isPurchasing} onPress={onClose} />
+                <Button variant="primary" label={translate('shop.actions.buy')} textClassName="font-nunito" className="flex-1" fullWidth={false} loading={isPurchasing} onPress={onConfirm} />
               </View>
             </View>
           )}
@@ -310,7 +310,7 @@ export function PurchaseSuccessModal({
             <Pressable
               onPress={onClose}
               accessibilityRole="button"
-              accessibilityLabel="Đóng"
+              accessibilityLabel={translate('shop.close')}
               hitSlop={8}
               style={{ borderRadius: 20, backgroundColor: s.surfaceMuted }}
               className="absolute top-4 right-4 z-20 size-8 items-center justify-center active:opacity-70"

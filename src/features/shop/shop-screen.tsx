@@ -22,6 +22,7 @@ import { ShopItemCard } from '@/components/shop/ShopItemCard';
 import { Coin3D } from '@/components/snapvocab';
 import { Snapy } from '@/components/Snapy';
 import { ScreenHeader, useSurface } from '@/components/ui';
+import { translate } from '@/lib/i18n';
 import { useShopActions } from './hooks/use-shop-actions';
 import {
   useCoinBalance,
@@ -106,13 +107,13 @@ function ShopScreenContent() {
       edges={['top']}
     >
       <ScreenHeader
-        title="Cửa hàng"
+        title={translate('shop.title')}
         onBack={() => router.back()}
         right={(
           <View className="flex-row items-center gap-2">
             <Pressable
               accessibilityRole="button"
-              accessibilityLabel={`Ví Coin: ${coinBalance.toLocaleString('vi-VN')} Coin`}
+              accessibilityLabel={translate('shop.wallet.a11y_balance', { balance: coinBalance.toLocaleString('vi-VN') })}
               onPress={() => router.push('/profile/wallet' as any)}
               className="flex-row items-center gap-1.5 rounded-full border border-reward-200 bg-reward-50 px-3 py-1.5 active:scale-95"
             >
@@ -123,7 +124,7 @@ function ShopScreenContent() {
             </Pressable>
             <Pressable
               accessibilityRole="button"
-              accessibilityLabel="Kho đồ"
+              accessibilityLabel={translate('shop.inventory.title')}
               onPress={() => router.push('/profile/inventory' as any)}
               style={{ backgroundColor: s.surfaceMuted, borderColor: s.border }}
               className="size-10 items-center justify-center rounded-full border active:scale-95"
@@ -141,7 +142,7 @@ function ShopScreenContent() {
             {errorMessage}
           </Text>
           <Pressable onPress={() => setErrorMessage(null)} className="ml-2 px-2 py-0.5">
-            <Text className="font-nunito text-[13px] font-bold text-white">Đóng</Text>
+            <Text className="font-nunito text-[13px] font-bold text-white">{translate('shop.close')}</Text>
           </Pressable>
         </View>
       )}
@@ -165,17 +166,17 @@ function ShopScreenContent() {
           <View className="items-center justify-center py-20">
             <ActivityIndicator size="large" color="#2563EB" />
             <Text style={{ color: s.textMuted }} className="mt-3 font-inter text-[14px] font-medium">
-              Đang tải danh mục...
+              {translate('shop.loading')}
             </Text>
           </View>
         ) : isCatalogError ? (
           <View style={{ backgroundColor: s.surface, borderColor: s.border }} className="items-center justify-center rounded-3xl border p-8">
             <Snapy pose="suy_nghi" animation="idle" className="mb-4 size-24 opacity-80" />
             <Text style={{ color: s.text }} className="mb-2 font-nunito text-[18px] font-extrabold">
-              Không thể tải Cửa hàng
+              {translate('shop.error_title')}
             </Text>
             <Text style={{ color: s.textMuted }} className="mb-5 text-center font-inter text-[13px]">
-              Vui lòng kiểm tra lại kết nối mạng và thử lại.
+              {translate('shop.error_description')}
             </Text>
             <Pressable
               onPress={() => refetchCatalog()}
@@ -183,7 +184,7 @@ function ShopScreenContent() {
             >
               <RefreshCwIcon size={16} color="white" />
               <Text className="font-nunito text-[14px] font-extrabold text-white uppercase">
-                Thử lại
+                {translate('shop.retry')}
               </Text>
             </Pressable>
           </View>
@@ -191,10 +192,10 @@ function ShopScreenContent() {
           <View style={{ backgroundColor: s.surface, borderColor: s.border }} className="items-center justify-center rounded-3xl border p-8">
             <Snapy pose="suy_nghi" animation="idle" className="mb-4 size-24 opacity-80" />
             <Text style={{ color: s.text }} className="mb-2 font-nunito text-[18px] font-extrabold">
-              Chưa có vật phẩm trong mục này
+              {translate('shop.empty_title')}
             </Text>
             <Text style={{ color: s.textMuted }} className="text-center font-inter text-[13px]">
-              Các vật phẩm mới sẽ sớm được cập nhật trong Cửa hàng!
+              {translate('shop.empty_description')}
             </Text>
           </View>
         ) : (

@@ -24,6 +24,7 @@ import { ShopCategoryTabs } from '@/components/shop/shop-category-tabs';
 import { CardAction, ItemCard } from '@/components/shop/ShopItemCard';
 import { Snapy } from '@/components/Snapy';
 import { ScreenHeader, useSurface } from '@/components/ui';
+import { translate } from '@/lib/i18n';
 import {
   useEquipMutation,
   useInventory,
@@ -126,7 +127,7 @@ function InventoryScreenContent() {
 
     // Check unknown theme
     if (item.type === 'THEME' && !isThemeKnown(item.config?.themeKey)) {
-      setFeedbackMessage('Cần cập nhật ứng dụng để dùng giao diện này');
+      setFeedbackMessage(translate('shop.inventory.update_required'));
       return;
     }
 
@@ -147,9 +148,9 @@ function InventoryScreenContent() {
       || (unequipMutation.isPending && unequipMutation.variables?.slot === item.type);
 
     const description = isUnknownTheme
-      ? 'Cần cập nhật ứng dụng để dùng giao diện này'
+      ? translate('shop.inventory.update_required')
       : isBooster
-        ? `×${item.config?.multiplier ?? 2} XP trong ${item.config?.durationMinutes ?? 30} phút`
+        ? translate('shop.booster.effect', { multiplier: item.config?.multiplier ?? 2, minutes: item.config?.durationMinutes ?? 30 })
         : undefined;
 
     const preview = () => {
@@ -172,16 +173,16 @@ function InventoryScreenContent() {
       >
         {isBooster ? (
           activeBooster
-            ? <CardAction tone="disabled" label={activeBooster.itemId === item.itemId ? 'Đang chạy' : 'Chờ booster kết thúc'} />
-            : <CardAction tone="primary" label="Kích hoạt" onPress={() => setBoosterItem(item)} />
+            ? <CardAction tone="disabled" label={translate(activeBooster.itemId === item.itemId ? 'shop.inventory.running' : 'shop.inventory.wait_booster')} />
+            : <CardAction tone="primary" label={translate('shop.actions.activate')} onPress={() => setBoosterItem(item)} />
         ) : isUnknownTheme ? (
-          <CardAction tone="disabled" label="Chưa hỗ trợ" />
+          <CardAction tone="disabled" label={translate('shop.inventory.unsupported')} />
         ) : item.equipped ? (
-          <CardAction tone="secondary" label="Tháo ra" loading={isActionPending} onPress={() => handleToggleEquip(item)} />
+          <CardAction tone="secondary" label={translate('shop.actions.unequip')} loading={isActionPending} onPress={() => handleToggleEquip(item)} />
         ) : (
           <CardAction
             tone="primary"
-            label={item.type === 'THEME' ? 'Áp dụng' : 'Trang bị'}
+            label={translate(item.type === 'THEME' ? 'shop.actions.apply' : 'shop.actions.equip')}
             loading={isActionPending}
             onPress={() => handleToggleEquip(item)}
           />
@@ -200,7 +201,7 @@ function InventoryScreenContent() {
       edges={['top']}
     >
       <ScreenHeader
-        title="Kho đồ"
+        title={translate('shop.inventory.title')}
         onBack={() => router.back()}
       />
 
@@ -210,7 +211,7 @@ function InventoryScreenContent() {
             {feedbackMessage}
           </Text>
           <Pressable onPress={() => setFeedbackMessage(null)} className="ml-2 px-2 py-0.5">
-            <Text className="font-nunito text-[13px] font-bold text-white">Đóng</Text>
+            <Text className="font-nunito text-[13px] font-bold text-white">{translate('shop.close')}</Text>
           </Pressable>
         </View>
       )}
@@ -239,10 +240,10 @@ function InventoryScreenContent() {
               </View>
               <View>
                 <Text className="font-nunito text-[16px] font-extrabold text-amber-950">
-                  {`Đang nhân ×${activeBooster.multiplier} XP`}
+                  {translate('shop.inventory.booster_banner', { multiplier: activeBooster.multiplier })}
                 </Text>
                 <Text className="font-inter text-[12px] font-medium text-amber-800">
-                  Làm Quiz trong thời gian này để nhận thêm XP
+                  {translate('shop.inventory.booster_hint')}
                 </Text>
               </View>
             </View>
@@ -260,17 +261,17 @@ function InventoryScreenContent() {
           <View className="items-center justify-center py-20">
             <ActivityIndicator size="large" color="#2563EB" />
             <Text style={{ color: s.textMuted }} className="mt-3 font-inter text-[14px] font-medium">
-              Đang tải kho đồ...
+              {translate('shop.inventory.loading')}
             </Text>
           </View>
         ) : isError ? (
           <View style={{ backgroundColor: s.surface, borderColor: s.border }} className="items-center justify-center rounded-3xl border p-8">
             <Snapy pose="suy_nghi" animation="idle" className="mb-4 size-24 opacity-80" />
             <Text style={{ color: s.text }} className="mb-2 font-nunito text-[18px] font-extrabold">
-              Không thể tải Kho đồ
+              {translate('shop.inventory.error_title')}
             </Text>
             <Text style={{ color: s.textMuted }} className="mb-5 text-center font-inter text-[13px]">
-              Vui lòng thử lại sau ít giây.
+              {translate('shop.inventory.error_description')}
             </Text>
             <Pressable
               onPress={() => refetch()}
@@ -278,7 +279,7 @@ function InventoryScreenContent() {
             >
               <RefreshCwIcon size={16} color="white" />
               <Text className="font-nunito text-[14px] font-extrabold text-white uppercase">
-                Thử lại
+                {translate('shop.retry')}
               </Text>
             </Pressable>
           </View>
@@ -287,10 +288,10 @@ function InventoryScreenContent() {
           <View style={{ backgroundColor: s.surface, borderColor: s.border }} className="items-center justify-center rounded-3xl border p-8">
             <Snapy pose="suy_nghi" animation="idle" className="mb-4 size-28 opacity-90" />
             <Text style={{ color: s.text }} className="mb-1 font-nunito text-[20px] font-extrabold">
-              Kho đồ trống
+              {translate('shop.inventory.empty_title')}
             </Text>
             <Text style={{ color: s.textMuted }} className="mb-6 px-4 text-center font-inter text-[14px] leading-relaxed">
-              Bạn chưa có vật phẩm nào trong mục này. Ghé Cửa hàng để chọn thêm nhé!
+              {translate('shop.inventory.empty_description')}
             </Text>
             <Pressable
               onPress={() => router.push('/(tabs)/shop' as any)}
@@ -298,7 +299,7 @@ function InventoryScreenContent() {
             >
               <PackageIcon size={18} color="white" />
               <Text className="font-nunito text-[14px] font-extrabold tracking-wide text-white uppercase">
-                Đến Cửa hàng
+                {translate('shop.inventory.go_shop')}
               </Text>
             </Pressable>
           </View>

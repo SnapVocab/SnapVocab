@@ -585,10 +585,148 @@
     "version": "Phiên bản {{version}}"
   },
   "shop": {
+    "actions": {
+      "activate": "Kích hoạt",
+      "activate_booster": "Kích hoạt booster",
+      "apply": "Áp dụng",
+      "apply_theme": "Áp dụng giao diện",
+      "buy": "Mua",
+      "buy_for": "Mua · {{price}} Coin",
+      "equip": "Trang bị",
+      "equip_frame": "Trang bị khung",
+      "in_use": "Đang dùng",
+      "max_reached": "Đã đạt tối đa",
+      "unequip": "Tháo ra"
+    },
+    "booster": {
+      "activated_body": "Hiệu lực đến {{until}} · còn {{quantity}} thẻ. Ôn tập hoặc làm Quiz ngay để nhận ×{{multiplier}} XP.",
+      "activated_title": "Đã kích hoạt ×{{multiplier}} XP!",
+      "confirm_body": "Dùng 1 {{name}}: ×{{multiplier}} XP trong {{minutes}} phút, bắt đầu ngay.",
+      "confirm_note": "Thời gian tính liên tục từ lúc kích hoạt · còn {{remaining}} thẻ sau khi dùng.",
+      "confirm_title": "Kích hoạt booster?",
+      "effect": "×{{multiplier}} XP trong {{minutes}} phút",
+      "later": "Để sau",
+      "replay_expired_body": "Booster này đã hết hiệu lực lúc {{until}}. Còn {{quantity}} thẻ trong Kho đồ.",
+      "replay_expired_title": "Lần kích hoạt trước đã kết thúc",
+      "start_quiz": "Bắt đầu Quiz"
+    },
+    "close": "Đóng",
     "coming_description": "Khám phá vật phẩm và giao diện để cá nhân hóa trải nghiệm SnapVocab của bạn.",
     "coming_title": "Cửa hàng đang được chuẩn bị",
+    "empty_description": "Các vật phẩm mới sẽ sớm được cập nhật trong Cửa hàng!",
+    "empty_title": "Chưa có vật phẩm trong mục này",
+    "error_description": "Vui lòng kiểm tra lại kết nối mạng và thử lại.",
+    "error_title": "Không thể tải Cửa hàng",
+    "errors": {
+      "already_owned": "Bạn đã sở hữu vật phẩm này rồi.",
+      "booster_active": "Đang có một Thẻ nhân đôi kinh nghiệm hoạt động. Vui lòng chờ kết thúc!",
+      "busy": "Hệ thống đang bận xử lý giao dịch. Vui lòng thử lại sau ít giây.",
+      "generic": "Có lỗi xảy ra, vui lòng thử lại sau.",
+      "insufficient_coins": "Bạn không có đủ Coin để mua vật phẩm này.",
+      "key_required": "Lỗi xác thực giao dịch, vui lòng thử lại.",
+      "key_reused": "Mã giao dịch không hợp lệ cho vật phẩm này. Vui lòng mở lại và thử lại.",
+      "max_quantity": "Đã đạt số lượng sở hữu tối đa cho vật phẩm này.",
+      "network": "Không kết nối được máy chủ. Vui lòng kiểm tra mạng và thử lại.",
+      "not_available": "Vật phẩm này hiện không còn bán trong Cửa hàng.",
+      "not_found": "Không tìm thấy vật phẩm yêu cầu.",
+      "price_changed": "Giá vật phẩm vừa thay đổi.",
+      "price_changed_to": "Giá vật phẩm vừa thay đổi thành {{price}} Coin.",
+      "quantity_empty": "Bạn đã dùng hết số lượng vật phẩm này."
+    },
+    "inventory": {
+      "booster_banner": "Đang nhân ×{{multiplier}} XP",
+      "booster_hint": "Ôn tập hoặc làm Quiz trong thời gian này để nhận thêm XP",
+      "empty_description": "Bạn chưa có vật phẩm nào trong mục này. Ghé Cửa hàng để chọn thêm nhé!",
+      "empty_title": "Kho đồ trống",
+      "error_description": "Vui lòng thử lại sau ít giây.",
+      "error_title": "Không thể tải Kho đồ",
+      "go_shop": "Đến Cửa hàng",
+      "loading": "Đang tải kho đồ...",
+      "running": "Đang chạy",
+      "title": "Kho đồ",
+      "unsupported": "Chưa hỗ trợ",
+      "update_required": "Cần cập nhật ứng dụng để dùng giao diện này",
+      "wait_booster": "Chờ booster kết thúc"
+    },
+    "loading": "Đang tải danh mục...",
+    "out_of_coin": {
+      "balance": "Bạn đang có",
+      "continue_learning": "Tiếp tục bài học",
+      "do_missions": "Làm nhiệm vụ hằng ngày",
+      "need_more": "Bạn cần thêm",
+      "not_enough": "Bạn chưa đủ Coin để mua",
+      "price": "Giá vật phẩm",
+      "title": "Chưa đủ Coin rồi!",
+      "to_buy": "để mua"
+    },
+    "preview": {
+      "frame_title": "Thử khung avatar",
+      "sample_effect": "Nhân đôi XP trong 30 phút",
+      "sample_item": "Thẻ ×2 Kinh nghiệm",
+      "theme_title": "Xem trước giao diện"
+    },
+    "purchase": {
+      "balance_after": "Số dư sau mua:",
+      "balance_now": "Số dư hiện tại:",
+      "booster_effect": "×{{multiplier}} XP trong {{minutes}} phút. Thời gian tính từ lúc bạn kích hoạt, không phải lúc mua.",
+      "cancel": "Hủy",
+      "confirm_title": "Xác nhận mua",
+      "keep_shopping": "Tiếp tục mua sắm",
+      "new_balance": "Số dư: {{balance}} Coin.",
+      "previous_unconfirmed": "Lần mua trước chưa xác nhận được kết quả. Bấm Mua để kiểm tra lại — bạn sẽ không bị trừ Coin hai lần.",
+      "price": "Giá:",
+      "quantity": "Hiện có {{quantity}} thẻ.",
+      "replayed_prefix": "Lần mua trước đã được ghi nhận:",
+      "replayed_suffix": "đã có trong Kho đồ.",
+      "replayed_title": "Giao dịch đã hoàn tất",
+      "success_prefix": "Đã thêm",
+      "success_suffix": "vào Kho đồ.",
+      "success_title": "Mua thành công!",
+      "unconfirmed": "Chưa xác nhận được kết quả mua. Bấm Mua để kiểm tra lại — bạn sẽ không bị trừ Coin hai lần.",
+      "view_inventory": "Xem Kho đồ"
+    },
+    "retry": "Thử lại",
     "subtitle": "Tạo dấu ấn riêng cho hành trình học của bạn.",
-    "title": "Cửa hàng"
+    "theme": {
+      "scope": "Áp dụng cho Cửa hàng, Kho đồ và Ví Coin."
+    },
+    "title": "Cửa hàng",
+    "toast": {
+      "frame_equipped": "Đã trang bị khung avatar",
+      "frame_removed": "Đã tháo khung avatar",
+      "theme_applied": "Đã áp dụng giao diện",
+      "theme_reset": "Đã về giao diện mặc định"
+    },
+    "types": {
+      "all": "Tất cả",
+      "avatar_frame": "Khung avatar",
+      "theme": "Giao diện cửa hàng",
+      "xp_booster": "Bổ trợ"
+    },
+    "wallet": {
+      "a11y_balance": "Ví Coin: {{balance}} Coin",
+      "balance": "Số dư hiện tại",
+      "empty_description": "Hãy hoàn thành bài học và nhiệm vụ để kiếm thêm Coin nhé!",
+      "empty_title": "Chưa có giao dịch nào",
+      "error_title": "Không thể tải lịch sử giao dịch",
+      "history": "Lịch sử giao dịch",
+      "load_more": "Tải thêm giao dịch cũ hơn",
+      "loading": "Đang tải lịch sử giao dịch...",
+      "source": {
+        "admin_adjustment": "Điều chỉnh hệ thống",
+        "mission_reward": "Phần thưởng nhiệm vụ",
+        "other": "Giao dịch Coin",
+        "shop_purchase": "Mua vật phẩm"
+      },
+      "time": {
+        "days_ago": "{{days}} ngày trước",
+        "hours_ago": "{{hours}} giờ trước",
+        "just_now": "Vừa xong",
+        "minutes_ago": "{{minutes}} phút trước",
+        "yesterday": "Hôm qua"
+      },
+      "title": "Ví Coin"
+    }
   },
   "template_builder": {
     "add_field": {

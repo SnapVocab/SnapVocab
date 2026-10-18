@@ -1,17 +1,22 @@
 import type { ShopItemType } from '@/features/shop/types';
+import type { TxKeyPath } from '@/lib/i18n';
 import * as React from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { useSurface } from '@/components/ui';
+import { translate } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 
 export type ShopCategory = 'all' | ShopItemType;
 
 /** One vocabulary for item types across Shop, Kho đồ and modals. "Giao diện cửa hàng": not "Chủ đề" (= vocabulary topic) nor Settings → Giao diện (light/dark). */
-export const SHOP_TYPE_LABEL: Record<ShopItemType, string> = {
-  XP_BOOSTER: 'Bổ trợ',
-  AVATAR_FRAME: 'Khung avatar',
-  THEME: 'Giao diện cửa hàng',
+const SHOP_TYPE_TX: Record<ShopCategory, TxKeyPath> = {
+  all: 'shop.types.all',
+  XP_BOOSTER: 'shop.types.xp_booster',
+  AVATAR_FRAME: 'shop.types.avatar_frame',
+  THEME: 'shop.types.theme',
 };
+
+export const shopTypeLabel = (type: ShopCategory) => translate(SHOP_TYPE_TX[type]);
 
 const CATEGORIES: ShopCategory[] = ['all', 'XP_BOOSTER', 'AVATAR_FRAME', 'THEME'];
 
@@ -38,7 +43,7 @@ export function ShopCategoryTabs({ value, onChange }: { value: ShopCategory; onC
               )}
             >
               <Text style={isActive ? undefined : { color: s.textMuted }} className={cn('font-nunito text-[13px] font-extrabold', isActive && 'text-white')}>
-                {id === 'all' ? 'Tất cả' : SHOP_TYPE_LABEL[id]}
+                {shopTypeLabel(id)}
               </Text>
             </Pressable>
           );

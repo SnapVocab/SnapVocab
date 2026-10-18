@@ -8,6 +8,7 @@ import { Button, useSurface } from '@/components/ui';
 import { generateIdempotencyKey } from '@/features/quiz/utils/idempotency';
 import { isOutcomeUnknown, parseShopError } from '@/features/shop/api';
 import { useActivateBoosterMutation } from '@/features/shop/hooks/use-shop-queries';
+import { translate } from '@/lib/i18n';
 
 /** HH:mm, plus the date when expiry is not on the server's current day (a 180-minute booster can cross midnight). */
 function formatUntil(expiresAt: string, serverNow: string) {
@@ -73,48 +74,48 @@ export function BoosterActivateModal({ item, onClose }: { item: BoosterItem | nu
           {result && expired ? (
             <>
               <Text style={{ color: s.text }} className="mb-1 text-center font-nunito text-[20px] font-extrabold">
-                Lần kích hoạt trước đã kết thúc
+                {translate('shop.booster.replay_expired_title')}
               </Text>
               <Text style={{ color: s.textMuted }} className="mb-5 text-center font-inter text-[14px] leading-relaxed">
-                {`Booster này đã hết hiệu lực lúc ${until}. Còn ${result.quantity} thẻ trong Kho đồ.`}
+                {translate('shop.booster.replay_expired_body', { until, quantity: result.quantity })}
               </Text>
-              <Button variant="primary" label="Đóng" textClassName="font-nunito" onPress={close} />
+              <Button variant="primary" label={translate('shop.close')} textClassName="font-nunito" onPress={close} />
             </>
           ) : result ? (
             <>
               <Text style={{ color: s.text }} className="mb-1 text-center font-nunito text-[20px] font-extrabold">
-                {`Đã kích hoạt ×${result.activation.multiplier} XP!`}
+                {translate('shop.booster.activated_title', { multiplier: result.activation.multiplier })}
               </Text>
               <Text style={{ color: s.textMuted }} className="mb-5 text-center font-inter text-[14px] leading-relaxed">
-                {`Hiệu lực đến ${until} · còn ${result.quantity} thẻ. Làm Quiz ngay để nhận ×${result.activation.multiplier} XP.`}
+                {translate('shop.booster.activated_body', { until, quantity: result.quantity, multiplier: result.activation.multiplier })}
               </Text>
               <View className="w-full gap-2.5">
                 <Button
                   variant="primary"
-                  label="Bắt đầu Quiz"
+                  label={translate('shop.booster.start_quiz')}
                   textClassName="font-nunito"
                   onPress={() => {
                     close();
                     router.push('/study/quiz-setup');
                   }}
                 />
-                <Button variant="ghost" label="Đóng" textClassName="font-nunito" onPress={close} />
+                <Button variant="ghost" label={translate('shop.close')} textClassName="font-nunito" onPress={close} />
               </View>
             </>
           ) : (
             <>
               <Text style={{ color: s.text }} className="mb-1 text-center font-nunito text-[20px] font-extrabold">
-                Kích hoạt booster?
+                {translate('shop.booster.confirm_title')}
               </Text>
               <Text style={{ color: s.textMuted }} className="mb-2 text-center font-inter text-[14px] leading-relaxed">
-                {`Dùng 1 ${item.name}: ×${multiplier} XP trong ${minutes} phút, bắt đầu ngay.`}
+                {translate('shop.booster.confirm_body', { name: item.name, multiplier, minutes })}
               </Text>
               <Text style={{ color: s.textMuted }} className="mb-5 text-center font-inter text-[13px]">
-                {`Thời gian tính liên tục từ lúc kích hoạt · còn ${Math.max(0, item.quantity - 1)} thẻ sau khi dùng.`}
+                {translate('shop.booster.confirm_note', { remaining: Math.max(0, item.quantity - 1) })}
               </Text>
               <View className="w-full flex-row gap-3">
-                <Button variant="secondary" label="Để sau" textClassName="font-nunito" className="flex-1" fullWidth={false} disabled={activate.isPending} onPress={close} />
-                <Button variant="primary" label="Kích hoạt" textClassName="font-nunito" className="flex-1" fullWidth={false} loading={activate.isPending} onPress={() => void confirm()} />
+                <Button variant="secondary" label={translate('shop.booster.later')} textClassName="font-nunito" className="flex-1" fullWidth={false} disabled={activate.isPending} onPress={close} />
+                <Button variant="primary" label={translate('shop.actions.activate')} textClassName="font-nunito" className="flex-1" fullWidth={false} loading={activate.isPending} onPress={() => void confirm()} />
               </View>
             </>
           )}

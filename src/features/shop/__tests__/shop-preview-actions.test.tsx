@@ -4,6 +4,7 @@ import * as React from 'react';
 import { ThemePreviewModal } from '@/components/shop/item-preview-modal';
 import { ShopItemCard } from '@/components/shop/ShopItemCard';
 
+jest.mock('@/lib/i18n', () => require('./vi-translate'));
 jest.mock('lucide-react-native', () => ({ CheckIcon: () => null, XIcon: () => null }));
 jest.mock('@/components/snapvocab', () => ({
   AvatarFrame: require('react-native').View,

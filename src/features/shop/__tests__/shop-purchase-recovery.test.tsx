@@ -9,6 +9,7 @@ import { isBoosterLive } from '../utils/booster-timer';
 
 const mockUpdateUser = jest.fn();
 jest.mock('@/lib/api', () => ({ client: jest.fn() }));
+jest.mock('@/lib/i18n', () => require('./vi-translate'));
 jest.mock('@/features/auth/use-auth-store', () => ({ useAuthStore: { getState: () => ({ updateUser: mockUpdateUser }) } }));
 jest.mock('@/components/ui', () => ({ showErrorMessage: jest.fn(), showSuccessMessage: jest.fn() }));
 jest.mock('../theme/theme-context', () => ({ useShopTheme: () => ({ setEquippedTheme: jest.fn() }) }));

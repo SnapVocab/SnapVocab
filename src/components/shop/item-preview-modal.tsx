@@ -6,7 +6,9 @@ import { Modal, Pressable, Text, View } from 'react-native';
 import { AvatarFrame, getAvatarFrame } from '@/components/snapvocab';
 import { Button, useColorMode, useSurface } from '@/components/ui';
 import { useAuthStore } from '@/features/auth/use-auth-store';
-import { getThemeDefinition, SHOP_THEME_SCOPE } from '@/features/shop/theme/theme-context';
+import { getThemeDefinition } from '@/features/shop/theme/theme-context';
+import { translate } from '@/lib/i18n';
+import { shopTypeLabel } from './shop-category-tabs';
 
 /** What a preview needs; Shop passes a catalog item, Kho đồ an owned inventory item (no price). */
 export type PreviewItem = Pick<ShopItemDTO, 'type' | 'code' | 'name' | 'config'> & {
@@ -32,11 +34,11 @@ function PreviewSheet({ item, onClose, onAction, children }: PreviewModalProps &
         <View style={{ backgroundColor: s.surface }} className="rounded-t-[32px] px-5 pt-4 pb-8">
           <View className="mb-4 flex-row items-center justify-between">
             <Text style={{ color: s.text }} className="font-nunito text-[18px] font-extrabold">
-              {isTheme ? 'Xem trước giao diện' : 'Thử khung avatar'}
+              {translate(isTheme ? 'shop.preview.theme_title' : 'shop.preview.frame_title')}
             </Text>
             <Pressable
               accessibilityRole="button"
-              accessibilityLabel="Đóng"
+              accessibilityLabel={translate('shop.close')}
               onPress={onClose}
               style={{ backgroundColor: s.surfaceMuted }}
               className="size-9 items-center justify-center rounded-full active:opacity-70"
@@ -52,16 +54,16 @@ function PreviewSheet({ item, onClose, onAction, children }: PreviewModalProps &
             <Text style={{ color: s.textMuted }} className="my-1 text-center font-inter text-[13px] leading-relaxed">{item.description}</Text>
           ) : null}
           {isTheme && (
-            <Text style={{ color: s.text }} className="mt-1 text-center font-inter text-[13px] font-semibold">{SHOP_THEME_SCOPE}</Text>
+            <Text style={{ color: s.text }} className="mt-1 text-center font-inter text-[13px] font-semibold">{translate('shop.theme.scope')}</Text>
           )}
 
           <View className="mt-4">
             {item.equipped ? (
-              <Button variant="secondary" label="Đang dùng" textClassName="font-nunito" disabled />
+              <Button variant="secondary" label={translate('shop.actions.in_use')} textClassName="font-nunito" disabled />
             ) : item.owned ? (
-              <Button variant="primary" label={isTheme ? 'Áp dụng giao diện' : 'Trang bị khung'} textClassName="font-nunito" onPress={onAction} />
+              <Button variant="primary" label={translate(isTheme ? 'shop.actions.apply_theme' : 'shop.actions.equip_frame')} textClassName="font-nunito" onPress={onAction} />
             ) : (
-              <Button variant="primary" label={`Mua · ${(item.price ?? 0).toLocaleString('vi-VN')} Coin`} textClassName="font-nunito" onPress={onAction} />
+              <Button variant="primary" label={translate('shop.actions.buy_for', { price: (item.price ?? 0).toLocaleString('vi-VN') })} textClassName="font-nunito" onPress={onAction} />
             )}
           </View>
         </View>
@@ -109,22 +111,22 @@ export function ThemePreviewModal({ item, ...props }: PreviewModalProps) {
     <PreviewSheet item={item} {...props}>
       <View style={{ backgroundColor: t.background, borderColor: t.border }} className="overflow-hidden rounded-3xl border">
         <View style={{ backgroundColor: t.headerBg, borderColor: t.border }} className="flex-row items-center justify-between border-b px-4 py-3">
-          <Text style={{ color: t.text }} className="font-nunito text-[15px] font-extrabold">Cửa hàng</Text>
+          <Text style={{ color: t.text }} className="font-nunito text-[15px] font-extrabold">{translate('shop.title')}</Text>
           <View className="rounded-full border border-reward-200 bg-reward-50 px-2.5 py-0.5">
             <Text className="font-nunito text-[12px] font-extrabold text-reward-700">1.250</Text>
           </View>
         </View>
         <View className="gap-3 p-4">
           <View style={{ backgroundColor: t.surface, borderColor: t.border }} className="gap-1 rounded-2xl border p-3">
-            <Text style={{ color: t.textMuted }} className="font-inter text-[11px] font-bold uppercase">Bổ trợ</Text>
-            <Text style={{ color: t.text }} className="font-nunito text-[14px] font-extrabold">Thẻ ×2 Kinh nghiệm</Text>
-            <Text style={{ color: t.textMuted }} className="font-inter text-[12px]">Nhân đôi XP trong 30 phút</Text>
+            <Text style={{ color: t.textMuted }} className="font-inter text-[11px] font-bold uppercase">{shopTypeLabel('XP_BOOSTER')}</Text>
+            <Text style={{ color: t.text }} className="font-nunito text-[14px] font-extrabold">{translate('shop.preview.sample_item')}</Text>
+            <Text style={{ color: t.textMuted }} className="font-inter text-[12px]">{translate('shop.preview.sample_effect')}</Text>
             <View className="mt-2 h-8 items-center justify-center rounded-xl border-b-[3px] border-primary-700 bg-primary-500">
-              <Text className="font-nunito text-[12px] font-extrabold text-white">Mua · 100</Text>
+              <Text className="font-nunito text-[12px] font-extrabold text-white">{`${translate('shop.actions.buy')} · 100`}</Text>
             </View>
           </View>
           <View style={{ backgroundColor: t.surfaceMuted }} className="flex-row items-center justify-between rounded-2xl px-3 py-2.5">
-            <Text style={{ color: t.text }} className="font-inter text-[13px] font-bold">Phần thưởng nhiệm vụ</Text>
+            <Text style={{ color: t.text }} className="font-inter text-[13px] font-bold">{translate('shop.wallet.source.mission_reward')}</Text>
             <Text className="font-nunito text-[13px] font-extrabold text-success-600">+40</Text>
           </View>
         </View>

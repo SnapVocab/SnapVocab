@@ -5,10 +5,9 @@ import { DEFAULT_SURFACE, SurfaceProvider } from '@/components/ui/surface';
 import { store } from '@/features/auth/use-auth-store';
 import { storage } from '@/lib/storage';
 
+/** Palette only: the name a learner reads is the ShopItem's, from the server. */
 export type ThemeDefinition = {
   key: string;
-  name: string;
-  description: string;
   palette: SurfacePalette;
 };
 
@@ -25,20 +24,15 @@ function palette(light: Surfaces, dark: Surfaces): SurfacePalette {
 /**
  * Scope (2026-10-06): a purchased theme applies to the Shop area only — Cửa hàng, Kho đồ, Ví Coin and
  * their modals (via ShopSurface). Tab bar and every other screen keep DEFAULT_SURFACE.
+ * The learner-facing scope sentence is `shop.theme.scope`.
  */
-export const SHOP_THEME_SCOPE = 'Áp dụng cho Cửa hàng, Kho đồ và Ví Coin.';
-
 export const SHOP_THEMES: Record<string, ThemeDefinition> = {
   DEFAULT: {
     key: 'DEFAULT',
-    name: 'Mặc định',
-    description: 'Giao diện tiêu chuẩn thân thiện của SnapVocab',
     palette: DEFAULT_SURFACE,
   },
   MIDNIGHT_NEON: {
     key: 'MIDNIGHT_NEON',
-    name: 'Đêm Neon Huyền Ảo',
-    description: 'Sắc tím đêm cyberpunk huyền bí',
     palette: palette(
       { background: '#F5F3FF', surface: '#FFFFFF', surfaceMuted: '#EDE9FE', border: '#DDD6FE', headerBg: '#FFFFFF' },
       { background: '#0B0F19', surface: '#151B2B', surfaceMuted: '#1E2638', border: '#2A344A', headerBg: '#151B2B' },
@@ -46,8 +40,6 @@ export const SHOP_THEMES: Record<string, ThemeDefinition> = {
   },
   SUNSET_AMBER: {
     key: 'SUNSET_AMBER',
-    name: 'Hoàng Hôn Hổ Phách',
-    description: 'Sắc vàng cam ấm áp của hoàng hôn',
     palette: palette(
       { background: '#FFFBEB', surface: '#FFFFFF', surfaceMuted: '#FEF3C7', border: '#FDE68A', headerBg: '#FFFFFF' },
       { background: '#1A1206', surface: '#261A0A', surfaceMuted: '#33230E', border: '#4A3214', headerBg: '#261A0A' },
@@ -55,8 +47,6 @@ export const SHOP_THEMES: Record<string, ThemeDefinition> = {
   },
   FOREST_MINT: {
     key: 'FOREST_MINT',
-    name: 'Rừng Bạc Hà',
-    description: 'Sắc xanh ngọc thư thái của thiên nhiên',
     palette: palette(
       { background: '#F0FDF4', surface: '#FFFFFF', surfaceMuted: '#DCFCE7', border: '#BBF7D0', headerBg: '#FFFFFF' },
       { background: '#04170E', surface: '#0A2417', surfaceMuted: '#103221', border: '#1A4A31', headerBg: '#0A2417' },
@@ -116,10 +106,12 @@ export function ShopThemeProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  // Equipped theme belongs to the account: reset on account change, inventory sync re-applies the new user's theme.
+  // Equipped theme belongs to the account: a new account starts from DEFAULT; GET /api/users/me (stored on the
+  // user, shop.md §10.1) and the inventory sync apply the server's choice.
   useEffect(() => store.subscribe((state, prev) => {
-    if (state.user?.id !== prev.user?.id)
-      setEquippedTheme('DEFAULT');
+    const equipped = state.user?.equipped;
+    if (state.user?.id !== prev.user?.id || (equipped && equipped.themeKey !== prev.user?.equipped?.themeKey))
+      setEquippedTheme(equipped?.themeKey ?? 'DEFAULT');
   }), [setEquippedTheme]);
 
   const theme = useMemo(() => getThemeDefinition(themeKey), [themeKey]);

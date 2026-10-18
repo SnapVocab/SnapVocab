@@ -1,7 +1,6 @@
 import type { Href } from 'expo-router';
 import type { ReactNode } from 'react';
 import type { User } from '../auth/api';
-import type { InventoryItemDTO } from '@/features/shop/types';
 import { useRouter } from 'expo-router';
 import { ScrollView } from 'react-native';
 import { AvatarFrame } from '@/components/snapvocab';
@@ -27,7 +26,6 @@ import {
 } from '@/components/ui/icons';
 import { useAuthStore } from '@/features/auth/use-auth-store';
 import { useStreak } from '@/features/progress/api';
-import { useInventory } from '@/features/shop/hooks/use-shop-queries';
 import { isBoosterLive } from '@/features/shop/utils/booster-timer';
 import { translate } from '@/lib/i18n';
 import { useMe } from './api';
@@ -44,10 +42,10 @@ export function ProfileScreen() {
   const streak = useStreak();
   // Render the stored copy while the fresh one loads, so the screen never blanks.
   const user = data ?? stored;
-  // Equipped frame and running booster come from the inventory (shop.md §11.3); no extra API.
-  const inventory = useInventory();
-  const frame = inventory.data?.items.find(i => i.type === 'AVATAR_FRAME' && i.equipped);
-  const boosterLive = isBoosterLive(inventory.data?.activeBooster, inventory.serverOffset);
+  // Equipped frame and running booster ride on the user (GET /api/users/me, shop.md §10.1), so the stored
+  // copy shows them at app start. Device clock for the ×2 badge; Kho đồ's countdown uses server time.
+  const frameUrl = user?.equipped?.avatarFrameUrl;
+  const boosterLive = isBoosterLive(user?.activeBooster, 0);
 
   if (!user) {
     return (
@@ -102,7 +100,7 @@ export function ProfileScreen() {
         contentContainerStyle={{ padding: 16, paddingBottom: 150 }}
         showsVerticalScrollIndicator={false}
       >
-        <IdentityCard user={user} frame={frame} />
+        <IdentityCard user={user} frameUrl={frameUrl} />
 
         <View className="mt-4 flex-row gap-3">
           <StatTile
@@ -185,17 +183,16 @@ function HeaderButton({
   );
 }
 
-function IdentityCard({ user, frame }: { user: User; frame?: InventoryItemDTO }) {
+function IdentityCard({ user, frameUrl }: { user: User; frameUrl?: string | null }) {
   const name = fullName(user);
   const joined = formatDate(user.createdAt);
 
   return (
     <View className="items-center rounded-3xl border border-neutral-200/80 bg-white p-5 shadow-sm shadow-black/5 dark:border-neutral-800 dark:bg-neutral-900">
-      {frame ? (
+      {frameUrl ? (
         // Same renderer as the Shop preview, so the bought frame looks the same here.
         <AvatarFrame
-          frameId={frame.code}
-          frameUrl={frame.config?.frameUrl}
+          frameUrl={frameUrl}
           avatarUri={user.avatarUrl}
           initials={initials(name)}
           size="xl"

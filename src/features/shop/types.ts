@@ -99,8 +99,6 @@ export type ActivationResultDTO = {
 
 export type CoinSourceType =
   | 'MISSION_REWARD'
-  | 'DAILY_CHEST'
-  | 'WEEKLY_CHEST'
   | 'SHOP_PURCHASE'
   | 'ADMIN_ADJUSTMENT';
 

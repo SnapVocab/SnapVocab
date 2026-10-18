@@ -6,8 +6,9 @@ import { ActivityIndicator, Image, Pressable, Text, View } from 'react-native';
 import { AvatarFrame, Coin3D } from '@/components/snapvocab';
 import { useSurface } from '@/components/ui';
 import { useAuthStore } from '@/features/auth/use-auth-store';
+import { translate } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
-import { SHOP_TYPE_LABEL } from './shop-category-tabs';
+import { shopTypeLabel } from './shop-category-tabs';
 
 type CardItem = Pick<ShopItemDTO, 'type' | 'code' | 'name' | 'iconUrl' | 'config' | 'quantity' | 'equipped'>;
 
@@ -73,7 +74,7 @@ export function ItemCard({
         {item.equipped && (
           <View className="absolute top-2 left-2 z-10 flex-row items-center gap-1 rounded-full bg-primary-500 px-2 py-0.5">
             <CheckIcon size={12} color="white" />
-            <Text className="font-nunito text-[11px] font-extrabold text-white">Đang dùng</Text>
+            <Text className="font-nunito text-[11px] font-extrabold text-white">{translate('shop.actions.in_use')}</Text>
           </View>
         )}
         {item.type === 'XP_BOOSTER' && item.quantity > 0 && (
@@ -89,7 +90,7 @@ export function ItemCard({
       <View className="flex-1 justify-between gap-2.5 p-2.5 pt-2">
         <View>
           <Text style={{ color: surfaceTokens.textMuted }} className="mb-0.5 font-inter text-[11px] font-bold tracking-wide uppercase" numberOfLines={1}>
-            {SHOP_TYPE_LABEL[item.type]}
+            {shopTypeLabel(item.type)}
           </Text>
           <Text
             style={{ color: surfaceTokens.text, minHeight: 38 }}
@@ -183,16 +184,16 @@ export function ShopItemCard({ item, onPress, onPreview, userCoins }: ShopItemCa
       onPress={() => (isCosmetic && onPreview ? onPreview(item) : onPress(item))}
     >
       {item.equipped ? (
-        <CardAction tone="done" label="Đang dùng" />
+        <CardAction tone="done" label={translate('shop.actions.in_use')} />
       ) : isCosmetic && item.owned ? (
-        <CardAction tone="primary" label={item.type === 'THEME' ? 'Áp dụng' : 'Trang bị'} onPress={() => onPress(item)} />
+        <CardAction tone="primary" label={translate(item.type === 'THEME' ? 'shop.actions.apply' : 'shop.actions.equip')} onPress={() => onPress(item)} />
       ) : item.type === 'XP_BOOSTER' && item.blockReason === 'MAX_QUANTITY_REACHED' ? (
-        <CardAction tone="disabled" label="Đã đạt tối đa" />
+        <CardAction tone="disabled" label={translate('shop.actions.max_reached')} />
       ) : (
         // A theme is bought from its preview sheet (shop.md §11.1): the palette is seen before Coin is spent.
         <CardAction
           tone={isOutOfCoin ? 'warning' : 'primary'}
-          label="Mua ·"
+          label={`${translate('shop.actions.buy')} ·`}
           coin={item.price}
           onPress={() => (item.type === 'THEME' && onPreview ? onPreview(item) : onPress(item))}
         />

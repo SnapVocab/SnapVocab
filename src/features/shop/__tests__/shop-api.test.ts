@@ -22,6 +22,7 @@ import {
 jest.mock('@/lib/api', () => ({
   client: jest.fn(),
 }));
+jest.mock('@/lib/i18n', () => require('./vi-translate'));
 
 const mockedClient = client as unknown as jest.Mock;
 

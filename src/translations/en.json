@@ -585,10 +585,148 @@
     "version": "Version {{version}}"
   },
   "shop": {
+    "actions": {
+      "activate": "Activate",
+      "activate_booster": "Activate booster",
+      "apply": "Apply",
+      "apply_theme": "Apply theme",
+      "buy": "Buy",
+      "buy_for": "Buy · {{price}} Coin",
+      "equip": "Equip",
+      "equip_frame": "Equip frame",
+      "in_use": "In use",
+      "max_reached": "Max reached",
+      "unequip": "Remove"
+    },
+    "booster": {
+      "activated_body": "Active until {{until}} · {{quantity}} left. Review cards or take a quiz now to earn ×{{multiplier}} XP.",
+      "activated_title": "×{{multiplier}} XP activated!",
+      "confirm_body": "Use 1 {{name}}: ×{{multiplier}} XP for {{minutes}} minutes, starting now.",
+      "confirm_note": "The timer runs continuously from activation · {{remaining}} left after this one.",
+      "confirm_title": "Activate booster?",
+      "effect": "×{{multiplier}} XP for {{minutes}} minutes",
+      "later": "Later",
+      "replay_expired_body": "This booster ended at {{until}}. {{quantity}} left in your Inventory.",
+      "replay_expired_title": "Your earlier activation has ended",
+      "start_quiz": "Start a quiz"
+    },
+    "close": "Close",
     "coming_description": "Browse cosmetics and learning items to personalize your SnapVocab experience.",
     "coming_title": "The shop is getting ready",
+    "empty_description": "New items are coming to the Shop soon!",
+    "empty_title": "No items in this category yet",
+    "error_description": "Please check your connection and try again.",
+    "error_title": "Couldn't load the Shop",
+    "errors": {
+      "already_owned": "You already own this item.",
+      "booster_active": "An XP booster is already running. Please wait until it ends!",
+      "busy": "We're busy processing a transaction. Please try again in a few seconds.",
+      "generic": "Something went wrong. Please try again later.",
+      "insufficient_coins": "You don't have enough Coin for this item.",
+      "key_required": "The transaction couldn't be verified. Please try again.",
+      "key_reused": "This transaction code isn't valid for this item. Please reopen it and try again.",
+      "max_quantity": "You already hold the maximum of this item.",
+      "network": "Couldn't reach the server. Please check your connection and try again.",
+      "not_available": "This item is no longer sold in the Shop.",
+      "not_found": "The item couldn't be found.",
+      "price_changed": "The price just changed.",
+      "price_changed_to": "The price just changed to {{price}} Coin.",
+      "quantity_empty": "You have none of this item left."
+    },
+    "inventory": {
+      "booster_banner": "×{{multiplier}} XP active",
+      "booster_hint": "Review cards or take quizzes now to earn extra XP",
+      "empty_description": "You have nothing in this category yet. Visit the Shop to pick something!",
+      "empty_title": "Your Inventory is empty",
+      "error_description": "Please try again in a few seconds.",
+      "error_title": "Couldn't load your Inventory",
+      "go_shop": "Go to Shop",
+      "loading": "Loading your Inventory...",
+      "running": "Running",
+      "title": "Inventory",
+      "unsupported": "Not supported",
+      "update_required": "Update the app to use this theme",
+      "wait_booster": "Wait for the booster to end"
+    },
+    "loading": "Loading items...",
+    "out_of_coin": {
+      "balance": "You have",
+      "continue_learning": "Continue learning",
+      "do_missions": "Do daily missions",
+      "need_more": "You need",
+      "not_enough": "You don't have enough Coin to buy",
+      "price": "Item price",
+      "title": "Not enough Coin!",
+      "to_buy": "more to buy"
+    },
+    "preview": {
+      "frame_title": "Try on frame",
+      "sample_effect": "Double XP for 30 minutes",
+      "sample_item": "×2 XP Card",
+      "theme_title": "Theme preview"
+    },
+    "purchase": {
+      "balance_after": "Balance after:",
+      "balance_now": "Current balance:",
+      "booster_effect": "×{{multiplier}} XP for {{minutes}} minutes. The timer starts when you activate it, not when you buy.",
+      "cancel": "Cancel",
+      "confirm_title": "Confirm purchase",
+      "keep_shopping": "Keep shopping",
+      "new_balance": "Balance: {{balance}} Coin.",
+      "previous_unconfirmed": "Your last purchase wasn't confirmed. Tap Buy to check again — you won't be charged twice.",
+      "price": "Price:",
+      "quantity": "You now have {{quantity}}.",
+      "replayed_prefix": "Your earlier purchase went through:",
+      "replayed_suffix": "is already in your Inventory.",
+      "replayed_title": "Purchase already completed",
+      "success_prefix": "Added",
+      "success_suffix": "to your Inventory.",
+      "success_title": "Purchase complete!",
+      "unconfirmed": "We couldn't confirm the purchase. Tap Buy to check again — you won't be charged twice.",
+      "view_inventory": "View Inventory"
+    },
+    "retry": "Retry",
     "subtitle": "Make your learning journey your own.",
-    "title": "Shop"
+    "theme": {
+      "scope": "Applies to the Shop, Inventory and Coin Wallet."
+    },
+    "title": "Shop",
+    "toast": {
+      "frame_equipped": "Avatar frame equipped",
+      "frame_removed": "Avatar frame removed",
+      "theme_applied": "Theme applied",
+      "theme_reset": "Back to the default theme"
+    },
+    "types": {
+      "all": "All",
+      "avatar_frame": "Avatar frame",
+      "theme": "Shop theme",
+      "xp_booster": "Booster"
+    },
+    "wallet": {
+      "a11y_balance": "Coin Wallet: {{balance}} Coin",
+      "balance": "Current balance",
+      "empty_description": "Complete lessons and missions to earn more Coin!",
+      "empty_title": "No transactions yet",
+      "error_title": "Couldn't load transactions",
+      "history": "Transaction history",
+      "load_more": "Load older transactions",
+      "loading": "Loading transactions...",
+      "source": {
+        "admin_adjustment": "System adjustment",
+        "mission_reward": "Mission reward",
+        "other": "Coin transaction",
+        "shop_purchase": "Item purchase"
+      },
+      "time": {
+        "days_ago": "{{days}} days ago",
+        "hours_ago": "{{hours}} h ago",
+        "just_now": "Just now",
+        "minutes_ago": "{{minutes}} min ago",
+        "yesterday": "Yesterday"
+      },
+      "title": "Coin Wallet"
+    }
   },
   "template_builder": {
     "add_field": {

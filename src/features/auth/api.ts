@@ -1,4 +1,5 @@
 import type { AxiosError } from 'axios';
+import type { User as StoredUser } from './use-auth-store';
 import { useMutation } from '@tanstack/react-query';
 import { client } from '@/lib/api';
 
@@ -22,6 +23,8 @@ export type User = {
   lastName: string;
   bio: string;
   createdAt?: string;
+  equipped?: StoredUser['equipped'];
+  activeBooster?: StoredUser['activeBooster'];
 };
 
 // login

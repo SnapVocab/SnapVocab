@@ -53,8 +53,6 @@ export type XpSourceType =
   | 'QUIZ'
   | 'SAVE_WORD'
   | 'MISSION_REWARD'
-  | 'DAILY_CHEST'
-  | 'WEEKLY_CHEST'
   | 'ADMIN_ADJUSTMENT';
 
 export type XpEvent = {

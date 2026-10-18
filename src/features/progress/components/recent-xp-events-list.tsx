@@ -2,7 +2,7 @@ import type { XpEvent, XpSourceType } from '../types';
 import * as React from 'react';
 import { View } from 'react-native';
 import { Text } from '@/components/ui';
-import { BookIcon, BoxIcon, StarIcon, TrophyIcon, ZapIcon } from '@/components/ui/icons';
+import { BookIcon, StarIcon, TrophyIcon, ZapIcon } from '@/components/ui/icons';
 
 export type RecentXpEventsListProps = {
   events: XpEvent[];
@@ -42,14 +42,6 @@ function getSourceInfo(sourceType: XpSourceType): {
         icon: color => <StarIcon color={color} width={16} height={16} />,
         bgColor: 'bg-amber-50 dark:bg-amber-950/40',
         iconColor: '#F59E0B',
-      };
-    case 'DAILY_CHEST':
-    case 'WEEKLY_CHEST':
-      return {
-        title: sourceType === 'DAILY_CHEST' ? 'Rương thưởng ngày' : 'Rương thưởng tuần',
-        icon: color => <BoxIcon color={color} width={16} height={16} />,
-        bgColor: 'bg-orange-50 dark:bg-orange-950/40',
-        iconColor: '#F97316',
       };
     case 'ADMIN_ADJUSTMENT':
       return {

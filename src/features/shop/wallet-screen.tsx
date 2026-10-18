@@ -2,7 +2,6 @@ import type { CoinSourceType, WalletTransactionDTO } from './types';
 import { router } from 'expo-router';
 import {
   CoinsIcon,
-  GiftIcon,
   RefreshCwIcon,
   ShieldAlertIcon,
   ShoppingCartIcon,
@@ -22,6 +21,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Coin3D } from '@/components/snapvocab';
 import { Snapy } from '@/components/Snapy';
 import { ScreenHeader, useSurface } from '@/components/ui';
+import { translate } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 import { useCoinBalance, useInfiniteWallet } from './hooks/use-shop-queries';
 import { ShopSurface } from './theme/theme-context';
@@ -30,32 +30,22 @@ function getSourceInfo(sourceType: CoinSourceType) {
   switch (sourceType) {
     case 'SHOP_PURCHASE':
       return {
-        label: 'Mua vật phẩm',
+        label: translate('shop.wallet.source.shop_purchase'),
         icon: <ShoppingCartIcon size={20} color="#64748B" />,
       };
     case 'MISSION_REWARD':
       return {
-        label: 'Phần thưởng nhiệm vụ',
+        label: translate('shop.wallet.source.mission_reward'),
         icon: <TargetIcon size={20} color="#EAB308" />,
-      };
-    case 'DAILY_CHEST':
-      return {
-        label: 'Rương hàng ngày',
-        icon: <GiftIcon size={20} color="#F59E0B" />,
-      };
-    case 'WEEKLY_CHEST':
-      return {
-        label: 'Rương hàng tuần',
-        icon: <GiftIcon size={20} color="#8B5CF6" />,
       };
     case 'ADMIN_ADJUSTMENT':
       return {
-        label: 'Điều chỉnh hệ thống',
+        label: translate('shop.wallet.source.admin_adjustment'),
         icon: <ShieldAlertIcon size={20} color="#3B82F6" />,
       };
     default:
       return {
-        label: 'Giao dịch Coin',
+        label: translate('shop.wallet.source.other'),
         icon: <CoinsIcon size={20} color="#64748B" />,
       };
   }
@@ -75,15 +65,15 @@ function formatRelativeDate(isoString: string): string {
     const diffDays = Math.round((startOfDay(now) - startOfDay(date)) / 86400000);
 
     if (diffMins < 1)
-      return 'Vừa xong';
+      return translate('shop.wallet.time.just_now');
     if (diffMins < 60)
-      return `${diffMins} phút trước`;
+      return translate('shop.wallet.time.minutes_ago', { minutes: diffMins });
     if (diffHours < 24)
-      return `${diffHours} giờ trước`;
+      return translate('shop.wallet.time.hours_ago', { hours: diffHours });
     if (diffDays === 1)
-      return 'Hôm qua';
+      return translate('shop.wallet.time.yesterday');
     if (diffDays < 7)
-      return `${diffDays} ngày trước`;
+      return translate('shop.wallet.time.days_ago', { days: diffDays });
 
     return date.toLocaleDateString('vi-VN', {
       day: '2-digit',
@@ -187,7 +177,7 @@ function WalletScreenContent() {
     >
       {/* Coin only: level/XP lives in Progress, from the backend's level table. */}
       <ScreenHeader
-        title="Ví Coin"
+        title={translate('shop.wallet.title')}
         onBack={() => router.back()}
         right={(
           <Pressable
@@ -195,7 +185,7 @@ function WalletScreenContent() {
             onPress={() => router.push('/(tabs)/shop' as any)}
             className="rounded-full border border-reward-200 bg-reward-50 px-3 py-1.5 active:scale-95"
           >
-            <Text className="font-nunito text-[13px] font-extrabold text-reward-700">Cửa hàng</Text>
+            <Text className="font-nunito text-[13px] font-extrabold text-reward-700">{translate('shop.title')}</Text>
           </Pressable>
         )}
       />
@@ -220,7 +210,7 @@ function WalletScreenContent() {
         {/* ========================================= */}
         <View style={{ backgroundColor: s.surface }} className="mb-8 items-center justify-center rounded-[32px] border-2 border-b-[6px] border-reward-200 p-6 shadow-sm shadow-reward-500/10">
           <Text style={{ color: s.textMuted }} className="mb-3 font-nunito text-[13px] font-extrabold tracking-widest uppercase">
-            SỐ DƯ HIỆN TẠI
+            {translate('shop.wallet.balance')}
           </Text>
 
           <View className="flex-row items-center justify-center gap-3">
@@ -238,28 +228,28 @@ function WalletScreenContent() {
         {/* 4. TRANSACTION HISTORY */}
         {/* ========================================= */}
         <Text style={{ color: s.text }} className="mb-4 ml-1 font-nunito text-[16px] font-extrabold">
-          Lịch sử giao dịch
+          {translate('shop.wallet.history')}
         </Text>
 
         {isLoading ? (
           <View className="items-center justify-center py-10">
             <ActivityIndicator size="large" color="#2563EB" />
             <Text style={{ color: s.textMuted }} className="mt-3 font-inter text-[13px]">
-              Đang tải lịch sử giao dịch...
+              {translate('shop.wallet.loading')}
             </Text>
           </View>
         ) : isError ? (
           <View style={{ backgroundColor: s.surface, borderColor: s.border }} className="items-center justify-center rounded-3xl border p-8">
             <Snapy pose="suy_nghi" animation="idle" className="mb-3 size-20 opacity-80" />
             <Text style={{ color: s.text }} className="mb-2 font-nunito text-[16px] font-extrabold">
-              Không thể tải lịch sử giao dịch
+              {translate('shop.wallet.error_title')}
             </Text>
             <Pressable
               onPress={() => refetch()}
               className="flex-row items-center gap-2 rounded-xl bg-primary-500 px-4 py-2"
             >
               <RefreshCwIcon size={14} color="white" />
-              <Text className="font-nunito text-[12px] font-bold text-white">Thử lại</Text>
+              <Text className="font-nunito text-[12px] font-bold text-white">{translate('shop.retry')}</Text>
             </Pressable>
           </View>
         ) : transactions.length === 0 ? (
@@ -267,10 +257,10 @@ function WalletScreenContent() {
           <View style={{ backgroundColor: s.surface, borderColor: s.border }} className="items-center justify-center rounded-3xl border p-8">
             <Snapy pose="suy_nghi" animation="idle" className="mb-4 size-24 opacity-80" />
             <Text style={{ color: s.text }} className="mb-2 font-nunito text-[18px] font-extrabold">
-              Chưa có giao dịch nào
+              {translate('shop.wallet.empty_title')}
             </Text>
             <Text style={{ color: s.textMuted }} className="px-4 text-center font-inter text-[14px] font-medium">
-              Hãy hoàn thành bài học và nhiệm vụ để kiếm thêm Coin nhé!
+              {translate('shop.wallet.empty_description')}
             </Text>
           </View>
         ) : (
@@ -290,7 +280,7 @@ function WalletScreenContent() {
                   <ActivityIndicator size="small" color="#2563EB" />
                 ) : (
                   <Text className="font-nunito text-[13px] font-extrabold text-primary-600">
-                    Tải thêm giao dịch cũ hơn
+                    {translate('shop.wallet.load_more')}
                   </Text>
                 )}
               </Pressable>

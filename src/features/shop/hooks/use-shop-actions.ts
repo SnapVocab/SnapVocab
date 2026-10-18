@@ -1,6 +1,7 @@
 import type { PurchaseResultDTO, ShopItemDTO } from '../types';
 import { useState } from 'react';
 import { generateIdempotencyKey } from '@/features/quiz/utils/idempotency';
+import { translate } from '@/lib/i18n';
 import { isOutcomeUnknown, parseShopError } from '../api';
 import {
   useEquipMutation,
@@ -53,9 +54,7 @@ export function useShopActions({
     const idempotencyKey = unresolvedPurchaseKeys.get(item.itemId) ?? generateIdempotencyKey();
     setPurchaseIntent({ item, idempotencyKey });
     setPurchaseResult(null);
-    setErrorMessage(unresolvedPurchaseKeys.has(item.itemId)
-      ? 'Lần mua trước chưa xác nhận được kết quả. Bấm Mua để kiểm tra lại — bạn sẽ không bị trừ Coin hai lần.'
-      : null);
+    setErrorMessage(unresolvedPurchaseKeys.has(item.itemId) ? translate('shop.purchase.previous_unconfirmed') : null);
   };
 
   const handleItemPress = (item: ShopItemDTO) => {
@@ -108,7 +107,7 @@ export function useShopActions({
 
       if (isOutcomeUnknown(parsed)) {
         unresolvedPurchaseKeys.set(item.itemId, idempotencyKey);
-        setErrorMessage('Chưa xác nhận được kết quả mua. Bấm Mua để kiểm tra lại — bạn sẽ không bị trừ Coin hai lần.');
+        setErrorMessage(translate('shop.purchase.unconfirmed'));
         void handleRefresh().catch(() => {});
         return;
       }
@@ -135,12 +134,12 @@ export function useShopActions({
         await handleRefresh();
       }
       else if (parsed.code === 'ITEM_ALREADY_OWNED') {
-        setErrorMessage('Bạn đã sở hữu vật phẩm này.');
+        setErrorMessage(translate('shop.errors.already_owned'));
         setPurchaseIntent(null);
         await handleRefresh();
       }
       else if (parsed.code === 'MAX_QUANTITY_REACHED') {
-        setErrorMessage('Đã đạt số lượng sở hữu tối đa.');
+        setErrorMessage(translate('shop.errors.max_quantity'));
         setPurchaseIntent(null);
         await handleRefresh();
       }

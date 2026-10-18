@@ -13,6 +13,7 @@ import type {
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { showErrorMessage, showSuccessMessage } from '@/components/ui';
 import { useAuthStore } from '@/features/auth/use-auth-store';
+import { translate } from '@/lib/i18n';
 import {
   activateItem,
   equipItem,
@@ -195,9 +196,8 @@ export function useEquipMutation() {
         const themeKey = data.item?.config?.themeKey as string;
         setEquippedTheme(themeKey || 'DEFAULT');
       }
-      showSuccessMessage(data.slot === 'THEME' ? 'Đã áp dụng giao diện' : 'Đã trang bị khung avatar');
-      queryClient.invalidateQueries({ queryKey: shopKeys.inventory() });
-      queryClient.invalidateQueries({ queryKey: shopKeys.catalogs() });
+      showSuccessMessage(translate(data.slot === 'THEME' ? 'shop.toast.theme_applied' : 'shop.toast.frame_equipped'));
+      invalidateOwnedState(queryClient);
     },
     onError: error => onItemActionError(queryClient, error),
   });
@@ -220,9 +220,8 @@ export function useUnequipMutation() {
       if (data.slot === 'THEME') {
         setEquippedTheme('DEFAULT');
       }
-      showSuccessMessage(data.slot === 'THEME' ? 'Đã về giao diện mặc định' : 'Đã tháo khung avatar');
-      queryClient.invalidateQueries({ queryKey: shopKeys.inventory() });
-      queryClient.invalidateQueries({ queryKey: shopKeys.catalogs() });
+      showSuccessMessage(translate(data.slot === 'THEME' ? 'shop.toast.theme_reset' : 'shop.toast.frame_removed'));
+      invalidateOwnedState(queryClient);
     },
     onError: error => onItemActionError(queryClient, error),
   });
@@ -243,12 +242,18 @@ export function useActivateBoosterMutation() {
       activateItem(itemId, idempotencyKey),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['daily-missions'] });
-      queryClient.invalidateQueries({ queryKey: shopKeys.inventory() });
       // Spending a card changes quantity, hence the Booster's max-quantity block in the catalog.
-      queryClient.invalidateQueries({ queryKey: shopKeys.catalogs() });
+      invalidateOwnedState(queryClient);
     },
     onError: error => onItemActionError(queryClient, error),
   });
+}
+
+/** Equipment/booster changed: inventory, catalog state and the me cache (Profile frame, ×2) are stale. */
+function invalidateOwnedState(queryClient: QueryClient) {
+  queryClient.invalidateQueries({ queryKey: shopKeys.inventory() });
+  queryClient.invalidateQueries({ queryKey: shopKeys.catalogs() });
+  queryClient.invalidateQueries({ queryKey: ['me'] });
 }
 
 /** Equip / unequip / activate rejected: tell the user why, then resync since local state was stale. */

@@ -1,4 +1,5 @@
 import type { StateStorage } from 'zustand/middleware';
+import type { ActiveBoosterDTO } from '@/features/shop/types';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 import { removeToken, setToken } from '@/lib/auth/utils';
@@ -17,6 +18,9 @@ export type User = {
   lastStudiedAt: string;
   email: string;
   bio: string;
+  /** Shop state from GET /api/users/me (shop.md §10.1); absent on the login response. */
+  equipped?: { themeKey: string | null; avatarFrameUrl: string | null };
+  activeBooster?: ActiveBoosterDTO | null;
 };
 
 export type AuthResponse = {
