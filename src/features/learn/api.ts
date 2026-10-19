@@ -5,9 +5,11 @@ import type {
   Collection,
   CollectionTopicParams,
   CreateTopicDTO,
+  DeleteTopicItemParams,
   TopicDTO,
   TopicItemData,
   UpdateCollectionDTO,
+  UpdateTopicItemParams,
 } from './types';
 import type { CursorPaginationResponse, PaginateResponse } from '@/lib/api';
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -214,6 +216,75 @@ export function useAddTopicItem() {
       return response.data.data;
     },
     onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['topic-items', variables.topicId] });
+      queryClient.invalidateQueries({ queryKey: ['topic-items', String(variables.topicId)] });
+      queryClient.invalidateQueries({ queryKey: ['topic-items-cursor', variables.topicId] });
+      queryClient.invalidateQueries({ queryKey: ['topic-items-cursor', String(variables.topicId)] });
+      queryClient.invalidateQueries({ queryKey: ['topic-items-infinite', variables.topicId] });
+      queryClient.invalidateQueries({ queryKey: ['topic-items-infinite', String(variables.topicId)] });
+      queryClient.invalidateQueries({ queryKey: ['collections'] });
+      queryClient.invalidateQueries({ queryKey: ['collection-topics'] });
+    },
+  });
+}
+
+export function useTopicItem(topicId?: number | string, itemId?: number | string) {
+  return useQuery<TopicItemData, AxiosError>({
+    queryKey: ['topic-item', topicId, itemId],
+    queryFn: async () => {
+      const response = await client<ApiResponse<TopicItemData>>({
+        url: `/api/topics/${topicId}/items/${itemId}`,
+        method: 'GET',
+      });
+      const item = response.data.data as TopicItemData & Record<string, any>;
+      if (item.groups) {
+        return item;
+      }
+      const { topicItemId, createdAt, ...groups } = item;
+      return { topicItemId, createdAt, groups };
+    },
+    enabled: topicId !== undefined && topicId !== null && itemId !== undefined && itemId !== null,
+  });
+}
+
+export function useUpdateTopicItem() {
+  const queryClient = useQueryClient();
+
+  return useMutation<TopicItemData, AxiosError<ApiResponse<unknown>>, UpdateTopicItemParams>({
+    mutationFn: async ({ topicId, itemId, data }) => {
+      const response = await client<ApiResponse<TopicItemData>>({
+        url: `/api/topics/${topicId}/items/${itemId}`,
+        method: 'PUT',
+        data,
+      });
+      return response.data.data;
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['topic-item', variables.topicId, variables.itemId] });
+      queryClient.invalidateQueries({ queryKey: ['topic-items', variables.topicId] });
+      queryClient.invalidateQueries({ queryKey: ['topic-items', String(variables.topicId)] });
+      queryClient.invalidateQueries({ queryKey: ['topic-items-cursor', variables.topicId] });
+      queryClient.invalidateQueries({ queryKey: ['topic-items-cursor', String(variables.topicId)] });
+      queryClient.invalidateQueries({ queryKey: ['topic-items-infinite', variables.topicId] });
+      queryClient.invalidateQueries({ queryKey: ['topic-items-infinite', String(variables.topicId)] });
+      queryClient.invalidateQueries({ queryKey: ['collections'] });
+      queryClient.invalidateQueries({ queryKey: ['collection-topics'] });
+    },
+  });
+}
+
+export function useDeleteTopicItem() {
+  const queryClient = useQueryClient();
+
+  return useMutation<void, AxiosError<ApiResponse<unknown>>, DeleteTopicItemParams>({
+    mutationFn: async ({ topicId, itemId }) => {
+      await client({
+        url: `/api/topics/${topicId}/items/${itemId}`,
+        method: 'DELETE',
+      });
+    },
+    onSuccess: (_, variables) => {
+      queryClient.removeQueries({ queryKey: ['topic-item', variables.topicId, variables.itemId] });
       queryClient.invalidateQueries({ queryKey: ['topic-items', variables.topicId] });
       queryClient.invalidateQueries({ queryKey: ['topic-items', String(variables.topicId)] });
       queryClient.invalidateQueries({ queryKey: ['topic-items-cursor', variables.topicId] });

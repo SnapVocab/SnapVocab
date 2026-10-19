@@ -93,7 +93,7 @@ export function FieldItemCard({
             hitSlop={8}
             className="p-1"
           >
-            <MoreVerticalIcon color="#9CA3AF" width={16} height={16} />
+            <MoreVerticalIcon color="#9CA3AF" width={20} height={20} />
           </TouchableOpacity>
         </View>
       </View>

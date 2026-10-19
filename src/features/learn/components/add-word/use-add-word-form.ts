@@ -12,21 +12,35 @@ type MultipleFieldChangeParams = {
   value: any;
 };
 
-export function useAddWordForm(topicSchema?: TopicSchemaDTO) {
+export function useAddWordForm(
+  topicSchema?: TopicSchemaDTO,
+  existingGroups?: Record<string, any>,
+  itemId?: number | string,
+) {
   const [formData, setFormData] = React.useState<Record<string, any>>(() =>
     initializeFormData(topicSchema),
   );
   const [errors, setErrors] = React.useState<Record<string, any>>({});
   const [isLookingUp, setIsLookingUp] = React.useState(false);
 
-  const prevSchemaIdRef = React.useRef<number | undefined>(topicSchema?.topicId);
+  const initializedFormKeyRef = React.useRef<string | null>(null);
 
   React.useEffect(() => {
-    if (topicSchema && topicSchema.topicId !== prevSchemaIdRef.current) {
-      prevSchemaIdRef.current = topicSchema.topicId;
-      setFormData(initializeFormData(topicSchema));
+    if (!topicSchema) {
+      return;
     }
-  }, [topicSchema]);
+    if (itemId !== undefined && !existingGroups) {
+      return;
+    }
+
+    const formKey = `${topicSchema.topicId}:${itemId ?? 'new'}`;
+    if (formKey === initializedFormKeyRef.current) {
+      return;
+    }
+    initializedFormKeyRef.current = formKey;
+    setFormData(initializeFormData(topicSchema, existingGroups));
+    setErrors({});
+  }, [topicSchema, existingGroups, itemId]);
 
   const handleSingleFieldChange = React.useCallback(
     (groupName: string, fieldName: string, value: any) => {

@@ -76,7 +76,7 @@ export default function CollectionCard({
               hitSlop={12}
               className="size-10 items-center justify-center rounded-xl border-2 border-b-[3px] border-neutral-200/80 border-b-neutral-300 bg-neutral-100/80 active:translate-y-px active:border-b-2 dark:border-[#46505C] dark:border-b-[#667382] dark:bg-[#292E36]"
             >
-              <MoreVerticalIcon width={16} height={16} color="#71717A" />
+              <MoreVerticalIcon width={20} height={20} color="#71717A" />
             </Pressable>
           )
         : (

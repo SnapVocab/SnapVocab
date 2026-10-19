@@ -77,3 +77,12 @@ export type AddTopicItemParams = {
   topicId: number | string;
   data: CreateTopicItemDTO;
 };
+
+export type UpdateTopicItemParams = AddTopicItemParams & {
+  itemId: number | string;
+};
+
+export type DeleteTopicItemParams = {
+  topicId: number | string;
+  itemId: number | string;
+};
