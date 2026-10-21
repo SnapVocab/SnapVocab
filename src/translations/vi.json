@@ -86,6 +86,7 @@
       "banner_title": "Thêm từ vựng tùy biến",
       "boolean_disabled": "Đang tắt",
       "boolean_enabled": "Đang bật",
+      "edit_title": "Chỉnh sửa từ vựng",
       "enter": "Nhập",
       "lookup_error": "Không thể tra từ lúc này.",
       "lookup_not_found": "Không tìm thấy thông tin từ điển cho từ này.",
@@ -98,6 +99,9 @@
       "submit_button": "LƯU TỪ VỰNG",
       "title": "Thêm từ vựng",
       "topic_label": "Chủ đề: {{name}}",
+      "update_button": "LƯU THAY ĐỔI",
+      "update_error": "Không thể cập nhật từ vựng. Vui lòng thử lại.",
+      "update_success": "Cập nhật từ vựng thành công!",
       "validation_failed": "Vui lòng điền đầy đủ các thông tin bắt buộc (*)"
     },
     "collection_detail": {
@@ -260,6 +264,15 @@
       "study_topic": "Học {{name}}",
       "subtopics_title": "Chủ đề con",
       "words_list_title": "Danh sách từ & thẻ"
+    },
+    "topic_item_options": {
+      "cancel": "Hủy",
+      "delete": "Xóa từ vựng",
+      "delete_confirm_message": "Xóa {{word}}? Lịch ôn FSRS của từ này cũng sẽ bị xóa.",
+      "delete_confirm_title": "Xóa từ vựng này?",
+      "delete_error": "Không thể xóa từ vựng. Vui lòng thử lại.",
+      "delete_success": "Đã xóa từ vựng",
+      "edit": "Chỉnh sửa từ vựng"
     },
     "view_all": "Xem tất cả"
   },

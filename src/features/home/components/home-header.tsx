@@ -79,9 +79,9 @@ export function HomeHeader({
           {/* Notification Bell 3D Button */}
           <Pressable
             onPress={onNotificationPress}
-            className="size-10 items-center justify-center rounded-2xl border-2 border-b-[3px] border-neutral-200/90 border-b-neutral-300 bg-white active:translate-y-px active:border-b-2 dark:border-neutral-700 dark:border-b-neutral-800 dark:bg-neutral-800"
+            className="size-10 items-center justify-center rounded-2xl border-2 border-b-[3px] border-neutral-200/90 border-b-neutral-300 bg-white active:translate-y-px active:border-b-2 dark:border-[#46505C] dark:border-b-[#667382] dark:bg-[#292E36]"
           >
-            <NotificationBell color="#1E293B" />
+            <NotificationBell color="#F3F4F6" />
           </Pressable>
         </View>
       </View>

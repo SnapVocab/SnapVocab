@@ -7,7 +7,7 @@ import { translate } from '@/lib/i18n';
 export function StudyTodayCard() {
   const router = useRouter();
   return (
-    <View className="mb-4 overflow-hidden rounded-3xl border-2 border-b-[5px] border-emerald-300 border-b-emerald-500 bg-emerald-50 p-5 dark:border-emerald-800 dark:border-b-emerald-950 dark:bg-emerald-950/40">
+    <View className="mb-4 overflow-hidden rounded-3xl border-2 border-b-[5px] border-emerald-300 border-b-emerald-500 bg-emerald-50 p-5 dark:border-[#46505C] dark:border-b-[#667382] dark:bg-[#22252B]">
       <View className="flex-row items-start justify-between">
         <View className="flex-1 pr-4">
           <Text className="font-nunito text-2xl font-black text-mascot-navy dark:text-white">
@@ -17,7 +17,7 @@ export function StudyTodayCard() {
             {translate('learn.hub.study_today_desc')}
           </Text>
         </View>
-        <View className="size-14 items-center justify-center rounded-2xl border-2 border-b-4 border-emerald-200 border-b-emerald-300 bg-white dark:border-emerald-800 dark:border-b-emerald-900 dark:bg-neutral-900">
+        <View className="size-14 items-center justify-center rounded-2xl border-2 border-b-4 border-emerald-200 border-b-emerald-300 bg-white dark:border-[#46505C] dark:border-b-[#667382] dark:bg-[#292E36]">
           <FlashcardIcon width={27} height={27} color="#16A34A" />
         </View>
       </View>

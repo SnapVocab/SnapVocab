@@ -15,7 +15,7 @@ import { AlertTriangleIcon } from '@/components/ui/icons';
 import { useTopicSchema } from '@/features/template-builder/api';
 import { useTts } from '@/lib/hooks/use-tts';
 import { translate } from '@/lib/i18n';
-import { useAddTopicItem } from './api';
+import { useAddTopicItem, useTopicItem, useUpdateTopicItem } from './api';
 import {
   AddWordSkeleton,
   buildAddWordPayload,
@@ -27,13 +27,16 @@ import {
 
 export function AddWordScreen() {
   const router = useRouter();
-  const { topicId, topicName = '' } = useLocalSearchParams<{
+  const { topicId, topicName = '', itemId } = useLocalSearchParams<{
     topicId?: string;
     topicName?: string;
     collectionId?: string;
+    itemId?: string;
   }>();
 
   const numTopicId = topicId ? Number(topicId) : undefined;
+  const numItemId = itemId ? Number(itemId) : undefined;
+  const isEditing = numItemId !== undefined;
 
   const {
     data: topicSchema,
@@ -42,7 +45,17 @@ export function AddWordScreen() {
     refetch: refetchSchema,
   } = useTopicSchema(numTopicId);
 
-  const { mutate: addTopicItem, isPending: isSubmitting } = useAddTopicItem();
+  const {
+    data: topicItem,
+    isLoading: isItemLoading,
+    isError: isItemError,
+    refetch: refetchItem,
+  } = useTopicItem(numTopicId, numItemId);
+  const { mutate: addTopicItem, isPending: isAdding } = useAddTopicItem();
+  const { mutate: updateTopicItem, isPending: isUpdating } = useUpdateTopicItem();
+  const isSubmitting = isAdding || isUpdating;
+  const isFormLoading = isSchemaLoading || (isEditing && isItemLoading);
+  const isFormError = isSchemaError || (isEditing && isItemError);
   const { speak } = useTts();
 
   const {
@@ -55,7 +68,7 @@ export function AddWordScreen() {
     handleAddInstance,
     handleRemoveInstance,
     handleQuickLookup,
-  } = useAddWordForm(topicSchema);
+  } = useAddWordForm(topicSchema, topicItem?.groups, numItemId);
 
   const handleSubmit = () => {
     if (!numTopicId) {
@@ -78,22 +91,30 @@ export function AddWordScreen() {
 
     const payload = buildAddWordPayload(topicSchema, formData);
 
-    addTopicItem(
-      { topicId: numTopicId, data: payload },
-      {
-        onSuccess: () => {
-          showSuccessMessage(translate('learn.add_word.add_success'));
-          router.back();
-        },
-        onError: (err) => {
-          const message
-            = (err.response?.data as any)?.error
-              || (err.response?.data as any)?.message
-              || translate('learn.add_word.add_error');
-          showErrorMessage(message);
-        },
+    const mutationCallbacks = {
+      onSuccess: () => {
+        showSuccessMessage(translate(isEditing
+          ? 'learn.add_word.update_success'
+          : 'learn.add_word.add_success'));
+        router.back();
       },
-    );
+      onError: (err: any) => {
+        const message
+          = (err.response?.data as any)?.error
+            || (err.response?.data as any)?.message
+            || translate(isEditing
+              ? 'learn.add_word.update_error'
+              : 'learn.add_word.add_error');
+        showErrorMessage(message);
+      },
+    };
+
+    if (isEditing && numItemId !== undefined) {
+      updateTopicItem({ topicId: numTopicId, itemId: numItemId, data: payload }, mutationCallbacks);
+    }
+    else {
+      addTopicItem({ topicId: numTopicId, data: payload }, mutationCallbacks);
+    }
   };
 
   const sortedGroups = React.useMemo(() => {
@@ -110,7 +131,7 @@ export function AddWordScreen() {
 
         <View className="flex-1 items-center px-2">
           <Text className="text-center font-nunito text-lg font-black text-mascot-navy dark:text-white">
-            {translate('learn.add_word.title')}
+            {translate(isEditing ? 'learn.add_word.edit_title' : 'learn.add_word.title')}
           </Text>
           {topicName ? (
             <Text
@@ -136,23 +157,33 @@ export function AddWordScreen() {
           showsVerticalScrollIndicator={false}
           refreshControl={(
             <RefreshControl
-              refreshing={isSchemaLoading}
-              onRefresh={refetchSchema}
+              refreshing={isFormLoading}
+              onRefresh={() => {
+                refetchSchema();
+                if (isEditing) {
+                  refetchItem();
+                }
+              }}
               colors={['#0284C7']}
             />
           )}
         >
 
-          {isSchemaLoading && <AddWordSkeleton />}
+          {isFormLoading && <AddWordSkeleton />}
 
-          {isSchemaError && (
+          {isFormError && (
             <View className="items-center justify-center py-12">
               <AlertTriangleIcon width={40} height={40} color="#EF4444" />
               <Text className="mt-3 font-nunito text-base font-bold text-red-600">
                 {translate('learn.add_word.schema_error')}
               </Text>
               <Pressable
-                onPress={() => refetchSchema()}
+                onPress={() => {
+                  refetchSchema();
+                  if (isEditing) {
+                    refetchItem();
+                  }
+                }}
                 className="mt-4 rounded-xl bg-primary-600 px-4 py-2"
               >
                 <Text className="font-nunito text-sm font-bold text-white">
@@ -162,7 +193,7 @@ export function AddWordScreen() {
             </View>
           )}
 
-          {!isSchemaLoading && !isSchemaError && (
+          {!isFormLoading && !isFormError && (
             <View>
               {sortedGroups.map((group) => {
                 if (!group.multiple) {
@@ -203,12 +234,14 @@ export function AddWordScreen() {
           )}
         </ScrollView>
 
-        {!isSchemaLoading && !isSchemaError && (
+        {!isFormLoading && !isFormError && (
           <View className="border-t border-neutral-100 bg-white px-4 pt-3 pb-4 dark:border-neutral-800 dark:bg-neutral-900">
             <Button
-              label={translate('learn.add_word.submit_button')}
+              label={translate(isEditing
+                ? 'learn.add_word.update_button'
+                : 'learn.add_word.submit_button')}
               loading={isSubmitting}
-              disabled={isSubmitting || isSchemaLoading}
+              disabled={isSubmitting || isFormLoading}
               onPress={handleSubmit}
             />
           </View>

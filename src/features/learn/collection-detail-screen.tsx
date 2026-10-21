@@ -7,6 +7,7 @@ import {
   CollectionDetailContent,
   CollectionDetailFAB,
   CollectionDetailHeader,
+  TopicItemOptionsBottomSheet,
   TopicItemPreviewModal,
 } from './components/collection-detail';
 import { useCollectionDetail } from './use-collection-detail';
@@ -68,6 +69,13 @@ export function CollectionDetailScreen() {
         hasNext={detail.previewIndex < detail.filteredItems.length - 1}
         onPrev={detail.handlePrevPreview}
         onNext={detail.handleNextPreview}
+      />
+
+      <TopicItemOptionsBottomSheet
+        bottomSheetRef={detail.itemOptionsBottomSheetRef}
+        item={detail.selectedItem}
+        topicId={detail.currentParentId}
+        onEdit={detail.handleEditTopicItem}
       />
     </SafeAreaView>
   );

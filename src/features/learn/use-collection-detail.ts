@@ -5,6 +5,7 @@ import * as React from 'react';
 import { useSchema, useTopicSchema } from '@/features/template-builder/api';
 import { useCollection, useInfiniteCollectionTopics, useInfiniteTopicItems } from './api';
 import { extractTopicItemDisplay } from './components/collection-detail/topic-item-utils';
+import { useTopicItemOptions } from './use-topic-item-options';
 
 export type ParentBreadcrumb = {
   id: number;
@@ -37,6 +38,7 @@ export function useCollectionDetail() {
   const currentParent = parentStack[parentStack.length - 1] ?? null;
   const currentParentId = currentParent ? currentParent.id : null;
   const isInsideTopic = currentParentId !== null;
+  const itemOptions = useTopicItemOptions(currentParentId, currentParent?.name ?? '', id);
 
   // 1. Query Collection Info
   const { data: collectionData } = useCollection(id);
@@ -237,11 +239,7 @@ export function useCollectionDetail() {
     ? (isItemsRefetching || isTopicsRefetching) && !isFetchingNextItems
     : isTopicsRefetching && !isFetchingNextTopics;
 
-  const headerTitle
-    = currentParent?.name
-      || collectionData?.name
-      || paramName
-      || '';
+  const headerTitle = currentParent?.name || collectionData?.name || paramName || '';
   const headerSubtitle
     = currentParent?.translation || collectionData?.translation || paramTranslation;
   const collectionTitle = collectionData?.name || paramName || '';
@@ -310,5 +308,6 @@ export function useCollectionDetail() {
     handleOptionsPress,
     refetchTopics,
     refetchItems,
+    ...itemOptions,
   };
 }

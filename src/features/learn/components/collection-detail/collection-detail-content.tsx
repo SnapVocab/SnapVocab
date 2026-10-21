@@ -128,6 +128,7 @@ export function CollectionDetailContent({ detail }: Props) {
             <TopicItemRow
               item={item}
               onPress={() => detail.handlePreviewItem(item, index)}
+              onLongPress={() => detail.handleTopicItemOptionsPress(item)}
             />
           )}
           ItemSeparatorComponent={() => <View className="h-2.5" />}
