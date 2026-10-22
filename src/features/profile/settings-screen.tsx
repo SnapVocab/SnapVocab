@@ -1,10 +1,11 @@
 import type { ThemePreference, UpdateUserSettings } from './types';
+import type { PushPermission } from '@/features/notifications/push';
 import type { ColorSchemeType } from '@/lib/hooks';
 import type { Language } from '@/lib/i18n/resources';
 import Env from 'env';
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
-import { Alert, ScrollView } from 'react-native';
+import { useEffect, useState } from 'react';
+import { Alert, AppState, Linking, ScrollView } from 'react-native';
 
 import {
   BackButton,
@@ -25,6 +26,7 @@ import {
   TargetIcon,
   ThemeModeIcon,
 } from '@/components/ui/icons';
+import { askPermission, pushToggle, readPermission, registerDevice } from '@/features/notifications/push';
 import { useSelectedTheme } from '@/lib/hooks';
 import { translate, useSelectedLanguage } from '@/lib/i18n';
 import { useLogout, useUpdateSettings, useUserSettings } from './api';
@@ -81,6 +83,38 @@ export function SettingsScreen() {
     );
   };
 
+  // OS permission is per device, pushEnabled per account (§3.9): re-read when coming back from the OS settings.
+  const [permission, setPermission] = useState<PushPermission>('undetermined');
+  useEffect(() => {
+    const read = () => void readPermission().then(setPermission).catch(() => {});
+    read();
+    const subscription = AppState.addEventListener('change', state => state === 'active' && read());
+    return () => subscription.remove();
+  }, []);
+  const push = pushToggle(permission, settings?.pushEnabled ?? true);
+
+  /** Asks the OS only while undetermined; granted ⇒ register this device (A5). */
+  const allowPush = async () => {
+    const next = await askPermission().catch(() => permission);
+    setPermission(next);
+    if (next === 'granted')
+      void registerDevice().catch(() => {});
+    return next === 'granted';
+  };
+
+  const changePush = async (value: boolean) => {
+    if (push.blocked) {
+      void Linking.openSettings(); // the app cannot ask again once denied
+      return;
+    }
+    if (!value) {
+      save({ pushEnabled: false });
+      return;
+    }
+    if (await allowPush())
+      save({ pushEnabled: true });
+  };
+
   const languageLabel = LANGUAGES.find(l => l.value === settings?.uiLanguage)?.label;
   const themeLabel = THEMES.find(t => t.value === settings?.theme)?.label;
   const reminder = formatTimeOfDay(settings?.srsReminderAt);
@@ -117,17 +151,18 @@ export function SettingsScreen() {
             icon={<BellIcon color={iconColor.row.notification} size={ROW_ICON_SIZE} />}
             tx="settings.push"
             toggle={{
-              value: settings?.pushEnabled ?? true,
-              onChange: value => save({ pushEnabled: value }),
+              value: push.on,
+              onChange: value => void changePush(value),
               disabled: !settings,
             }}
+            hint={push.blocked ? translate('settings.push_blocked') : undefined}
             testID="settings-push"
           />
           <SettingsRow
             icon={<ClockRotateIcon color={iconColor.row.reminder} size={ROW_ICON_SIZE} />}
             tx="settings.reminder"
             value={reminder ?? translate('settings.reminder_off')}
-            hint={reminder && settings?.pushEnabled === false ? translate('settings.reminder_inbox_only') : undefined}
+            hint={reminder && settings && !push.on ? translate('settings.reminder_inbox_only') : undefined}
             onPress={() => setSheet('reminder')}
             testID="settings-reminder"
             last
@@ -242,6 +277,7 @@ export function SettingsScreen() {
         onSelect={(value) => {
           save({ srsReminderAt: value });
           setSheet(null);
+          void allowPush(); // contextual permission prompt (§3.9 b)
         }}
         clearTx="settings.turn_off"
         onClear={() => {

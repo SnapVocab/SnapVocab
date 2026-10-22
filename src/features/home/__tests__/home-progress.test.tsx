@@ -30,6 +30,7 @@ jest.mock('@/features/auth/use-auth-store', () => ({
 jest.mock('@/features/profile/api', () => ({
   useMe: () => ({ data: mockUser, isLoading: false, refetch: jest.fn(), isRefetching: false }),
 }));
+jest.mock('@/features/badges', () => ({ useBadges: () => ({ data: undefined }), ProfileBadgeStrip: () => null }));
 jest.mock('@/features/profile/use-icon-colors', () => ({
   useIconColors: () => new Proxy({}, { get: () => new Proxy({}, { get: () => '#000' }) }),
 }));

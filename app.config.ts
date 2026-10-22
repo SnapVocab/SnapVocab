@@ -1,6 +1,7 @@
 import type { ConfigContext, ExpoConfig } from '@expo/config';
 
 import type { AppIconBadgeConfig } from 'app-icon-badge/types';
+import { existsSync } from 'node:fs';
 
 import 'tsx/cjs';
 
@@ -87,6 +88,8 @@ const plugins: ExpoConfig['plugins'] = [
     },
   ],
   ['expo-camera', { cameraPermission: CAMERA_PERMISSION, recordAudioAndroid: false }],
+  // Review reminders (notification.md §3.9); FCM v1 and APNs keys live on EAS, not in the repo.
+  'expo-notifications',
 ];
 
 export default ({ config }: ConfigContext): ExpoConfig => ({
@@ -121,6 +124,10 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       backgroundColor: '#FF6C00',
     },
     package: Env.EXPO_PUBLIC_PACKAGE,
+    // Firebase config for FCM push (notification.md §1.4 DEP-NOTIF-02): an EAS file env var on builds,
+    // or a local ./google-services.json (not committed). Without it the app builds, but gets no push token on Android.
+    googleServicesFile: process.env.GOOGLE_SERVICES_JSON
+      ?? (existsSync('./google-services.json') ? './google-services.json' : undefined),
     softwareKeyboardLayoutMode: 'resize',
     // expo-image-picker's requestCameraPermissionsAsync() checks this at runtime;
     // without it declared, the permission request silently always resolves denied.

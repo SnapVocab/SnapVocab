@@ -8,13 +8,16 @@ import type {
   QuestionCheckDTO,
   QuizHistoryItemDTO,
   QuizLifecycleDTO,
+  QuizMode,
   QuizPlayDTO,
   QuizResultDTO,
+  QuizStatus,
 } from '../types';
 import type { ApiResponse } from '@/features/auth/api';
 import type { TopicDTO } from '@/features/learn/types';
 import type { PaginateResponse } from '@/lib/api/types';
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { syncBadges } from '@/features/badges/api';
 import { useCollections } from '@/features/learn/api';
 import { meKey } from '@/features/profile/api';
 import { invalidateProgress } from '@/features/progress/api';
@@ -187,6 +190,8 @@ export function useCompleteQuiz() {
       // The server is the only source: no optimistic exp bump that could double-count.
       invalidateProgress(queryClient);
       queryClient.invalidateQueries({ queryKey: meKey });
+      // Badges are granted only by sync (badges.md §6.1, §9).
+      void syncBadges(queryClient);
     },
   });
 }
@@ -258,6 +263,9 @@ export function useQuizResult(
 export type GetQuizHistoryParams = {
   page?: number;
   size?: number;
+  /** Server-side filters; omitted = all. */
+  mode?: QuizMode;
+  status?: QuizStatus;
 };
 
 export async function getQuizHistory(
@@ -269,15 +277,17 @@ export async function getQuizHistory(
     params: {
       page: params?.page ?? 0,
       size: params?.size ?? 20,
+      mode: params?.mode,
+      status: params?.status,
     },
   });
   return response.data.data;
 }
 
-export function useInfiniteQuizHistory(size = 20) {
+export function useInfiniteQuizHistory(size = 20, mode?: QuizMode) {
   return useInfiniteQuery({
-    queryKey: [...quizHistoryKey, 'infinite', size],
-    queryFn: ({ pageParam = 0 }) => getQuizHistory({ page: pageParam, size }),
+    queryKey: [...quizHistoryKey, 'infinite', size, mode ?? 'ALL'],
+    queryFn: ({ pageParam = 0 }) => getQuizHistory({ page: pageParam, size, mode }),
     initialPageParam: 0,
     getNextPageParam: (lastPage) => {
       if (!lastPage?.meta)
@@ -296,6 +306,21 @@ export type QuizAvailableTopic = TopicDTO & {
   collectionName: string;
 };
 
+/** Every topic of a collection, page by page (the endpoint is paged). */
+export async function fetchCollectionTopics(collectionId: number): Promise<TopicDTO[]> {
+  const list: TopicDTO[] = [];
+  for (let page = 0, pages = 1; page < pages; page++) {
+    const res = await client<ApiResponse<PaginateResponse<TopicDTO>>>({
+      url: `/api/collections/${collectionId}/topics`,
+      method: 'GET',
+      params: { page, size: 100 },
+    });
+    list.push(...(res.data?.data?.data ?? []));
+    pages = res.data?.data?.meta?.pages ?? 0;
+  }
+  return list;
+}
+
 export function useQuizAvailableTopics() {
   const collectionsQuery = useCollections();
   const collections = collectionsQuery.data ?? [];
@@ -308,14 +333,8 @@ export function useQuizAvailableTopics() {
 
       const topicLists = await Promise.all(
         // A failed collection fails the query: a network error must not read as "no topics".
-        // ponytail: first 100 topics per collection; page through if a collection ever grows past it.
         collections.map(async (col) => {
-          const res = await client<ApiResponse<PaginateResponse<TopicDTO>>>({
-            url: `/api/collections/${col.id}/topics`,
-            method: 'GET',
-            params: { size: 100 },
-          });
-          const list = res.data?.data?.data ?? [];
+          const list = await fetchCollectionTopics(col.id);
           return list.map(t => ({
             ...t,
             collectionName: col.name,

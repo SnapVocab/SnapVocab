@@ -1,4 +1,91 @@
 {
+  "badges": {
+    "collection": "Collection",
+    "collection_a11y": "{{earned}} of {{total}} badges earned",
+    "cta": {
+      "quiz": "Take a quiz ›",
+      "words": "Add new words ›"
+    },
+    "eligible": "Eligible",
+    "empty_catalog": "Badges are being prepared. Check back later.",
+    "error_body": "Check your connection and try again.",
+    "error_title": "Couldn't load badges",
+    "hero": {
+      "complete": "You've completed the whole collection.",
+      "empty_title": "Your first badge is waiting",
+      "new_hint": "Tap a medal below to see it",
+      "new_label": "Just earned",
+      "new_many": "{{count}} new badges",
+      "position": "Milestone {{index}}/{{count}} · {{series}}",
+      "target": "{{name}} · {{remaining}} {{unit}} to go"
+    },
+    "metric": {
+      "other": {
+        "title": "Other achievements"
+      },
+      "perfect": {
+        "note": "Repeating a topic still counts.",
+        "title": "Perfect scores",
+        "unit": "times"
+      },
+      "quiz": {
+        "title": "Quizzes completed",
+        "unit": "quizzes"
+      },
+      "streak": {
+        "note": "Counts your longest streak, so losing a streak never loses this progress.",
+        "title": "Study streak",
+        "unit": "days"
+      },
+      "words": {
+        "note": "Only words added after badges launched count; each word counts once.",
+        "title": "Words you added",
+        "unit": "words"
+      }
+    },
+    "modal": {
+      "a11y": "New badge: {{name}}. {{description}}",
+      "final_body": "You've completed {{series}}.",
+      "later": "Later",
+      "many_title": "You have {{count}} new badges",
+      "more": "+{{count}} more badges",
+      "pill": "New badge",
+      "pill_final": "Series complete",
+      "view": "View collection"
+    },
+    "new_pill": "New",
+    "profile": {
+      "count": "{{earned}}/{{total}} badges",
+      "has_new": "new badges",
+      "see_all": "See all ›",
+      "strip_a11y": "Recent badges, see all"
+    },
+    "quiz_row": {
+      "hint": "Tap to view",
+      "many": "{{count}} new badges",
+      "one": "New badge: {{name}}",
+      "view": "View ›"
+    },
+    "recording": "Recording…",
+    "recording_banner": "Recording your new badges…",
+    "retry": "Try again",
+    "series_done": "Completed",
+    "series_progress": "{{earned}}/{{total}} earned",
+    "sheet": {
+      "close": "Close",
+      "earned_on": "Earned on {{date}}",
+      "eligible": "Requirement met",
+      "not_started": "Not started yet",
+      "remaining": "{{remaining}} {{unit}} to go"
+    },
+    "slot": {
+      "earned": "{{name}}. Earned on {{date}}. Milestone {{index}} of {{count}} in {{series}}",
+      "locked": "{{name}}. Not earned, {{current}} of {{threshold}} {{unit}}. Milestone {{index}} of {{count}} in {{series}}",
+      "recording": "{{name}}. Recording. Milestone {{index}} of {{count}} in {{series}}"
+    },
+    "stale_banner": "Showing saved data.",
+    "title": "Achievements"
+  },
   "card_renderer": {
     "back": "Answer",
     "card": "VOCABULARY CARD",
@@ -333,6 +420,7 @@
     "bell_a11y": "Notifications",
     "bell_unread_a11y": "Notifications, {{count}} unread",
     "cached_error": "Showing saved notifications.",
+    "channel_name": "Review reminders",
     "collapse": "Show less",
     "empty_desc": "Review reminders and news from SnapVocab will show up here.",
     "empty_reminder_cta": "Set reminder",
@@ -629,6 +717,7 @@
     "logout_confirm_title": "Log out?",
     "notifications": "Notifications",
     "push": "Push notifications",
+    "push_blocked": "Blocked in your phone settings. Tap to open.",
     "reminder": "Review reminder",
     "reminder_inbox_only": "Shown in the in-app inbox only",
     "reminder_off": "Off",

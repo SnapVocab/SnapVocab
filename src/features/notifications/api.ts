@@ -5,7 +5,7 @@ import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tansta
 import { client } from '@/lib/api';
 
 /** notification.md §4.3. An unknown future type renders like SYSTEM. */
-export type NotificationType = 'SRS_REMINDER' | 'SYSTEM';
+export type NotificationType = 'SRS_REMINDER' | 'SYSTEM' | 'STREAK_WARNING';
 
 export type NotificationItem = {
   /** user_notifications id: the one A3 takes and the cursor pages by. */

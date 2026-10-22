@@ -5,7 +5,7 @@ import { act, renderHook, waitFor } from '@testing-library/react-native';
 import * as React from 'react';
 import { client } from '@/lib/api';
 import { notificationKeys, reloadFirstPage, useMarkAllRead, useMarkRead, useNotifications } from '../api';
-import { groupByDay, relativeTime, routeLabel } from '../display';
+import { groupByDay, isReminder, relativeTime, routeLabel } from '../display';
 
 jest.mock('@/lib/api', () => ({ client: jest.fn() }));
 jest.mock('@/lib/i18n', () => ({
@@ -93,6 +93,12 @@ describe('notification display rules (§3.5, §2.3)', () => {
     expect(routeLabel('/admin')).toBeNull();
     expect(routeLabel('constructor')).toBeNull();
     expect(routeLabel(null)).toBeNull();
+  });
+
+  it('review and streak reminders open their screen, messages expand (UI-NOTIF-03)', () => {
+    expect(isReminder('SRS_REMINDER')).toBe(true);
+    expect(isReminder('STREAK_WARNING')).toBe(true);
+    expect(isReminder('SYSTEM')).toBe(false);
   });
 });
 

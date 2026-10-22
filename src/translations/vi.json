@@ -1,4 +1,91 @@
 {
+  "badges": {
+    "collection": "Bộ sưu tập",
+    "collection_a11y": "Đã đạt {{earned}} trên {{total}} huy hiệu",
+    "cta": {
+      "quiz": "Làm một bài quiz ›",
+      "words": "Thêm từ mới ›"
+    },
+    "eligible": "Đủ điều kiện",
+    "empty_catalog": "Huy hiệu đang được chuẩn bị. Quay lại sau nhé.",
+    "error_body": "Kiểm tra mạng rồi thử lại nhé.",
+    "error_title": "Không tải được huy hiệu",
+    "hero": {
+      "complete": "Bạn đã hoàn thành cả bộ sưu tập.",
+      "empty_title": "Huy hiệu đầu tiên đang chờ bạn",
+      "new_hint": "Chạm vào từng huy chương bên dưới để xem",
+      "new_label": "Vừa đạt",
+      "new_many": "{{count}} huy hiệu mới",
+      "position": "Mốc {{index}}/{{count}} · {{series}}",
+      "target": "{{name}} · còn {{remaining}} {{unit}}"
+    },
+    "metric": {
+      "other": {
+        "title": "Thành tựu khác"
+      },
+      "perfect": {
+        "note": "Quiz cùng chủ đề vẫn được tính.",
+        "title": "Điểm tuyệt đối",
+        "unit": "lần"
+      },
+      "quiz": {
+        "title": "Quiz hoàn thành",
+        "unit": "quiz"
+      },
+      "streak": {
+        "note": "Tính theo chuỗi dài nhất của bạn, nên mất chuỗi không làm mất tiến độ này.",
+        "title": "Chuỗi ngày học",
+        "unit": "ngày"
+      },
+      "words": {
+        "note": "Chỉ tính các từ thêm sau ngày ra mắt huy hiệu; mỗi từ tính một lần.",
+        "title": "Vốn từ tự xây",
+        "unit": "từ"
+      }
+    },
+    "modal": {
+      "a11y": "Huy hiệu mới: {{name}}. {{description}}",
+      "final_body": "Bạn đã hoàn thành {{series}}.",
+      "later": "Để sau",
+      "many_title": "Bạn có {{count}} huy hiệu mới",
+      "more": "+{{count}} huy hiệu khác",
+      "pill": "Huy hiệu mới",
+      "pill_final": "Hoàn thành chuỗi",
+      "view": "Xem bộ sưu tập"
+    },
+    "new_pill": "Mới",
+    "profile": {
+      "count": "{{earned}}/{{total}} huy hiệu",
+      "has_new": "có huy hiệu mới",
+      "see_all": "Xem tất cả ›",
+      "strip_a11y": "Huy hiệu gần đây, xem tất cả"
+    },
+    "quiz_row": {
+      "hint": "Chạm để xem",
+      "many": "{{count}} huy hiệu mới",
+      "one": "Huy hiệu mới: {{name}}",
+      "view": "Xem ›"
+    },
+    "recording": "Đang ghi nhận…",
+    "recording_banner": "Đang ghi nhận huy hiệu mới…",
+    "retry": "Thử lại",
+    "series_done": "Hoàn thành",
+    "series_progress": "{{earned}}/{{total}} đã đạt",
+    "sheet": {
+      "close": "Đóng",
+      "earned_on": "Đạt ngày {{date}}",
+      "eligible": "Đã đủ điều kiện",
+      "not_started": "Chưa bắt đầu",
+      "remaining": "Còn {{remaining}} {{unit}}"
+    },
+    "slot": {
+      "earned": "{{name}}. Đã đạt ngày {{date}}. Mốc {{index}} trên {{count}} của {{series}}",
+      "locked": "{{name}}. Chưa đạt, {{current}} trên {{threshold}} {{unit}}. Mốc {{index}} trên {{count}} của {{series}}",
+      "recording": "{{name}}. Đang ghi nhận. Mốc {{index}} trên {{count}} của {{series}}"
+    },
+    "stale_banner": "Đang hiển thị dữ liệu đã lưu.",
+    "title": "Thành tựu"
+  },
   "card_renderer": {
     "back": "Mặt sau",
     "card": "THẺ TỪ VỰNG",
@@ -333,6 +420,7 @@
     "bell_a11y": "Thông báo",
     "bell_unread_a11y": "Thông báo, {{count}} chưa đọc",
     "cached_error": "Đang hiển thị thông báo đã lưu.",
+    "channel_name": "Nhắc ôn tập",
     "collapse": "Thu gọn",
     "empty_desc": "Lời nhắc ôn tập và tin từ SnapVocab sẽ hiện ở đây.",
     "empty_reminder_cta": "Đặt giờ nhắc",
@@ -629,6 +717,7 @@
     "logout_confirm_title": "Đăng xuất?",
     "notifications": "Thông báo",
     "push": "Thông báo đẩy",
+    "push_blocked": "Đang bị chặn trong Cài đặt của điện thoại. Chạm để mở.",
     "reminder": "Nhắc ôn tập",
     "reminder_inbox_only": "Chỉ hiện trong hộp thông báo của ứng dụng",
     "reminder_off": "Tắt",

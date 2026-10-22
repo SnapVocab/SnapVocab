@@ -26,6 +26,7 @@ import {
   WalletIcon,
 } from '@/components/ui/icons';
 import { useAuthStore } from '@/features/auth/use-auth-store';
+import { ProfileBadgeStrip, useBadges } from '@/features/badges';
 import { useStreak } from '@/features/progress/api';
 import { ShopSurface } from '@/features/shop/theme/theme-context';
 import { isBoosterLive } from '@/features/shop/utils/booster-timer';
@@ -58,6 +59,9 @@ function ProfileScreenContent() {
   // copy shows them at app start. Device clock for the ×2 badge; Kho đồ's countdown uses server time.
   const frameUrl = user?.equipped?.avatarFrameUrl;
   const boosterLive = isBoosterLive(user?.activeBooster, 0);
+  const badges = useBadges().data;
+  const openAchievements = (badgeId?: number) =>
+    router.push((badgeId ? `/profile/achievements?open=${badgeId}` : '/profile/achievements') as Href);
 
   if (!user) {
     return (
@@ -112,7 +116,9 @@ function ProfileScreenContent() {
         contentContainerStyle={{ padding: 16, paddingBottom: 150 }}
         showsVerticalScrollIndicator={false}
       >
-        <IdentityCard user={user} frameUrl={frameUrl} />
+        <IdentityCard user={user} frameUrl={frameUrl}>
+          <ProfileBadgeStrip view={badges} onPress={openAchievements} />
+        </IdentityCard>
 
         <View className="mt-4 flex-row gap-3">
           <StatTile
@@ -135,14 +141,17 @@ function ProfileScreenContent() {
           />
         </View>
 
-        {/* Wallet and inventory are live; achievements still show what is coming. */}
+        {/* Achievements, wallet and inventory are live. */}
         <View style={t && { backgroundColor: t.surface, borderColor: t.border }} className="mt-5 overflow-hidden rounded-3xl border border-neutral-200/80 bg-white shadow-sm shadow-black/5 dark:border-neutral-800 dark:bg-neutral-900">
           <ComingSoonRow
             icon={<TrophyIcon color={iconColor.stat.trophy} width={20} height={20} />}
             tint="bg-reward-50 border-reward-100 dark:bg-reward-500/15 dark:border-reward-500/30"
             tx="profile.menu.achievements"
             hintTx="profile.menu_hints.achievements"
+            hint={badges ? translate('badges.profile.count', { earned: badges.earnedCount, total: badges.totalCount }) : undefined}
+            dot={(badges?.unseenCount ?? 0) > 0}
             chevron={iconColor.muted}
+            onPress={() => openAchievements()}
           />
           <ComingSoonRow
             icon={<WalletIcon color={iconColor.stat.coin} width={20} height={20} />}
@@ -197,7 +206,7 @@ function HeaderButton({
   );
 }
 
-function IdentityCard({ user, frameUrl }: { user: User; frameUrl?: string | null }) {
+function IdentityCard({ user, frameUrl, children }: { user: User; frameUrl?: string | null; children?: ReactNode }) {
   const name = fullName(user);
   const joined = formatDate(user.createdAt);
   const t = useSurfaceOverride();
@@ -241,6 +250,7 @@ function IdentityCard({ user, frameUrl }: { user: User; frameUrl?: string | null
       {!!user.bio && (
         <Text className="text-center text-sm text-neutral-600 dark:text-neutral-300">{user.bio}</Text>
       )}
+      {children}
     </View>
   );
 }
@@ -279,6 +289,8 @@ function ComingSoonRow({
   chevron,
   last,
   onPress,
+  hint,
+  dot,
 }: {
   icon: ReactNode;
   tint: string;
@@ -288,11 +300,16 @@ function ComingSoonRow({
   last?: boolean;
   /** Present = the screen exists: row navigates and drops the "coming soon" badge. */
   onPress?: () => void;
+  /** Live summary replacing the static hint, e.g. "4/12 huy hiệu". */
+  hint?: string;
+  /** Unseen-badge dot on the icon tile (badges.md §2.3). */
+  dot?: boolean;
 }) {
   const t = useSurfaceOverride();
   return (
     <Pressable
       accessibilityRole={onPress ? 'button' : undefined}
+      accessibilityLabel={[translate(tx), hint ?? translate(hintTx), dot ? translate('badges.profile.has_new') : null].filter(Boolean).join(', ')}
       onPress={onPress}
       disabled={!onPress}
       style={t && { borderColor: t.border }}
@@ -300,10 +317,13 @@ function ComingSoonRow({
     >
       <View className={`mr-3.5 size-10 items-center justify-center rounded-xl border ${tint}`}>
         {icon}
+        {dot && <View className="absolute -top-1 -right-1 size-[11px] rounded-full border-2 border-white bg-danger-500 dark:border-neutral-900" />}
       </View>
       <View className="flex-1">
         <Text className={`text-[15px] font-bold ${onPress ? 'text-mascot-navy' : 'text-neutral-600'} dark:text-neutral-200`} tx={tx} />
-        <Text className="text-[13px] font-medium text-neutral-400" tx={hintTx} />
+        {hint
+          ? <Text className="text-[14px] font-medium text-neutral-500 dark:text-neutral-400">{hint}</Text>
+          : <Text className="text-[13px] font-medium text-neutral-400" tx={hintTx} />}
       </View>
       {!onPress && (
         <View style={t && { backgroundColor: t.surfaceMuted }} className="mr-1 rounded-full bg-neutral-100 px-2 py-0.5 dark:bg-neutral-800">

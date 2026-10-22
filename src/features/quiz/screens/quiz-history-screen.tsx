@@ -3,7 +3,7 @@ import type { QuizHistorySummaryResponse, QuizMode } from '../types';
 import type { HistoryFilterMode } from '../utils';
 import { useRouter } from 'expo-router';
 import * as React from 'react';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   FlatList,
@@ -26,7 +26,6 @@ import {
 import { Snapy } from '@/components/ui/snapy';
 import { useInfiniteQuizHistory } from '../api/quiz-api';
 import {
-  filterQuizHistoryItems,
   formatQuizAccuracy,
   formatQuizSubmittedDate,
   quizHistoryAction,
@@ -52,27 +51,13 @@ export function QuizHistoryScreen() {
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
-  } = useInfiniteQuizHistory(20);
+  } = useInfiniteQuizHistory(20, selectedFilter === 'ALL' ? undefined : selectedFilter);
 
   const allItems = useMemo<QuizHistorySummaryResponse[]>(() => {
     if (!data?.pages)
       return [];
     return data.pages.flatMap(page => page.data || []);
   }, [data]);
-
-  const filteredItems = useMemo(() => {
-    return filterQuizHistoryItems(allItems, selectedFilter);
-  }, [allItems, selectedFilter]);
-
-  // The filter runs on loaded pages only: an empty list has nothing to scroll, so onEndReached never
-  // fires. Keep loading until a match shows up or the server has no more pages.
-  // ponytail: may page through the whole history for a rare mode; add a `mode` param to
-  // GET /api/me/quizzes if histories get long.
-  const searchingMore = filteredItems.length === 0 && !!hasNextPage;
-  useEffect(() => {
-    if (searchingMore && !isFetchingNextPage)
-      void fetchNextPage();
-  }, [searchingMore, isFetchingNextPage, fetchNextPage]);
 
   const handleCardPress = (item: QuizHistorySummaryResponse) => {
     const action = quizHistoryAction(item.status);
@@ -354,7 +339,7 @@ export function QuizHistoryScreen() {
             )
           : (
               <FlatList
-                data={filteredItems}
+                data={allItems}
                 keyExtractor={item => String(item.quizId)}
                 renderItem={renderHistoryCard}
                 contentContainerStyle={{ padding: 16, paddingBottom: 60 }}
@@ -381,33 +366,27 @@ export function QuizHistoryScreen() {
                       )
                     : null
                 }
-                ListEmptyComponent={searchingMore
-                  ? (
-                      <View className="items-center py-16">
-                        <ActivityIndicator size="small" color="#0EA5E9" />
-                      </View>
-                    )
-                  : (
-                      <View className="items-center justify-center py-16">
-                        <Snapy pose="suy_nghi" animation="idle" style={{ width: 110, height: 110 }} />
-                        <Text className="mt-4 font-nunito text-[18px] font-extrabold text-mascot-navy dark:text-white">
-                          {selectedFilter === 'ALL'
-                            ? 'Chưa có bài Quiz nào'
-                            : `Chưa có bài ${FILTER_TABS.find(t => t.key === selectedFilter)?.label} nào`}
-                        </Text>
-                        <Text className="mt-1 px-6 text-center font-inter text-[14px] text-neutral-400">
-                          Hãy bắt đầu một bài Quiz để kiểm tra vốn từ vựng của bạn!
-                        </Text>
-                        <TouchableOpacity
-                          onPress={() => router.push('/(app)/study/quiz-setup' as any)}
-                          className="mt-6 rounded-2xl bg-primary-500 px-6 py-3.5"
-                        >
-                          <Text className="font-nunito text-[15px] font-extrabold text-white uppercase">
-                            Bắt đầu Quiz ngay
-                          </Text>
-                        </TouchableOpacity>
-                      </View>
-                    )}
+                ListEmptyComponent={(
+                  <View className="items-center justify-center py-16">
+                    <Snapy pose="suy_nghi" animation="idle" style={{ width: 110, height: 110 }} />
+                    <Text className="mt-4 font-nunito text-[18px] font-extrabold text-mascot-navy dark:text-white">
+                      {selectedFilter === 'ALL'
+                        ? 'Chưa có bài Quiz nào'
+                        : `Chưa có bài ${FILTER_TABS.find(t => t.key === selectedFilter)?.label} nào`}
+                    </Text>
+                    <Text className="mt-1 px-6 text-center font-inter text-[14px] text-neutral-400">
+                      Hãy bắt đầu một bài Quiz để kiểm tra vốn từ vựng của bạn!
+                    </Text>
+                    <TouchableOpacity
+                      onPress={() => router.push('/(app)/study/quiz-setup' as any)}
+                      className="mt-6 rounded-2xl bg-primary-500 px-6 py-3.5"
+                    >
+                      <Text className="font-nunito text-[15px] font-extrabold text-white uppercase">
+                        Bắt đầu Quiz ngay
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                )}
               />
             )}
     </SafeAreaView>

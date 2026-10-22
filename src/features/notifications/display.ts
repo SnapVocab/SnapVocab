@@ -1,4 +1,4 @@
-import type { NotificationItem } from './api';
+import type { NotificationItem, NotificationType } from './api';
 import type { TxKeyPath } from '@/lib/i18n';
 import { formatDate } from '@/features/profile/display';
 import { translate } from '@/lib/i18n';
@@ -11,6 +11,11 @@ const ROUTE_LABELS = new Map<string, TxKeyPath>([
   ['/stats', 'notifications.open_stats'],
   ['/settings', 'notifications.open_settings'],
 ]);
+
+/** UI-NOTIF-03: a reminder (review or streak) opens its screen on tap; anything else expands in place. */
+export function isReminder(type: NotificationType): boolean {
+  return type === 'SRS_REMINDER' || type === 'STREAK_WARNING';
+}
 
 /** Null when the route is missing or not whitelisted: the row then never navigates. */
 export function routeLabel(route: string | null): TxKeyPath | null {

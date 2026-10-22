@@ -28,3 +28,6 @@ expo-env.d.ts
 
 .agent/
 .agents/
+# Firebase config for FCM push: keep out of git (EAS file env var GOOGLE_SERVICES_JSON on builds)
+google-services.json
+GoogleService-Info.plist

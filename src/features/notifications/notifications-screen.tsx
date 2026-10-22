@@ -14,7 +14,7 @@ import {
   Text,
   useColorMode,
 } from '@/components/ui';
-import { BellIcon, ClockRotateIcon } from '@/components/ui/icons';
+import { BellIcon, ClockRotateIcon, FlameIcon } from '@/components/ui/icons';
 import { useUserSettings } from '@/features/profile/api';
 import { SectionError, SRS_ENABLED } from '@/features/progress';
 import { translate } from '@/lib/i18n';
@@ -26,7 +26,7 @@ import {
   useNotifications,
   useUnreadCount,
 } from './api';
-import { groupByDay, relativeTime, routeLabel } from './display';
+import { groupByDay, isReminder, relativeTime, routeLabel } from './display';
 
 /** MH-PROFILE-04 (notification.md §3, notification_ui.md §H.2). */
 export function NotificationsScreen() {
@@ -61,7 +61,7 @@ export function NotificationsScreen() {
       });
     }
     // UI-NOTIF-03: a reminder goes straight to its screen (no waiting for A3); a message expands in place.
-    if (item.type === 'SRS_REMINDER' && routeLabel(item.route)) {
+    if (isReminder(item.type) && routeLabel(item.route)) {
       router.push(item.route as Href);
       return;
     }
@@ -173,10 +173,9 @@ type RowProps = {
 function NotificationRow({ item, first, last, expanded, onPress, onOpenRoute }: RowProps) {
   const isDark = useColorMode() === 'dark';
   const [truncated, setTruncated] = React.useState(false);
-  const isReminder = item.type === 'SRS_REMINDER';
   const routeTx = routeLabel(item.route);
-  const navigates = isReminder && !!routeTx;
-  const Icon = isReminder ? ClockRotateIcon : BellIcon;
+  const navigates = isReminder(item.type) && !!routeTx;
+  const Icon = item.type === 'STREAK_WARNING' ? FlameIcon : item.type === 'SRS_REMINDER' ? ClockRotateIcon : BellIcon;
   const time = relativeTime(item.createdAt);
   const label = [!item.isRead && translate('notifications.unread_a11y'), item.title, item.content, time]
     .filter(Boolean)

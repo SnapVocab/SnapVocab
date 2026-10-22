@@ -22,6 +22,7 @@ import {
 } from '@/components/ui/icons';
 import { RewardIcon } from '@/components/ui/rewards/reward-icon';
 import { Snapy } from '@/components/ui/snapy';
+import { QuizResultBadgeRow } from '@/features/badges';
 import { useQuizResult } from '../api/quiz-api';
 import { formatQuizAccuracy, formatQuizDuration } from '../utils';
 
@@ -280,6 +281,7 @@ export function QuizResultScreen() {
               Coin được nhận qua nhiệm vụ hằng ngày.
             </Text>
           </View>
+          <QuizResultBadgeRow />
         </Animated.View>
 
         <Animated.View style={{ opacity: fadeAnim }}>
