@@ -12,12 +12,14 @@ type Props = {
   value?: string;
   /** Present for a toggle row; the row then has no chevron and no onPress. */
   toggle?: { value: boolean; onChange: (value: boolean) => void; disabled?: boolean };
+  /** Second line under the label explaining the current state, e.g. why a reminder will not push. */
+  hint?: string;
   onPress?: () => void;
   last?: boolean;
   testID?: string;
 };
 
-export function SettingsRow({ icon, tx, value, toggle, onPress, last, testID }: Props) {
+export function SettingsRow({ icon, tx, value, toggle, hint, onPress, last, testID }: Props) {
   const iconColor = useIconColors();
 
   return (
@@ -28,7 +30,10 @@ export function SettingsRow({ icon, tx, value, toggle, onPress, last, testID }: 
       className={`flex-row items-center p-4 ${last ? '' : 'border-b border-neutral-50 dark:border-neutral-800'}`}
     >
       <View className="mr-3 w-8 items-center justify-center">{icon}</View>
-      <Text className="flex-1 text-base font-bold text-mascot-navy dark:text-white" tx={tx} />
+      <View className="flex-1">
+        <Text className="text-base font-bold text-mascot-navy dark:text-white" tx={tx} />
+        {!!hint && <Text className="mt-0.5 font-inter text-sm text-neutral-500 dark:text-neutral-300">{hint}</Text>}
+      </View>
 
       <View className="flex-row items-center gap-2">
         {value !== undefined && (

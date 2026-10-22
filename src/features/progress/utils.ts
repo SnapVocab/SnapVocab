@@ -1,12 +1,10 @@
 import type { ProgressSummaryDTO } from './types';
 
 /**
- * The backend has no SRS lifecycle yet: nothing creates or updates `fsrs_records`, so
- * learned/reviewing/mastered/due/review counts are structurally 0. While false, the UI hides
- * those metrics instead of presenting the zeros as real learning state.
- * ponytail: compile-time flag; flip it when FSRS enrollment + review ship.
+ * SRS metrics (learned/reviewing/mastered/due) are real: study reviews write `fsrs_records`, and `dueCount`
+ * compares in UTC since TD-NOTIF-01 (learn_ui.md DEP-LEARN-04). False hides them, for a build without SRS.
  */
-export const SRS_ENABLED = false;
+export const SRS_ENABLED = true;
 
 /** Non-overlapping split (mastered ⊂ learned): new + learning/reviewing + mastered = total. */
 export function deriveVocabularySegments(

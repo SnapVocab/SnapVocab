@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { generateIdempotencyKey } from '@/features/quiz/utils/idempotency';
 import { translate } from '@/lib/i18n';
 import { isOutcomeUnknown, parseShopError } from '../api';
+import { isStackable } from '../types';
 import {
   useEquipMutation,
   usePurchaseMutation,
@@ -72,7 +73,7 @@ export function useShopActions({
       return;
     }
 
-    if (item.type === 'XP_BOOSTER' && item.blockReason === 'MAX_QUANTITY_REACHED') {
+    if (isStackable(item.type) && item.blockReason === 'MAX_QUANTITY_REACHED') {
       return;
     }
 

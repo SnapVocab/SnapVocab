@@ -12,6 +12,7 @@ import {
   Pressable,
   SafeAreaView,
   Text,
+  useSurfaceOverride,
   View,
 } from '@/components/ui';
 import {
@@ -26,17 +27,28 @@ import {
 } from '@/components/ui/icons';
 import { useAuthStore } from '@/features/auth/use-auth-store';
 import { useStreak } from '@/features/progress/api';
+import { ShopSurface } from '@/features/shop/theme/theme-context';
 import { isBoosterLive } from '@/features/shop/utils/booster-timer';
 import { translate } from '@/lib/i18n';
 import { useMe } from './api';
 import { formatDate, fullName, initials } from './display';
 import { useIconColors } from './use-icon-colors';
 
-/** MH-PROFILE-01. Achievements, inventory and wallet wait for the gamification work. */
+/** MH-PROFILE-01. Themed screen (shop.md §6.4): an equipped theme re-skins its surfaces. */
 export function ProfileScreen() {
+  return (
+    <ShopSurface>
+      <ProfileScreenContent />
+    </ShopSurface>
+  );
+}
+
+function ProfileScreenContent() {
   const router = useRouter();
   const stored = useAuthStore(s => s.user);
   const iconColor = useIconColors();
+  const t = useSurfaceOverride();
+  const screenStyle = [{ flex: 1 }, t && { backgroundColor: t.background }];
   const { data, isLoading, refetch, isRefetching } = useMe();
   // Live streak from Progress; users.streakDays is stored and not reset after a missed day.
   const streak = useStreak();
@@ -49,7 +61,7 @@ export function ProfileScreen() {
 
   if (!user) {
     return (
-      <SafeAreaView style={{ flex: 1 }} className="flex-1 bg-background" edges={['top']}>
+      <SafeAreaView style={screenStyle} className="flex-1 bg-background" edges={['top']}>
         <FocusAwareStatusBar />
         <View style={{ flex: 1 }} className="flex-1 items-center justify-center px-8">
           <Mascot pose="sad" className="mb-4 size-32" />
@@ -69,10 +81,10 @@ export function ProfileScreen() {
   }
 
   return (
-    <SafeAreaView style={{ flex: 1 }} className="flex-1 bg-background" edges={['top']}>
+    <SafeAreaView style={screenStyle} className="flex-1 bg-background" edges={['top']}>
       <FocusAwareStatusBar />
 
-      <View className="z-10 flex-row items-center justify-between border-b border-neutral-100 bg-white px-5 py-3.5 dark:border-neutral-800 dark:bg-neutral-900">
+      <View style={t && { backgroundColor: t.headerBg, borderColor: t.border }} className="z-10 flex-row items-center justify-between border-b border-neutral-100 bg-white px-5 py-3.5 dark:border-neutral-800 dark:bg-neutral-900">
         <Text
           className="font-nunito text-xl font-extrabold tracking-tight text-mascot-navy dark:text-white"
           tx="profile.title"
@@ -124,7 +136,7 @@ export function ProfileScreen() {
         </View>
 
         {/* Wallet and inventory are live; achievements still show what is coming. */}
-        <View className="mt-5 overflow-hidden rounded-3xl border border-neutral-200/80 bg-white shadow-sm shadow-black/5 dark:border-neutral-800 dark:bg-neutral-900">
+        <View style={t && { backgroundColor: t.surface, borderColor: t.border }} className="mt-5 overflow-hidden rounded-3xl border border-neutral-200/80 bg-white shadow-sm shadow-black/5 dark:border-neutral-800 dark:bg-neutral-900">
           <ComingSoonRow
             icon={<TrophyIcon color={iconColor.stat.trophy} width={20} height={20} />}
             tint="bg-reward-50 border-reward-100 dark:bg-reward-500/15 dark:border-reward-500/30"
@@ -171,11 +183,13 @@ function HeaderButton({
   testID: string;
   label: string;
 }) {
+  const t = useSurfaceOverride();
   return (
     <Pressable
       onPress={onPress}
       testID={testID}
       accessibilityLabel={label}
+      style={t && { backgroundColor: t.surfaceMuted, borderColor: t.border }}
       className="size-10 items-center justify-center rounded-full border border-neutral-200/60 bg-neutral-50 active:scale-95 dark:border-neutral-700 dark:bg-neutral-800"
     >
       {children}
@@ -186,9 +200,10 @@ function HeaderButton({
 function IdentityCard({ user, frameUrl }: { user: User; frameUrl?: string | null }) {
   const name = fullName(user);
   const joined = formatDate(user.createdAt);
+  const t = useSurfaceOverride();
 
   return (
-    <View className="items-center rounded-3xl border border-neutral-200/80 bg-white p-5 shadow-sm shadow-black/5 dark:border-neutral-800 dark:bg-neutral-900">
+    <View style={t && { backgroundColor: t.surface, borderColor: t.border }} className="items-center rounded-3xl border border-neutral-200/80 bg-white p-5 shadow-sm shadow-black/5 dark:border-neutral-800 dark:bg-neutral-900">
       {frameUrl ? (
         // Same renderer as the Shop preview, so the bought frame looks the same here.
         <AvatarFrame
@@ -241,8 +256,9 @@ function StatTile({
   value: number | string;
   labelTx: 'profile.streak' | 'profile.xp' | 'profile.coin';
 }) {
+  const t = useSurfaceOverride();
   return (
-    <View className="flex-1 items-center rounded-2xl border border-neutral-200/80 bg-white p-3.5 shadow-sm shadow-black/5 dark:border-neutral-800 dark:bg-neutral-900">
+    <View style={t && { backgroundColor: t.surface, borderColor: t.border }} className="flex-1 items-center rounded-2xl border border-neutral-200/80 bg-white p-3.5 shadow-sm shadow-black/5 dark:border-neutral-800 dark:bg-neutral-900">
       <View className={`mb-2 size-9 items-center justify-center rounded-xl border ${tint}`}>
         {icon}
       </View>
@@ -273,11 +289,13 @@ function ComingSoonRow({
   /** Present = the screen exists: row navigates and drops the "coming soon" badge. */
   onPress?: () => void;
 }) {
+  const t = useSurfaceOverride();
   return (
     <Pressable
       accessibilityRole={onPress ? 'button' : undefined}
       onPress={onPress}
       disabled={!onPress}
+      style={t && { borderColor: t.border }}
       className={`flex-row items-center p-4 active:bg-neutral-50 dark:active:bg-neutral-800 ${last ? '' : 'border-b border-neutral-100 dark:border-neutral-800'}`}
     >
       <View className={`mr-3.5 size-10 items-center justify-center rounded-xl border ${tint}`}>
@@ -288,7 +306,7 @@ function ComingSoonRow({
         <Text className="text-[13px] font-medium text-neutral-400" tx={hintTx} />
       </View>
       {!onPress && (
-        <View className="mr-1 rounded-full bg-neutral-100 px-2 py-0.5 dark:bg-neutral-800">
+        <View style={t && { backgroundColor: t.surfaceMuted }} className="mr-1 rounded-full bg-neutral-100 px-2 py-0.5 dark:bg-neutral-800">
           <Text className="text-[11px] font-bold text-neutral-500 dark:text-neutral-300" tx="profile.coming_soon" />
         </View>
       )}

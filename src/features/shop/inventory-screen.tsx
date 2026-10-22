@@ -31,6 +31,7 @@ import {
   useUnequipMutation,
 } from './hooks/use-shop-queries';
 import { isThemeKnown, ShopSurface } from './theme/theme-context';
+import { isKnownItemType } from './types';
 import { formatRemainingTime, getRemainingBoosterMs } from './utils/booster-timer';
 
 /** Shop-area screen: it and its modals take the equipped theme's surfaces. */
@@ -102,9 +103,12 @@ function InventoryScreenContent() {
     }
   };
 
-  // Hide used-up boosters, except the one currently running (shop.md §11.2).
+  // Hide types this app version cannot run, and used-up boosters except the one currently running (shop.md §11.2).
   const filteredItems = useMemo(() => {
     return items.filter((item) => {
+      if (!isKnownItemType(item.type)) {
+        return false;
+      }
       if (item.type === 'XP_BOOSTER' && item.quantity <= 0 && item.itemId !== activeBooster?.itemId) {
         return false;
       }
@@ -142,6 +146,8 @@ function InventoryScreenContent() {
   // Same shell as the Shop card; Kho đồ only swaps the description and the action.
   const renderItemCard = (item: InventoryItemDTO) => {
     const isBooster = item.type === 'XP_BOOSTER';
+    // Passive: it works on its own when a study day is missed (streak_freeze.md §7), so there is nothing to press.
+    const isFreeze = item.type === 'STREAK_FREEZE';
     const isUnknownTheme = item.type === 'THEME' && !isThemeKnown(item.config?.themeKey);
     const isActionPending =
       (equipMutation.isPending && equipMutation.variables?.itemId === item.itemId)
@@ -151,7 +157,9 @@ function InventoryScreenContent() {
       ? translate('shop.inventory.update_required')
       : isBooster
         ? translate('shop.booster.effect', { multiplier: item.config?.multiplier ?? 2, minutes: item.config?.durationMinutes ?? 30 })
-        : undefined;
+        : isFreeze
+          ? translate('shop.freeze.auto')
+          : undefined;
 
     const preview = () => {
       if (item.type === 'AVATAR_FRAME') {
@@ -168,10 +176,12 @@ function InventoryScreenContent() {
         item={item}
         description={description}
         maxQuantity={item.config?.maxQuantity}
-        onPress={isBooster ? undefined : preview}
+        onPress={isBooster || isFreeze ? undefined : preview}
         onFrameError={onFrameError}
       >
-        {isBooster ? (
+        {isFreeze ? (
+          <CardAction tone="done" label={translate('shop.freeze.ready')} />
+        ) : isBooster ? (
           activeBooster
             ? <CardAction tone="disabled" label={translate(activeBooster.itemId === item.itemId ? 'shop.inventory.running' : 'shop.inventory.wait_booster')} />
             : <CardAction tone="primary" label={translate('shop.actions.activate')} onPress={() => setBoosterItem(item)} />

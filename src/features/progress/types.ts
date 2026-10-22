@@ -15,6 +15,10 @@ export type StreakDTO = {
   currentStreak: number;
   longestStreak: number;
   lastStudiedDate: string | null;
+  /** Streak Freeze units held (streak_freeze.md §6); absent from servers older than 2026-10-21. */
+  freezeCount?: number;
+  /** Last day a Streak Freeze kept the chain. */
+  lastFrozenDate?: string | null;
 };
 
 export type HistoryBucket = {

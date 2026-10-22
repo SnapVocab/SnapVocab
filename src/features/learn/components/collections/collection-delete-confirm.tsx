@@ -1,4 +1,4 @@
-import type { Collection } from '../../types';
+import type { CollectionRef } from '../../types';
 import * as React from 'react';
 import { View } from 'react-native';
 import { Button, showErrorMessage, Text } from '@/components/ui';
@@ -7,7 +7,7 @@ import { translate } from '@/lib/i18n';
 import { useDeleteCollection } from '../../api';
 
 type Props = {
-  collection: Collection;
+  collection: CollectionRef;
   onSuccess: () => void;
   onCancel: () => void;
 };

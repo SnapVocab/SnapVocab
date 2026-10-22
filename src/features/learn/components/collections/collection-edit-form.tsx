@@ -1,4 +1,4 @@
-import type { Collection } from '../../types';
+import type { Collection, CollectionRef } from '../../types';
 import type { CollectionFormValues } from './validation';
 import { BottomSheetTextInput } from '@gorhom/bottom-sheet';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -11,7 +11,7 @@ import { useUpdateCollection } from '../../api';
 import { collectionFormSchema } from './validation';
 
 type Props = {
-  collection: Collection;
+  collection: CollectionRef;
   onSuccess: (updatedCollection: Collection) => void;
   onCancel: () => void;
 };

@@ -1,6 +1,18 @@
 import type { TopicSchemaDTO } from '@/features/template-builder/types';
 import { translate } from '@/lib/i18n';
 
+/** The field a headword goes into: an attribute named "word", else the first required text of the first single group. */
+export function targetWordField(schema?: TopicSchemaDTO): { group: string; attribute: string } | null {
+  const singles = [...(schema?.groups ?? [])].filter(g => !g.multiple).sort((a, b) => a.position - b.position);
+  for (const group of singles) {
+    const attr = group.attributes.find(a => a.name.toLowerCase() === 'word');
+    if (attr)
+      return { group: group.name, attribute: attr.name };
+  }
+  const first = singles[0]?.attributes.filter(a => a.required && a.dataType === 'TEXT').sort((a, b) => a.position - b.position)[0];
+  return first ? { group: singles[0].name, attribute: first.name } : null;
+}
+
 export function initializeFormData(schema?: TopicSchemaDTO): Record<string, any> {
   if (!schema?.groups)
     return {};

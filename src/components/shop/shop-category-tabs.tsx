@@ -8,17 +8,18 @@ import { cn } from '@/lib/utils';
 
 export type ShopCategory = 'all' | ShopItemType;
 
-/** One vocabulary for item types across Shop, Kho đồ and modals. "Giao diện cửa hàng": not "Chủ đề" (= vocabulary topic) nor Settings → Giao diện (light/dark). */
+/** One vocabulary for item types across Shop, Kho đồ and modals. "Bộ màu": not "Chủ đề" (= vocabulary topic) nor Settings → Giao diện (light/dark). */
 const SHOP_TYPE_TX: Record<ShopCategory, TxKeyPath> = {
   all: 'shop.types.all',
   XP_BOOSTER: 'shop.types.xp_booster',
+  STREAK_FREEZE: 'shop.types.streak_freeze',
   AVATAR_FRAME: 'shop.types.avatar_frame',
   THEME: 'shop.types.theme',
 };
 
 export const shopTypeLabel = (type: ShopCategory) => translate(SHOP_TYPE_TX[type]);
 
-const CATEGORIES: ShopCategory[] = ['all', 'XP_BOOSTER', 'AVATAR_FRAME', 'THEME'];
+const CATEGORIES: ShopCategory[] = ['all', 'XP_BOOSTER', 'STREAK_FREEZE', 'AVATAR_FRAME', 'THEME'];
 
 export function ShopCategoryTabs({ value, onChange }: { value: ShopCategory; onChange: (value: ShopCategory) => void }) {
   const s = useSurface();

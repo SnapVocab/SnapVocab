@@ -6,13 +6,14 @@ import { ActivityIndicator, Image, Pressable, Text, View } from 'react-native';
 import { AvatarFrame, Coin3D } from '@/components/snapvocab';
 import { useSurface } from '@/components/ui';
 import { useAuthStore } from '@/features/auth/use-auth-store';
+import { isStackable } from '@/features/shop/types';
 import { translate } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 import { shopTypeLabel } from './shop-category-tabs';
 
 type CardItem = Pick<ShopItemDTO, 'type' | 'code' | 'name' | 'iconUrl' | 'config' | 'quantity' | 'equipped'>;
 
-const ARTWORK_BG = { THEME: 'bg-purple-50', AVATAR_FRAME: 'bg-amber-50', XP_BOOSTER: 'bg-emerald-50' } as const;
+const ARTWORK_BG = { THEME: 'bg-purple-50', AVATAR_FRAME: 'bg-amber-50', XP_BOOSTER: 'bg-emerald-50', STREAK_FREEZE: 'bg-sky-50' } as const;
 
 /** Item artwork: frames on the learner's own avatar (Snapy fallback), otherwise icon or bundled art. */
 export function ItemArtwork({ item, size = 76, onFrameError }: { item: Omit<CardItem, 'quantity' | 'equipped'>; size?: number; onFrameError?: () => void }) {
@@ -77,7 +78,7 @@ export function ItemCard({
             <Text className="font-nunito text-[11px] font-extrabold text-white">{translate('shop.actions.in_use')}</Text>
           </View>
         )}
-        {item.type === 'XP_BOOSTER' && item.quantity > 0 && (
+        {isStackable(item.type) && item.quantity > 0 && (
           <View className="absolute top-2 right-2 z-10 rounded-full bg-mascot-navy px-2 py-0.5">
             <Text className="font-nunito text-[12px] font-extrabold text-white tabular-nums">
               {`×${item.quantity}${maxQuantity ? `/${maxQuantity}` : ''}`}
@@ -187,7 +188,7 @@ export function ShopItemCard({ item, onPress, onPreview, userCoins }: ShopItemCa
         <CardAction tone="done" label={translate('shop.actions.in_use')} />
       ) : isCosmetic && item.owned ? (
         <CardAction tone="primary" label={translate(item.type === 'THEME' ? 'shop.actions.apply' : 'shop.actions.equip')} onPress={() => onPress(item)} />
-      ) : item.type === 'XP_BOOSTER' && item.blockReason === 'MAX_QUANTITY_REACHED' ? (
+      ) : isStackable(item.type) && item.blockReason === 'MAX_QUANTITY_REACHED' ? (
         <CardAction tone="disabled" label={translate('shop.actions.max_reached')} />
       ) : (
         // A theme is bought from its preview sheet (shop.md §11.1): the palette is seen before Coin is spent.

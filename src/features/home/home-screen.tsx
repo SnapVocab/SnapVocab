@@ -1,13 +1,14 @@
 import type { Href } from 'expo-router';
 import type { HomeWidgetDTO } from '@/features/progress/types';
 import { useQueryClient } from '@tanstack/react-query';
-import { useRouter } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
 import * as React from 'react';
 import { Pressable, RefreshControl, ScrollView, View } from 'react-native';
 import { Snapy } from '@/components/Snapy';
-import { FocusAwareStatusBar, SafeAreaView, Text } from '@/components/ui';
+import { FocusAwareStatusBar, SafeAreaView, Text, useSurfaceOverride } from '@/components/ui';
 import { ChevronRightIcon, TargetIcon } from '@/components/ui/icons';
 import { useAuthStore } from '@/features/auth/use-auth-store';
+import { notificationKeys } from '@/features/notifications/api';
 import {
   deriveVocabularySegments,
   invalidateProgress,
@@ -19,8 +20,11 @@ import {
   useStreak,
   useXpOverview,
 } from '@/features/progress';
+import { ShopSurface } from '@/features/shop/theme/theme-context';
+import { invalidateStudy, useStudyToday } from '@/features/study/api';
+import { TodayBlock } from '@/features/study/today-block';
 import { translate } from '@/lib/i18n';
-import { HomeSearchBar, StudyTodayCard } from './components';
+import { HomeSearchBar } from './components';
 
 // Same chunky 3D surface as HomeSearchBar.
 const CARD_3D = 'mb-4 rounded-2xl border-2 border-b-4 border-neutral-200/90 border-b-neutral-300 bg-white dark:border-neutral-700 dark:border-b-neutral-800 dark:bg-neutral-900';
@@ -33,29 +37,47 @@ function greetingKey() {
   return hour < 18 ? 'home.good_afternoon' : 'home.good_evening';
 }
 
+/** Themed screen (shop.md §6.4): an equipped theme re-skins its surfaces; its header is wrapped in the tab layout. */
 export function HomeScreen() {
+  return (
+    <ShopSurface>
+      <HomeScreenContent />
+    </ShopSurface>
+  );
+}
+
+function HomeScreenContent() {
   const router = useRouter();
+  const t = useSurfaceOverride();
+  const card = t && { backgroundColor: t.surface, borderColor: t.border };
   const queryClient = useQueryClient();
   const user = useAuthStore(s => s.user);
   const widget = useHomeWidget();
   // Same query as HomeHeader's flame, so the greeting and the header never disagree.
   const streakQuery = useStreak();
   const xp = useXpOverview();
+  // Same query as the "Hôm nay" block below and on Learn, so Home never states a second number.
+  const today = useStudyToday();
   const [isRefreshing, setIsRefreshing] = React.useState(false);
+
+  // notification.md §3.7: coming back to Home refreshes the bell once its count is past its 60 s staleTime.
+  useFocusEffect(React.useCallback(() => {
+    void queryClient.refetchQueries({ queryKey: notificationKeys.unreadCount, stale: true });
+  }, [queryClient]));
 
   const onRefresh = React.useCallback(async () => {
     setIsRefreshing(true);
-    await invalidateProgress(queryClient);
+    await Promise.all([invalidateProgress(queryClient), invalidateStudy(queryClient)]);
     setIsRefreshing(false);
   }, [queryClient]);
 
   const displayName = user?.firstName || user?.email?.split('@')[0] || 'bạn';
   // Undefined while loading or on error: the greeting then stays neutral instead of claiming a 0.
   const streak = streakQuery.data?.currentStreak;
-  const dueCount = SRS_ENABLED ? widget.data?.dueCount : undefined;
+  const dueCount = today.data?.dueCount;
 
   return (
-    <SafeAreaView edges={['bottom', 'left', 'right']} style={{ flex: 1 }} className="flex-1 bg-background">
+    <SafeAreaView edges={['bottom', 'left', 'right']} style={[{ flex: 1 }, t && { backgroundColor: t.background }]} className="flex-1 bg-background">
       <FocusAwareStatusBar />
       <ScrollView
         className="flex-1 px-4 pt-4"
@@ -64,7 +86,7 @@ export function HomeScreen() {
         refreshControl={<RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} tintColor="#58CC02" />}
       >
         {/* Greeting & mascot */}
-        <View className={`${CARD_3D} flex-row items-center justify-between p-4`}>
+        <View style={card} className={`${CARD_3D} flex-row items-center justify-between p-4`}>
           <View className="flex-1 pr-2">
             <Text className="font-inter text-xs font-semibold text-neutral-400">
               {translate(greetingKey())}
@@ -91,11 +113,11 @@ export function HomeScreen() {
         </View>
 
         <HomeSearchBar />
-        <StudyTodayCard />
+        <TodayBlock compact />
 
         {/* Vocabulary widget (tappable -> /stats) */}
         {widget.isLoading
-          ? <View className="mb-4 h-28 rounded-2xl bg-neutral-100 dark:bg-neutral-800" />
+          ? <View style={t && { backgroundColor: t.surfaceMuted }} className="mb-4 h-28 rounded-2xl bg-neutral-100 dark:bg-neutral-800" />
           : widget.isError || !widget.data
             ? <SectionError onRetry={() => void widget.refetch()} />
             : <VocabularyWidget data={widget.data} onPress={() => router.push('/stats')} />}
@@ -109,6 +131,7 @@ export function HomeScreen() {
         <Pressable
           onPress={() => router.push('/missions' as Href)}
           accessibilityRole="button"
+          style={card}
           className={`${CARD_3D} ${PRESSABLE_3D} mt-4 flex-row items-center gap-3 p-4`}
         >
           <View className="size-11 items-center justify-center rounded-xl border-2 border-b-[3px] border-primary-400 border-b-primary-600 bg-primary-500">
@@ -127,9 +150,15 @@ export function HomeScreen() {
 function VocabularyWidget({ data, onPress }: { data: HomeWidgetDTO; onPress: () => void }) {
   const { totalWords, learnedCount, newCount, learningAndReviewingCount, masteredCount }
     = deriveVocabularySegments(data);
+  const t = useSurfaceOverride();
 
   return (
-    <Pressable onPress={onPress} accessibilityRole="button" className={`${CARD_3D} ${PRESSABLE_3D} p-5`}>
+    <Pressable
+      onPress={onPress}
+      accessibilityRole="button"
+      style={t && { backgroundColor: t.surface, borderColor: t.border }}
+      className={`${CARD_3D} ${PRESSABLE_3D} p-5`}
+    >
       <View className="flex-row items-center justify-between">
         <Text className="font-nunito text-xs font-black tracking-wider text-neutral-400 uppercase">
           Từ vựng của bạn

@@ -207,11 +207,12 @@ export function useAddTopicItem() {
   const queryClient = useQueryClient();
 
   return useMutation<TopicItemData, AxiosError<ApiResponse<unknown>>, AddTopicItemParams>({
-    mutationFn: async ({ topicId, data }) => {
+    mutationFn: async ({ topicId, data, scanRequestId }) => {
       const response = await client<ApiResponse<TopicItemData>>({
         url: `/api/topics/${topicId}/items`,
         method: 'POST',
         data,
+        params: scanRequestId ? { scanRequestId } : undefined,
       });
 
       return response.data.data;

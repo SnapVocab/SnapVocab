@@ -30,6 +30,7 @@ import {
   useShopCatalog,
 } from './hooks/use-shop-queries';
 import { isThemeKnown, ShopSurface } from './theme/theme-context';
+import { isKnownItemType } from './types';
 import { isBoosterLive } from './utils/booster-timer';
 
 /** Shop-area screen: it and its modals take the equipped theme's surfaces. */
@@ -66,6 +67,9 @@ function ShopScreenContent() {
       return [];
     }
     return catalogItems.filter((item) => {
+      if (!isKnownItemType(item.type)) {
+        return false;
+      }
       if (item.type === 'THEME' && !isThemeKnown(item.config?.themeKey)) {
         return false;
       }

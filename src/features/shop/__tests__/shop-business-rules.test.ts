@@ -1,24 +1,24 @@
-import type { ShopItemDTO, ShopItemType } from '../types';
+import type { ShopItemDTO } from '../types';
 import { generateIdempotencyKey } from '@/features/quiz/utils/idempotency';
+import { isKnownItemType as isCanonical, isStackable, SHOP_ITEM_TYPES } from '../types';
 
 describe('shop & Economy business rules verification', () => {
-  describe('canonical types strictly limited to 3 items', () => {
-    it('only allows THEME, AVATAR_FRAME, and XP_BOOSTER', () => {
-      const canonicalTypes: ShopItemType[] = ['THEME', 'AVATAR_FRAME', 'XP_BOOSTER'];
-      expect(canonicalTypes).toHaveLength(3);
-
-      const isCanonical = (type: string): type is ShopItemType => {
-        return canonicalTypes.includes(type as ShopItemType);
-      };
+  describe('canonical types strictly limited to 4 items', () => {
+    // Shop and Kho đồ hide every other type, so a type added server-side never reaches this app version.
+    it('only allows THEME, AVATAR_FRAME, XP_BOOSTER and STREAK_FREEZE', () => {
+      expect(SHOP_ITEM_TYPES).toHaveLength(4);
 
       expect(isCanonical('THEME')).toBe(true);
       expect(isCanonical('AVATAR_FRAME')).toBe(true);
       expect(isCanonical('XP_BOOSTER')).toBe(true);
+      // streak_freeze.md (PO 2026-10-21)
+      expect(isCanonical('STREAK_FREEZE')).toBe(true);
+      expect(isStackable('STREAK_FREEZE')).toBe(true);
+      expect(isStackable('THEME')).toBe(false);
 
       // Verify old mock types are rejected
       expect(isCanonical('BOOSTER')).toBe(false);
       expect(isCanonical('SPECIAL')).toBe(false);
-      expect(isCanonical('STREAK_FREEZE')).toBe(false);
       expect(isCanonical('CHEST')).toBe(false);
       expect(isCanonical('DECK')).toBe(false);
       expect(isCanonical('HEART_REFILL')).toBe(false);

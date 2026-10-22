@@ -1,7 +1,7 @@
 import { useRouter } from 'expo-router';
 import * as React from 'react';
 import { Pressable, View } from 'react-native';
-import { Text } from '@/components/ui';
+import { Text, useSurfaceOverride } from '@/components/ui';
 import { SearchIcon } from '@/components/ui/icons';
 import { translate } from '@/lib/i18n/utils';
 
@@ -11,6 +11,7 @@ export type HomeSearchBarProps = {
 
 export function HomeSearchBar({ onPress }: HomeSearchBarProps) {
   const router = useRouter();
+  const t = useSurfaceOverride();
 
   const handlePress = () => {
     if (onPress) {
@@ -24,6 +25,7 @@ export function HomeSearchBar({ onPress }: HomeSearchBarProps) {
   return (
     <Pressable
       onPress={handlePress}
+      style={t && { backgroundColor: t.surface, borderColor: t.border }}
       className="mb-4 flex-row items-center justify-between rounded-2xl border-2 border-b-4 border-neutral-200/90 border-b-neutral-300 bg-white p-3.5 active:translate-y-[2px] active:border-b-2 dark:border-neutral-700 dark:border-b-neutral-800 dark:bg-neutral-900"
     >
       {/* Left: Guided hint / Heading */}

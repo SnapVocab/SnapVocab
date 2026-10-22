@@ -82,10 +82,13 @@ export function PurchaseSuccessModal({
   const isTheme = item.type === 'THEME';
   const isFrame = item.type === 'AVATAR_FRAME';
   const isBooster = item.type === 'XP_BOOSTER';
+  const isFreeze = item.type === 'STREAK_FREEZE';
 
   const effect = isBooster
     ? translate('shop.purchase.booster_effect', { multiplier: item.config?.multiplier ?? 2, minutes: item.config?.durationMinutes ?? 30 })
-    : null;
+    : isFreeze
+      ? translate('shop.freeze.effect')
+      : null;
 
   // One primary next step (use the item), one quiet secondary.
   const closeThen = (next: () => void) => () => {
@@ -164,6 +167,7 @@ export function PurchaseSuccessModal({
                 {' '}
                 {translate(result?.replayed ? 'shop.purchase.replayed_suffix' : 'shop.purchase.success_suffix')}
                 {isBooster && result ? ` ${translate('shop.purchase.quantity', { quantity: result.quantity })}` : ''}
+                {isFreeze && result ? ` ${translate('shop.freeze.held', { quantity: result.quantity })}` : ''}
                 {result ? ` ${translate('shop.purchase.new_balance', { balance: result.coinBalance.toLocaleString('vi-VN') })}` : ''}
               </Text>
 

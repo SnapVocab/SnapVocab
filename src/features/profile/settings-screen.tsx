@@ -52,7 +52,7 @@ const ROW_ICON_SIZE = 22;
 
 type Sheet = 'language' | 'theme' | 'goal' | 'reminder' | null;
 
-/** MH-PROFILE-03. Biometric login and notification list are out of this round. */
+/** MH-PROFILE-03. Biometric login is out of this round; OS permission states wait for expo-notifications (DEP-NOTIF-02). */
 export function SettingsScreen() {
   const router = useRouter();
   const [sheet, setSheet] = useState<Sheet>(null);
@@ -111,6 +111,7 @@ export function SettingsScreen() {
           />
         </SettingsSection>
 
+        {/* Push has one kind (the review reminder), so its channel and its time sit together (notification_ui.md §H.5). */}
         <SettingsSection tx="settings.notifications">
           <SettingsRow
             icon={<BellIcon color={iconColor.row.notification} size={ROW_ICON_SIZE} />}
@@ -121,6 +122,14 @@ export function SettingsScreen() {
               disabled: !settings,
             }}
             testID="settings-push"
+          />
+          <SettingsRow
+            icon={<ClockRotateIcon color={iconColor.row.reminder} size={ROW_ICON_SIZE} />}
+            tx="settings.reminder"
+            value={reminder ?? translate('settings.reminder_off')}
+            hint={reminder && settings?.pushEnabled === false ? translate('settings.reminder_inbox_only') : undefined}
+            onPress={() => setSheet('reminder')}
+            testID="settings-reminder"
             last
           />
         </SettingsSection>
@@ -132,13 +141,6 @@ export function SettingsScreen() {
             value={settings ? translate('settings.daily_goal_unit', { count: settings.dailyGoal }) : undefined}
             onPress={() => setSheet('goal')}
             testID="settings-daily-goal"
-          />
-          <SettingsRow
-            icon={<ClockRotateIcon color={iconColor.row.reminder} size={ROW_ICON_SIZE} />}
-            tx="settings.reminder"
-            value={reminder ?? translate('settings.reminder_off')}
-            onPress={() => setSheet('reminder')}
-            testID="settings-reminder"
             last
           />
         </SettingsSection>
@@ -233,7 +235,9 @@ export function SettingsScreen() {
       <OptionSheet
         visible={sheet === 'reminder'}
         titleTx="settings.select_reminder"
+        descriptionTx="settings.reminder_sheet_desc"
         options={reminderOptions().map(time => ({ value: time, label: time }))}
+        fallbackScrollValue="20:00"
         selected={reminder ?? ''}
         onSelect={(value) => {
           save({ srsReminderAt: value });

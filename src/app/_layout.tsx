@@ -75,7 +75,7 @@ function Providers({ children }: { children: React.ReactNode }) {
   );
 }
 
-/** Navigator surfaces follow the user's light/dark mode only; Shop themes are scoped to the Shop area (ShopSurface). */
+/** Navigator surfaces follow the user's light/dark mode only; Shop themes are scoped to themed screens (ShopSurface). */
 function NavigationTheme({ children }: { children: React.ReactNode }) {
   return <ThemeProvider value={useThemeConfig()}>{children}</ThemeProvider>;
 }

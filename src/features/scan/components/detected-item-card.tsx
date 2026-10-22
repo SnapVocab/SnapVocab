@@ -9,9 +9,10 @@ type Props = {
   color: string;
   selected: boolean;
   onPress: () => void;
+  onSave: () => void;
 };
 
-export function DetectedItemCard({ item, color, selected, onPress }: Props) {
+export function DetectedItemCard({ item, color, selected, onPress, onSave }: Props) {
   const reliabilityColor = RELIABILITY_COLORS[item.reliability];
   const word = item.word;
   const ipa = primaryIpa(word);
@@ -65,8 +66,7 @@ export function DetectedItemCard({ item, color, selected, onPress }: Props) {
           : <Text className="mt-1 text-[13px] font-medium text-danger-500" tx="scan.result.not_in_dictionary" />}
 
         {word && (
-          // Saving to a Topic needs the Topic API, which is not built yet.
-          <Button tx="scan.result.save_word" disabled fullWidth size="sm" className="mt-3" />
+          <Button tx="scan.result.save_word" onPress={onSave} fullWidth size="sm" className="mt-3" testID={`scan-save-${item.label}`} />
         )}
       </View>
     </Pressable>

@@ -20,6 +20,7 @@ export default function AppLayout() {
       <Stack.Screen name="study/select" />
       <Stack.Screen name="study/session" />
       <Stack.Screen name="scan-result" />
+      <Stack.Screen name="scan-save" />
       <Stack.Screen name="template-builder" />
       <Stack.Screen name="shop" />
       <Stack.Screen name="profile/inventory" />

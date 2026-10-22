@@ -1,3 +1,4 @@
+import type { Href } from 'expo-router';
 import { Tabs, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -12,6 +13,7 @@ import {
 } from '@/components/ui/icons';
 import { HomeHeader } from '@/features/home';
 import { useMe } from '@/features/profile/api';
+import { ShopSurface } from '@/features/shop/theme/theme-context';
 import { translate } from '@/lib/i18n';
 
 export default function TabLayout() {
@@ -22,7 +24,7 @@ export default function TabLayout() {
   // GET /api/users/me on app start / login: its equipped theme, frame and booster land on the stored user,
   // which ShopThemeProvider and Profile read (shop.md §10.1).
   useMe();
-  // App-wide chrome: default surfaces for the user's light/dark mode; Shop themes stay inside the Shop area.
+  // App-wide chrome: default surfaces for the user's light/dark mode; Shop themes stay inside themed screens.
   const surface = useSurface();
   const isDark = useColorMode() === 'dark';
 
@@ -50,12 +52,16 @@ export default function TabLayout() {
         options={{
           title: translate('home.tab_label'),
           headerShown: true,
+          // The navigator renders the header outside HomeScreen, so it takes the theme on its own.
           header: () => (
-            <HomeHeader
-              onStreakPress={() => router.push('/stats')}
-              onCoinPress={() => router.push('/profile/wallet')}
-              onAvatarPress={() => router.push('/profile')}
-            />
+            <ShopSurface>
+              <HomeHeader
+                onStreakPress={() => router.push('/stats')}
+                onCoinPress={() => router.push('/profile/wallet')}
+                onAvatarPress={() => router.push('/profile')}
+                onNotificationPress={() => router.push('/notifications' as Href)}
+              />
+            </ShopSurface>
           ),
           tabBarIcon: ({ color }) => <HomeIcon color={color} />,
           tabBarButtonTestID: 'home-tab',

@@ -22,9 +22,9 @@ function palette(light: Surfaces, dark: Surfaces): SurfacePalette {
 }
 
 /**
- * Scope (2026-10-06): a purchased theme applies to the Shop area only — Cửa hàng, Kho đồ, Ví Coin and
- * their modals (via ShopSurface). Tab bar and every other screen keep DEFAULT_SURFACE.
- * The learner-facing scope sentence is `shop.theme.scope`.
+ * Scope (2026-10-21, PD-SHX-06): a purchased theme applies to Trang chủ (with its header), Hồ sơ and the
+ * Shop area — Cửa hàng, Kho đồ, Ví Coin and their modals (via ShopSurface). Tab bar and every other
+ * screen keep their default look. The learner-facing scope sentence is `shop.theme.scope`.
  */
 export const SHOP_THEMES: Record<string, ThemeDefinition> = {
   DEFAULT: {
@@ -127,8 +127,11 @@ export function useShopTheme() {
   return use(ShopThemeContext);
 }
 
-/** Wrap a Shop-area screen: it and its modals take the equipped theme's surfaces. */
+/**
+ * Wrap a themed screen: it and its modals take the equipped theme's surfaces. DEFAULT provides nothing, so
+ * Shop screens fall back to DEFAULT_SURFACE and class-styled screens (Home, Profile) keep their own look.
+ */
 export function ShopSurface({ children }: { children: React.ReactNode }) {
-  const { theme } = useShopTheme();
-  return <SurfaceProvider palette={theme.palette}>{children}</SurfaceProvider>;
+  const { themeKey, theme } = useShopTheme();
+  return <SurfaceProvider palette={themeKey === 'DEFAULT' ? null : theme.palette}>{children}</SurfaceProvider>;
 }

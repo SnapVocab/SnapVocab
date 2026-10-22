@@ -58,7 +58,7 @@ describe('shop previews and cards act on the item\'s real state', () => {
     render(<ThemePreviewModal item={theme} onClose={jest.fn()} onAction={jest.fn()} />);
     expect(screen.getByText('Thẻ ×2 Kinh nghiệm')).toBeTruthy();
     expect(screen.getByText('Phần thưởng nhiệm vụ')).toBeTruthy();
-    expect(screen.getByText('Áp dụng cho Cửa hàng, Kho đồ và Ví Coin.')).toBeTruthy();
+    expect(screen.getByText('Áp dụng cho Trang chủ, Hồ sơ, Cửa hàng, Kho đồ và Ví Coin.')).toBeTruthy();
     expect(screen.queryByText('Trang chủ')).toBeNull();
   });
 
@@ -66,7 +66,7 @@ describe('shop previews and cards act on the item\'s real state', () => {
     const onPress = jest.fn();
     const onPreview = jest.fn();
     render(<ShopItemCard item={theme} userCoins={1000} onPress={onPress} onPreview={onPreview} />);
-    expect(screen.getByText('Giao diện cửa hàng')).toBeTruthy();
+    expect(screen.getByText('Bộ màu')).toBeTruthy();
     fireEvent.press(screen.getByText('Mua ·'));
     fireEvent.press(screen.getByText('Đêm Neon'));
     expect(onPreview).toHaveBeenCalledTimes(2);
@@ -87,5 +87,19 @@ describe('shop previews and cards act on the item\'s real state', () => {
     expect(screen.getByText('Đã đạt tối đa')).toBeTruthy();
     expect(screen.getByText('×3/3')).toBeTruthy();
     expect(screen.queryByText('Mua ·')).toBeNull();
+  });
+
+  // streak_freeze.md §7: stackable like a booster, bought straight from the card, capped by maxQuantity.
+  it('streak freeze card buys directly, shows held units and the cap', () => {
+    const freeze: ShopItemDTO = { ...theme, type: 'STREAK_FREEZE', config: { maxQuantity: 2 }, quantity: 1 };
+    const onPress = jest.fn();
+    const view = render(<ShopItemCard item={freeze} userCoins={1000} onPress={onPress} onPreview={jest.fn()} />);
+    expect(screen.getByText('Đóng băng chuỗi')).toBeTruthy();
+    expect(screen.getByText('×1/2')).toBeTruthy();
+    fireEvent.press(screen.getByText('Mua ·'));
+    expect(onPress).toHaveBeenCalledWith(freeze);
+
+    view.rerender(<ShopItemCard item={{ ...freeze, quantity: 2, blockReason: 'MAX_QUANTITY_REACHED' }} userCoins={1000} onPress={onPress} />);
+    expect(screen.getByText('Đã đạt tối đa')).toBeTruthy();
   });
 });

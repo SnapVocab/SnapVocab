@@ -37,10 +37,10 @@ export const DEFAULT_SURFACE: SurfacePalette = {
   },
 };
 
-const SurfaceContext = createContext<SurfacePalette>(DEFAULT_SURFACE);
+const SurfaceContext = createContext<SurfacePalette | null>(null);
 
-/** Re-skins the surfaces of everything below it (screens and their modals); outside, the app default applies. */
-export function SurfaceProvider({ palette, children }: { palette: SurfacePalette; children: ReactNode }) {
+/** Re-skins the surfaces of everything below it (screens and their modals); outside, or with null, the app default applies. */
+export function SurfaceProvider({ palette, children }: { palette: SurfacePalette | null; children: ReactNode }) {
   return <SurfaceContext value={palette}>{children}</SurfaceContext>;
 }
 
@@ -50,5 +50,15 @@ export function useColorMode(): keyof SurfacePalette {
 }
 
 export function useSurface(): SurfaceTokens {
-  return use(SurfaceContext)[useColorMode()];
+  return (use(SurfaceContext) ?? DEFAULT_SURFACE)[useColorMode()];
+}
+
+/**
+ * The provided palette's tokens, or null when none is provided. For screens styled with classes (Trang chủ,
+ * Hồ sơ): they keep their own look and only take a theme's surfaces when one is equipped (shop.md §6.4).
+ */
+export function useSurfaceOverride(): SurfaceTokens | null {
+  const palette = use(SurfaceContext);
+  const mode = useColorMode();
+  return palette && palette[mode];
 }

@@ -10,6 +10,9 @@ export type Collection = {
 
 export type CollectionDTO = Collection;
 
+/** What the options sheet needs; Learn's library rows carry only this much. */
+export type CollectionRef = Pick<Collection, 'id' | 'name' | 'translation' | 'type'>;
+
 export type UpdateCollectionDTO = {
   name: string;
   translation?: string;
@@ -76,4 +79,6 @@ export type CreateTopicItemDTO = Record<string, any>;
 export type AddTopicItemParams = {
   topicId: number | string;
   data: CreateTopicItemDTO;
+  /** The scan the word was saved from: feeds the Scan daily mission (daily_mission.md §6.1). */
+  scanRequestId?: string;
 };
