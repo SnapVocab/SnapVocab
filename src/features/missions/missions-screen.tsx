@@ -18,6 +18,18 @@ const actions: Record<MissionTriggerEvent, { href: Href; tx: TxKeyPath }> = {
   LEARNING_ACTIVITY_RECORDED: { href: '/study/quiz-setup', tx: 'missions.action.study' },
   SHOP_ITEM_PURCHASED: { href: '/shop', tx: 'missions.action.shop' },
   BOOSTER_USED: { href: '/profile/inventory', tx: 'missions.action.booster' },
+  SRS_REVIEW_COMPLETED: { href: '/study/select', tx: 'missions.action.srs_review' },
+  SCAN_WORD_SAVED: { href: '/camera', tx: 'missions.action.scan' },
+};
+
+const missionCopy: Record<string, { name: TxKeyPath; description: TxKeyPath }> = {
+  ADD_5_WORDS: { name: 'missions.catalog.add_5_words.name', description: 'missions.catalog.add_5_words.description' },
+  QUIZ_SCORE_80: { name: 'missions.catalog.quiz_score_80.name', description: 'missions.catalog.quiz_score_80.description' },
+  FINISH_2_SHORT_QUIZZES: { name: 'missions.catalog.finish_2_short_quizzes.name', description: 'missions.catalog.finish_2_short_quizzes.description' },
+  PERFECT_MINI_QUIZ: { name: 'missions.catalog.perfect_mini_quiz.name', description: 'missions.catalog.perfect_mini_quiz.description' },
+  KEEP_DAILY_STREAK: { name: 'missions.catalog.keep_daily_streak.name', description: 'missions.catalog.keep_daily_streak.description' },
+  USE_XP_BOOSTER: { name: 'missions.catalog.use_xp_booster.name', description: 'missions.catalog.use_xp_booster.description' },
+  BUY_SHOP_ITEM: { name: 'missions.catalog.buy_shop_item.name', description: 'missions.catalog.buy_shop_item.description' },
 };
 
 const categoryTiles: Partial<Record<MissionCategory, { Icon: typeof BookIcon; tile: string; color: string }>> = {
@@ -100,10 +112,20 @@ export function MissionsScreen() {
   const ended = !!data && msLeft <= 0;
 
   return (
-    <SafeAreaView className="flex-1 bg-[#F7F8FA] dark:bg-neutral-950" edges={['top']}>
+    <SafeAreaView style={{ flex: 1 }} className="flex-1 bg-[#F7F8FA] dark:bg-neutral-950" edges={['top']}>
       <FocusAwareStatusBar />
       <ScreenHeader title={translate('missions.title')} onBack={() => router.back()} />
-      <ScrollView className="px-5" contentContainerClassName="gap-3 pt-5 pb-10" refreshControl={<RefreshControl refreshing={query.isRefetching} onRefresh={() => void query.refetch()} />}>
+      <ScrollView
+        style={{ flex: 1 }}
+        contentContainerStyle={{
+          flexGrow: 1,
+          paddingHorizontal: 20,
+          paddingTop: 20,
+          paddingBottom: 64,
+          rowGap: 12,
+        }}
+        refreshControl={<RefreshControl refreshing={query.isRefetching} onRefresh={() => void query.refetch()} />}
+      >
         <View className="gap-1">
           <Text tx="missions.subtitle" className="font-inter text-[13px] font-medium text-neutral-500 dark:text-neutral-300" />
           {data && (
@@ -128,8 +150,21 @@ export function MissionsScreen() {
           </View>
         )}
 
+        {data && missions.length === 0 && (
+          <View className="items-center rounded-2xl border border-neutral-200 bg-white p-6 dark:border-neutral-700 dark:bg-neutral-900">
+            <Text className="mb-1 text-center font-nunito text-base font-extrabold text-mascot-navy dark:text-white">
+              {translate('missions.empty_title')}
+            </Text>
+            <Text className="text-center font-inter text-sm text-neutral-500 dark:text-neutral-300">
+              {translate('missions.empty_body')}
+            </Text>
+          </View>
+        )}
+
         {missions.map((mission) => {
           const { Icon, tile, color } = categoryTiles[mission.category] ?? fallbackTile;
+          const copy = missionCopy[mission.code];
+          const action = actions[mission.triggerEvent];
           const ratio = Math.min(1, mission.currentProgress / Math.max(1, mission.targetValue));
           const claimable = mission.status === 'COMPLETED' && !ended;
           const claimed = mission.status === 'CLAIMED';
@@ -138,18 +173,18 @@ export function MissionsScreen() {
               key={mission.id}
               // Info: light border. Ready: lifted like Quiz's selected card. Claimed: muted surface only.
               className={`gap-3 rounded-2xl border-2 p-4 ${claimable
-                ? 'border-b-4 border-primary-500 bg-primary-50 dark:bg-neutral-900'
+                ? 'border-b-2 border-primary-500 bg-primary-50 dark:border-primary-500 dark:bg-neutral-900'
                 : claimed
-                  ? 'border-neutral-100 bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-950'
-                  : 'border-neutral-100 bg-white dark:border-neutral-800 dark:bg-neutral-900'}`}
+                  ? 'border-b-2 border-neutral-200 bg-neutral-50 dark:border-[#46505C] dark:border-b-[#667382] dark:bg-[#22252B]'
+                  : 'border-b-2 border-neutral-200 bg-white dark:border-[#46505C] dark:border-b-[#667382] dark:bg-[#22252B]'}`}
             >
               <View className="flex-row items-center gap-3">
                 <View className={`size-11 items-center justify-center rounded-xl ${tile}`}>
                   <Icon width={22} height={22} color={color} />
                 </View>
                 <View className="flex-1">
-                  <Text className="font-nunito text-[15px] font-extrabold text-mascot-navy dark:text-white">{mission.name}</Text>
-                  <Text className="font-inter text-[13px] text-neutral-500 dark:text-neutral-300">{mission.description}</Text>
+                  <Text className="font-nunito text-[15px] font-extrabold text-mascot-navy dark:text-white">{copy ? translate(copy.name) : mission.name}</Text>
+                  <Text className="font-inter text-[13px] text-neutral-500 dark:text-neutral-300">{copy ? translate(copy.description) : mission.description}</Text>
                   {mission.triggerEvent === 'TOPIC_ITEM_CREATED' && mission.status === 'IN_PROGRESS' && (
                     <Text tx="missions.add_word_hint" className="mt-1 font-inter text-xs text-neutral-500 dark:text-neutral-300" />
                   )}
@@ -181,9 +216,9 @@ export function MissionsScreen() {
                 </View>
                 <View className="flex-1" />
                 {claimed && <Text tx="missions.claimed" className="font-nunito text-sm font-extrabold text-primary-800 dark:text-primary-300" />}
-                {mission.status === 'IN_PROGRESS' && !ended && (
-                  <Pressable accessibilityRole="button" onPress={() => router.push(actions[mission.triggerEvent].href)} hitSlop={8} className="min-h-11 flex-row items-center gap-0.5 active:opacity-60">
-                    <Text tx={actions[mission.triggerEvent].tx} className="font-nunito text-sm font-extrabold text-primary-800 dark:text-primary-300" />
+                {mission.status === 'IN_PROGRESS' && !ended && action && (
+                  <Pressable accessibilityRole="button" onPress={() => router.push(action.href)} hitSlop={8} className="min-h-11 flex-row items-center gap-0.5 active:opacity-60">
+                    <Text tx={action.tx} className="font-nunito text-sm font-extrabold text-primary-800 dark:text-primary-300" />
                     <ChevronRightIcon width={16} height={16} color="#2F6E00" />
                   </Pressable>
                 )}
