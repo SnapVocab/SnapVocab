@@ -27,6 +27,7 @@ import {
 } from '@/components/ui/icons';
 import { Snapy } from '@/components/ui/snapy';
 import { useTts } from '@/lib/hooks/use-tts';
+import { translate } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 import { useCheckQuestion } from '../api/quiz-api';
 import { useExpiredSessionHandler } from '../hooks/use-expired-session-handler';
@@ -78,7 +79,7 @@ export function FillBlankQuizView({ quiz, onExit, onResync }: FillBlankQuizViewP
   // Mascot state
   const [mascotPose, setMascotPose] = useState<SnapyPose>('tap_trung');
   const [mascotAnim, setMascotAnim] = useState<string>('idle');
-  const [bubbleText, setBubbleText] = useState('Gõ từ thích hợp vào chỗ trống!');
+  const [bubbleText, setBubbleText] = useState(translate('quiz.fill_prompt'));
 
   // Animation references
   const slideAnim = useRef(new RNAnimated.Value(0)).current;
@@ -122,7 +123,7 @@ export function FillBlankQuizView({ quiz, onExit, onResync }: FillBlankQuizViewP
           if (isCorrect) {
             setMascotPose('an_mung');
             setMascotAnim('celebrate');
-            setBubbleText('Xuất sắc! Bạn đã điền chính xác! 🎉');
+            setBubbleText(translate('quiz.fill_correct'));
             if (data.correctAnswer) {
               speak(currentQ.prompt.replace(/_____/g, data.correctAnswer));
             }
@@ -130,7 +131,7 @@ export function FillBlankQuizView({ quiz, onExit, onResync }: FillBlankQuizViewP
           else {
             setMascotPose('bat_ngo');
             setMascotAnim('shake');
-            setBubbleText('Chưa chính xác rồi! Cùng xem đáp án nhé! 🤔');
+            setBubbleText(translate('quiz.fill_incorrect'));
 
             // Shake animation on the card
             shakeAnim.setValue(0);
@@ -197,7 +198,7 @@ export function FillBlankQuizView({ quiz, onExit, onResync }: FillBlankQuizViewP
       setIdempotencyKey(generateIdempotencyKey());
       setMascotPose('tap_trung');
       setMascotAnim('idle');
-      setBubbleText('Gõ từ thích hợp vào chỗ trống!');
+      setBubbleText(translate('quiz.fill_prompt'));
       bottomBarAnim.setValue(0);
 
       // Slide in
@@ -224,7 +225,7 @@ export function FillBlankQuizView({ quiz, onExit, onResync }: FillBlankQuizViewP
         <TouchableOpacity
           onPress={() => setShowExitModal(true)}
           accessibilityRole="button"
-          accessibilityLabel="Thoát bài quiz"
+          accessibilityLabel={translate('quiz.exit')}
           hitSlop={8}
           activeOpacity={0.7}
           className="-ml-2 size-10 items-center justify-center rounded-full"
@@ -290,14 +291,14 @@ export function FillBlankQuizView({ quiz, onExit, onResync }: FillBlankQuizViewP
               <View className="flex-row items-center gap-1.5">
                 <EditIcon size={16} className="text-amber-500" />
                 <Text className="font-inter text-[12px] font-bold tracking-wider text-amber-600 uppercase">
-                  Điền từ còn thiếu
+                  {translate('quiz.fill_missing_word')}
                 </Text>
               </View>
 
               <TouchableOpacity
                 onPress={handlePlayAudio}
                 accessibilityRole="button"
-                accessibilityLabel="Nghe câu"
+                accessibilityLabel={translate('quiz.listen_sentence')}
                 activeOpacity={0.7}
                 className={cn(
                   'size-10 items-center justify-center rounded-xl border',
@@ -317,7 +318,7 @@ export function FillBlankQuizView({ quiz, onExit, onResync }: FillBlankQuizViewP
           {/* TEXT INPUT AREA */}
           <View className="mb-4 rounded-2xl border-2 border-neutral-200 bg-white p-4 shadow-sm">
             <Text className="mb-2 font-inter text-[12px] font-bold text-neutral-400 uppercase">
-              Nhập từ vựng của bạn:
+              {translate('quiz.enter_word')}
             </Text>
             <TextInput
               value={inputText}
@@ -327,7 +328,7 @@ export function FillBlankQuizView({ quiz, onExit, onResync }: FillBlankQuizViewP
               }}
               onSubmitEditing={handleCheck}
               returnKeyType="done"
-              placeholder="Gõ từ hoặc cụm từ bị che..."
+              placeholder={translate('quiz.fill_placeholder')}
               placeholderTextColor="#9CA3AF"
               editable={checkState === 'IDLE' && !checkMutation.isPending && !answerLocked}
               autoCapitalize="none"
@@ -352,8 +353,8 @@ export function FillBlankQuizView({ quiz, onExit, onResync }: FillBlankQuizViewP
           {answerNotice && (
             <Text accessibilityLiveRegion="polite" className="mb-3 text-center font-inter text-[13px] font-semibold text-neutral-600">
               {answerNotice === 'UNCONFIRMED'
-                ? 'Chưa xác nhận được câu trả lời. Kiểm tra kết nối rồi gửi lại đáp án này.'
-                : 'Không gửi được đáp án. Hãy thử lại.'}
+                ? translate('quiz.answer_unconfirmed')
+                : translate('quiz.answer_send_error')}
             </Text>
           )}
           <Pressable
@@ -376,7 +377,7 @@ export function FillBlankQuizView({ quiz, onExit, onResync }: FillBlankQuizViewP
                     inputText.trim() ? 'text-white' : 'text-neutral-400',
                   )}
                 >
-                  {answerLocked ? 'Gửi lại' : 'Kiểm tra'}
+                  {answerLocked ? translate('quiz.resend') : translate('quiz.check')}
                 </Text>
                 <ArrowRightIcon
                   size={18}
@@ -418,11 +419,11 @@ export function FillBlankQuizView({ quiz, onExit, onResync }: FillBlankQuizViewP
                   checkState === 'CORRECT' ? 'text-success-800' : 'text-error-800',
                 )}
               >
-                {checkState === 'CORRECT' ? 'Chính xác! Tuyệt vời! 🎉' : 'Chưa chính xác rồi! 🤔'}
+                {checkState === 'CORRECT' ? translate('quiz.correct_celebration') : translate('quiz.incorrect_encouragement')}
               </Text>
               {checkState === 'INCORRECT' && correctAnswerText && (
                 <Text className="mt-0.5 font-inter text-[13px] font-medium text-error-700">
-                  Đáp án đúng:
+                  {translate('quiz.correct_answer')}
                   {' '}
                   <Text className="font-bold text-error-900">{correctAnswerText}</Text>
                 </Text>
@@ -446,7 +447,7 @@ export function FillBlankQuizView({ quiz, onExit, onResync }: FillBlankQuizViewP
             ) : (
               <>
                 <Text className="font-nunito text-[16px] font-extrabold text-white uppercase">
-                  {nextIndex === -1 ? 'Hoàn thành' : 'Tiếp tục'}
+                  {nextIndex === -1 ? translate('quiz.completed') : translate('quiz.continue')}
                 </Text>
                 <ArrowRightIcon size={18} className="text-white" />
               </>

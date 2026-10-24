@@ -1,6 +1,7 @@
 import { useRouter } from 'expo-router';
 import { useCallback } from 'react';
 import { Alert } from 'react-native';
+import { translate } from '@/lib/i18n';
 import { isQuizSessionExpired } from '../utils';
 
 /**
@@ -16,10 +17,10 @@ export function useExpiredSessionHandler() {
       return false;
 
     Alert.alert(
-      'Phiên quiz đã hết hạn',
-      'Phiên làm bài chỉ giữ trong 24 giờ. Vui lòng tạo bài mới.',
+      translate('quiz.error_expired_title'),
+      translate('quiz.error_expired_desc'),
       [{
-        text: 'Tạo bài mới',
+        text: translate('quiz.btn_new_quiz'),
         onPress: () => router.replace('/(app)/study/quiz-setup' as any),
       }],
     );

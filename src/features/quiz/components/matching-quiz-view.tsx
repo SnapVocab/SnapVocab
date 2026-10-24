@@ -20,6 +20,7 @@ import {
 } from '@/components/ui/icons';
 import { Snapy } from '@/components/ui/snapy';
 import { useTts } from '@/lib/hooks/use-tts';
+import { translate } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 import { useAttemptMatchingPair } from '../api/quiz-api';
 import { useExpiredSessionHandler } from '../hooks/use-expired-session-handler';
@@ -88,7 +89,7 @@ export type MatchingQuizViewProps = {
   onResync: () => void;
 };
 
-const SCORING_RULE = 'Điểm tính theo lần ghép đầu tiên của mỗi từ. Vẫn cần ghép đúng hết để hoàn tất.';
+const SCORING_RULE = 'quiz.matching_scoring_rule';
 
 export function MatchingQuizView({ quiz, onExit, onResync }: MatchingQuizViewProps) {
   const matchingRounds = quiz.matchingRounds || [];
@@ -135,7 +136,7 @@ export function MatchingQuizView({ quiz, onExit, onResync }: MatchingQuizViewPro
   // Mascot and modal state
   const [mascotPose, setMascotPose] = useState<SnapyPose>('tap_trung');
   const [mascotAnim, setMascotAnim] = useState<string>('idle');
-  const [bubbleText, setBubbleText] = useState<string>(SCORING_RULE);
+  const [bubbleText, setBubbleText] = useState<string>(translate(SCORING_RULE));
   const [showExitModal, setShowExitModal] = useState(false);
 
   // Live Stopwatch
@@ -218,8 +219,8 @@ export function MatchingQuizView({ quiz, onExit, onResync }: MatchingQuizViewPro
             setMascotAnim('celebrate');
             // `correct` = this pair is right; `outcome` = what the pair scores (first attempt only).
             setBubbleText(data.outcome === 'CORRECT'
-              ? 'Đúng ngay lần đầu! ✨'
-              : 'Đã ghép đúng. Cặp này không tính điểm vì lần đầu chưa đúng.');
+              ? translate('quiz.match_first_try_correct')
+              : translate('quiz.match_correct_no_score'));
 
             if (data.round.completed) {
               if (currentRoundIndex + 1 < matchingRounds.length) {
@@ -241,8 +242,8 @@ export function MatchingQuizView({ quiz, onExit, onResync }: MatchingQuizViewPro
             setMascotPose('bat_ngo');
             setMascotAnim('shake');
             setBubbleText(data.attemptNo === 1
-              ? 'Chưa đúng! Cặp này không được tính điểm, nhưng hãy ghép lại cho đúng nhé.'
-              : 'Chưa chính xác! Thử lại nhé! 🤔');
+              ? translate('quiz.match_first_try_wrong')
+              : translate('quiz.match_try_again'));
 
             setTimeout(() => {
               setSelectedLeftKey(null);
@@ -263,7 +264,7 @@ export function MatchingQuizView({ quiz, onExit, onResync }: MatchingQuizViewPro
             setSelectedLeftKey(null);
             setSelectedRightKey(null);
             setIdempotencyKey(generateIdempotencyKey());
-            setBubbleText('Không gửi được cặp ghép. Hãy chọn lại.');
+            setBubbleText(translate('quiz.match_send_error'));
           }
           else {
             setUnconfirmedPair({ left: leftKey, right: rightKey });
@@ -330,7 +331,7 @@ export function MatchingQuizView({ quiz, onExit, onResync }: MatchingQuizViewPro
         <TouchableOpacity
           onPress={() => setShowExitModal(true)}
           accessibilityRole="button"
-          accessibilityLabel="Thoát bài quiz"
+          accessibilityLabel={translate('quiz.exit')}
           hitSlop={8}
           activeOpacity={0.7}
           className="-ml-2 size-10 items-center justify-center rounded-full"
@@ -356,7 +357,7 @@ export function MatchingQuizView({ quiz, onExit, onResync }: MatchingQuizViewPro
         </View>
 
         <Text className="text-right font-nunito text-[15px] font-extrabold text-neutral-500 tabular-nums">
-          Vòng
+          {translate('quiz.round')}
           {' '}
           {currentRoundIndex + 1}
           /
@@ -389,7 +390,7 @@ export function MatchingQuizView({ quiz, onExit, onResync }: MatchingQuizViewPro
             {/* LEFT COLUMN */}
             <View className="flex-1 gap-2.5">
               <Text className="mb-1 text-center font-inter text-[12px] font-bold tracking-wider text-neutral-400 uppercase">
-                {quiz.direction === 'VI_EN' ? 'Tiếng Việt' : 'Tiếng Anh'}
+                {quiz.direction === 'VI_EN' ? translate('quiz.vietnamese') : translate('quiz.english')}
               </Text>
               {activeRound?.leftTiles?.map((tile) => {
                 const isMatched = matchedLeftKeys.has(tile.key);
@@ -436,7 +437,7 @@ export function MatchingQuizView({ quiz, onExit, onResync }: MatchingQuizViewPro
             {/* RIGHT COLUMN */}
             <View className="flex-1 gap-2.5">
               <Text className="mb-1 text-center font-inter text-[12px] font-bold tracking-wider text-neutral-400 uppercase">
-                {quiz.direction === 'VI_EN' ? 'Tiếng Anh' : 'Tiếng Việt'}
+                {quiz.direction === 'VI_EN' ? translate('quiz.english') : translate('quiz.vietnamese')}
               </Text>
               {activeRound?.rightTiles?.map((tile) => {
                 const isMatched = matchedRightKeys.has(tile.key);
@@ -489,7 +490,7 @@ export function MatchingQuizView({ quiz, onExit, onResync }: MatchingQuizViewPro
       {attemptMutation.isPending && (
         <View className="flex-row items-center justify-center gap-2 border-t border-neutral-100 bg-white py-3">
           <ActivityIndicator size="small" color="#9333EA" />
-          <Text className="font-nunito text-[14px] font-extrabold text-purple-600">Đang chấm cặp ghép...</Text>
+          <Text className="font-nunito text-[14px] font-extrabold text-purple-600">{translate('quiz.grading_pair')}</Text>
         </View>
       )}
 
@@ -497,13 +498,13 @@ export function MatchingQuizView({ quiz, onExit, onResync }: MatchingQuizViewPro
       {unconfirmedPair && !attemptMutation.isPending && (
         <View className="gap-2 border-t border-neutral-100 bg-white p-4">
           <Text accessibilityLiveRegion="polite" className="text-center font-inter text-[13px] font-semibold text-neutral-600">
-            Chưa xác nhận được cặp ghép. Kiểm tra kết nối rồi gửi lại cặp này.
+            {translate('quiz.match_unconfirmed')}
           </Text>
           <Pressable
             onPress={() => submitPairAttempt(unconfirmedPair.left, unconfirmedPair.right)}
             className="h-12 w-full items-center justify-center rounded-xl border-b-2 border-purple-700 bg-purple-500 active:bg-purple-600"
           >
-            <Text className="font-nunito text-[15px] font-extrabold text-white">Gửi lại</Text>
+            <Text className="font-nunito text-[15px] font-extrabold text-white">{translate('quiz.resend')}</Text>
           </Pressable>
         </View>
       )}
@@ -519,7 +520,7 @@ export function MatchingQuizView({ quiz, onExit, onResync }: MatchingQuizViewPro
           >
             {finishQuiz.isPending
               ? <ActivityIndicator size="small" color="#FFFFFF" />
-              : <Text className="font-nunito text-[15px] font-extrabold text-white">Hoàn tất bài quiz</Text>}
+              : <Text className="font-nunito text-[15px] font-extrabold text-white">{translate('quiz.finish_quiz')}</Text>}
           </Pressable>
         </View>
       )}
