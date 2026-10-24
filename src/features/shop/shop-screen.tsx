@@ -4,6 +4,7 @@ import { router } from 'expo-router';
 import { PackageIcon, RefreshCwIcon } from 'lucide-react-native';
 import * as React from 'react';
 import { useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   ActivityIndicator,
   Pressable,
@@ -42,6 +43,7 @@ export default function ShopScreen() {
 
 function ShopScreenContent() {
   const s = useSurface();
+  const { t, i18n } = useTranslation();
   const [activeCategory, setActiveCategory] = useState<ShopCategory>('all');
   const [previewFrameItem, setPreviewFrameItem] = useState<ShopItemDTO | null>(null);
 
@@ -106,24 +108,24 @@ function ShopScreenContent() {
       edges={['top']}
     >
       <ScreenHeader
-        title="Cửa hàng"
+        title={t('shop.title')}
         onBack={() => router.back()}
         right={(
           <View className="flex-row items-center gap-2">
             <Pressable
               accessibilityRole="button"
-              accessibilityLabel={`Ví Coin: ${coinBalance.toLocaleString('vi-VN')} Coin`}
+              accessibilityLabel={t('shopUi.walletBalance', { count: coinBalance })}
               onPress={() => router.push('/profile/wallet' as any)}
               className="flex-row items-center gap-1.5 rounded-full border border-reward-200 bg-reward-50 px-3 py-1.5 active:scale-95"
             >
               <Coin3D size="xs" />
               <Text className="font-nunito text-[14px] font-extrabold text-reward-700 tabular-nums">
-                {coinBalance.toLocaleString('vi-VN')}
+                {coinBalance.toLocaleString(i18n.language)}
               </Text>
             </Pressable>
             <Pressable
               accessibilityRole="button"
-              accessibilityLabel="Kho đồ"
+              accessibilityLabel={t('shopUi.inventory')}
               onPress={() => router.push('/profile/inventory' as any)}
               style={{ backgroundColor: s.surfaceMuted, borderColor: s.border }}
               className="size-10 items-center justify-center rounded-full border active:scale-95"
@@ -141,7 +143,7 @@ function ShopScreenContent() {
             {errorMessage}
           </Text>
           <Pressable onPress={() => setErrorMessage(null)} className="ml-2 px-2 py-0.5">
-            <Text className="font-nunito text-[13px] font-bold text-white">Đóng</Text>
+            <Text className="font-nunito text-[13px] font-bold text-white">{t('shopUi.close')}</Text>
           </Pressable>
         </View>
       )}
@@ -165,17 +167,17 @@ function ShopScreenContent() {
           <View className="items-center justify-center py-20">
             <ActivityIndicator size="large" color="#2563EB" />
             <Text style={{ color: s.textMuted }} className="mt-3 font-inter text-[14px] font-medium">
-              Đang tải danh mục...
+              {t('shopUi.loadingCatalog')}
             </Text>
           </View>
         ) : isCatalogError ? (
           <View style={{ backgroundColor: s.surface, borderColor: s.border }} className="items-center justify-center rounded-3xl border p-8">
             <Snapy pose="suy_nghi" animation="idle" className="mb-4 size-24 opacity-80" />
             <Text style={{ color: s.text }} className="mb-2 font-nunito text-[18px] font-extrabold">
-              Không thể tải Cửa hàng
+              {t('shopUi.catalogErrorTitle')}
             </Text>
             <Text style={{ color: s.textMuted }} className="mb-5 text-center font-inter text-[13px]">
-              Vui lòng kiểm tra lại kết nối mạng và thử lại.
+              {t('shopUi.networkRetry')}
             </Text>
             <Pressable
               onPress={() => refetchCatalog()}
@@ -183,7 +185,7 @@ function ShopScreenContent() {
             >
               <RefreshCwIcon size={16} color="white" />
               <Text className="font-nunito text-[14px] font-extrabold text-white uppercase">
-                Thử lại
+                {t('shopUi.retry')}
               </Text>
             </Pressable>
           </View>
@@ -191,10 +193,10 @@ function ShopScreenContent() {
           <View style={{ backgroundColor: s.surface, borderColor: s.border }} className="items-center justify-center rounded-3xl border p-8">
             <Snapy pose="suy_nghi" animation="idle" className="mb-4 size-24 opacity-80" />
             <Text style={{ color: s.text }} className="mb-2 font-nunito text-[18px] font-extrabold">
-              Chưa có vật phẩm trong mục này
+              {t('shopUi.emptyCatalogTitle')}
             </Text>
             <Text style={{ color: s.textMuted }} className="text-center font-inter text-[13px]">
-              Các vật phẩm mới sẽ sớm được cập nhật trong Cửa hàng!
+              {t('shopUi.emptyCatalogBody')}
             </Text>
           </View>
         ) : (

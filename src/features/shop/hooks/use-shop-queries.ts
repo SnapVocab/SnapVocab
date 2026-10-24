@@ -11,6 +11,7 @@ import type {
   WalletDTO,
 } from '../types';
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { showErrorMessage, showSuccessMessage } from '@/components/ui';
 import { useAuthStore } from '@/features/auth/use-auth-store';
 import {
@@ -183,6 +184,7 @@ export function usePurchaseMutation() {
 export function useEquipMutation() {
   const queryClient = useQueryClient();
   const { setEquippedTheme } = useShopTheme();
+  const { t } = useTranslation();
 
   return useMutation<
     EquipmentDTO,
@@ -195,11 +197,11 @@ export function useEquipMutation() {
         const themeKey = data.item?.config?.themeKey as string;
         setEquippedTheme(themeKey || 'DEFAULT');
       }
-      showSuccessMessage(data.slot === 'THEME' ? 'Đã áp dụng giao diện' : 'Đã trang bị khung avatar');
+      showSuccessMessage(data.slot === 'THEME' ? t('shopUi.toastThemeEquipped') : t('shopUi.toastFrameEquipped'));
       queryClient.invalidateQueries({ queryKey: shopKeys.inventory() });
       queryClient.invalidateQueries({ queryKey: shopKeys.catalogs() });
     },
-    onError: error => onItemActionError(queryClient, error),
+    onError: error => onItemActionError(queryClient, error, t),
   });
 }
 
@@ -209,6 +211,7 @@ export function useEquipMutation() {
 export function useUnequipMutation() {
   const queryClient = useQueryClient();
   const { setEquippedTheme } = useShopTheme();
+  const { t } = useTranslation();
 
   return useMutation<
     EquipmentDTO,
@@ -220,11 +223,11 @@ export function useUnequipMutation() {
       if (data.slot === 'THEME') {
         setEquippedTheme('DEFAULT');
       }
-      showSuccessMessage(data.slot === 'THEME' ? 'Đã về giao diện mặc định' : 'Đã tháo khung avatar');
+      showSuccessMessage(data.slot === 'THEME' ? t('shopUi.toastThemeReset') : t('shopUi.toastFrameRemoved'));
       queryClient.invalidateQueries({ queryKey: shopKeys.inventory() });
       queryClient.invalidateQueries({ queryKey: shopKeys.catalogs() });
     },
-    onError: error => onItemActionError(queryClient, error),
+    onError: error => onItemActionError(queryClient, error, t),
   });
 }
 
@@ -233,6 +236,7 @@ export function useUnequipMutation() {
  */
 export function useActivateBoosterMutation() {
   const queryClient = useQueryClient();
+  const { t } = useTranslation();
 
   return useMutation<
     ActivationResultDTO,
@@ -247,13 +251,14 @@ export function useActivateBoosterMutation() {
       // Spending a card changes quantity, hence the Booster's max-quantity block in the catalog.
       queryClient.invalidateQueries({ queryKey: shopKeys.catalogs() });
     },
-    onError: error => onItemActionError(queryClient, error),
+    onError: error => onItemActionError(queryClient, error, t),
   });
 }
 
 /** Equip / unequip / activate rejected: tell the user why, then resync since local state was stale. */
-function onItemActionError(queryClient: QueryClient, error: unknown) {
-  showErrorMessage(parseShopError(error).message);
+function onItemActionError(queryClient: QueryClient, error: unknown, t: (key: string, options?: Record<string, unknown>) => string) {
+  const parsed = parseShopError(error);
+  showErrorMessage(t(`shopUi.errors.${parsed.code}` as any, { defaultValue: t('shopUi.errors.UNKNOWN_ERROR') }));
   queryClient.invalidateQueries({ queryKey: shopKeys.inventory() });
   queryClient.invalidateQueries({ queryKey: shopKeys.catalogs() });
 }
