@@ -8,6 +8,7 @@ import type {
   TemplateElementDTO,
   TopicSchemaDTO,
 } from '../types';
+import { translate } from '@/lib/i18n';
 import { REVERSE_FONT_SIZE_MAP } from '../types';
 
 export function generateClientId(prefix = 'id'): string {
@@ -104,7 +105,7 @@ function buildDefaultStaticSections(): {
 } {
   const defaultFront: BuilderSection = {
     id: generateClientId('sec_front'),
-    name: 'Thông tin chung',
+    name: translate('template_builder.default_section_general'),
     side: 'FRONT',
     columns: 1,
     repeatable: false,
@@ -113,7 +114,7 @@ function buildDefaultStaticSections(): {
         id: generateClientId('fld_word'),
         schemaAttributeId: 1,
         attributeName: 'word',
-        fieldLabel: 'Từ vựng',
+        fieldLabel: translate('template_builder.default_field_word'),
         semanticRole: 'TARGET_WORD',
         required: true,
         hideIfEmpty: false,
@@ -128,7 +129,7 @@ function buildDefaultStaticSections(): {
         id: generateClientId('fld_phonetic'),
         schemaAttributeId: 2,
         attributeName: 'phonetic',
-        fieldLabel: 'Phiên âm',
+        fieldLabel: translate('template_builder.default_field_phonetic'),
         semanticRole: null,
         required: false,
         hideIfEmpty: true,
@@ -143,7 +144,7 @@ function buildDefaultStaticSections(): {
         id: generateClientId('fld_pos'),
         schemaAttributeId: 3,
         attributeName: 'partOfSpeech',
-        fieldLabel: 'Loại từ',
+        fieldLabel: translate('template_builder.default_field_part_of_speech'),
         semanticRole: null,
         required: false,
         hideIfEmpty: true,
@@ -159,7 +160,7 @@ function buildDefaultStaticSections(): {
 
   const defaultBack: BuilderSection = {
     id: generateClientId('sec_back'),
-    name: 'Nghĩa & Ví dụ',
+    name: translate('template_builder.default_section_meaning_examples'),
     side: 'BACK',
     columns: 1,
     repeatable: true,
@@ -168,7 +169,7 @@ function buildDefaultStaticSections(): {
         id: generateClientId('fld_translation'),
         schemaAttributeId: 4,
         attributeName: 'translation',
-        fieldLabel: 'Bản dịch / Nghĩa',
+        fieldLabel: translate('template_builder.default_field_translation'),
         semanticRole: 'NATIVE_TRANSLATION',
         required: true,
         hideIfEmpty: false,
@@ -183,7 +184,7 @@ function buildDefaultStaticSections(): {
         id: generateClientId('fld_definition'),
         schemaAttributeId: 5,
         attributeName: 'definition',
-        fieldLabel: 'Định nghĩa',
+        fieldLabel: translate('template_builder.default_field_definition'),
         semanticRole: 'DEFINITION',
         required: false,
         hideIfEmpty: true,
@@ -198,7 +199,7 @@ function buildDefaultStaticSections(): {
         id: generateClientId('fld_example'),
         schemaAttributeId: 6,
         attributeName: 'example',
-        fieldLabel: 'Ví dụ',
+        fieldLabel: translate('template_builder.default_field_example'),
         semanticRole: 'EXAMPLE_SENTENCE',
         required: false,
         hideIfEmpty: true,
@@ -441,7 +442,7 @@ function buildRepeatableGroupSection(group: SchemaAttributeGroupDTO): BuilderSec
 
   return {
     id: generateClientId('sec_group'),
-    name: group.label || group.name || 'Ví dụ & Ngữ cảnh',
+    name: group.label || group.name || translate('template_builder.default_section_examples_context'),
     side: 'BACK',
     columns: 1,
     repeatable: true,
@@ -480,7 +481,7 @@ export function createDefaultFallbackSections(schema: TopicSchemaDTO | undefined
 
   const frontSection: BuilderSection = {
     id: generateClientId('sec_front'),
-    name: 'Thông tin từ vựng',
+    name: translate('template_builder.default_section_vocabulary_info'),
     side: 'FRONT',
     columns: 1,
     repeatable: false,
@@ -489,7 +490,7 @@ export function createDefaultFallbackSections(schema: TopicSchemaDTO | undefined
         id: generateClientId('fld_word'),
         schemaAttributeId: 1,
         attributeName: 'word',
-        fieldLabel: 'Từ vựng',
+        fieldLabel: translate('template_builder.default_field_word'),
         semanticRole: 'TARGET_WORD',
         required: true,
         hideIfEmpty: false,
@@ -505,7 +506,7 @@ export function createDefaultFallbackSections(schema: TopicSchemaDTO | undefined
 
   const backMainSection: BuilderSection = {
     id: generateClientId('sec_back_main'),
-    name: 'Giải nghĩa',
+    name: translate('template_builder.default_section_definition'),
     side: 'BACK',
     columns: 1,
     repeatable: false,
