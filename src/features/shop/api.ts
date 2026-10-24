@@ -15,6 +15,7 @@ import type {
   WalletDTO,
 } from './types';
 import { client } from '@/lib/api';
+import { translate } from '@/lib/i18n';
 
 /**
  * Parses any Axios or network error into a structured ParsedShopError.
@@ -31,7 +32,7 @@ export function parseShopError(error: unknown): ParsedShopError {
 
     return {
       code,
-      message: (errorBody as any).message || getFriendlyErrorMessage(code, details),
+      message: getFriendlyErrorMessage(code, details),
       statusCode,
       details,
     };
@@ -40,7 +41,7 @@ export function parseShopError(error: unknown): ParsedShopError {
   // Network / timeout error: the raw axios text ("Network Error", "timeout of …") is not user copy.
   return {
     code: 'NETWORK_ERROR',
-    message: 'Không kết nối được máy chủ. Vui lòng kiểm tra mạng và thử lại.',
+    message: translate('shopUi.errors.NETWORK_ERROR'),
     statusCode: 0,
   };
 }
@@ -59,32 +60,32 @@ export function isOutcomeUnknown(error: ParsedShopError): boolean {
 export function getFriendlyErrorMessage(code: string, details?: Record<string, unknown>): string {
   switch (code) {
     case 'PRICE_CHANGED':
-      return details?.currentPrice != null
-        ? `Giá vật phẩm vừa thay đổi thành ${details.currentPrice} Coin.`
-        : 'Giá vật phẩm vừa thay đổi.';
+      return translate('shopUi.errors.PRICE_CHANGED', {
+        price: details?.currentPrice != null ? ` ${details.currentPrice} Coin` : '',
+      });
     case 'INSUFFICIENT_COINS':
-      return 'Bạn không có đủ Coin để mua vật phẩm này.';
+      return translate('shopUi.errors.INSUFFICIENT_COINS');
     case 'ITEM_ALREADY_OWNED':
     case 'ALREADY_OWNED':
-      return 'Bạn đã sở hữu vật phẩm này rồi.';
+      return translate('shopUi.errors.ITEM_ALREADY_OWNED');
     case 'MAX_QUANTITY_REACHED':
-      return 'Đã đạt số lượng sở hữu tối đa cho vật phẩm này.';
+      return translate('shopUi.errors.MAX_QUANTITY_REACHED');
     case 'ITEM_NOT_AVAILABLE':
-      return 'Vật phẩm này hiện không còn bán trong Cửa hàng.';
+      return translate('shopUi.errors.ITEM_NOT_AVAILABLE');
     case 'SHOP_ITEM_NOT_FOUND':
-      return 'Không tìm thấy vật phẩm yêu cầu.';
+      return translate('shopUi.errors.SHOP_ITEM_NOT_FOUND');
     case 'BOOSTER_ALREADY_ACTIVE':
-      return 'Đang có một Thẻ nhân đôi kinh nghiệm hoạt động. Vui lòng chờ kết thúc!';
+      return translate('shopUi.errors.BOOSTER_ALREADY_ACTIVE');
     case 'ITEM_QUANTITY_EMPTY':
-      return 'Bạn đã dùng hết số lượng vật phẩm này.';
+      return translate('shopUi.errors.ITEM_QUANTITY_EMPTY');
     case 'CONCURRENT_MODIFICATION':
-      return 'Hệ thống đang bận xử lý giao dịch. Vui lòng thử lại sau ít giây.';
+      return translate('shopUi.errors.CONCURRENT_MODIFICATION');
     case 'IDEMPOTENCY_KEY_REUSED':
-      return 'Mã giao dịch không hợp lệ cho vật phẩm này. Vui lòng mở lại và thử lại.';
+      return translate('shopUi.errors.IDEMPOTENCY_KEY_REUSED');
     case 'IDEMPOTENCY_KEY_REQUIRED':
-      return 'Lỗi xác thực giao dịch, vui lòng thử lại.';
+      return translate('shopUi.errors.IDEMPOTENCY_KEY_REQUIRED');
     default:
-      return 'Có lỗi xảy ra, vui lòng thử lại sau.';
+      return translate('shopUi.errors.UNKNOWN_ERROR');
   }
 }
 

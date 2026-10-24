@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { ActivityIndicator, Modal, Pressable, Text, View } from 'react-native';
 import { LogOutIcon } from '@/components/ui/icons';
+import { translate } from '@/lib/i18n';
 import { useCancelQuiz } from '../api/quiz-api';
 import { useExpiredSessionHandler } from '../hooks/use-expired-session-handler';
 
@@ -53,15 +54,15 @@ export function QuizExitModal({ visible, quizId, onClose, onExited }: QuizExitMo
           </View>
 
           <Text className="mb-2 text-center font-nunito text-[20px] font-extrabold text-mascot-navy">
-            Dừng làm bài Quiz?
+            {translate('quiz.exit_title')}
           </Text>
           <Text className="mb-6 text-center font-inter text-[14px] leading-relaxed text-neutral-500">
-            Tiến trình làm bài này sẽ bị hủy. Bạn có muốn thoát không?
+            {translate('quiz.exit_body')}
           </Text>
 
           {failed && (
             <Text accessibilityLiveRegion="polite" className="mb-4 text-center font-inter text-[13px] font-semibold text-error-700">
-              Chưa hủy được bài quiz. Kiểm tra kết nối rồi thử lại.
+              {translate('quiz.cancel_error')}
             </Text>
           )}
 
@@ -71,7 +72,7 @@ export function QuizExitModal({ visible, quizId, onClose, onExited }: QuizExitMo
               disabled={cancelMutation.isPending}
               className="h-12 w-full items-center justify-center rounded-xl border-b-2 border-primary-700 bg-primary-500 active:bg-primary-600"
             >
-              <Text className="font-nunito text-[15px] font-extrabold text-white">Tiếp tục làm bài</Text>
+              <Text className="font-nunito text-[15px] font-extrabold text-white">{translate('quiz.keep_playing')}</Text>
             </Pressable>
 
             <Pressable
@@ -82,7 +83,7 @@ export function QuizExitModal({ visible, quizId, onClose, onExited }: QuizExitMo
             >
               {cancelMutation.isPending
                 ? <ActivityIndicator size="small" color="#6B7280" />
-                : <Text className="font-nunito text-[15px] font-extrabold text-neutral-600">{failed ? 'Thử hủy lại' : 'Thoát'}</Text>}
+                : <Text className="font-nunito text-[15px] font-extrabold text-neutral-600">{failed ? translate('quiz.retry_cancel') : translate('quiz.exit')}</Text>}
             </Pressable>
           </View>
         </View>

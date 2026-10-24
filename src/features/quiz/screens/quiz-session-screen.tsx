@@ -40,7 +40,7 @@ function SessionNotice({ title, message, primary, onBack }: {
           onPress={onBack}
           className="h-12 w-full items-center justify-center rounded-xl bg-neutral-200 active:bg-neutral-300"
         >
-          <Text className="font-nunito text-[15px] font-extrabold text-neutral-700">Quay lại</Text>
+          <Text className="font-nunito text-[15px] font-extrabold text-neutral-700">{translate('quiz.btn_back')}</Text>
         </Pressable>
       </View>
     </SafeAreaView>
@@ -139,10 +139,10 @@ export function QuizSessionScreen() {
   if (quiz.status === 'COMPLETED') {
     return (
       <SessionNotice
-        title="Bài quiz đã hoàn thành"
-        message="Bài này đã được chấm xong."
+        title={translate('quiz.session_completed_title')}
+        message={translate('quiz.session_completed_body')}
         primary={{
-          label: 'Xem kết quả',
+          label: translate('quiz.see_result'),
           onPress: () => router.replace({ pathname: '/(app)/study/quiz-result' as any, params: { quizId: String(quiz.quizId) } }),
         }}
         onBack={navigateBackSafely}
@@ -152,9 +152,9 @@ export function QuizSessionScreen() {
   if (quiz.status !== 'IN_PROGRESS') {
     return (
       <SessionNotice
-        title={quiz.status === 'CANCELLED' ? 'Bài quiz đã hủy' : 'Phiên quiz đã hết hạn'}
-        message="Bài này không thể làm tiếp. Bạn có thể tạo một bài mới."
-        primary={{ label: 'Tạo bài mới', onPress: () => router.replace('/(app)/study/quiz-setup' as any) }}
+        title={quiz.status === 'CANCELLED' ? translate('quiz.cancelled_title') : translate('quiz.error_expired_title')}
+        message={translate('quiz.session_unavailable_body')}
+        primary={{ label: translate('quiz.btn_new_quiz'), onPress: () => router.replace('/(app)/study/quiz-setup' as any) }}
         onBack={navigateBackSafely}
       />
     );
@@ -164,9 +164,9 @@ export function QuizSessionScreen() {
   if (isQuizFullyResolved(quiz)) {
     return (
       <SessionNotice
-        title="Bạn đã làm xong tất cả câu"
-        message="Hoàn tất để lưu kết quả và nhận XP."
-        primary={{ label: 'Hoàn tất bài quiz', onPress: finishQuiz.finish, busy: finishQuiz.isPending }}
+        title={translate('quiz.all_questions_done')}
+        message={translate('quiz.finish_to_save')}
+        primary={{ label: translate('quiz.finish_quiz'), onPress: finishQuiz.finish, busy: finishQuiz.isPending }}
         onBack={navigateBackSafely}
       />
     );

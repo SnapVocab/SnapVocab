@@ -35,8 +35,8 @@ import { formatTimeOfDay, reminderOptions } from './display';
 import { useIconColors } from './use-icon-colors';
 
 const LANGUAGES = [
-  { value: 'vi' as Language, label: 'Tiếng Việt', emoji: '🇻🇳' },
-  { value: 'en' as Language, label: 'English', emoji: '🇬🇧' },
+  { value: 'vi' as Language, label: translate('settings.language_name_vi'), emoji: '🇻🇳' },
+  { value: 'en' as Language, label: translate('settings.language_name_en'), emoji: '🇬🇧' },
 ];
 
 const THEMES: { value: ThemePreference; label: string; scheme: ColorSchemeType }[] = [

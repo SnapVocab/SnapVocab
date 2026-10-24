@@ -1,6 +1,7 @@
 import type { InitBuilderParams, TemplateBuilderState } from './store-types';
 import type { CardSide, TemplateElementDTO } from './types';
 import { create } from 'zustand';
+import { translate } from '@/lib/i18n';
 import {
   builderSectionsToTemplateElements,
   createDefaultFallbackSections,
@@ -16,7 +17,7 @@ export const useTemplateBuilderStore = create<TemplateBuilderState>((set, get, a
   topicId: undefined,
   topicName: '',
   templateId: undefined,
-  templateName: 'Thẻ Tiêu Chuẩn',
+  templateName: translate('template_builder.default_template_name'),
   activeSide: 'FRONT',
   frontSections: [],
   backSections: [],
@@ -54,7 +55,7 @@ export const useTemplateBuilderStore = create<TemplateBuilderState>((set, get, a
       topicId,
       topicName: topicName ?? '',
       templateId: template?.id,
-      templateName: template?.name ?? 'Thẻ Tiêu Chuẩn',
+      templateName: template?.name ?? translate('template_builder.default_template_name'),
       activeSide: 'FRONT',
       frontSections,
       backSections,
@@ -86,7 +87,7 @@ export const useTemplateBuilderStore = create<TemplateBuilderState>((set, get, a
       topicId: undefined,
       topicName: '',
       templateId: undefined,
-      templateName: 'Thẻ Tiêu Chuẩn',
+      templateName: translate('template_builder.default_template_name'),
       activeSide: 'FRONT',
       frontSections: [],
       backSections: [],

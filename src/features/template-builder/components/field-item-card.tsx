@@ -22,7 +22,7 @@ export function FieldItemCard({
 }: FieldItemCardProps) {
   const getRoleLabel = () => {
     if (!field.semanticRole) {
-      return 'Chưa gán vai trò';
+      return translate('template_builder.unassigned_role');
     }
     try {
       return translate(`template_builder.roles.${field.semanticRole}` as any);

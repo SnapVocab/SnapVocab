@@ -1,7 +1,9 @@
 import type { FsrsRating, ReviewResult } from './api';
 import type { CardSide } from '@/features/card-renderer/types';
+import type { TxKeyPath } from '@/lib/i18n/utils';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import * as React from 'react';
+import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Alert, View } from 'react-native';
 import { BackButton, Pressable, SafeAreaView, Text } from '@/components/ui';
 import { RotateCwIcon, TrophyIcon } from '@/components/ui/icons';
@@ -14,36 +16,37 @@ import { useStudyQueue, useSubmitStudyRating } from './api';
 
 const RATINGS: {
   value: FsrsRating;
-  title: string;
+  titleKey: TxKeyPath;
   color: string;
   background: string;
 }[] = [
   {
     value: 'AGAIN',
-    title: 'Again',
+    titleKey: 'learn.hub.rating_again',
     color: '#E11D48',
     background: 'bg-rose-50 dark:bg-rose-950/40',
   },
   {
     value: 'HARD',
-    title: 'Hard',
+    titleKey: 'learn.hub.rating_hard',
     color: '#D97706',
     background: 'bg-amber-50 dark:bg-amber-950/40',
   },
   {
     value: 'GOOD',
-    title: 'Good',
+    titleKey: 'learn.hub.rating_good',
     color: '#059669',
     background: 'bg-emerald-50 dark:bg-emerald-950/40',
   },
   {
     value: 'EASY',
-    title: 'Easy',
+    titleKey: 'learn.hub.rating_easy',
     color: '#0284C7',
     background: 'bg-sky-50 dark:bg-sky-950/40',
   },
 ];
 export function StudySessionScreen() {
+  const { t } = useTranslation();
   const router = useRouter();
   const params = useLocalSearchParams<{
     collectionId?: string;
@@ -68,6 +71,7 @@ export function StudySessionScreen() {
   );
   const [side, setSide] = React.useState<CardSide>('FRONT');
   const [reviewedThisSession, setReviewedThisSession] = React.useState(0);
+  const [showRatingGuide, setShowRatingGuide] = React.useState(false);
   const studiedToday =
     latestReview?.studiedToday ?? queueQuery.data?.studiedToday ?? 0;
   const dailyGoal = latestReview?.dailyGoal ?? queueQuery.data?.dailyGoal ?? 0;
@@ -113,16 +117,16 @@ export function StudySessionScreen() {
       const code = error?.response?.data?.error;
       if (code === 'DAILY_QUOTA_REACHED') {
         Alert.alert(
-          'Daily goal reached',
-          'You have used today\'s collection quota.',
+          t('learn.hub.study_quota_alert_title'),
+          t('learn.hub.study_quota_alert_body'),
         );
       }
       else {
         Alert.alert(
-          'Could not save review',
+          t('learn.hub.study_save_error_title'),
           error?.response?.data?.error ||
           error?.message ||
-          'Please try again.',
+          t('learn.hub.study_retry'),
         );
       }
     }
@@ -134,6 +138,7 @@ export function StudySessionScreen() {
       setLatestReview(null);
       setReviewedThisSession(0);
       setSide('FRONT');
+      setShowRatingGuide(false);
     }
   };
   const title =
@@ -149,7 +154,7 @@ export function StudySessionScreen() {
       <SafeAreaView
         edges={['top', 'bottom', 'left', 'right']}
         style={{ flex: 1 }}
-        className="flex-1 bg-[#F7F8F2] dark:bg-neutral-950"
+        className="flex-1 bg-[#F7F8F2] dark:bg-[#181A1F]"
       >
         <View className="flex-1 items-center justify-center px-8">
           <Snapy pose="tap_trung" animation="idle" style={{ width: 120, height: 120 }} />
@@ -169,7 +174,7 @@ export function StudySessionScreen() {
       <SafeAreaView
         edges={['top', 'bottom', 'left', 'right']}
         style={{ flex: 1 }}
-        className="flex-1 items-center justify-center bg-[#F7F8F2] p-6 dark:bg-neutral-950"
+        className="flex-1 items-center justify-center bg-[#F7F8F2] p-6 dark:bg-[#181A1F]"
       >
         <Snapy pose="bat_ngo" animation="none" style={{ width: 112, height: 112 }} />
         <Text className="mt-4 text-center font-nunito text-lg font-black text-mascot-navy dark:text-white">
@@ -191,9 +196,9 @@ export function StudySessionScreen() {
     <SafeAreaView
       edges={['top', 'bottom', 'left', 'right']}
       style={{ flex: 1 }}
-      className="flex-1 bg-[#F7F8F2] dark:bg-neutral-950"
+      className="flex-1 bg-[#F7F8F2] dark:bg-[#181A1F]"
     >
-      <View className="bg-white px-4 pt-2 pb-4 dark:bg-neutral-900">
+      <View className="bg-white px-4 pt-2 pb-4 dark:bg-[#22252B]">
         <View className="flex-row items-center gap-3">
           <BackButton onPress={() => router.back()} className="mr-0.5" />
           <View className="flex-1">
@@ -217,7 +222,7 @@ export function StudySessionScreen() {
             </Text>
           </View>
         </View>
-        <View className="mt-3 h-3 overflow-hidden rounded-full border border-emerald-100 bg-emerald-50 dark:border-emerald-900 dark:bg-neutral-800">
+        <View className="mt-3 h-3 overflow-hidden rounded-full border border-emerald-100 bg-emerald-50 dark:border-[#46505C] dark:bg-[#292E36]">
           <View
             className="h-full rounded-full bg-emerald-500"
             style={{
@@ -257,27 +262,14 @@ export function StudySessionScreen() {
               </Pressable>
             )}
           </View>
-          <View className="bg-white px-4 pt-3 pb-5 dark:bg-neutral-900">
+          <View className="bg-white px-4 pt-3 pb-5 dark:bg-[#22252B]">
             {side === 'BACK' ? (
-              <View className="flex-row gap-1.5">
-                {RATINGS.map(rating => (
-                  <Pressable
-                    key={rating.value}
-                    onPress={() => handleRate(rating.value)}
-                    disabled={submitRating.isPending}
-                    accessibilityRole="button"
-                    accessibilityState={{ disabled: submitRating.isPending }}
-                    className={`h-12 flex-1 items-center justify-center rounded-xl border-2 border-b-4 border-neutral-200 border-b-neutral-300 active:translate-y-px active:border-b-2 dark:border-neutral-700 dark:border-b-neutral-800 ${rating.background}`}
-                  >
-                    <Text
-                      style={{ color: rating.color }}
-                      className="font-nunito text-xs font-black"
-                    >
-                      {submitRating.isPending ? translate('learn.hub.study_saving') : rating.title}
-                    </Text>
-                  </Pressable>
-                ))}
-              </View>
+              <StudyRatingControls
+                isPending={submitRating.isPending}
+                onRate={handleRate}
+                showGuide={showRatingGuide}
+                onToggleGuide={() => setShowRatingGuide(value => !value)}
+              />
             ) : (
               <Text className="text-center font-inter text-xs font-semibold text-neutral-400">
                 {translate('learn.hub.study_rate_prompt')}
@@ -320,5 +312,59 @@ export function StudySessionScreen() {
         </View>
       )}
     </SafeAreaView>
+  );
+}
+
+type StudyRatingControlsProps = {
+  isPending: boolean;
+  onRate: (rating: FsrsRating) => void;
+  showGuide: boolean;
+  onToggleGuide: () => void;
+};
+
+function StudyRatingControls({ isPending, onRate, showGuide, onToggleGuide }: StudyRatingControlsProps) {
+  return (
+    <>
+      <View className="flex-row gap-1.5">
+        {RATINGS.map(rating => (
+          <Pressable
+            key={rating.value}
+            onPress={() => onRate(rating.value)}
+            disabled={isPending}
+            accessibilityRole="button"
+            accessibilityState={{ disabled: isPending }}
+            className={`h-12 flex-1 items-center justify-center rounded-xl border-2 border-b-4 border-neutral-200 border-b-neutral-300 active:translate-y-px active:border-b-2 dark:border-[#46505C] dark:border-b-[#363B43] ${rating.background}`}
+          >
+            <Text style={{ color: rating.color }} className="font-nunito text-xs font-black">
+              {isPending ? translate('learn.hub.study_saving') : translate(rating.titleKey)}
+            </Text>
+          </Pressable>
+        ))}
+      </View>
+      <Pressable
+        onPress={onToggleGuide}
+        accessibilityRole="button"
+        accessibilityState={{ expanded: showGuide }}
+        className="mt-2 min-h-10 items-center justify-center"
+      >
+        <Text className="font-inter text-xs font-semibold text-neutral-500 dark:text-neutral-300">
+          {translate(showGuide ? 'learn.hub.rating_guide_hide' : 'learn.hub.rating_guide_show')}
+        </Text>
+      </Pressable>
+      {showGuide && (
+        <View className="mt-1 gap-1 rounded-xl border border-neutral-200 bg-neutral-50 px-3 py-2 dark:border-[#46505C] dark:bg-[#292E36]">
+          {RATINGS.map(rating => (
+            <Text key={rating.value} className="font-inter text-xs/5 text-neutral-600 dark:text-neutral-200">
+              <Text style={{ color: rating.color }} className="font-bold">
+                {translate(rating.titleKey)}
+                :
+                {' '}
+              </Text>
+              {translate(`learn.hub.rating_${rating.value.toLowerCase()}_hint` as TxKeyPath)}
+            </Text>
+          ))}
+        </View>
+      )}
+    </>
   );
 }

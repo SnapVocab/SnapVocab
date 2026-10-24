@@ -1,5 +1,12 @@
 export type MissionCategory = 'SCAN' | 'VOCABULARY' | 'FLASHCARD' | 'SRS' | 'QUIZ' | 'RETENTION' | 'SHOP';
-export type MissionTriggerEvent = 'QUIZ_COMPLETED' | 'LEARNING_ACTIVITY_RECORDED' | 'TOPIC_ITEM_CREATED' | 'SHOP_ITEM_PURCHASED' | 'BOOSTER_USED';
+export type MissionTriggerEvent =
+  | 'QUIZ_COMPLETED'
+  | 'LEARNING_ACTIVITY_RECORDED'
+  | 'TOPIC_ITEM_CREATED'
+  | 'SHOP_ITEM_PURCHASED'
+  | 'BOOSTER_USED'
+  | 'SRS_REVIEW_COMPLETED'
+  | 'SCAN_WORD_SAVED';
 
 export type DailyMission = {
   id: number;

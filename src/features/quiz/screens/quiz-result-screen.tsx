@@ -22,6 +22,7 @@ import {
 } from '@/components/ui/icons';
 import { RewardIcon } from '@/components/ui/rewards/reward-icon';
 import { Snapy } from '@/components/ui/snapy';
+import { translate } from '@/lib/i18n';
 import { useQuizResult } from '../api/quiz-api';
 import { formatQuizAccuracy, formatQuizDuration } from '../utils';
 
@@ -42,7 +43,7 @@ export function QuizResultScreen() {
   const score = summary?.correctCount ?? 0;
   const total = summary?.totalUnits ?? 0;
   const accuracy = summary ? formatQuizAccuracy(summary.accuracy) : 0;
-  const topicName = result?.topicName || 'Chủ đề từ vựng';
+  const topicName = result?.topicName || translate('quiz.default_topic');
   const direction = result?.direction || 'EN_VI';
 
   const wrongAnswers = result?.items?.filter(i => i.outcome === 'INCORRECT') || [];
@@ -136,7 +137,7 @@ export function QuizResultScreen() {
       <SafeAreaView className="flex-1 items-center justify-center bg-[#F7F8FA]">
         <ActivityIndicator size="large" color="#3B82F6" className="mb-4" />
         <Text className="font-nunito text-[16px] font-extrabold text-mascot-navy">
-          Đang tải kết quả...
+          {translate('quiz.result_loading')}
         </Text>
       </SafeAreaView>
     );
@@ -147,13 +148,13 @@ export function QuizResultScreen() {
     return (
       <SafeAreaView className="flex-1 items-center justify-center gap-4 bg-[#F7F8FA] px-6">
         <Text className="text-center font-nunito text-[16px] font-extrabold text-mascot-navy">
-          Chưa tải được kết quả bài quiz.
+          {translate('quiz.result_error')}
         </Text>
         <Pressable onPress={() => void refetch()} className="min-h-12 justify-center rounded-2xl bg-primary-800 px-6 active:opacity-80">
-          <Text className="font-nunito text-[15px] font-extrabold text-white">Thử lại</Text>
+          <Text className="font-nunito text-[15px] font-extrabold text-white">{translate('quiz.retry')}</Text>
         </Pressable>
         <Pressable onPress={handleGoHome} className="min-h-12 justify-center px-6 active:opacity-60">
-          <Text className="font-nunito text-[15px] font-extrabold text-mascot-navy">Trang Học</Text>
+          <Text className="font-nunito text-[15px] font-extrabold text-mascot-navy">{translate('quiz.home')}</Text>
         </Pressable>
       </SafeAreaView>
     );
@@ -166,18 +167,18 @@ export function QuizResultScreen() {
       <SafeAreaView className="flex-1 items-center justify-center gap-4 bg-[#F7F8FA] px-6">
         <Snapy pose="suy_nghi" animation="idle" style={{ width: 110, height: 110 }} />
         <Text className="text-center font-nunito text-[20px] font-extrabold text-mascot-navy">
-          {result.status === 'CANCELLED' ? 'Bài quiz đã hủy' : 'Phiên quiz đã hết hạn'}
+          {result.status === 'CANCELLED' ? translate('quiz.cancelled_title') : translate('quiz.error_expired_title')}
         </Text>
         <Text className="text-center font-inter text-[14px] leading-relaxed text-neutral-500">
           {topicName}
           {' · '}
-          Bài này không được chấm điểm vì chưa hoàn thành.
+          {translate('quiz.not_graded')}
         </Text>
         <Pressable onPress={handleGoHistory} className="min-h-12 justify-center rounded-2xl bg-primary-800 px-6 active:opacity-80">
-          <Text className="font-nunito text-[15px] font-extrabold text-white">Lịch sử Quiz</Text>
+          <Text className="font-nunito text-[15px] font-extrabold text-white">{translate('quiz.history_title')}</Text>
         </Pressable>
         <Pressable onPress={handleGoHome} className="min-h-12 justify-center px-6 active:opacity-60">
-          <Text className="font-nunito text-[15px] font-extrabold text-mascot-navy">Trang Học</Text>
+          <Text className="font-nunito text-[15px] font-extrabold text-mascot-navy">{translate('quiz.home')}</Text>
         </Pressable>
       </SafeAreaView>
     );
@@ -205,12 +206,12 @@ export function QuizResultScreen() {
             />
           </View>
           <Text className="px-4 text-center font-nunito text-[28px] leading-tight font-extrabold text-mascot-navy">
-            {isPerfect ? 'PERFECT! XUẤT SẮC' : accuracy >= 70 ? 'HOÀN THÀNH TỐT' : 'HOÀN THÀNH BÀI THI'}
+            {isPerfect ? translate('quiz.perfect') : accuracy >= 70 ? translate('quiz.completed_well') : translate('quiz.completed')}
           </Text>
           <Text className="mt-1 px-4 text-center font-inter text-[15px] font-bold text-neutral-500">
             {isPerfect
-              ? 'Bạn đã hoàn thành xuất sắc toàn bộ câu hỏi. Phản xạ tuyệt vời!'
-              : 'Mỗi bài kiểm tra giúp từ vựng ghi sâu vào trí nhớ!'}
+              ? translate('quiz.perfect_body')
+              : translate('quiz.completed_body')}
           </Text>
         </View>
 
@@ -225,7 +226,7 @@ export function QuizResultScreen() {
             </View>
             <View className="rounded-full border border-primary-200 bg-primary-50 px-2.5 py-1">
               <Text className="font-inter text-[11px] font-bold text-primary-700">
-                {direction === 'VI_EN' ? '🇻🇳 ➔ 🇬🇧 Việt - Anh' : '🇬🇧 ➔ 🇻🇳 Anh - Việt'}
+                {direction === 'VI_EN' ? translate('quiz.direction_vi_en') : translate('quiz.direction_en_vi')}
               </Text>
             </View>
           </View>
@@ -237,7 +238,7 @@ export function QuizResultScreen() {
             {total}
           </Text>
           <Text className="font-inter text-[15px] font-bold text-neutral-500">
-            Độ chính xác:
+            {translate('quiz.accuracy_label')}
             {' '}
             {accuracy}
             %
@@ -250,7 +251,7 @@ export function QuizResultScreen() {
           className="mx-6 mb-7 items-center rounded-[24px] border-2 border-b-[6px] border-neutral-100 bg-white p-6 shadow-sm shadow-black/5"
         >
           <Text className="mb-4 font-inter text-[12px] font-extrabold tracking-widest text-neutral-400 uppercase">
-            HỆ THỐNG PHẦN THƯỞNG
+            {translate('quiz.rewards_heading')}
           </Text>
 
           <View className="mb-6 w-full flex-row items-center justify-center gap-10">
@@ -266,9 +267,7 @@ export function QuizResultScreen() {
               </Text>
               {xpBonus > 0 && (
                 <Text className="mt-0.5 font-inter text-[11px] font-bold text-reward-600">
-                  x2 Booster (+
-                  {xpBonus}
-                  )
+                  {translate('quiz.xp_booster_bonus', { amount: xpBonus })}
                 </Text>
               )}
             </View>
@@ -277,7 +276,7 @@ export function QuizResultScreen() {
           <View className="w-full flex-row items-center justify-center gap-2 rounded-2xl border border-amber-200 bg-amber-50 p-3.5">
             <SparklesIcon size={18} className="text-amber-600" />
             <Text className="text-center font-inter text-[13px] font-medium text-amber-800">
-              Coin được nhận qua nhiệm vụ hằng ngày.
+              {translate('quiz.coins_from_missions')}
             </Text>
           </View>
         </Animated.View>
@@ -287,11 +286,11 @@ export function QuizResultScreen() {
             <View className="flex-row">
               <View className="flex-1 items-center border-r border-b border-neutral-100 pr-2 pb-4">
                 <Text className="font-nunito text-[24px] font-extrabold text-success-600">{score}</Text>
-                <Text className="font-inter text-[13px] font-bold text-neutral-500">Đúng</Text>
+                <Text className="font-inter text-[13px] font-bold text-neutral-500">{translate('quiz.correct')}</Text>
               </View>
               <View className="flex-1 items-center border-b border-neutral-100 pb-4 pl-2">
                 <Text className="font-nunito text-[24px] font-extrabold text-error-600">{total - score}</Text>
-                <Text className="font-inter text-[13px] font-bold text-neutral-500">Chưa đúng</Text>
+                <Text className="font-inter text-[13px] font-bold text-neutral-500">{translate('quiz.incorrect')}</Text>
               </View>
             </View>
             <View className="flex-row pt-4">
@@ -300,13 +299,13 @@ export function QuizResultScreen() {
                   {accuracy}
                   %
                 </Text>
-                <Text className="font-inter text-[13px] font-bold text-neutral-500">Tỷ lệ chính xác</Text>
+                <Text className="font-inter text-[13px] font-bold text-neutral-500">{translate('quiz.accuracy')}</Text>
               </View>
               <View className="flex-1 items-center pl-2">
                 <Text className="font-nunito text-[20px] font-extrabold text-mascot-navy">
                   {formatQuizDuration(result?.durationSeconds)}
                 </Text>
-                <Text className="font-inter text-[13px] font-bold text-neutral-500">Thời gian làm bài</Text>
+                <Text className="font-inter text-[13px] font-bold text-neutral-500">{translate('quiz.duration')}</Text>
               </View>
             </View>
           </View>
@@ -314,13 +313,13 @@ export function QuizResultScreen() {
           {/* 5. WRONG ANSWERS SECTION */}
           {wrongAnswers.length > 0 ? (
             <View className="mb-8 px-6">
-              <Text className="mb-1 font-nunito text-[18px] font-extrabold text-mascot-navy">Cần ôn lại</Text>
+              <Text className="mb-1 font-nunito text-[18px] font-extrabold text-mascot-navy">{translate('quiz.review_section')}</Text>
               <Text className="mb-4 font-inter text-[13px] font-bold text-neutral-500">
-                Bạn có
+                {translate('quiz.review_count_prefix')}
                 {' '}
                 {wrongAnswers.length}
                 {' '}
-                câu hỏi cần củng cố thêm
+                {translate('quiz.review_count_suffix')}
               </Text>
 
               <View className="gap-3">
@@ -335,7 +334,7 @@ export function QuizResultScreen() {
                           <CheckCircleIcon size={14} className="text-success-600" />
                         </View>
                         <Text className="flex-1 font-inter text-[14px] font-medium text-neutral-600">
-                          Đáp án đúng:
+                          {translate('quiz.correct_answer')}
                           {' '}
                           <Text className="font-bold text-success-700">{wrong.correctAnswer}</Text>
                         </Text>
@@ -346,7 +345,7 @@ export function QuizResultScreen() {
                             <XCircleIcon size={14} className="text-error-600" />
                           </View>
                           <Text className="flex-1 font-inter text-[14px] font-medium text-neutral-600">
-                            Bạn đã trả lời:
+                            {translate('quiz.your_answer')}
                             {' '}
                             <Text className="font-bold text-error-700">{wrong.learnerAnswer}</Text>
                           </Text>
@@ -363,10 +362,10 @@ export function QuizResultScreen() {
                 <SparklesIcon size={24} className="text-white" />
               </View>
               <Text className="text-center font-nunito text-[19px] font-extrabold text-success-800">
-                Hoàn hảo! 100% Chính Xác
+                {translate('quiz.perfect_accuracy')}
               </Text>
               <Text className="mt-1 text-center font-inter text-[13px] font-medium text-success-700">
-                Bạn đã trả lời chính xác tất cả câu hỏi trong bài Quiz!
+                {translate('quiz.all_correct_body')}
               </Text>
             </View>
           )}
@@ -385,7 +384,7 @@ export function QuizResultScreen() {
         >
           <HomeIcon size={20} className="text-neutral-700" />
           <Text className="font-nunito text-[15px] font-extrabold text-neutral-700 uppercase">
-            Trang Học
+            {translate('quiz.home')}
           </Text>
         </Pressable>
 
@@ -395,7 +394,7 @@ export function QuizResultScreen() {
         >
           <RotateCcwIcon size={20} className="text-white" />
           <Text className="font-nunito text-[15px] font-extrabold text-white uppercase">
-            Lịch sử Quiz
+            {translate('quiz.history_title')}
           </Text>
         </Pressable>
       </View>

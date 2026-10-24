@@ -7,21 +7,21 @@ import { translate } from '@/lib/i18n';
 export function StudyTodayCard() {
   const router = useRouter();
   return (
-    <View className="mb-4 overflow-hidden rounded-3xl border-2 border-b-[5px] border-emerald-300 border-b-emerald-500 bg-emerald-50 p-5 dark:border-[#46505C] dark:border-b-[#667382] dark:bg-[#22252B]">
-      <View className="flex-row items-start justify-between">
-        <View className="flex-1 pr-4">
-          <Text className="font-nunito text-2xl font-black text-mascot-navy dark:text-white">
+    <View className="mb-3 overflow-hidden rounded-3xl border-2 border-b-[5px] border-emerald-300 border-b-emerald-500 bg-emerald-50 p-4 dark:border-[#46505C] dark:border-b-[#667382] dark:bg-[#22252B]">
+      <View className="flex-row items-center justify-between">
+        <View className="flex-1 pr-3">
+          <Text className="font-nunito text-xl font-black text-mascot-navy dark:text-white">
             {translate('learn.hub.study_today_title')}
           </Text>
-          <Text className="mt-1 font-inter text-sm/5 text-neutral-600 dark:text-neutral-300">
+          <Text className="mt-1 font-inter text-[13px] leading-[18px] text-neutral-600 dark:text-neutral-300">
             {translate('learn.hub.study_today_desc')}
           </Text>
         </View>
-        <View className="size-14 items-center justify-center rounded-2xl border-2 border-b-4 border-emerald-200 border-b-emerald-300 bg-white dark:border-[#46505C] dark:border-b-[#667382] dark:bg-[#292E36]">
-          <FlashcardIcon width={27} height={27} color="#16A34A" />
+        <View className="size-12 items-center justify-center rounded-2xl border-2 border-b-4 border-emerald-200 border-b-emerald-300 bg-white dark:border-[#46505C] dark:border-b-[#667382] dark:bg-[#292E36]">
+          <FlashcardIcon width={24} height={24} color="#16A34A" />
         </View>
       </View>
-      <View className="mt-4">
+      <View className="mt-3">
         <Button
           label={translate('learn.hub.start_study')}
           variant="primary"

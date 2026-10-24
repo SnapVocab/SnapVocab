@@ -26,7 +26,7 @@ function palette(light: Surfaces, dark: Surfaces): SurfacePalette {
  * Scope (2026-10-06): a purchased theme applies to the Shop area only — Cửa hàng, Kho đồ, Ví Coin and
  * their modals (via ShopSurface). Tab bar and every other screen keep DEFAULT_SURFACE.
  */
-export const SHOP_THEME_SCOPE = 'Áp dụng cho Cửa hàng, Kho đồ và Ví Coin.';
+export const SHOP_THEME_SCOPE = 'shopUi.themeScope';
 
 export const SHOP_THEMES: Record<string, ThemeDefinition> = {
   DEFAULT: {

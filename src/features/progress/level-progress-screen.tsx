@@ -3,6 +3,7 @@ import * as React from 'react';
 import { RefreshControl, ScrollView, View } from 'react-native';
 import { XPOrb3D } from '@/components/snapvocab';
 import { FocusAwareStatusBar, SafeAreaView, ScreenHeader, Text } from '@/components/ui';
+import { translate } from '@/lib/i18n';
 import { useXpOverview } from './api';
 import { RatioBar, RecentXpEventsList, SectionError } from './components';
 
@@ -15,7 +16,7 @@ export function LevelProgressScreen() {
   const level = xpOverview?.level;
   const levelNumber = level?.levelNumber;
   // A level without a title is still that level; only a missing level is "no level".
-  const levelTitle = level ? (level.title ?? `Cấp ${level.levelNumber}`) : 'Chưa có cấp độ';
+  const levelTitle = level ? (level.title ?? translate('progressUx.levelNumber', { count: level.levelNumber })) : translate('progressUx.noLevel');
   const progressPercent = level?.progress ? Math.min(100, Math.round(level.progress * 100)) : 0;
   const nextXp = level?.nextLevelXp;
   const remainingXp = nextXp ? Math.max(0, nextXp - totalXp) : 0;
@@ -24,7 +25,7 @@ export function LevelProgressScreen() {
     <SafeAreaView edges={['top', 'left', 'right']} style={{ flex: 1 }} className="flex-1 bg-[#F7F8FA] dark:bg-neutral-950">
       <FocusAwareStatusBar />
 
-      <ScreenHeader title="Cấp độ & Kinh nghiệm" onBack={() => router.back()} />
+      <ScreenHeader title={translate('progressUx.levelExperienceTitle')} onBack={() => router.back()} />
 
       {/* Content */}
       <ScrollView
@@ -50,9 +51,7 @@ export function LevelProgressScreen() {
                 {level?.title && (
                   <View className="rounded-full bg-info-700 px-3 py-0.5">
                     <Text className="font-nunito text-xs font-black text-white">
-                      CẤP
-                      {' '}
-                      {levelNumber}
+                      {translate('progressUx.levelBadge', { count: levelNumber })}
                     </Text>
                   </View>
                 )}
@@ -64,30 +63,30 @@ export function LevelProgressScreen() {
               {/* Cumulative XP, not a numerator for the bar: the bar is progress inside this level. */}
               <View className="mt-2 items-center">
                 <Text className="font-nunito text-3xl font-black text-info-600 dark:text-info-400">
-                  {`${totalXp.toLocaleString('vi-VN')} XP`}
+                  {`${totalXp.toLocaleString()} XP`}
                 </Text>
                 <Text className="font-inter text-[13px] font-semibold text-neutral-500">
-                  Tổng XP tích lũy
+                  {translate('progressUx.totalXpEarned')}
                 </Text>
               </View>
 
               {/* Level Progress Bar */}
               {nextXp ? (
                 <View className="mt-4 w-full">
-                  <RatioBar progress={level?.progress ?? 0} label={`Tiến độ cấp ${levelNumber}`} />
+                  <RatioBar progress={level?.progress ?? 0} label={translate('progressUx.levelProgressFor', { count: levelNumber })} />
 
                   <View className="mt-2 flex-row justify-between">
                     <Text className="font-inter text-[13px] text-neutral-500">
-                      {`${progressPercent}% cấp ${levelNumber}`}
+                      {translate('progressUx.levelPercent', { percent: progressPercent, count: levelNumber })}
                     </Text>
                     <Text className="font-inter text-[13px] font-bold text-info-700 dark:text-info-400">
-                      {`Còn ${remainingXp.toLocaleString('vi-VN')} XP lên cấp ${(levelNumber ?? 0) + 1}`}
+                      {translate('progressUx.remainingToNextLevel', { xp: remainingXp.toLocaleString(), level: (levelNumber ?? 0) + 1 })}
                     </Text>
                   </View>
                 </View>
               ) : (
                 <Text className="mt-2 font-inter text-[13px] font-semibold text-emerald-600 dark:text-emerald-400">
-                  {level ? 'Bạn đã đạt cấp cao nhất hiện có.' : 'XP vẫn được ghi nhận. Mốc cấp độ chưa được thiết lập.'}
+                  {translate(level ? 'progressUx.maxLevel' : 'progressUx.levelsNotConfigured')}
                 </Text>
               )}
             </View>

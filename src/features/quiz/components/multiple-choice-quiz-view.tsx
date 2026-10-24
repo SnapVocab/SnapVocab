@@ -26,6 +26,7 @@ import {
 } from '@/components/ui/icons';
 import { Snapy } from '@/components/ui/snapy';
 import { useTts } from '@/lib/hooks/use-tts';
+import { translate } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 import { useCheckQuestion } from '../api/quiz-api';
 import { useExpiredSessionHandler } from '../hooks/use-expired-session-handler';
@@ -251,7 +252,7 @@ export function MultipleChoiceQuizView({ quiz, onExit, onResync }: MultipleChoic
           <TouchableOpacity
             onPress={() => setShowExitModal(true)}
             accessibilityRole="button"
-            accessibilityLabel="Thoát bài quiz"
+            accessibilityLabel={translate('quiz.exit')}
             hitSlop={8}
             activeOpacity={0.7}
             className="-ml-2 size-10 items-center justify-center rounded-full"
@@ -321,7 +322,7 @@ export function MultipleChoiceQuizView({ quiz, onExit, onResync }: MultipleChoic
           <RNAnimated.View style={{ opacity: contentOpacity, transform: [{ translateY: contentTranslateY }] }}>
             <View className="mb-2 flex-row items-center justify-between">
               <Text className="font-inter text-[13px] font-bold tracking-wide text-neutral-400 uppercase">
-                {quiz.direction === 'VI_EN' ? 'Chọn từ tiếng Anh phù hợp' : 'Chọn nghĩa tiếng Việt đúng'}
+                {quiz.direction === 'VI_EN' ? translate('quiz.choose_english_word') : translate('quiz.choose_vietnamese_meaning')}
               </Text>
               <View className="rounded-md bg-neutral-100 px-2 py-0.5">
                 <Text className="font-inter text-[10px] font-bold text-neutral-500">
@@ -340,7 +341,7 @@ export function MultipleChoiceQuizView({ quiz, onExit, onResync }: MultipleChoic
               <TouchableOpacity
                 onPress={() => speak(currentQ?.prompt || '', { lang: quiz.direction === 'VI_EN' ? 'vi' : 'en' })}
                 accessibilityRole="button"
-                accessibilityLabel="Nghe phát âm"
+                accessibilityLabel={translate('quiz.listen_pronunciation')}
                 activeOpacity={0.7}
                 className={cn(
                   'size-12 items-center justify-center rounded-2xl border',
@@ -458,8 +459,8 @@ export function MultipleChoiceQuizView({ quiz, onExit, onResync }: MultipleChoic
           {answerNotice && (
             <Text accessibilityLiveRegion="polite" className="mb-3 text-center font-inter text-[13px] font-semibold text-neutral-600">
               {answerNotice === 'UNCONFIRMED'
-                ? 'Chưa xác nhận được câu trả lời. Kiểm tra kết nối rồi gửi lại đáp án này.'
-                : 'Không gửi được đáp án. Hãy chọn lại và thử lần nữa.'}
+                ? translate('quiz.answer_unconfirmed')
+                : translate('quiz.answer_send_error')}
             </Text>
           )}
           <Pressable
@@ -482,7 +483,7 @@ export function MultipleChoiceQuizView({ quiz, onExit, onResync }: MultipleChoic
                     selectedOptKey ? 'text-white' : 'text-neutral-400',
                   )}
                 >
-                  {answerLocked ? 'Gửi lại' : 'Kiểm tra'}
+                  {answerLocked ? translate('quiz.resend') : translate('quiz.check')}
                 </Text>
                 <ArrowRightIcon
                   size={18}
@@ -524,12 +525,12 @@ export function MultipleChoiceQuizView({ quiz, onExit, onResync }: MultipleChoic
                   checkState === 'CORRECT' ? 'text-success-800' : 'text-error-800',
                 )}
               >
-                {checkState === 'CORRECT' ? 'Chính xác! Tuyệt vời lắm! 🎉' : 'Chưa chính xác rồi! 🤔'}
+                {checkState === 'CORRECT' ? translate('quiz.correct_celebration') : translate('quiz.incorrect_encouragement')}
               </Text>
 
               {checkState === 'INCORRECT' && correctAnswerText && (
                 <Text className="mt-0.5 font-inter text-[13px] font-medium text-error-700">
-                  Đáp án đúng:
+                  {translate('quiz.correct_answer')}
                   {' '}
                   <Text className="font-bold text-error-900">{correctAnswerText}</Text>
                 </Text>
@@ -553,7 +554,7 @@ export function MultipleChoiceQuizView({ quiz, onExit, onResync }: MultipleChoic
             ) : (
               <>
                 <Text className="font-nunito text-[16px] font-extrabold text-white uppercase">
-                  {nextIndex === -1 ? 'Hoàn thành' : 'Tiếp tục'}
+                  {nextIndex === -1 ? translate('quiz.completed') : translate('quiz.continue')}
                 </Text>
                 <ArrowRightIcon size={18} className="text-white" />
               </>

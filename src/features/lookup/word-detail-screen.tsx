@@ -73,7 +73,7 @@ export function WordDetailScreen() {
             activeOpacity={0.7}
             className="mt-4 rounded-2xl bg-lime-500 px-5 py-2.5 active:bg-lime-600"
           >
-            <Text className="font-inter text-sm font-bold text-white">Thử lại</Text>
+            <Text className="font-inter text-sm font-bold text-white" tx="word_detail.retry" />
           </TouchableOpacity>
         </View>
       ) : (

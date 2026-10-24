@@ -2,11 +2,12 @@
 import type { BottomSheetModal } from '@gorhom/bottom-sheet';
 import type { QuizAvailableTopic } from '../api/quiz-api';
 import type { CreateQuizRequest, QuizDirection, QuizHistorySummaryResponse, QuizMode } from '../types';
+import type { TxKeyPath } from '@/lib/i18n';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import * as React from 'react';
 import { useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, Alert, Pressable, ScrollView, Text, View } from 'react-native';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { ScreenHeader } from '@/components/ui';
 import {
   AlertTriangleIcon,
@@ -16,8 +17,8 @@ import {
   EditIcon,
   LayersIcon,
   LayoutGridIcon,
-  SparklesIcon,
 } from '@/components/ui/icons';
+import { translate } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 import {
   getQuizHistory,
@@ -36,35 +37,41 @@ import { generateIdempotencyKey } from '../utils/idempotency';
 export const QUIZ_MODES = [
   {
     id: 'MCQ' as QuizMode,
-    label: 'Trắc nghiệm phản xạ',
-    desc: 'Chọn nhanh đáp án đúng trong 4 lựa chọn',
-    badge: 'Khuyên dùng',
+    label: 'quiz.multiple_choice',
+    desc: 'quiz.mode_mcq_desc',
+    badge: 'quiz.recommended',
     icon: LayoutGridIcon,
     available: true,
   },
   {
     id: 'MATCHING' as QuizMode,
-    label: 'Ghép đôi từ vựng',
-    desc: 'Nối các cặp từ tiếng Anh với nghĩa tiếng Việt. Điểm tính theo lần ghép đầu tiên.',
-    badge: 'Phổ biến',
+    label: 'quiz.matching',
+    desc: 'quiz.mode_matching_desc',
+    badge: 'quiz.popular',
     icon: LayersIcon,
     available: true,
   },
   {
     id: 'FILL_BLANK' as QuizMode,
-    label: 'Điền từ vào chỗ trống',
-    desc: 'Gõ từ còn thiếu trong ngữ cảnh câu',
-    badge: 'Thử thách',
+    label: 'quiz.fill_blank',
+    desc: 'quiz.mode_fill_blank_desc',
+    badge: 'quiz.challenge',
     icon: EditIcon,
     available: true,
   },
-];
+] as const satisfies readonly {
+  id: QuizMode;
+  label: TxKeyPath;
+  desc: TxKeyPath;
+  badge: TxKeyPath;
+  icon: React.ComponentType<any>;
+  available: boolean;
+}[];
 
 export const PRESET_COUNTS: (5 | 10 | 20)[] = [5, 10, 20];
 
 export function QuizSetupScreen() {
   const router = useRouter();
-  const insets = useSafeAreaInsets();
   const params = useLocalSearchParams<{
     topicId?: string;
     topicName?: string;
@@ -164,15 +171,19 @@ export function QuizSetupScreen() {
     unfinished: QuizHistorySummaryResponse,
     request: CreateQuizRequest,
   ) => {
-    const modeLabel = QUIZ_MODES.find(m => m.id === unfinished.mode)?.label ?? unfinished.mode;
+    const modeLabel = translate(QUIZ_MODES.find(m => m.id === unfinished.mode)?.label ?? 'quiz.title');
     Alert.alert(
-      'Bạn có một bài Quiz đang làm dở',
-      `${modeLabel} · ${unfinished.questionCount} câu · ${selectedTopicName}.`,
+      translate('quiz.unfinished_title'),
+      translate('quiz.unfinished_body', {
+        mode: modeLabel,
+        count: unfinished.questionCount,
+        topic: selectedTopicName,
+      }),
       [
-        { text: 'Huỷ', style: 'cancel' },
-        { text: 'Tiếp tục bài cũ', onPress: () => openSession(unfinished.quizId) },
+        { text: translate('quiz.cancel'), style: 'cancel' },
+        { text: translate('quiz.continue_existing'), onPress: () => openSession(unfinished.quizId) },
         {
-          text: 'Bắt đầu bài mới',
+          text: translate('quiz.start_new'),
           style: 'destructive',
           onPress: () => cancelMutation.mutate(
             { quizId: unfinished.quizId },
@@ -184,7 +195,7 @@ export function QuizSetupScreen() {
                 setIdempotencyKey(key);
                 createQuiz(request, key);
               },
-              onError: () => setErrorMessage('Không thể huỷ bài Quiz đang làm dở. Vui lòng thử lại.'),
+              onError: () => setErrorMessage(translate('quiz.cancel_unfinished_error')),
             },
           ),
         },
@@ -194,7 +205,7 @@ export function QuizSetupScreen() {
 
   const handleStartQuiz = async () => {
     if (!selectedTopicId) {
-      setErrorMessage('Vui lòng chọn chủ đề từ vựng trước khi bắt đầu bài Quiz.');
+      setErrorMessage(translate('quiz.select_topic_error'));
       return;
     }
     if (isBusy)
@@ -249,17 +260,17 @@ export function QuizSetupScreen() {
             const requested = errData?.requestedCount ?? questionCount;
             const smaller = PRESET_COUNTS.filter(c => c <= eligible).at(-1);
             setErrorMessage(smaller
-              ? `Chủ đề này chỉ có ${eligible} từ vựng đủ điều kiện, chưa đủ cho Quiz ${requested} câu. Hãy chọn ${smaller} câu hoặc thêm từ vựng.`
-              : `Chủ đề này chỉ có ${eligible} từ vựng đủ điều kiện, cần ít nhất 5 từ để tạo Quiz. Hãy thêm từ vựng hoặc chọn chủ đề khác.`);
+              ? translate('quiz.insufficient_requested', { eligible, requested, smaller })
+              : translate('quiz.insufficient_minimum', { eligible }));
           }
           else if (errorType === 'TOPIC_TEMPLATE_NOT_CONFIGURED') {
-            setErrorMessage('Chủ đề này chưa cấu hình mẫu thẻ học phù hợp để tạo Quiz.');
+            setErrorMessage(translate('quiz.template_missing'));
           }
           else if (errorType === 'NOT_ENOUGH_DISTINCT_ANSWERS') {
-            setErrorMessage('Không đủ đáp án phân biệt để tạo các lựa chọn trắc nghiệm cho chủ đề này.');
+            setErrorMessage(translate('quiz.distractors_missing'));
           }
           else {
-            setErrorMessage('Không thể tạo bài Quiz. Vui lòng kiểm tra lại kết nối và thử lại.');
+            setErrorMessage(translate('quiz.create_error'));
           }
         },
       },
@@ -271,12 +282,13 @@ export function QuizSetupScreen() {
   const activePercent = (selectedIdx / (PRESET_COUNTS.length - 1)) * 100;
 
   return (
-    <SafeAreaView className="flex-1 bg-[#F7F8FA]" edges={['top']}>
+    <SafeAreaView style={{ flex: 1 }} className="flex-1 bg-[#F7F8FA] dark:bg-neutral-950" edges={['top', 'bottom']}>
 
       {/* 1. HEADER */}
-      <ScreenHeader title="Thiết lập Quiz" onBack={navigateBackSafely} />
+      <ScreenHeader title={translate('quiz.setup_title')} onBack={navigateBackSafely} />
 
       <ScrollView
+        style={{ flex: 1 }}
         contentContainerStyle={{ padding: 20, paddingBottom: 130 }}
         showsVerticalScrollIndicator={false}
       >
@@ -292,18 +304,18 @@ export function QuizSetupScreen() {
 
         {/* SECTION 1: CHỦ ĐỀ HIỆN TẠI */}
         <View className="mb-8">
-          <Text className="mb-1 font-nunito text-[18px] font-extrabold text-mascot-navy">Chủ đề từ vựng</Text>
-          <Text className="mb-3 font-inter text-[13px] font-medium text-neutral-400">
-            Chủ đề bạn sẽ rèn luyện phản xạ trong bài Quiz
+          <Text className="mb-1 font-nunito text-[18px] font-extrabold text-mascot-navy dark:text-white">{translate('quiz.topic')}</Text>
+          <Text className="mb-3 font-inter text-[13px] font-medium text-neutral-500 dark:text-neutral-400">
+            {translate('quiz.topic_hint')}
           </Text>
 
           {isTopicsError && (
             <View className="mb-3 flex-row items-center justify-between gap-3 rounded-2xl border border-red-200 bg-red-50 p-3.5">
               <Text className="flex-1 font-inter text-[13px] font-semibold text-red-700">
-                Không tải được danh sách chủ đề.
+                {translate('quiz.topics_load_error')}
               </Text>
               <Pressable onPress={() => void refetchTopics()} className="min-h-10 justify-center px-2 active:opacity-60">
-                <Text className="font-nunito text-[13px] font-extrabold text-red-700">Thử lại</Text>
+                <Text className="font-nunito text-[13px] font-extrabold text-red-700">{translate('quiz.retry')}</Text>
               </Pressable>
             </View>
           )}
@@ -311,48 +323,48 @@ export function QuizSetupScreen() {
           {selectedTopicId && selectedTopicName ? (
             <Pressable
               onPress={handleOpenTopicPicker}
-              className="flex-row items-center justify-between rounded-2xl border-2 border-b-4 border-primary-500 bg-primary-50/80 p-3.5 active:translate-y-px"
+              className="dark:bg-primary-950/40 flex-row items-center justify-between rounded-2xl border-2 border-b-4 border-primary-500 bg-primary-50/80 p-3.5 active:translate-y-px dark:border-primary-700"
             >
               <View className="flex-1 flex-row items-center gap-3 pr-2">
-                <View className="size-11 items-center justify-center rounded-xl border border-primary-200 bg-white shadow-xs">
+                <View className="size-11 items-center justify-center rounded-xl border border-primary-200 bg-white shadow-xs dark:border-primary-800 dark:bg-neutral-900">
                   <Text className="text-[22px]">🎯</Text>
                 </View>
                 <View className="flex-1">
-                  <Text className="mb-0.5 font-nunito text-[15px] font-extrabold text-primary-800" numberOfLines={1}>
+                  <Text className="mb-0.5 font-nunito text-[15px] font-extrabold text-primary-800 dark:text-primary-200" numberOfLines={1}>
                     {selectedTopicName}
                   </Text>
-                  <Text className="font-inter text-[12px] font-medium text-primary-700" numberOfLines={1}>
+                  <Text className="font-inter text-[12px] font-medium text-primary-700 dark:text-primary-300" numberOfLines={1}>
                     {selectedTopic?.collectionName
-                      ? `Bộ sưu tập: ${selectedTopic.collectionName}`
-                      : (selectedTopic?.translation || 'Toàn bộ từ vựng trong chủ đề')}
+                      ? translate('quiz.collection_prefix', { name: selectedTopic.collectionName })
+                      : (selectedTopic?.translation || translate('quiz.topic_all_words'))}
                   </Text>
                 </View>
               </View>
-              <View className="flex-row items-center gap-1 rounded-xl border border-primary-200 bg-white/90 px-2.5 py-1.5 shadow-xs">
-                <Text className="font-nunito text-[12px] font-extrabold text-primary-700">Đổi</Text>
+              <View className="flex-row items-center gap-1 rounded-xl border border-primary-200 bg-white/90 px-2.5 py-1.5 shadow-xs dark:border-primary-800 dark:bg-neutral-900">
+                <Text className="font-nunito text-[12px] font-extrabold text-primary-700 dark:text-primary-200">{translate('quiz.change')}</Text>
                 <ChevronRightIcon size={14} className="text-primary-600" />
               </View>
             </Pressable>
           ) : (
             <Pressable
               onPress={handleOpenTopicPicker}
-              className="flex-row items-center justify-between rounded-2xl border-2 border-dashed border-neutral-300 bg-white p-4 active:bg-neutral-50"
+              className="flex-row items-center justify-between rounded-2xl border-2 border-dashed border-neutral-300 bg-white p-4 active:bg-neutral-50 dark:border-neutral-700 dark:bg-neutral-900 dark:active:bg-neutral-800"
             >
               <View className="flex-1 flex-row items-center gap-3 pr-2">
-                <View className="size-11 items-center justify-center rounded-xl border border-dashed border-neutral-300 bg-neutral-50">
+                <View className="size-11 items-center justify-center rounded-xl border border-dashed border-neutral-300 bg-neutral-50 dark:border-neutral-700 dark:bg-neutral-800">
                   <Text className="text-[22px]">📚</Text>
                 </View>
                 <View className="flex-1">
-                  <Text className="font-nunito text-[15px] font-extrabold text-mascot-navy">
-                    Chọn chủ đề
+                  <Text className="font-nunito text-[15px] font-extrabold text-mascot-navy dark:text-white">
+                    {translate('quiz.choose_topic')}
                   </Text>
-                  <Text className="font-inter text-[12px] font-medium text-neutral-400">
-                    Chạm để chọn nguồn từ vựng làm bài Quiz
+                  <Text className="font-inter text-[12px] font-medium text-neutral-500 dark:text-neutral-400">
+                    {translate('quiz.choose_topic_hint')}
                   </Text>
                 </View>
               </View>
-              <View className="flex-row items-center gap-1 rounded-xl bg-neutral-100 px-2.5 py-1.5">
-                <Text className="font-nunito text-[12px] font-bold text-neutral-600">Chọn</Text>
+              <View className="flex-row items-center gap-1 rounded-xl bg-neutral-100 px-2.5 py-1.5 dark:bg-neutral-800">
+                <Text className="font-nunito text-[12px] font-bold text-neutral-600 dark:text-neutral-200">{translate('quiz.choose')}</Text>
                 <ChevronRightIcon size={14} className="text-neutral-500" />
               </View>
             </Pressable>
@@ -362,9 +374,9 @@ export function QuizSetupScreen() {
         {/* SECTION 2: CHỌN HƯỚNG TRẮC NGHIỆM (Chỉ cho MCQ & MATCHING) */}
         {quizMode !== 'FILL_BLANK' && (
           <View className="mb-8">
-            <Text className="mb-1 font-nunito text-[18px] font-extrabold text-mascot-navy">Chiều ôn tập</Text>
-            <Text className="mb-3 font-inter text-[13px] font-medium text-neutral-400">
-              Chọn cách bạn muốn hiển thị câu hỏi và đáp án
+            <Text className="mb-1 font-nunito text-[18px] font-extrabold text-mascot-navy dark:text-white">{translate('quiz.direction')}</Text>
+            <Text className="mb-3 font-inter text-[13px] font-medium text-neutral-500 dark:text-neutral-400">
+              {translate('quiz.direction_hint')}
             </Text>
 
             <View className="flex-row gap-3">
@@ -374,26 +386,26 @@ export function QuizSetupScreen() {
                 className={cn(
                   'flex-1 items-center rounded-2xl border-2 border-b-4 p-3.5 transition-all',
                   direction === 'EN_VI'
-                    ? 'border-primary-500 bg-primary-50/80 active:translate-y-px active:border-b-[3px]'
-                    : 'border-neutral-100 bg-white active:translate-y-[2px] active:border-b-2 active:bg-neutral-50',
+                    ? 'dark:bg-primary-950/30 border-primary-500 bg-primary-50/80 active:translate-y-px active:border-b-[3px] dark:border-primary-700'
+                    : 'border-neutral-100 bg-white active:translate-y-[2px] active:border-b-2 active:bg-neutral-50 dark:border-neutral-700 dark:bg-neutral-900 dark:active:bg-neutral-800',
                 )}
               >
                 <Text className="mb-1.5 text-[20px]">🇬🇧 ➔ 🇻🇳</Text>
                 <Text
                   className={cn(
                     'mb-0.5 text-center font-nunito text-[14px] font-extrabold',
-                    direction === 'EN_VI' ? 'text-primary-800' : 'text-mascot-navy',
+                    direction === 'EN_VI' ? 'text-primary-800 dark:text-primary-200' : 'text-mascot-navy dark:text-white',
                   )}
                 >
-                  Anh → Việt
+                  {translate('quiz.english_to_vietnamese')}
                 </Text>
                 <Text
                   className={cn(
                     'text-center font-inter text-[11px] font-medium',
-                    direction === 'EN_VI' ? 'text-primary-700' : 'text-neutral-400',
+                    direction === 'EN_VI' ? 'text-primary-700 dark:text-primary-300' : 'text-neutral-400 dark:text-neutral-500',
                   )}
                 >
-                  Từ vựng ➔ Nghĩa đúng
+                  {translate('quiz.word_to_meaning')}
                 </Text>
               </Pressable>
 
@@ -403,26 +415,26 @@ export function QuizSetupScreen() {
                 className={cn(
                   'flex-1 items-center rounded-2xl border-2 border-b-4 p-3.5 transition-all',
                   direction === 'VI_EN'
-                    ? 'border-primary-500 bg-primary-50/80 active:translate-y-px active:border-b-[3px]'
-                    : 'border-neutral-100 bg-white active:translate-y-[2px] active:border-b-2 active:bg-neutral-50',
+                    ? 'dark:bg-primary-950/30 border-primary-500 bg-primary-50/80 active:translate-y-px active:border-b-[3px] dark:border-primary-700'
+                    : 'border-neutral-100 bg-white active:translate-y-[2px] active:border-b-2 active:bg-neutral-50 dark:border-neutral-700 dark:bg-neutral-900 dark:active:bg-neutral-800',
                 )}
               >
                 <Text className="mb-1.5 text-[20px]">🇻🇳 ➔ 🇬🇧</Text>
                 <Text
                   className={cn(
                     'mb-0.5 text-center font-nunito text-[14px] font-extrabold',
-                    direction === 'VI_EN' ? 'text-primary-800' : 'text-mascot-navy',
+                    direction === 'VI_EN' ? 'text-primary-800 dark:text-primary-200' : 'text-mascot-navy dark:text-white',
                   )}
                 >
-                  Việt → Anh
+                  {translate('quiz.vietnamese_to_english')}
                 </Text>
                 <Text
                   className={cn(
                     'text-center font-inter text-[11px] font-medium',
-                    direction === 'VI_EN' ? 'text-primary-700' : 'text-neutral-400',
+                    direction === 'VI_EN' ? 'text-primary-700 dark:text-primary-300' : 'text-neutral-400 dark:text-neutral-500',
                   )}
                 >
-                  Nghĩa ➔ Phản xạ từ
+                  {translate('quiz.meaning_to_word')}
                 </Text>
               </Pressable>
             </View>
@@ -432,11 +444,7 @@ export function QuizSetupScreen() {
         {/* SECTION 3: CHỌN KIỂU QUIZ */}
         <View className="mb-8">
           <View className="mb-4 flex-row items-center justify-between">
-            <Text className="font-nunito text-[18px] font-extrabold text-mascot-navy">Chế độ Quiz</Text>
-            <View className="flex-row items-center gap-1 rounded-md border border-warning-200 bg-warning-50 px-2 py-0.5">
-              <SparklesIcon size={12} className="text-warning-600" />
-              <Text className="font-inter text-[11px] font-bold text-warning-700">Chấm tự động</Text>
-            </View>
+            <Text className="font-nunito text-[18px] font-extrabold text-mascot-navy dark:text-white">{translate('quiz.mode')}</Text>
           </View>
 
           <View className="gap-3">
@@ -450,42 +458,42 @@ export function QuizSetupScreen() {
                   className={cn(
                     'flex-row items-center justify-between rounded-2xl border-2 border-b-4 p-4 transition-all',
                     isSelected
-                      ? 'border-primary-500 bg-primary-50/80 active:translate-y-px active:border-b-[3px]'
-                      : 'border-neutral-100 bg-white active:translate-y-[2px] active:border-b-2 active:bg-neutral-50',
+                      ? 'dark:bg-primary-950/30 border-primary-500 bg-primary-50/80 active:translate-y-px active:border-b-[3px] dark:border-primary-700'
+                      : 'border-neutral-100 bg-white active:translate-y-[2px] active:border-b-2 active:bg-neutral-50 dark:border-neutral-700 dark:bg-neutral-900 dark:active:bg-neutral-800',
                   )}
                 >
                   <View className="flex-1 flex-row items-center gap-3.5 pr-2">
                     <View
                       className={cn(
                         'size-12 items-center justify-center rounded-xl border',
-                        isSelected ? 'border-primary-600 bg-primary-500' : 'border-neutral-200 bg-neutral-100',
+                        isSelected ? 'border-primary-600 bg-primary-500' : 'border-neutral-200 bg-neutral-100 dark:border-neutral-700 dark:bg-neutral-800',
                       )}
                     >
-                      <Icon size={22} className={isSelected ? 'text-white' : 'text-neutral-500'} />
+                      <Icon size={22} className={isSelected ? 'text-white' : 'text-neutral-500 dark:text-neutral-300'} />
                     </View>
                     <View className="flex-1">
                       <View className="mb-0.5 flex-row items-center gap-2">
                         <Text
                           className={cn(
                             'font-nunito text-[15px] font-extrabold',
-                            isSelected ? 'text-primary-800' : 'text-mascot-navy',
+                            isSelected ? 'text-primary-800 dark:text-primary-200' : 'text-mascot-navy dark:text-white',
                           )}
                         >
-                          {mode.label}
+                          {translate(mode.label)}
                         </Text>
-                        <View className="rounded-sm border border-primary-200 bg-primary-100 px-1.5 py-0.5 text-[10px]">
-                          <Text className="font-inter text-[10px] font-bold text-primary-700">
-                            {mode.badge}
+                        <View className="dark:bg-primary-950 rounded-sm border border-primary-200 bg-primary-100 px-1.5 py-0.5 text-[10px] dark:border-primary-800">
+                          <Text className="font-inter text-[10px] font-bold text-primary-700 dark:text-primary-200">
+                            {translate(mode.badge)}
                           </Text>
                         </View>
                       </View>
                       <Text
                         className={cn(
                           'font-inter text-[12px] font-medium',
-                          isSelected ? 'text-primary-700' : 'text-neutral-400',
+                          isSelected ? 'text-primary-700 dark:text-primary-300' : 'text-neutral-400 dark:text-neutral-500',
                         )}
                       >
-                        {mode.desc}
+                        {translate(mode.desc)}
                       </Text>
                     </View>
                   </View>
@@ -493,7 +501,7 @@ export function QuizSetupScreen() {
                   <View
                     className={cn(
                       'size-6 shrink-0 items-center justify-center rounded-full border-2',
-                      isSelected ? 'border-primary-500 bg-primary-500' : 'border-neutral-200',
+                      isSelected ? 'border-primary-500 bg-primary-500' : 'border-neutral-200 dark:border-neutral-700',
                     )}
                   >
                     {isSelected && <CheckCircleIcon size={14} className="text-white" />}
@@ -506,18 +514,18 @@ export function QuizSetupScreen() {
 
         {/* SECTION 4: SỐ CÂU HỎI (5 | 10 | 20) */}
         <View className="mb-4">
-          <Text className="mb-4 font-nunito text-[18px] font-extrabold text-mascot-navy">Số lượng câu hỏi</Text>
+          <Text className="mb-4 font-nunito text-[18px] font-extrabold text-mascot-navy dark:text-white">{translate('quiz.question_count')}</Text>
 
-          <View className="items-center rounded-3xl border-2 border-neutral-100 bg-white p-6 shadow-sm shadow-black/5">
-            <Text className="mb-6 text-center font-nunito text-[38px] font-extrabold text-mascot-navy">
+          <View className="items-center rounded-3xl border-2 border-neutral-100 bg-white p-6 shadow-sm shadow-black/5 dark:border-neutral-700 dark:bg-neutral-900">
+            <Text className="mb-6 text-center font-nunito text-[38px] font-extrabold text-mascot-navy dark:text-white">
               {questionCount}
               {' '}
-              <Text className="font-inter text-[18px] text-neutral-400">câu</Text>
+              <Text className="font-inter text-[18px] text-neutral-400">{translate('quiz.questions')}</Text>
             </Text>
 
             <View className="relative w-full flex-row items-center justify-between px-6">
               {/* Background Track */}
-              <View className="absolute inset-x-10 top-1/2 h-2 -translate-y-1/2 rounded-full bg-neutral-100" />
+              <View className="absolute inset-x-10 top-1/2 h-2 -translate-y-1/2 rounded-full bg-neutral-100 dark:bg-neutral-700" />
 
               {/* Active Filled Track */}
               <View
@@ -536,14 +544,14 @@ export function QuizSetupScreen() {
                   >
                     <View
                       className={cn(
-                        'size-7 items-center justify-center rounded-full border-4 border-white shadow-sm transition-all',
-                        isSelected ? 'scale-125 bg-primary-500 shadow-primary-500/40' : 'bg-neutral-300',
+                        'size-7 items-center justify-center rounded-full border-4 border-white shadow-sm transition-all dark:border-neutral-800',
+                        isSelected ? 'scale-125 bg-primary-500 shadow-primary-500/40' : 'bg-neutral-300 dark:bg-neutral-600',
                       )}
                     />
                     <Text
                       className={cn(
                         'mt-3 font-inter text-[14px] font-bold',
-                        isSelected ? 'font-extrabold text-primary-600' : 'text-neutral-400',
+                        isSelected ? 'font-extrabold text-primary-600 dark:text-primary-300' : 'text-neutral-400 dark:text-neutral-500',
                       )}
                     >
                       {preset}
@@ -559,8 +567,7 @@ export function QuizSetupScreen() {
 
       {/* STICKY BOTTOM CTA */}
       <View
-        style={{ bottom: insets.bottom }}
-        className="absolute inset-x-0 border-t border-neutral-100 bg-white p-5 shadow-lg shadow-black/5"
+        className="border-t border-neutral-100 bg-white p-5 shadow-lg shadow-black/5 dark:border-neutral-800 dark:bg-neutral-900"
       >
         <Pressable
           onPress={handleStartQuiz}
@@ -583,7 +590,7 @@ export function QuizSetupScreen() {
                   !selectedTopicId ? 'text-neutral-400' : 'text-white',
                 )}
               >
-                {selectedTopicId ? `Bắt đầu Quiz (${questionCount} câu)` : 'Chọn chủ đề để bắt đầu'}
+                {selectedTopicId ? translate('quiz.start_counted', { count: questionCount }) : translate('quiz.select_topic_to_start')}
               </Text>
               {selectedTopicId && <ArrowRightIcon size={20} className="text-white" />}
             </>

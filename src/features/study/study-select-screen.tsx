@@ -23,10 +23,10 @@ export function StudySelectScreen() {
   );
   return (
     <SafeAreaView
-      className="flex-1 bg-[#F7F8F2] dark:bg-neutral-950"
+      className="flex-1 bg-[#F7F8F2] dark:bg-[#181A1F]"
       edges={['top', 'bottom']}
     >
-      <View className="flex-row items-center bg-white px-4 py-3 dark:bg-neutral-900">
+      <View className="flex-row items-center bg-white px-4 py-3 dark:bg-[#22252B]">
         <BackButton onPress={() => router.back()} hitSlop={10} />
         <Text className="ml-3 flex-1 font-nunito text-xl font-black text-mascot-navy dark:text-white">
           {translate('learn.hub.study_choose_collection')}
@@ -73,7 +73,7 @@ export function StudySelectScreen() {
             key={collection.id}
             onPress={() => openCollection(collection.id, collection.name)}
             android_ripple={{ color: 'transparent' }}
-            className="flex-row items-center rounded-2xl border-2 border-b-4 border-neutral-200 border-b-neutral-300 bg-white p-4 active:translate-y-px active:border-b-2 dark:border-neutral-800 dark:border-b-neutral-900 dark:bg-neutral-900"
+            className="flex-row items-center rounded-2xl border-2 border-b-4 border-neutral-200 border-b-neutral-300 bg-white p-4 active:translate-y-px active:border-b-2 dark:border-[#46505C] dark:border-b-[#667382] dark:bg-[#22252B]"
           >
             <View className="mr-3 size-12 items-center justify-center rounded-2xl border border-emerald-100 bg-emerald-50 dark:border-emerald-900 dark:bg-emerald-950/50">
               <FolderIcon width={22} height={22} color="#16A34A" />

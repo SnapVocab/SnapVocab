@@ -1,6 +1,7 @@
 import type { StateCreator } from 'zustand';
 import type { AddFieldParams, TemplateBuilderState } from '../store-types';
 import type { BuilderField, BuilderSection, SchemaAttributeDTO } from '../types';
+import { translate } from '@/lib/i18n';
 import {
   createFieldFromAttribute,
   createFieldFromCustomInput,
@@ -85,7 +86,7 @@ export const createFieldSlice: StateCreator<
     let updatedGroups = schema?.groups ?? [];
     if (newAttr && schema) {
       const targetSec = [...frontSections, ...backSections].find(s => s.id === sectionId);
-      const groupName = targetSec?.name ?? 'Thông tin chung';
+      const groupName = targetSec?.name ?? translate('template_builder.default_section_general');
       const existingGroupIndex = updatedGroups.findIndex(
         g => g.label === groupName || g.name === groupName,
       );

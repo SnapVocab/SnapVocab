@@ -3,6 +3,7 @@ import * as React from 'react';
 import { View } from 'react-native';
 import { Text } from '@/components/ui';
 import { BookIcon, BoxIcon, StarIcon, TrophyIcon, ZapIcon } from '@/components/ui/icons';
+import { translate } from '@/lib/i18n';
 
 export type RecentXpEventsListProps = {
   events: XpEvent[];
@@ -17,28 +18,28 @@ function getSourceInfo(sourceType: XpSourceType): {
   switch (sourceType) {
     case 'QUIZ':
       return {
-        title: 'Hoàn thành bài Quiz',
+        title: translate('progressUx.xpSourceQuiz'),
         icon: color => <TrophyIcon color={color} width={16} height={16} />,
         bgColor: 'bg-blue-50 dark:bg-blue-950/40',
         iconColor: '#3B82F6',
       };
     case 'FLASHCARD_REVIEW':
       return {
-        title: 'Ôn tập thẻ từ vựng (SRS)',
+        title: translate('progressUx.xpSourceReview'),
         icon: color => <BookIcon color={color} width={16} height={16} />,
         bgColor: 'bg-emerald-50 dark:bg-emerald-950/40',
         iconColor: '#10B981',
       };
     case 'SAVE_WORD':
       return {
-        title: 'Lưu từ vựng mới',
+        title: translate('progressUx.xpSourceSaveWord'),
         icon: color => <BookIcon color={color} width={16} height={16} />,
         bgColor: 'bg-sky-50 dark:bg-sky-950/40',
         iconColor: '#0EA5E9',
       };
     case 'MISSION_REWARD':
       return {
-        title: 'Thưởng nhiệm vụ',
+        title: translate('progressUx.xpSourceMission'),
         icon: color => <StarIcon color={color} width={16} height={16} />,
         bgColor: 'bg-amber-50 dark:bg-amber-950/40',
         iconColor: '#F59E0B',
@@ -46,14 +47,14 @@ function getSourceInfo(sourceType: XpSourceType): {
     case 'DAILY_CHEST':
     case 'WEEKLY_CHEST':
       return {
-        title: sourceType === 'DAILY_CHEST' ? 'Rương thưởng ngày' : 'Rương thưởng tuần',
+        title: translate(sourceType === 'DAILY_CHEST' ? 'progressUx.xpSourceDailyChest' : 'progressUx.xpSourceWeeklyChest'),
         icon: color => <BoxIcon color={color} width={16} height={16} />,
         bgColor: 'bg-orange-50 dark:bg-orange-950/40',
         iconColor: '#F97316',
       };
     case 'ADMIN_ADJUSTMENT':
       return {
-        title: 'Điều chỉnh XP',
+        title: translate('progressUx.xpSourceAdjustment'),
         icon: color => <ZapIcon color={color} width={16} height={16} />,
         bgColor: 'bg-neutral-100 dark:bg-neutral-800',
         iconColor: '#64748B',
@@ -61,7 +62,7 @@ function getSourceInfo(sourceType: XpSourceType): {
     default:
       // A source added on the backend before this client knows it.
       return {
-        title: 'Nhận XP',
+        title: translate('progressUx.xpSourceGeneric'),
         icon: color => <ZapIcon color={color} width={16} height={16} />,
         bgColor: 'bg-primary-50 dark:bg-primary-950/40',
         iconColor: '#58CC02',
@@ -77,13 +78,13 @@ function formatRelativeTime(dateStr: string): string {
   const diffMs = Date.now() - time;
   const diffMinutes = Math.floor(diffMs / 60000);
   if (diffMinutes < 1)
-    return 'Vừa xong';
+    return translate('progressUx.justNow');
   if (diffMinutes < 60)
-    return `${diffMinutes} phút trước`;
+    return translate('progressUx.minutesAgo', { count: diffMinutes });
   const diffHours = Math.floor(diffMinutes / 60);
   if (diffHours < 24)
-    return `${diffHours} giờ trước`;
-  return `${Math.floor(diffHours / 24)} ngày trước`;
+    return translate('progressUx.hoursAgo', { count: diffHours });
+  return translate('progressUx.daysAgo', { count: Math.floor(diffHours / 24) });
 }
 
 export function RecentXpEventsList({ events }: RecentXpEventsListProps) {
@@ -91,11 +92,11 @@ export function RecentXpEventsList({ events }: RecentXpEventsListProps) {
     return (
       <View className="mb-4 rounded-3xl border border-neutral-100 bg-white p-5 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
         <Text className="font-nunito text-xs font-black tracking-wider text-neutral-500 uppercase dark:text-neutral-400">
-          Lịch sử nhận kinh nghiệm gần đây
+          {translate('progressUx.recentXpTitle')}
         </Text>
         <View className="mt-4 items-center justify-center py-6">
           <Text className="font-inter text-[13px] text-neutral-500">
-            Chưa có sự kiện nhận XP nào gần đây
+            {translate('progressUx.recentXpEmpty')}
           </Text>
         </View>
       </View>
@@ -105,7 +106,7 @@ export function RecentXpEventsList({ events }: RecentXpEventsListProps) {
   return (
     <View className="mb-4 rounded-3xl border border-neutral-100 bg-white p-5 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
       <Text className="font-nunito text-xs font-black tracking-wider text-neutral-500 uppercase dark:text-neutral-400">
-        Lịch sử nhận kinh nghiệm gần đây
+        {translate('progressUx.recentXpTitle')}
       </Text>
 
       <View className="mt-3 divide-y divide-neutral-100 dark:divide-neutral-800">
@@ -132,7 +133,7 @@ export function RecentXpEventsList({ events }: RecentXpEventsListProps) {
               <View className="shrink-0 rounded-full bg-info-50 px-2.5 py-1 dark:bg-info-700/30">
                 <Text className="font-nunito text-xs font-black text-info-800 dark:text-info-400">
                   +
-                  {evt.amount.toLocaleString('vi-VN')}
+                  {evt.amount.toLocaleString()}
                   {' '}
                   XP
                 </Text>

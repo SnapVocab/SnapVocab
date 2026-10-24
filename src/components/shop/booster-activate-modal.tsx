@@ -3,6 +3,7 @@ import { router } from 'expo-router';
 import { ZapIcon } from 'lucide-react-native';
 import * as React from 'react';
 import { useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Modal, Text, View } from 'react-native';
 import { Button, useSurface } from '@/components/ui';
 import { generateIdempotencyKey } from '@/features/quiz/utils/idempotency';
@@ -10,12 +11,12 @@ import { isOutcomeUnknown, parseShopError } from '@/features/shop/api';
 import { useActivateBoosterMutation } from '@/features/shop/hooks/use-shop-queries';
 
 /** HH:mm, plus the date when expiry is not on the server's current day (a 180-minute booster can cross midnight). */
-function formatUntil(expiresAt: string, serverNow: string) {
+function formatUntil(expiresAt: string, serverNow: string, locale: string) {
   const end = new Date(expiresAt);
-  const time = end.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+  const time = end.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' });
   return end.toDateString() === new Date(serverNow).toDateString()
     ? time
-    : `${time} ${end.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' })}`;
+    : `${time} ${end.toLocaleDateString(locale, { day: '2-digit', month: '2-digit' })}`;
 }
 
 export type BoosterItem = Pick<InventoryItemDTO, 'itemId' | 'name' | 'config' | 'quantity'>;
@@ -28,6 +29,7 @@ export type BoosterItem = Pick<InventoryItemDTO, 'itemId' | 'name' | 'config' | 
 export function BoosterActivateModal({ item, onClose }: { item: BoosterItem | null; onClose: () => void }) {
   const activate = useActivateBoosterMutation();
   const s = useSurface();
+  const { t, i18n } = useTranslation();
   const [result, setResult] = useState<ActivationResultDTO | null>(null);
   // One key per opening: a retried tap after a lost response replays instead of spending a second card.
   const idempotencyKey = useMemo(() => (item ? generateIdempotencyKey() : ''), [item]);
@@ -60,7 +62,7 @@ export function BoosterActivateModal({ item, onClose }: { item: BoosterItem | nu
 
   // A replayed key returns the original activation, which may already be over (compare on server time).
   const expired = result != null && Date.parse(result.activation.expiresAt) <= Date.parse(result.serverNow);
-  const until = result ? formatUntil(result.activation.expiresAt, result.serverNow) : '';
+  const until = result ? formatUntil(result.activation.expiresAt, result.serverNow, i18n.language) : '';
 
   return (
     <Modal visible transparent animationType="fade" onRequestClose={close}>
@@ -73,48 +75,48 @@ export function BoosterActivateModal({ item, onClose }: { item: BoosterItem | nu
           {result && expired ? (
             <>
               <Text style={{ color: s.text }} className="mb-1 text-center font-nunito text-[20px] font-extrabold">
-                Lần kích hoạt trước đã kết thúc
+                {t('shopUi.boosterExpiredTitle')}
               </Text>
               <Text style={{ color: s.textMuted }} className="mb-5 text-center font-inter text-[14px] leading-relaxed">
-                {`Booster này đã hết hiệu lực lúc ${until}. Còn ${result.quantity} thẻ trong Kho đồ.`}
+                {t('shopUi.boosterExpiredBody', { time: until, count: result.quantity })}
               </Text>
-              <Button variant="primary" label="Đóng" textClassName="font-nunito" onPress={close} />
+              <Button variant="primary" label={t('shopUi.close')} textClassName="font-nunito" onPress={close} />
             </>
           ) : result ? (
             <>
               <Text style={{ color: s.text }} className="mb-1 text-center font-nunito text-[20px] font-extrabold">
-                {`Đã kích hoạt ×${result.activation.multiplier} XP!`}
+                {t('shopUi.boosterActivatedTitle', { multiplier: result.activation.multiplier })}
               </Text>
               <Text style={{ color: s.textMuted }} className="mb-5 text-center font-inter text-[14px] leading-relaxed">
-                {`Hiệu lực đến ${until} · còn ${result.quantity} thẻ. Làm Quiz ngay để nhận ×${result.activation.multiplier} XP.`}
+                {t('shopUi.boosterActivatedBody', { time: until, count: result.quantity, multiplier: result.activation.multiplier })}
               </Text>
               <View className="w-full gap-2.5">
                 <Button
                   variant="primary"
-                  label="Bắt đầu Quiz"
+                  label={t('shopUi.startQuiz')}
                   textClassName="font-nunito"
                   onPress={() => {
                     close();
                     router.push('/study/quiz-setup');
                   }}
                 />
-                <Button variant="ghost" label="Đóng" textClassName="font-nunito" onPress={close} />
+                <Button variant="ghost" label={t('shopUi.close')} textClassName="font-nunito" onPress={close} />
               </View>
             </>
           ) : (
             <>
               <Text style={{ color: s.text }} className="mb-1 text-center font-nunito text-[20px] font-extrabold">
-                Kích hoạt booster?
+                {t('shopUi.boosterConfirmTitle')}
               </Text>
               <Text style={{ color: s.textMuted }} className="mb-2 text-center font-inter text-[14px] leading-relaxed">
-                {`Dùng 1 ${item.name}: ×${multiplier} XP trong ${minutes} phút, bắt đầu ngay.`}
+                {t('shopUi.boosterConfirmBody', { name: item.name, multiplier, minutes })}
               </Text>
               <Text style={{ color: s.textMuted }} className="mb-5 text-center font-inter text-[13px]">
-                {`Thời gian tính liên tục từ lúc kích hoạt · còn ${Math.max(0, item.quantity - 1)} thẻ sau khi dùng.`}
+                {t('shopUi.boosterConfirmFootnote', { count: Math.max(0, item.quantity - 1) })}
               </Text>
               <View className="w-full flex-row gap-3">
-                <Button variant="secondary" label="Để sau" textClassName="font-nunito" className="flex-1" fullWidth={false} disabled={activate.isPending} onPress={close} />
-                <Button variant="primary" label="Kích hoạt" textClassName="font-nunito" className="flex-1" fullWidth={false} loading={activate.isPending} onPress={() => void confirm()} />
+                <Button variant="secondary" label={t('shopUi.later')} textClassName="font-nunito" className="flex-1" fullWidth={false} disabled={activate.isPending} onPress={close} />
+                <Button variant="primary" label={t('shopUi.actionActivate')} textClassName="font-nunito" className="flex-1" fullWidth={false} loading={activate.isPending} onPress={() => void confirm()} />
               </View>
             </>
           )}

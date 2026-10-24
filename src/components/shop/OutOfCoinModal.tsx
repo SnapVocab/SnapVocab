@@ -2,6 +2,7 @@ import type { ShopItemDTO } from '@/features/shop/types';
 import { router } from 'expo-router';
 import { BookOpenIcon, TargetIcon, XIcon } from 'lucide-react-native';
 import * as React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Image, Modal, Pressable, Text, View } from 'react-native';
 import Animated, {
   useAnimatedStyle,
@@ -26,6 +27,7 @@ export function OutOfCoinModal({
   onClose,
 }: OutOfCoinModalProps) {
   const s = useSurface();
+  const { t, i18n } = useTranslation();
   const scaleValue = useSharedValue(0.85);
   const opacityValue = useSharedValue(0);
 
@@ -74,7 +76,7 @@ export function OutOfCoinModal({
           <Pressable
             onPress={onClose}
             accessibilityRole="button"
-            accessibilityLabel="Đóng"
+            accessibilityLabel={t('shopUi.close')}
             hitSlop={8}
             style={{ borderRadius: 20, backgroundColor: s.surfaceMuted }}
             className="absolute top-4 right-4 z-10 size-8 items-center justify-center active:opacity-70"
@@ -103,26 +105,13 @@ export function OutOfCoinModal({
 
           {/* Title & Guidance */}
           <Text style={{ color: s.text }} className="mb-1 text-center font-nunito text-[22px] font-extrabold">
-            Chưa đủ Coin rồi!
+            {t('shopUi.outOfCoinsTitle')}
           </Text>
           <Text style={{ color: s.textMuted }} className="mb-4 px-2 text-center font-inter text-[13px] leading-relaxed font-medium">
             {/* The server said "not enough" but the local balance disagrees: it is stale, so no number. */}
-            {missingCoins > 0 ? (
-              <>
-                Bạn cần thêm
-                {' '}
-                <Text className="font-extrabold text-amber-600">
-                  {missingCoins.toLocaleString('vi-VN')}
-                  {' '}
-                  Coin
-                </Text>
-                {' '}
-              </>
-            ) : 'Bạn chưa đủ Coin '}
-            để mua
-            {' '}
-            <Text style={{ color: s.text }} className="font-bold">{item.name}</Text>
-            .
+            {missingCoins > 0
+              ? t('shopUi.outOfCoinsNeed', { count: missingCoins, name: item.name })
+              : t('shopUi.outOfCoinsNeedUnknown', { name: item.name })}
           </Text>
 
           {/* Price & Balance Pill */}
@@ -131,7 +120,7 @@ export function OutOfCoinModal({
             className="mb-5 w-full flex-row items-center justify-around py-3"
           >
             <View className="items-center">
-              <Text className="mb-1 font-inter text-[11px] font-bold text-amber-800 uppercase">Giá vật phẩm</Text>
+              <Text className="mb-1 font-inter text-[11px] font-bold text-amber-800 uppercase">{t('shopUi.itemPrice')}</Text>
               <View className="flex-row items-center gap-1.5">
                 <Coin3D size="xs" />
                 <Text className="font-nunito text-[16px] font-extrabold text-amber-900 tabular-nums">
@@ -143,11 +132,11 @@ export function OutOfCoinModal({
             <View style={{ width: 1, height: 28, backgroundColor: '#FDE68A' }} />
 
             <View className="items-center">
-              <Text className="mb-1 font-inter text-[11px] font-bold text-neutral-400 uppercase">Bạn đang có</Text>
+              <Text className="mb-1 font-inter text-[11px] font-bold text-neutral-400 uppercase">{t('shopUi.youHave')}</Text>
               <View className="flex-row items-center gap-1.5">
                 <Coin3D size="xs" />
                 <Text className="font-nunito text-[16px] font-extrabold text-neutral-700 tabular-nums">
-                  {userCoins.toLocaleString()}
+                  {userCoins.toLocaleString(i18n.language)}
                 </Text>
               </View>
             </View>
@@ -169,7 +158,7 @@ export function OutOfCoinModal({
             >
               <TargetIcon size={18} color="white" />
               <Text className="font-nunito text-[14px] font-extrabold tracking-wide text-white uppercase">
-                Làm nhiệm vụ hằng ngày
+                {t('shopUi.earnCoinsMissions')}
               </Text>
             </Pressable>
 
@@ -183,7 +172,7 @@ export function OutOfCoinModal({
             >
               <BookOpenIcon size={16} color={s.textMuted} />
               <Text style={{ color: s.text }} className="font-inter text-[14px] font-bold">
-                Tiếp tục bài học
+                {t('shopUi.continueLearning')}
               </Text>
             </Pressable>
           </View>

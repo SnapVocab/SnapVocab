@@ -1,6 +1,7 @@
 /* eslint-disable max-lines-per-function */
 import type { QuizHistorySummaryResponse, QuizMode } from '../types';
 import type { HistoryFilterMode } from '../utils';
+import type { TxKeyPath } from '@/lib/i18n';
 import { useRouter } from 'expo-router';
 import * as React from 'react';
 import { useEffect, useMemo, useState } from 'react';
@@ -24,6 +25,7 @@ import {
   LayoutGridIcon,
 } from '@/components/ui/icons';
 import { Snapy } from '@/components/ui/snapy';
+import { translate } from '@/lib/i18n';
 import { useInfiniteQuizHistory } from '../api/quiz-api';
 import {
   filterQuizHistoryItems,
@@ -32,11 +34,11 @@ import {
   quizHistoryAction,
 } from '../utils';
 
-const FILTER_TABS: { key: HistoryFilterMode; label: string }[] = [
-  { key: 'ALL', label: 'Tất cả' },
-  { key: 'MCQ', label: 'Trắc nghiệm' },
-  { key: 'MATCHING', label: 'Ghép đôi' },
-  { key: 'FILL_BLANK', label: 'Điền từ' },
+const FILTER_TABS: { key: HistoryFilterMode; label: TxKeyPath }[] = [
+  { key: 'ALL', label: 'quiz.filter_all' },
+  { key: 'MCQ', label: 'quiz.multiple_choice' },
+  { key: 'MATCHING', label: 'quiz.matching' },
+  { key: 'FILL_BLANK', label: 'quiz.fill_blank' },
 ];
 
 export function QuizHistoryScreen() {
@@ -90,7 +92,7 @@ export function QuizHistoryScreen() {
     switch (type) {
       case 'MCQ':
         return {
-          label: 'Trắc nghiệm',
+          label: translate('quiz.multiple_choice'),
           Icon: LayoutGridIcon,
           bgClass: 'bg-blue-50 dark:bg-blue-950/40',
           textClass: 'text-blue-700 dark:text-blue-300',
@@ -98,7 +100,7 @@ export function QuizHistoryScreen() {
         };
       case 'MATCHING':
         return {
-          label: 'Ghép đôi',
+          label: translate('quiz.matching'),
           Icon: LayersIcon,
           bgClass: 'bg-purple-50 dark:bg-purple-950/40',
           textClass: 'text-purple-700 dark:text-purple-300',
@@ -106,7 +108,7 @@ export function QuizHistoryScreen() {
         };
       case 'FILL_BLANK':
         return {
-          label: 'Điền từ',
+          label: translate('quiz.fill_blank'),
           Icon: EditIcon,
           bgClass: 'bg-amber-50 dark:bg-amber-950/40',
           textClass: 'text-amber-700 dark:text-amber-300',
@@ -156,7 +158,7 @@ export function QuizHistoryScreen() {
           {item.status === 'IN_PROGRESS' && (
             <View className="rounded-lg bg-amber-100 px-2.5 py-1 dark:bg-amber-950/40">
               <Text className="font-nunito text-[11px] font-bold text-amber-800 dark:text-amber-300">
-                Đang làm
+                {translate('quiz.status_in_progress')}
               </Text>
             </View>
           )}
@@ -164,7 +166,7 @@ export function QuizHistoryScreen() {
           {item.status === 'CANCELLED' && (
             <View className="rounded-lg bg-neutral-100 px-2.5 py-1 dark:bg-neutral-700">
               <Text className="font-nunito text-[11px] font-bold text-neutral-600 dark:text-neutral-300">
-                Đã hủy
+                {translate('quiz.status_cancelled')}
               </Text>
             </View>
           )}
@@ -172,7 +174,7 @@ export function QuizHistoryScreen() {
           {item.status === 'EXPIRED' && (
             <View className="rounded-lg bg-neutral-100 px-2.5 py-1 dark:bg-neutral-700">
               <Text className="font-nunito text-[11px] font-bold text-neutral-600 dark:text-neutral-300">
-                Hết hạn
+                {translate('quiz.status_expired')}
               </Text>
             </View>
           )}
@@ -184,7 +186,7 @@ export function QuizHistoryScreen() {
             numberOfLines={1}
             className="font-nunito text-[17px] font-extrabold text-mascot-navy dark:text-white"
           >
-            {item.topicName || 'Chủ đề từ vựng'}
+            {item.topicName || translate('quiz.default_topic')}
           </Text>
           <Text className="mt-1 font-inter text-[12px] font-medium text-neutral-400 dark:text-neutral-500">
             {dateFormatted}
@@ -200,8 +202,8 @@ export function QuizHistoryScreen() {
           {item.status !== 'COMPLETED' ? (
             <Text className="font-inter text-[13px] font-bold text-neutral-500 dark:text-neutral-400">
               {item.questionCount}
-              {item.mode === 'MATCHING' ? ' cặp' : ' câu'}
-              {' · Chưa có điểm'}
+              {item.mode === 'MATCHING' ? ` ${translate('quiz.pairs')}` : ` ${translate('quiz.questions')}`}
+              {` · ${translate('quiz.no_score_yet')}`}
             </Text>
           ) : (
             <View className="flex-row items-center gap-3">
@@ -239,7 +241,7 @@ export function QuizHistoryScreen() {
                         : 'text-rose-600/80 dark:text-rose-400/80',
                   )}
                 >
-                  Chính xác
+                  {translate('quiz.accuracy')}
                 </Text>
               </View>
 
@@ -250,13 +252,13 @@ export function QuizHistoryScreen() {
                   /
                   {item.questionCount}
                   {' '}
-                  đúng
+                  {translate('quiz.correct')}
                   {(item.incorrectCount ?? 0) > 0 && (
                     <Text className="font-semibold text-rose-600 dark:text-rose-400">
                       {' · '}
                       {item.incorrectCount}
                       {' '}
-                      chưa đạt
+                      {translate('quiz.incorrect')}
                     </Text>
                   )}
                 </Text>
@@ -268,13 +270,13 @@ export function QuizHistoryScreen() {
           {action === 'NONE' ? (
             <View className="min-h-10 flex-row items-center px-1">
               <Text className="font-inter text-[12px] font-bold text-neutral-400 dark:text-neutral-500">
-                Không thể làm tiếp
+                {translate('quiz.cannot_continue')}
               </Text>
             </View>
           ) : (
             <View className="min-h-10 flex-row items-center gap-1 px-1">
               <Text className="font-nunito text-[13px] font-extrabold text-[#394158] dark:text-neutral-300">
-                {action === 'RESUME' ? 'Làm tiếp' : 'Xem lại'}
+                {action === 'RESUME' ? translate('quiz.resume') : translate('quiz.review')}
               </Text>
               <ArrowRightIcon width={14} height={14} stroke="#394158" />
             </View>
@@ -290,7 +292,7 @@ export function QuizHistoryScreen() {
       <View className="flex-row items-center justify-between border-b border-neutral-100 bg-white px-4 py-3 dark:border-neutral-800 dark:bg-neutral-900">
         <BackButton onPress={() => router.back()} className="-ml-2" />
         <Text className="font-nunito text-[18px] font-extrabold text-mascot-navy dark:text-white">
-          Lịch sử Quiz
+          {translate('quiz.history_title')}
         </Text>
         <View className="w-8" />
       </View>
@@ -334,7 +336,7 @@ export function QuizHistoryScreen() {
             <View className="flex-1 items-center justify-center">
               <ActivityIndicator size="large" color="#0EA5E9" />
               <Text className="mt-3 font-inter text-[14px] text-neutral-400">
-                Đang tải lịch sử Quiz...
+                {translate('quiz.history_loading')}
               </Text>
             </View>
           )
@@ -342,13 +344,13 @@ export function QuizHistoryScreen() {
           ? (
               <View className="flex-1 items-center justify-center p-6">
                 <Text className="text-center font-nunito text-[16px] font-bold text-neutral-600 dark:text-neutral-300">
-                  Không thể tải lịch sử Quiz
+                  {translate('quiz.history_error')}
                 </Text>
                 <TouchableOpacity
                   onPress={() => refetch()}
                   className="mt-4 rounded-xl bg-primary-500 px-5 py-2.5"
                 >
-                  <Text className="font-nunito text-[14px] font-bold text-white">Thử lại</Text>
+                  <Text className="font-nunito text-[14px] font-bold text-white">{translate('quiz.retry')}</Text>
                 </TouchableOpacity>
               </View>
             )
@@ -392,18 +394,18 @@ export function QuizHistoryScreen() {
                         <Snapy pose="suy_nghi" animation="idle" style={{ width: 110, height: 110 }} />
                         <Text className="mt-4 font-nunito text-[18px] font-extrabold text-mascot-navy dark:text-white">
                           {selectedFilter === 'ALL'
-                            ? 'Chưa có bài Quiz nào'
-                            : `Chưa có bài ${FILTER_TABS.find(t => t.key === selectedFilter)?.label} nào`}
+                            ? translate('quiz.history_empty_title')
+                            : translate('quiz.history_empty_filtered', { mode: translate(FILTER_TABS.find(t => t.key === selectedFilter)?.label ?? 'quiz.title') })}
                         </Text>
                         <Text className="mt-1 px-6 text-center font-inter text-[14px] text-neutral-400">
-                          Hãy bắt đầu một bài Quiz để kiểm tra vốn từ vựng của bạn!
+                          {translate('quiz.history_empty_body')}
                         </Text>
                         <TouchableOpacity
                           onPress={() => router.push('/(app)/study/quiz-setup' as any)}
                           className="mt-6 rounded-2xl bg-primary-500 px-6 py-3.5"
                         >
                           <Text className="font-nunito text-[15px] font-extrabold text-white uppercase">
-                            Bắt đầu Quiz ngay
+                            {translate('quiz.start_quiz_now')}
                           </Text>
                         </TouchableOpacity>
                       </View>
