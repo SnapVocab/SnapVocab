@@ -3,6 +3,7 @@ import * as React from 'react';
 import { Linking, TouchableOpacity, View } from 'react-native';
 import { Text } from '@/components/ui';
 import { ExternalLinkIcon } from '@/components/ui/icons';
+import { translate } from '@/lib/i18n';
 
 export type WordLinksProps = {
   meanings?: Meaning[];
@@ -36,7 +37,7 @@ export function WordLinks({ meanings }: WordLinksProps) {
   return (
     <View className="mb-6">
       <Text className="mb-3 font-nunito text-base font-black text-mascot-navy dark:text-white">
-        Tài liệu & Liên kết
+        {translate('word_detail.links')}
       </Text>
 
       <View className="flex-row flex-wrap gap-2">

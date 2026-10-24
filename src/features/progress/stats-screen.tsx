@@ -3,6 +3,7 @@ import { useRouter } from 'expo-router';
 import * as React from 'react';
 import { RefreshControl, ScrollView } from 'react-native';
 import { FocusAwareStatusBar, SafeAreaView, ScreenHeader } from '@/components/ui';
+import { translate } from '@/lib/i18n';
 import {
   invalidateProgress,
   useProgressSummary,
@@ -41,7 +42,7 @@ export function StatsScreen() {
     <SafeAreaView edges={['top', 'left', 'right']} style={{ flex: 1 }} className="flex-1 bg-[#F7F8FA] dark:bg-neutral-950">
       <FocusAwareStatusBar />
 
-      <ScreenHeader title="Thống kê học tập" onBack={() => router.back()} />
+      <ScreenHeader title={translate('progressUx.statsTitle')} onBack={() => router.back()} />
 
       {/* Content */}
       <ScrollView
