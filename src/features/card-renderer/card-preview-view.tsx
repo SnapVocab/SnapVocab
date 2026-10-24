@@ -2,6 +2,7 @@ import type { CardPreviewViewProps, CardSide } from './types';
 import * as React from 'react';
 import { Pressable, View } from 'react-native';
 import { Text } from '@/components/ui/text';
+import { translate } from '@/lib/i18n';
 import { DynamicCardRenderer } from './dynamic-card-renderer';
 
 export function CardPreviewView({
@@ -37,7 +38,7 @@ export function CardPreviewView({
                   : 'text-neutral-600 dark:text-neutral-400'
               }`}
             >
-              Mặt trước
+              {translate('cardRenderer.frontSide')}
             </Text>
           </Pressable>
 
@@ -57,7 +58,7 @@ export function CardPreviewView({
                   : 'text-neutral-600 dark:text-neutral-400'
               }`}
             >
-              Mặt sau
+              {translate('cardRenderer.backSide')}
             </Text>
           </Pressable>
         </View>

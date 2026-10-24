@@ -4,6 +4,7 @@ import { Pressable, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text, UserAvatar } from '@/components/ui';
 import { CoinIcon, FlameIcon, NotificationBell } from '@/components/ui/icons';
+import { useThemeConfig } from '@/components/ui/use-theme-config';
 import { useAuthStore } from '@/features/auth/use-auth-store';
 import { useStreak } from '@/features/progress/api';
 
@@ -23,6 +24,7 @@ export function HomeHeader({
   onNotificationPress,
 }: HomeHeaderProps) {
   const insets = useSafeAreaInsets();
+  const theme = useThemeConfig();
   const { t } = useTranslation();
   const user = useAuthStore(s => s.user);
 
@@ -79,9 +81,11 @@ export function HomeHeader({
           {/* Notification Bell 3D Button */}
           <Pressable
             onPress={onNotificationPress}
-            className="size-10 items-center justify-center rounded-2xl border-2 border-b-[3px] border-neutral-200/90 border-b-neutral-300 bg-white active:translate-y-px active:border-b-2 dark:border-[#46505C] dark:border-b-[#667382] dark:bg-[#292E36]"
+            accessibilityRole="button"
+            accessibilityLabel={t('home.notifications')}
+            className="size-10 items-center justify-center rounded-2xl border-2 border-b-[3px] border-neutral-300 border-b-neutral-400 bg-neutral-50 active:translate-y-px active:border-b-2 dark:border-[#46505C] dark:border-b-[#667382] dark:bg-[#292E36]"
           >
-            <NotificationBell color="#F3F4F6" />
+            <NotificationBell color={theme.colors.text} />
           </Pressable>
         </View>
       </View>

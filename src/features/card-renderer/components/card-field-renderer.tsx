@@ -5,6 +5,7 @@ import { VolumeIcon } from '@/components/ui/icons';
 import { Image } from '@/components/ui/image';
 import { Text } from '@/components/ui/text';
 import { useTts } from '@/lib/hooks/use-tts';
+import { translate } from '@/lib/i18n';
 import { FONT_SIZE_MAP } from '../types';
 import { resolveFieldValue, resolveTargetWord } from '../utils/data-resolver';
 
@@ -169,7 +170,7 @@ export function CardFieldRenderer({
                 : 'text-lime-800 dark:text-lime-300'
             }`}
           >
-            {field.fieldLabel || 'Nghe phát âm'}
+            {field.fieldLabel || translate('cardRenderer.playPronunciation')}
           </Text>
         </Pressable>
       </View>
