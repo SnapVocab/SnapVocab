@@ -33,6 +33,22 @@ To add a new variable:
 
 See `.env.example` for all available variables.
 
+## Local production APK
+
+With dependencies, JDK 17, and Android SDK installed, fill in `.env.production`
+and run:
+
+```bash
+pnpm build:apk:prod
+```
+
+The command loads `.env.production`, prebuilds Android, refreshes generated
+autolinking to use the production package, and builds a standalone release APK:
+`android/app/build/outputs/apk/release/app-release.apk`.
+
+The current native configuration signs this APK with the debug key for internal
+installation. `build:production:android` remains the separate EAS cloud command.
+
 ## Documentation
 
 See [AGENTS.md](./AGENTS.md) for the complete intern onboarding guide covering project structure, key patterns, conventions, and how to add new features.
