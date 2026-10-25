@@ -66,6 +66,7 @@ const fontPluginConfig = {
 const CAMERA_PERMISSION = 'Allow $(PRODUCT_NAME) to use the camera to scan objects.';
 
 const plugins: ExpoConfig['plugins'] = [
+  './plugins/with-windows-cmake-path',
   [
     'expo-splash-screen',
     {
