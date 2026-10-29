@@ -30,6 +30,7 @@ const STAT_HEADER = 'h-6 flex-row items-center gap-1.5';
 const STAT_LABEL = 'font-nunito text-[11px] font-black tracking-wide text-neutral-500 uppercase dark:text-neutral-300';
 const STAT_VALUE = 'mt-2 font-nunito text-2xl font-black text-mascot-navy dark:text-white';
 const STAT_CAPTION = 'mt-0.5 font-inter text-[11px]/4 text-neutral-500 dark:text-neutral-300';
+const STAT_RETRY = 'mt-0.5 font-nunito text-[12px] font-extrabold text-primary-700 dark:text-[#B5D894]';
 
 function greetingKey() {
   const hour = new Date().getHours();
@@ -164,12 +165,17 @@ function HomeProgressRow({
         <Text className={STAT_VALUE} numberOfLines={1}>
           {isVocabularyLoading ? '…' : vocabulary ? numberFormat.format(vocabulary.totalWords) : '↻'}
         </Text>
-        <Text className={STAT_CAPTION} numberOfLines={2}>
-          {translate(vocabulary && SRS_ENABLED ? 'home.words_in_storage_progress' : 'home.words_in_storage', {
-            learned: vocabulary?.learnedCount ?? 0,
-            mastered: vocabulary?.masteredCount ?? 0,
-          })}
-        </Text>
+        {/* No caption while loading, and "Retry" on error: never success copy without data. */}
+        {vocabulary
+          ? (
+              <Text className={STAT_CAPTION} numberOfLines={2}>
+                {translate(SRS_ENABLED ? 'home.words_in_storage_progress' : 'home.words_in_storage', {
+                  learned: vocabulary.learnedCount,
+                  mastered: vocabulary.masteredCount,
+                })}
+              </Text>
+            )
+          : !isVocabularyLoading && <Text className={STAT_RETRY}>{translate('progressUx.retry')}</Text>}
       </Pressable>
 
       <Pressable
@@ -184,9 +190,15 @@ function HomeProgressRow({
         <Text className={STAT_VALUE} numberOfLines={1}>
           {isXpLoading ? '…' : xp ? `${numberFormat.format(xp.totalXp)} XP` : '↻'}
         </Text>
-        <Text className={STAT_CAPTION} numberOfLines={2}>
-          {xp?.level ? translate('progressUx.levelNumber', { count: xp.level.levelNumber }) : translate('progressUx.noLevelCompact')}
-        </Text>
+        {xp
+          ? (
+              <Text className={STAT_CAPTION} numberOfLines={2}>
+                {xp.level
+                  ? translate('progressUx.level', { count: xp.level.levelNumber, title: xp.level.title })
+                  : translate('progressUx.noLevelCompact')}
+              </Text>
+            )
+          : !isXpLoading && <Text className={STAT_RETRY}>{translate('progressUx.retry')}</Text>}
       </Pressable>
     </View>
   );

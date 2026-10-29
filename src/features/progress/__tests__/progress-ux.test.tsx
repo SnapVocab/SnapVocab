@@ -32,6 +32,8 @@ jest.mock('@/components/Snapy', () => ({
   Snapy: require('react-native').View,
 }));
 jest.mock('react-i18next', () => ({
+  // @/lib/i18n registers this plugin at import time.
+  initReactI18next: { type: '3rdParty', init: () => {} },
   useTranslation: () => ({
     i18n: { language: 'vi' },
     t: (key: string, args: Record<string, unknown> = {}) => {

@@ -3,6 +3,8 @@ import { cleanup, fireEvent, render, screen } from '@testing-library/react-nativ
 import * as React from 'react';
 import { ThemePreviewModal } from '@/components/shop/item-preview-modal';
 import { ShopItemCard } from '@/components/shop/ShopItemCard';
+// Initializes i18next with the (mocked) Vietnamese locale, so cards render real copy.
+import '@/lib/i18n';
 
 jest.mock('lucide-react-native', () => ({ CheckIcon: () => null, XIcon: () => null }));
 jest.mock('@/components/snapvocab', () => ({
@@ -44,7 +46,7 @@ describe('shop previews and cards act on the item\'s real state', () => {
 
   it.each([
     [{ owned: false, equipped: false }, 'Mua · 300 Coin'],
-    [{ owned: true, equipped: false }, 'Áp dụng giao diện'],
+    [{ owned: true, equipped: false }, 'Áp dụng'],
     [{ owned: true, equipped: true }, 'Đang dùng'],
   ])('theme preview footer for %o is "%s"', (state, label) => {
     const onAction = jest.fn();
@@ -55,8 +57,8 @@ describe('shop previews and cards act on the item\'s real state', () => {
 
   it('theme preview renders a sample Shop screen with its scope, and no tab bar', () => {
     render(<ThemePreviewModal item={theme} onClose={jest.fn()} onAction={jest.fn()} />);
-    expect(screen.getByText('Thẻ ×2 Kinh nghiệm')).toBeTruthy();
-    expect(screen.getByText('Phần thưởng nhiệm vụ')).toBeTruthy();
+    expect(screen.getByText('Thẻ nhân đôi XP')).toBeTruthy();
+    expect(screen.getByText('Thưởng nhiệm vụ')).toBeTruthy();
     expect(screen.getByText('Áp dụng cho Cửa hàng, Kho đồ và Ví Coin.')).toBeTruthy();
     expect(screen.queryByText('Trang chủ')).toBeNull();
   });
