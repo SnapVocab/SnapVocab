@@ -21,7 +21,7 @@ export function QuickStudyGrid() {
         <TouchableOpacity
           activeOpacity={0.8}
           onPress={() => router.push('/camera')}
-          className="min-w-[45%] flex-1 rounded-3xl border-2 border-b-2 border-neutral-200/90 border-b-neutral-300 bg-white p-4 shadow-xs dark:border-[#46505C] dark:border-b-[#667382] dark:bg-[#22252B]"
+          className="min-w-[45%] flex-1 rounded-3xl border-2 border-b-2 border-line border-b-edge bg-surface p-4 shadow-xs"
         >
           <View className="size-12 items-center justify-center rounded-2xl bg-orange-50 dark:bg-orange-950/30">
             <SnapCamera3D size={40} />
@@ -34,7 +34,7 @@ export function QuickStudyGrid() {
         <TouchableOpacity
           activeOpacity={0.8}
           onPress={() => router.push('/study/quiz-history')}
-          className="min-w-[45%] flex-1 rounded-3xl border-2 border-b-2 border-neutral-200/90 border-b-neutral-300 bg-white p-4 shadow-xs dark:border-[#46505C] dark:border-b-[#667382] dark:bg-[#22252B]"
+          className="min-w-[45%] flex-1 rounded-3xl border-2 border-b-2 border-line border-b-edge bg-surface p-4 shadow-xs"
         >
           <View className="size-12 items-center justify-center rounded-2xl bg-sky-50 dark:bg-sky-950/30">
             <QuizChallenge3D size={40} />
@@ -47,7 +47,7 @@ export function QuickStudyGrid() {
         <TouchableOpacity
           activeOpacity={0.8}
           onPress={() => router.push('/study/quiz-setup')}
-          className="min-w-[45%] flex-1 rounded-3xl border-2 border-b-2 border-neutral-200/90 border-b-neutral-300 bg-white p-4 shadow-xs dark:border-[#46505C] dark:border-b-[#667382] dark:bg-[#22252B]"
+          className="min-w-[45%] flex-1 rounded-3xl border-2 border-b-2 border-line border-b-edge bg-surface p-4 shadow-xs"
         >
           <View className="size-12 items-center justify-center rounded-2xl bg-amber-50 dark:bg-amber-950/30">
             <PodiumTrophy3D size={40} />
@@ -60,7 +60,7 @@ export function QuickStudyGrid() {
         <TouchableOpacity
           activeOpacity={0.8}
           onPress={() => router.push('/collections')}
-          className="min-w-[45%] flex-1 rounded-3xl border-2 border-b-2 border-neutral-200/90 border-b-neutral-300 bg-white p-4 shadow-xs dark:border-[#46505C] dark:border-b-[#667382] dark:bg-[#22252B]"
+          className="min-w-[45%] flex-1 rounded-3xl border-2 border-b-2 border-line border-b-edge bg-surface p-4 shadow-xs"
         >
           <View className="size-12 items-center justify-center rounded-2xl bg-emerald-50 dark:bg-emerald-950/30">
             <TopicBook3D size={40} />

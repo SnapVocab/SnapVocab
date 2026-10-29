@@ -81,7 +81,7 @@ export function SubtopicSection({ subtopics, onSelectTopic, onStudyTopic }: Prop
             <View className="mt-3 flex-row gap-2">
               <Pressable
                 onPress={() => onSelectTopic(topic)}
-                className="flex-1 flex-row items-center justify-center gap-1 rounded-xl border-2 border-b-[3px] border-amber-200/90 border-b-amber-300 bg-white/90 p-2 dark:border-[#46505C] dark:border-b-[#667382] dark:bg-[#292E36]"
+                className="flex-1 flex-row items-center justify-center gap-1 rounded-xl border-2 border-b-[3px] border-amber-200/90 border-b-amber-300 bg-white/90 p-2 dark:border-line dark:border-b-edge dark:bg-surface-raised"
               >
                 <Text className="font-nunito text-[11px] font-extrabold text-amber-800 dark:text-white">
                   {translate('learn.topic.open_topic')}

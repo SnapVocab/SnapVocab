@@ -71,7 +71,7 @@ describe('purchase recovery uses the server result and keeps the key of an unkno
     act(() => view.result.current.handleItemPress(booster));
     request.mockRejectedValueOnce(new Error('timeout of 10000ms exceeded'));
     await act(() => view.result.current.handleConfirmPurchase());
-    expect(view.result.current.errorMessage).toContain('Chưa xác nhận được kết quả mua');
+    expect(view.result.current.errorMessage).toContain('Giao dịch trước chưa được xác nhận');
     act(() => view.result.current.handleClosePurchaseModal());
 
     // Reopen: same key; the server replays the committed purchase (booster since spent → quantity 0).

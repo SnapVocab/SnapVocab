@@ -63,7 +63,7 @@ export function WordRelations({
                 key={`syn-${rel.relatedWord}-${i}`}
                 onPress={() => onSelectRelation?.(rel.relatedWord)}
                 activeOpacity={0.7}
-                className="rounded-2xl border border-neutral-200 bg-white px-3.5 py-2 active:bg-neutral-100 dark:border-neutral-700 dark:bg-neutral-800 dark:active:bg-neutral-700"
+                className="rounded-2xl border border-line bg-white px-3.5 py-2 active:bg-pressed dark:bg-neutral-800"
               >
                 <Text className="font-inter text-sm font-semibold text-slate-700 dark:text-neutral-200">
                   {rel.relatedWord}
@@ -86,7 +86,7 @@ export function WordRelations({
                 key={`ant-${rel.relatedWord}-${i}`}
                 onPress={() => onSelectRelation?.(rel.relatedWord)}
                 activeOpacity={0.7}
-                className="rounded-2xl border border-neutral-200 bg-white px-3.5 py-2 active:bg-neutral-100 dark:border-neutral-700 dark:bg-neutral-800 dark:active:bg-neutral-700"
+                className="rounded-2xl border border-line bg-white px-3.5 py-2 active:bg-pressed dark:bg-neutral-800"
               >
                 <Text className="font-inter text-sm font-semibold text-slate-700 dark:text-neutral-200">
                   {rel.relatedWord}
@@ -109,7 +109,7 @@ export function WordRelations({
                 key={`fam-${rel.relatedWord}-${i}`}
                 onPress={() => onSelectRelation?.(rel.relatedWord)}
                 activeOpacity={0.7}
-                className="rounded-2xl border border-neutral-200 bg-white px-3.5 py-2 active:bg-neutral-100 dark:border-neutral-700 dark:bg-neutral-800 dark:active:bg-neutral-700"
+                className="rounded-2xl border border-line bg-white px-3.5 py-2 active:bg-pressed dark:bg-neutral-800"
               >
                 <Text className="font-inter text-sm font-semibold text-slate-700 dark:text-neutral-200">
                   {rel.relatedWord}

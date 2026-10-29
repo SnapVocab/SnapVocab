@@ -366,7 +366,7 @@ describe('shop API layer and backend contracts', () => {
 
       const parsed = parseShopError(raceError);
       expect(parsed.code).toBe('CONCURRENT_MODIFICATION');
-      expect(parsed.message).toContain('bận xử lý giao dịch');
+      expect(parsed.message).toContain('Cửa hàng đang bận');
     });
   });
 });

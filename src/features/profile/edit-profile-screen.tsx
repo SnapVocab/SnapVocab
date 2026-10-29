@@ -100,7 +100,7 @@ export function EditProfileScreen() {
     <SafeAreaView style={{ flex: 1 }} className="flex-1 bg-background" edges={['top', 'bottom']}>
       <FocusAwareStatusBar />
 
-      <View className="h-14 flex-row items-center border-b border-neutral-100 bg-white px-4 dark:border-neutral-800 dark:bg-neutral-900">
+      <View className="h-14 flex-row items-center border-b border-line bg-surface px-4">
         <BackButton onPress={() => router.back()} testID="edit-profile-back" className="-ml-1" />
         <Text
           className="mr-9 flex-1 text-center font-nunito text-lg font-extrabold text-mascot-navy dark:text-white"
@@ -113,7 +113,7 @@ export function EditProfileScreen() {
           contentContainerStyle={{ padding: 16, paddingBottom: 32 }}
           keyboardShouldPersistTaps="handled"
         >
-          <View className="items-center rounded-3xl border border-neutral-200/80 bg-white p-6 shadow-sm shadow-black/5 dark:border-neutral-800 dark:bg-neutral-900">
+          <View className="items-center rounded-3xl border border-line bg-surface p-6 shadow-sm shadow-black/5">
             <View className="relative mb-3.5 items-center justify-center">
               <Pressable
                 onPress={pickAvatar}
@@ -147,7 +147,7 @@ export function EditProfileScreen() {
             />
           </View>
 
-          <View className="mt-4 gap-4 rounded-3xl border border-neutral-200/80 bg-white p-5 shadow-sm shadow-black/5 dark:border-neutral-800 dark:bg-neutral-900">
+          <View className="mt-4 gap-4 rounded-3xl border border-line bg-surface p-5 shadow-sm shadow-black/5">
             <Controller
               control={control}
               name="firstName"

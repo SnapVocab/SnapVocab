@@ -94,11 +94,11 @@ export function OtpInput({
         const isFilled = Boolean(digit);
 
         let cellStyle
-          = 'border-neutral-200 border-b-[3px] border-b-neutral-300 bg-neutral-50/80 dark:border-neutral-700 dark:border-b-neutral-600 dark:bg-neutral-800';
+          = 'border-line border-b-[3px] border-b-edge bg-neutral-50/80 dark:bg-neutral-800';
 
         if (hasError) {
           cellStyle
-            = 'border-danger-500 border-b-[3px] border-b-danger-700 bg-danger-50/50 dark:border-danger-500 dark:bg-danger-950/40';
+            = 'border-danger-500 border-b-[3px] border-b-danger-700 bg-danger-50/50 dark:border-danger-500 dark:bg-danger-500/15';
         }
         else if (isFocused) {
           cellStyle
@@ -106,7 +106,7 @@ export function OtpInput({
         }
         else if (isFilled) {
           cellStyle
-            = 'border-primary-500 border-b-[3px] border-b-primary-700 bg-primary-50/40 dark:border-primary-500 dark:bg-primary-950/40';
+            = 'border-primary-500 border-b-[3px] border-b-primary-700 bg-primary-50/40 dark:border-primary-500 dark:bg-primary-500/15';
         }
 
         return (

@@ -146,7 +146,7 @@ function WalletScreenContent() {
           style={isEarn ? undefined : { backgroundColor: s.surfaceMuted }}
           className={cn(
             'mr-4 size-12 items-center justify-center rounded-2xl border',
-            isEarn ? 'border-reward-100 bg-reward-50' : 'border-transparent',
+            isEarn ? 'border-reward-100 bg-reward-50 dark:border-amber-400/25 dark:bg-amber-400/10' : 'border-transparent',
           )}
         >
           {info.icon}
@@ -195,9 +195,9 @@ function WalletScreenContent() {
           <Pressable
             accessibilityRole="button"
             onPress={() => router.push('/(tabs)/shop' as any)}
-            className="rounded-full border border-reward-200 bg-reward-50 px-3 py-1.5 active:scale-95"
+            className="rounded-full border border-reward-200 bg-reward-50 px-3 py-1.5 active:scale-95 dark:border-amber-400/25 dark:bg-amber-400/10"
           >
-            <Text className="font-nunito text-[13px] font-extrabold text-reward-700">{t('shop.title')}</Text>
+            <Text className="font-nunito text-[13px] font-extrabold text-reward-700 dark:text-amber-300">{t('shop.title')}</Text>
           </Pressable>
         )}
       />
@@ -220,7 +220,7 @@ function WalletScreenContent() {
         {/* ========================================= */}
         {/* 2. COIN BALANCE CARD (Authoritative Balance) */}
         {/* ========================================= */}
-        <View style={{ backgroundColor: s.surface }} className="mb-8 items-center justify-center rounded-[32px] border-2 border-b-[6px] border-reward-200 p-6 shadow-sm shadow-reward-500/10">
+        <View style={{ backgroundColor: s.surface }} className="mb-8 items-center justify-center rounded-[32px] border-2 border-b-[6px] border-reward-200 p-6 shadow-sm shadow-reward-500/10 dark:border-amber-400/40">
           <Text style={{ color: s.textMuted }} className="mb-3 font-nunito text-[13px] font-extrabold tracking-widest uppercase">
             {t('shopUi.inventoryBalanceTitle')}
           </Text>
@@ -258,10 +258,10 @@ function WalletScreenContent() {
             </Text>
             <Pressable
               onPress={() => refetch()}
-              className="flex-row items-center gap-2 rounded-xl bg-primary-500 px-4 py-2"
+              className="flex-row items-center gap-2 rounded-xl bg-brand px-4 py-2"
             >
               <RefreshCwIcon size={14} color="white" />
-              <Text className="font-nunito text-[12px] font-bold text-white">{t('shopUi.retry')}</Text>
+              <Text className="font-nunito text-[12px] font-bold text-on-brand">{t('shopUi.retry')}</Text>
             </Pressable>
           </View>
         ) : transactions.length === 0 ? (

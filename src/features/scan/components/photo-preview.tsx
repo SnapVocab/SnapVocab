@@ -2,6 +2,7 @@ import { StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { BouncingDots, Button, Image, Text, View } from '@/components/ui';
 import { CameraIcon, SparklesIcon } from '@/components/ui/icons';
+import { useColorMode } from '@/components/ui/surface';
 
 type Props = {
   uri: string;
@@ -16,6 +17,7 @@ type Props = {
  * until they press Send.
  */
 export function PhotoPreview({ uri, sending, onRetake, onSend }: Props) {
+  const isDark = useColorMode() === 'dark';
   const insets = useSafeAreaInsets();
 
   return (
@@ -39,7 +41,7 @@ export function PhotoPreview({ uri, sending, onRetake, onSend }: Props) {
           <Button
             tx="scan.preview.retake"
             variant="white"
-            icon={<CameraIcon color="#3D3F5E" width={20} height={20} />}
+            icon={<CameraIcon color={isDark ? '#F3F4F6' : '#3D3F5E'} width={20} height={20} />}
             disabled={sending}
             onPress={onRetake}
             testID="scan-preview-retake"

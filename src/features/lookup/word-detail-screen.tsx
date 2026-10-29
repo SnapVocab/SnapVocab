@@ -44,11 +44,11 @@ export function WordDetailScreen() {
   );
 
   return (
-    <SafeAreaView edges={['top', 'bottom', 'left', 'right']} style={{ flex: 1 }} className="flex-1 bg-white dark:bg-neutral-900">
+    <SafeAreaView edges={['top', 'bottom', 'left', 'right']} style={{ flex: 1 }} className="flex-1 bg-background">
       <FocusAwareStatusBar />
 
       {/* Screen Header */}
-      <View className="flex-row items-center justify-between border-b border-neutral-100 bg-white px-4 py-3 dark:border-neutral-800 dark:bg-neutral-900">
+      <View className="flex-row items-center justify-between border-b border-line bg-surface px-4 py-3">
         <BackButton onPress={() => router.back()} hitSlop={12} />
 
         <Text className="font-nunito text-lg font-black text-mascot-navy dark:text-white">
@@ -65,7 +65,7 @@ export function WordDetailScreen() {
         </View>
       ) : isError || !wordData ? (
         <View className="flex-1 items-center justify-center p-6">
-          <Text className="font-inter text-sm font-medium text-neutral-400 dark:text-neutral-500">
+          <Text className="font-inter text-sm font-medium text-neutral-400 dark:text-neutral-400">
             {translate('word_detail.not_found')}
           </Text>
           <TouchableOpacity

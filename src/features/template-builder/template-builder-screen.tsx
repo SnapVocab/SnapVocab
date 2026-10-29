@@ -165,7 +165,7 @@ export function TemplateBuilderScreen() {
       : translate('template_builder.back_side_label');
 
   return (
-    <SafeAreaView style={{ flex: 1 }} className="flex-1 bg-slate-50 dark:bg-neutral-900">
+    <SafeAreaView style={{ flex: 1 }} className="flex-1 bg-background">
       <FocusAwareStatusBar />
 
       {/* Header */}
@@ -212,7 +212,7 @@ export function TemplateBuilderScreen() {
       </ScrollView>
 
       {/* Sticky Bottom Save CTA */}
-      <View className="border-t border-neutral-200 bg-white p-4 shadow-lg dark:border-neutral-800 dark:bg-neutral-900">
+      <View className="border-t border-line bg-surface p-4 shadow-lg">
         <Button
           label={
             isDirty

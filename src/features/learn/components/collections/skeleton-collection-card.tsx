@@ -33,7 +33,7 @@ export default function SkeletonCollectionCard({ className }: Props) {
       accessibilityRole="progressbar"
       accessibilityLabel="Loading collection"
       className={twMerge(
-        'flex-row items-center justify-between rounded-2xl border border-neutral-200/80 bg-white p-3.5 dark:border-neutral-800 dark:bg-neutral-900',
+        'flex-row items-center justify-between rounded-2xl border border-line bg-surface p-3.5',
         className,
       )}
     >

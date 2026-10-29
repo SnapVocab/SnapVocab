@@ -48,7 +48,7 @@ export function FieldItemCard({
     <TouchableOpacity
       onPress={onPress}
       activeOpacity={0.7}
-      className={`rounded-xl border border-neutral-200/80 bg-neutral-50 shadow-sm dark:border-neutral-700 dark:bg-neutral-800/80 ${
+      className={`rounded-xl border border-line bg-neutral-50 shadow-sm dark:bg-neutral-800/80 ${
         isCompact ? 'p-2.5' : 'p-3'
       }`}
     >
@@ -56,7 +56,7 @@ export function FieldItemCard({
         <View className="flex-1 flex-row items-center">
           {/* Color indicator dot */}
           <View
-            className="mr-2.5 size-3.5 rounded-full border border-black/10"
+            className="mr-2.5 size-3.5 rounded-full border border-black/10 dark:border-white/40"
             style={{ backgroundColor: field.color || '#111827' }}
           />
 

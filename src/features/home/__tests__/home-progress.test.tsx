@@ -55,8 +55,18 @@ jest.mock('@/components/ui/icons', () => new Proxy({}, { get: () => () => null }
 jest.mock('@/components/snapvocab', () => new Proxy({}, { get: () => () => null }));
 jest.mock('@/components/Snapy', () => ({ Snapy: () => null }));
 jest.mock('../components/home-search-bar', () => ({ HomeSearchBar: () => null }));
-jest.mock('@/lib/i18n', () => ({ translate: (key: string) => key }));
+// Resolve real Vietnamese copy, so the suite asserts on what the learner reads.
+jest.mock('@/lib/i18n', () => ({
+  translate: (key: string, args: Record<string, unknown> = {}) => {
+    const copy = key.split('.').reduce<any>((node, part) => node?.[part], require('@/translations/vi.json'));
+    return typeof copy === 'string'
+      ? copy.replace(/\{\{(\w+)\}\}/g, (_: string, n: string) => String(args[n] ?? ''))
+      : key;
+  },
+}));
 jest.mock('react-i18next', () => ({
+  // @/lib/i18n registers this plugin at import time.
+  initReactI18next: { type: '3rdParty', init: () => {} },
   useTranslation: () => ({
     i18n: { language: 'vi' },
     t: (key: string, args: Record<string, unknown> = {}) => {
@@ -104,10 +114,11 @@ describe('home and profile show only what the backend supports', () => {
     expect(screen.getByText('Cấp 2 · Học viên')).toBeTruthy();
     // dueCount=3 from the backend is structurally meaningless without SRS.
     expect(screen.queryByText(/cần ôn/i)).toBeNull();
-    expect(screen.queryByText(/đến hạn/)).toBeNull();
+    // A due count, not the study card's general "due cards" pitch.
+    expect(screen.queryByText(/\d+ thẻ đến hạn/)).toBeNull();
     expect(screen.queryByText(/đã được ôn tập/)).toBeNull();
     expect(screen.queryByText('Flashcard')).toBeNull();
-    expect(screen.getByText('home.daily_mission')).toBeTruthy();
+    expect(screen.getByText('Nhiệm vụ hàng ngày')).toBeTruthy();
   });
 
   it('loading: no fake zeros and no success state', () => {

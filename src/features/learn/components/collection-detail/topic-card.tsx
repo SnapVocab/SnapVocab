@@ -15,7 +15,7 @@ export default function TopicCard({ item, onPress, onStudyPress }: Props) {
   const isFolder = item.hasChildren;
   const { theme } = useUniwind();
   const cardSurfaceClasses = theme === 'dark'
-    ? 'border-[#46505C] border-b-[#667382] bg-[#22252B]'
+    ? 'border-line border-b-edge bg-surface'
     : 'border-neutral-200/90 border-b-neutral-300 bg-white';
 
   return (
@@ -81,7 +81,7 @@ export default function TopicCard({ item, onPress, onStudyPress }: Props) {
           accessibilityRole="button"
           accessibilityLabel={translate('learn.topic.open_topic')}
           onPress={onPress}
-          className="size-9 items-center justify-center rounded-xl border-2 border-b-[3px] border-neutral-200/60 border-b-neutral-300 bg-neutral-100/60 dark:border-[#46505C] dark:border-b-[#667382] dark:bg-[#292E36]"
+          className="size-9 items-center justify-center rounded-xl border-2 border-b-[3px] border-line border-b-edge bg-surface-raised"
         >
           <ChevronRightIcon width={16} height={16} color="#71717A" />
         </Pressable>

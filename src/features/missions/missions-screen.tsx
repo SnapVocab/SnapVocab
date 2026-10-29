@@ -8,6 +8,7 @@ import { AppState, Pressable, RefreshControl, ScrollView, View } from 'react-nat
 import { Button, FocusAwareStatusBar, SafeAreaView, ScreenHeader, Text } from '@/components/ui';
 import { BookIcon, CheckCircleIcon, ChevronRightIcon, FlameIcon, ShoppingBagIcon, TargetIcon } from '@/components/ui/icons';
 import { RewardIcon } from '@/components/ui/rewards';
+import { useColorMode } from '@/components/ui/surface';
 import { translate } from '@/lib/i18n';
 import { missionErrorCode, useClaimMission, useDailyMissions } from './api';
 
@@ -50,6 +51,7 @@ export function MissionsScreen() {
   const { data, dataUpdatedAt, refetch } = query;
   const claim = useClaimMission();
   const router = useRouter();
+  const isDark = useColorMode() === 'dark';
   const keys = React.useRef(new Map<number, string>());
   const inFlight = React.useRef(false);
   const [, tick] = React.useReducer((n: number) => n + 1, 0);
@@ -112,7 +114,7 @@ export function MissionsScreen() {
   const ended = !!data && msLeft <= 0;
 
   return (
-    <SafeAreaView style={{ flex: 1 }} className="flex-1 bg-[#F7F8FA] dark:bg-neutral-950" edges={['top']}>
+    <SafeAreaView style={{ flex: 1 }} className="flex-1 bg-background dark:bg-neutral-950" edges={['top']}>
       <FocusAwareStatusBar />
       <ScreenHeader title={translate('missions.title')} onBack={() => router.back()} />
       <ScrollView
@@ -144,14 +146,14 @@ export function MissionsScreen() {
 
         {query.isPending && Array.from({ length: 5 }, (_, i) => <View key={i} className="h-36 rounded-2xl bg-neutral-200 dark:bg-neutral-800" />)}
         {query.isError && (
-          <View className="gap-2 rounded-2xl bg-white p-4 dark:bg-neutral-900">
+          <View className="gap-2 rounded-2xl bg-surface p-4">
             <Text tx={query.data ? 'missions.cached_error' : 'missions.load_error'} />
             <Button tx="missions.retry" onPress={() => void query.refetch()} />
           </View>
         )}
 
         {data && missions.length === 0 && (
-          <View className="items-center rounded-2xl border border-neutral-200 bg-white p-6 dark:border-neutral-700 dark:bg-neutral-900">
+          <View className="items-center rounded-2xl border border-line bg-surface p-6">
             <Text className="mb-1 text-center font-nunito text-base font-extrabold text-mascot-navy dark:text-white">
               {translate('missions.empty_title')}
             </Text>
@@ -173,12 +175,12 @@ export function MissionsScreen() {
               key={mission.id}
               // Info: light border. Ready: lifted like Quiz's selected card. Claimed: muted surface only.
               className={`gap-3 rounded-2xl border-2 p-4 ${claimable
-                ? 'border-b-2 border-primary-500 bg-primary-50 dark:border-primary-500 dark:bg-neutral-900'
+                ? 'border-b-2 border-primary-500 bg-primary-50 dark:border-[#7FA35E] dark:bg-[#2A3324]'
                 : claimed
-                  ? 'border-b-2 border-neutral-200 bg-neutral-50 dark:border-[#46505C] dark:border-b-[#667382] dark:bg-[#22252B]'
-                  : 'border-b-2 border-neutral-200 bg-white dark:border-[#46505C] dark:border-b-[#667382] dark:bg-[#22252B]'}`}
+                  ? 'border-b-2 border-line border-b-edge bg-surface-raised'
+                  : 'border-b-2 border-line border-b-edge bg-surface'}`}
             >
-              <View className="flex-row items-center gap-3">
+              <View className="flex-row items-start gap-3">
                 <View className={`size-11 items-center justify-center rounded-xl ${tile}`}>
                   <Icon width={22} height={22} color={color} />
                 </View>
@@ -197,8 +199,8 @@ export function MissionsScreen() {
               </View>
 
               <View className="flex-row items-center gap-3">
-                <View className="h-2.5 flex-1 overflow-hidden rounded-full bg-neutral-200 dark:bg-neutral-800">
-                  <View className="h-full rounded-full bg-primary-500" style={{ width: `${ratio * 100}%` }} />
+                <View className="h-2.5 flex-1 overflow-hidden rounded-full bg-line dark:bg-edge">
+                  <View className="h-full rounded-full bg-brand" style={{ width: `${ratio * 100}%` }} />
                 </View>
                 {mission.status !== 'IN_PROGRESS'
                   ? <CheckCircleIcon width={18} height={18} color="#58CC02" />
@@ -219,7 +221,7 @@ export function MissionsScreen() {
                 {mission.status === 'IN_PROGRESS' && !ended && action && (
                   <Pressable accessibilityRole="button" onPress={() => router.push(action.href)} hitSlop={8} className="min-h-11 flex-row items-center gap-0.5 active:opacity-60">
                     <Text tx={action.tx} className="font-nunito text-sm font-extrabold text-primary-800 dark:text-primary-300" />
-                    <ChevronRightIcon width={16} height={16} color="#2F6E00" />
+                    <ChevronRightIcon width={16} height={16} color={isDark ? '#A0E063' : '#2F6E00'} />
                   </Pressable>
                 )}
               </View>
@@ -236,7 +238,7 @@ export function MissionsScreen() {
                 <Text accessibilityRole="alert" tx={missionErrorCode(claim.error) === 'MISSION_EXPIRED' ? 'missions.expired_error' : 'missions.claim_error'} className="text-center text-sm" />
               )}
               {granted?.missionId === mission.id && (
-                <View accessibilityRole="alert" className="flex-row flex-wrap items-center justify-center gap-2 rounded-xl bg-primary-50 p-3 dark:bg-neutral-900">
+                <View accessibilityRole="alert" className="flex-row flex-wrap items-center justify-center gap-2 rounded-xl bg-primary-50 p-3 dark:bg-primary-500/15">
                   <CheckCircleIcon width={18} height={18} color="#58CC02" />
                   <Text className="font-nunito text-sm font-extrabold text-primary-800 dark:text-primary-300">
                     {[

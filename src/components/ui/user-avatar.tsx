@@ -54,7 +54,7 @@ export function UserAvatar({
   return (
     <View
       style={[{ width: dimension, height: dimension, borderRadius: dimension / 2 }, style]}
-      className={`dark:bg-primary-950/70 items-center justify-center overflow-hidden rounded-full bg-primary-100 ${borderClass} ${className}`}
+      className={`items-center justify-center overflow-hidden rounded-full bg-primary-100 dark:bg-primary-500/15 ${borderClass} ${className}`}
     >
       {url ? (
         <Image

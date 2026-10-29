@@ -7,7 +7,8 @@ import { Text } from './text';
 
 type ScreenHeaderProps = {
   title: string;
-  onBack: () => void;
+  /** Omit on a tab root: a tab destination has no back. */
+  onBack?: () => void;
   /** Trailing actions; the title then sits left instead of centered. */
   right?: ReactNode;
 };
@@ -20,19 +21,21 @@ export function ScreenHeader({ title, onBack, right }: ScreenHeaderProps) {
       style={{ backgroundColor: s.headerBg, borderColor: s.border }}
       className="z-10 flex-row items-center gap-2 border-b px-4 py-3"
     >
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel={translate('missions.back')}
-        onPress={onBack}
-        hitSlop={12}
-        className="-ml-2 size-10 items-center justify-center rounded-full active:bg-neutral-100 dark:active:bg-neutral-800"
-      >
-        <ChevronLeftIcon width={24} height={24} color={s.text} />
-      </Pressable>
+      {onBack && (
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={translate('missions.back')}
+          onPress={onBack}
+          hitSlop={12}
+          className="-ml-2 size-10 items-center justify-center rounded-full active:bg-pressed"
+        >
+          <ChevronLeftIcon width={24} height={24} color={s.text} />
+        </Pressable>
+      )}
       <Text
         style={{ color: s.text }}
         numberOfLines={1}
-        className={`flex-1 font-nunito text-[18px] font-extrabold ${right ? '' : 'pr-8 text-center'}`}
+        className={`flex-1 font-nunito text-[18px] font-extrabold ${right ? '' : onBack ? 'pr-8 text-center' : 'text-center'}`}
       >
         {title}
       </Text>

@@ -73,7 +73,7 @@ export function LearnScreen() {
       <FocusAwareStatusBar />
 
       {/* Screen Header */}
-      <View className="border-b border-neutral-100 bg-white px-5 py-4 dark:border-neutral-800 dark:bg-neutral-900">
+      <View className="border-b border-line bg-surface px-5 py-4">
         <Text className="font-nunito text-2xl font-black text-mascot-navy dark:text-white">
           {translate('learn.collections.title')}
         </Text>

@@ -36,13 +36,13 @@ export function HomeHeader({
   return (
     <View
       style={{ paddingTop: insets.top }}
-      className="border-b border-neutral-100 bg-white px-4 pb-3 dark:border-neutral-800 dark:bg-neutral-900"
+      className="border-b border-line bg-surface px-4 pb-3"
     >
       <View className="flex-row items-center justify-between pt-1">
         {/* User Avatar with tactile frame */}
         <Pressable
           onPress={onAvatarPress}
-          className="active:opacity-80"
+          className="rounded-full active:opacity-80"
         >
           <UserAvatar
             url={user?.avatarUrl}
@@ -59,7 +59,7 @@ export function HomeHeader({
             onPress={onStreakPress}
             accessibilityRole="button"
             accessibilityLabel={typeof streakDays === 'number' ? t('progressUx.streakA11y', { count: streakDays }) : undefined}
-            className="flex-row items-center gap-1.5 rounded-2xl border-2 border-b-[3px] border-orange-200 border-b-orange-400 bg-orange-50 px-2.5 py-1.5 active:translate-y-px active:border-b-2 dark:border-orange-800 dark:border-b-orange-900 dark:bg-orange-950/40"
+            className="flex-row items-center gap-1.5 rounded-2xl border-2 border-b-[3px] border-orange-200 border-b-orange-300 bg-orange-50 px-2.5 py-1.5 active:translate-y-px active:border-b-2 active:bg-orange-100 dark:border-orange-400/25 dark:border-b-orange-400/45 dark:bg-orange-400/10 dark:active:bg-orange-400/20"
           >
             <FlameIcon color="#F97316" width={18} height={18} />
             <Text className="font-nunito text-xs font-black text-orange-600 dark:text-orange-400">
@@ -70,7 +70,7 @@ export function HomeHeader({
           {/* Coins 3D Badge */}
           <Pressable
             onPress={onCoinPress}
-            className="flex-row items-center gap-1.5 rounded-2xl border-2 border-b-[3px] border-amber-200 border-b-amber-400 bg-amber-50 px-2.5 py-1.5 active:translate-y-px active:border-b-2 dark:border-amber-800 dark:border-b-amber-900 dark:bg-amber-950/40"
+            className="flex-row items-center gap-1.5 rounded-2xl border-2 border-b-[3px] border-amber-200 border-b-amber-300 bg-amber-50 px-2.5 py-1.5 active:translate-y-px active:border-b-2 active:bg-amber-100 dark:border-amber-400/25 dark:border-b-amber-400/45 dark:bg-amber-400/10 dark:active:bg-amber-400/20"
           >
             <CoinIcon size={18} />
             <Text className="font-nunito text-xs font-black text-amber-700 dark:text-amber-400">
@@ -83,7 +83,7 @@ export function HomeHeader({
             onPress={onNotificationPress}
             accessibilityRole="button"
             accessibilityLabel={t('home.notifications')}
-            className="size-10 items-center justify-center rounded-2xl border-2 border-b-[3px] border-neutral-300 border-b-neutral-400 bg-neutral-50 active:translate-y-px active:border-b-2 dark:border-[#46505C] dark:border-b-[#667382] dark:bg-[#292E36]"
+            className="size-10 items-center justify-center rounded-2xl border-2 border-b-[3px] border-line border-b-edge bg-surface-raised active:translate-y-px active:border-b-2 active:bg-pressed"
           >
             <NotificationBell color={theme.colors.text} />
           </Pressable>

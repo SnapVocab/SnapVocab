@@ -36,10 +36,10 @@ export function ShopCategoryTabs({ value, onChange }: { value: ShopCategory; onC
               style={isActive ? undefined : { backgroundColor: s.surfaceMuted, borderColor: s.border }}
               className={cn(
                 'rounded-full px-4 py-1.5',
-                isActive ? 'border-b-2 border-primary-700 bg-primary-500' : 'border active:opacity-70',
+                isActive ? 'border-b-2 border-brand-edge bg-brand' : 'border active:opacity-70',
               )}
             >
-              <Text style={isActive ? undefined : { color: s.textMuted }} className={cn('font-nunito text-[13px] font-extrabold', isActive && 'text-white')}>
+              <Text style={isActive ? undefined : { color: s.textMuted }} className={cn('font-nunito text-[13px] font-extrabold', isActive && 'text-on-brand')}>
                 {id === 'all' ? t('shopUi.categories.all') : t(SHOP_TYPE_LABEL[id])}
               </Text>
             </Pressable>

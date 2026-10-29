@@ -9,7 +9,7 @@ type Props = Pick<PressableProps, 'onPress' | 'testID' | 'hitSlop'> & {
   className?: string;
 };
 
-/** Shared 40px back control used by pushed mobile screens. */
+/** Shared 40px back control used by pushed mobile screens; matches ScreenHeader's round back. */
 export function BackButton({ onPress, testID, hitSlop = 8, className = '' }: Props) {
   const { theme } = useUniwind();
   const iconColor = theme === 'dark' ? colors.darkTheme.foreground : '#1E2A44';
@@ -21,10 +21,9 @@ export function BackButton({ onPress, testID, hitSlop = 8, className = '' }: Pro
       onPress={onPress}
       testID={testID}
       hitSlop={hitSlop}
-      android_ripple={{ color: 'transparent' }}
-      className={`size-10 items-center justify-center rounded-xl ${theme === 'dark' ? 'bg-[#292E36] active:bg-[#363B43]' : 'bg-neutral-100 active:bg-neutral-200'} ${className}`}
+      className={`size-10 items-center justify-center rounded-full active:bg-pressed ${className}`}
     >
-      <ChevronLeftIcon width={20} height={20} color={iconColor} />
+      <ChevronLeftIcon width={24} height={24} color={iconColor} />
     </Pressable>
   );
 }

@@ -47,7 +47,7 @@ export function CardSectionRenderer({ section, data }: Props) {
           key={inst.key}
           className={`w-full ${
             inst.index > 0
-              ? 'mt-3 border-t border-dashed border-neutral-200/80 pt-3 dark:border-neutral-700/80'
+              ? 'mt-3 border-t border-dashed border-line pt-3'
               : ''
           }`}
         >

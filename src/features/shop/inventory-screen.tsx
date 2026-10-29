@@ -276,10 +276,10 @@ function InventoryScreenContent() {
             </Text>
             <Pressable
               onPress={() => refetch()}
-              className="flex-row items-center gap-2 rounded-xl bg-primary-500 px-5 py-2.5 active:bg-primary-600"
+              className="flex-row items-center gap-2 rounded-xl bg-brand px-5 py-2.5 active:bg-brand-pressed"
             >
               <RefreshCwIcon size={16} color="white" />
-              <Text className="font-nunito text-[14px] font-extrabold text-white uppercase">
+              <Text className="font-nunito text-[14px] font-extrabold text-on-brand uppercase">
                 {t('shopUi.retry')}
               </Text>
             </Pressable>
@@ -296,10 +296,10 @@ function InventoryScreenContent() {
             </Text>
             <Pressable
               onPress={() => router.push('/(tabs)/shop' as any)}
-              className="flex-row items-center gap-2 rounded-2xl border-b-4 border-primary-700 bg-primary-500 px-6 py-3 active:border-b-2"
+              className="flex-row items-center gap-2 rounded-2xl border-b-4 border-brand-edge bg-brand px-6 py-3 active:border-b-2"
             >
               <PackageIcon size={18} color="white" />
-              <Text className="font-nunito text-[14px] font-extrabold tracking-wide text-white uppercase">
+              <Text className="font-nunito text-[14px] font-extrabold tracking-wide text-on-brand uppercase">
                 {t('shopUi.goToShop')}
               </Text>
             </Pressable>

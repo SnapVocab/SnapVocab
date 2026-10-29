@@ -3,6 +3,7 @@ import type { TxKeyPath } from '@/lib/i18n';
 import * as React from 'react';
 import { Pressable, View as RNView, Text } from 'react-native';
 import { twMerge } from 'tailwind-merge';
+import { useUniwind } from 'uniwind';
 import { translate } from '@/lib/i18n';
 import { BouncingDots } from './bouncing-dots';
 
@@ -43,89 +44,81 @@ export type ButtonProps = {
   ref?: React.RefObject<View | null>;
 } & Omit<PressableProps, 'disabled'>;
 
-const variantStyles: Record<
-  ButtonVariant,
-  { container: string; text: string; indicator: string }
-> = {
-  default: {
-    container: 'bg-primary-500 border-b-[4px] border-primary-700 active:translate-y-[2px] active:border-b-[2px] dark:bg-[#91B86C] dark:border-b-[#557044] dark:active:bg-[#83AA60]',
-    text: 'text-white font-extrabold tracking-wider uppercase dark:text-[#1B2416]',
-    indicator: '#ffffff',
-  },
-  brand: {
-    container: 'bg-primary-500 border-b-[4px] border-primary-700 active:translate-y-[2px] active:border-b-[2px] dark:bg-[#91B86C] dark:border-b-[#557044] dark:active:bg-[#83AA60]',
-    text: 'text-white font-extrabold tracking-wider uppercase dark:text-[#1B2416]',
-    indicator: '#ffffff',
-  },
-  primary: {
-    container: 'bg-primary-500 border-b-[4px] border-primary-700 active:translate-y-[2px] active:border-b-[2px] dark:bg-[#91B86C] dark:border-b-[#557044] dark:active:bg-[#83AA60]',
-    text: 'text-white font-extrabold tracking-wider uppercase dark:text-[#1B2416]',
-    indicator: '#ffffff',
-  },
-  purple: {
-    container: 'bg-[#8253EC] border-b-[4px] border-[#5927C2] active:translate-y-[2px] active:border-b-[2px]',
-    text: 'text-white font-extrabold tracking-wider uppercase',
-    indicator: '#ffffff',
-  },
-  secondary: {
-    container: 'bg-white border-2 border-neutral-200 border-b-[4px] border-b-neutral-300 active:translate-y-[2px] active:border-b-[2px] dark:bg-[#292E36] dark:border-[#46505C] dark:border-b-[#667382]',
-    text: 'text-neutral-800 font-extrabold tracking-wider uppercase dark:text-white',
-    indicator: '#1E2A44',
-  },
-  white: {
-    container: 'bg-white border-2 border-neutral-200 border-b-[4px] border-b-neutral-300 active:translate-y-[2px] active:border-b-[2px] dark:bg-[#292E36] dark:border-[#46505C] dark:border-b-[#667382]',
-    text: 'text-neutral-800 font-extrabold tracking-wider uppercase dark:text-white',
-    indicator: '#1E2A44',
-  },
-  info: {
-    container: 'bg-info-500 border-b-[4px] border-info-700 active:translate-y-[2px] active:border-b-[2px]',
-    text: 'text-white font-extrabold tracking-wider uppercase',
-    indicator: '#ffffff',
-  },
-  blue: {
-    container: 'bg-info-500 border-b-[4px] border-info-700 active:translate-y-[2px] active:border-b-[2px]',
-    text: 'text-white font-extrabold tracking-wider uppercase',
-    indicator: '#ffffff',
-  },
-  mascot: {
-    container: 'bg-mascot-500 border-b-[4px] border-mascot-700 active:translate-y-[2px] active:border-b-[2px]',
-    text: 'text-white font-extrabold tracking-wider uppercase',
-    indicator: '#ffffff',
-  },
-  orange: {
-    container: 'bg-mascot-500 border-b-[4px] border-mascot-700 active:translate-y-[2px] active:border-b-[2px]',
-    text: 'text-white font-extrabold tracking-wider uppercase',
-    indicator: '#ffffff',
-  },
-  reward: {
-    container: 'bg-reward-500 border-b-[4px] border-reward-700 active:translate-y-[2px] active:border-b-[2px]',
-    text: 'text-white font-extrabold tracking-wider uppercase',
-    indicator: '#ffffff',
-  },
-  gold: {
-    container: 'bg-reward-500 border-b-[4px] border-reward-700 active:translate-y-[2px] active:border-b-[2px]',
-    text: 'text-white font-extrabold tracking-wider uppercase',
-    indicator: '#ffffff',
-  },
-  destructive: {
-    container: 'bg-danger-500 border-b-[4px] border-danger-700 active:translate-y-[2px] active:border-b-[2px]',
-    text: 'text-white font-extrabold tracking-wider uppercase',
-    indicator: '#ffffff',
-  },
-  danger: {
-    container: 'bg-danger-500 border-b-[4px] border-danger-700 active:translate-y-[2px] active:border-b-[2px]',
-    text: 'text-white font-extrabold tracking-wider uppercase',
-    indicator: '#ffffff',
-  },
+type VariantStyle = {
+  container: string;
+  text: string;
+  /** Loading-dot colors, matching the label in each mode. */
+  indicator: { light: string; dark: string };
+};
+
+// The 3D press: the face sinks by the depth it gives up from its bottom border.
+const PRESS = 'border-b-[4px] active:translate-y-[2px] active:border-b-[2px]';
+const LABEL = 'font-extrabold tracking-wider uppercase';
+
+// Dark mode keeps each hue but softens it: a lighter, less saturated face with a dark label,
+// so a colored button reads as part of the dark UI instead of glowing on top of it.
+const primary: VariantStyle = {
+  // brand / brand-edge / on-brand are global.css tokens that already soften in dark mode.
+  container: `${PRESS} bg-brand border-brand-edge active:bg-brand-pressed`,
+  text: `${LABEL} text-on-brand`,
+  indicator: { light: '#ffffff', dark: '#1B2416' },
+};
+const purple: VariantStyle = {
+  container: `${PRESS} bg-purple-500 border-purple-700 active:bg-purple-600 dark:bg-[#A48BE6] dark:border-b-[#5D4A8E] dark:active:bg-[#977DDA]`,
+  text: `${LABEL} text-white dark:text-[#1C1430]`,
+  indicator: { light: '#ffffff', dark: '#1C1430' },
+};
+const neutral: VariantStyle = {
+  container: `${PRESS} bg-surface border-2 border-line border-b-edge active:bg-pressed`,
+  text: `${LABEL} text-neutral-800 dark:text-neutral-50`,
+  indicator: { light: '#1E2A44', dark: '#F3F4F6' },
+};
+const info: VariantStyle = {
+  container: `${PRESS} bg-info-500 border-info-700 active:bg-info-600 dark:bg-[#6DB4DE] dark:border-b-[#3B6C89] dark:active:bg-[#60A6CF]`,
+  text: `${LABEL} text-white dark:text-[#0E2330]`,
+  indicator: { light: '#ffffff', dark: '#0E2330' },
+};
+const mascot: VariantStyle = {
+  container: `${PRESS} bg-mascot-500 border-mascot-700 active:bg-mascot-600 dark:bg-[#E7A05C] dark:border-b-[#8A5A2B] dark:active:bg-[#D9924F]`,
+  text: `${LABEL} text-white dark:text-[#2A1806]`,
+  indicator: { light: '#ffffff', dark: '#2A1806' },
+};
+// Gold is too light for a white label in either mode; it always takes a dark brown one.
+const reward: VariantStyle = {
+  container: `${PRESS} bg-reward-500 border-reward-700 active:bg-reward-600 dark:bg-[#E6C25E] dark:border-b-[#8A6E22] dark:active:bg-[#D8B451]`,
+  text: `${LABEL} text-[#4A3300] dark:text-[#2A2006]`,
+  indicator: { light: '#4A3300', dark: '#2A2006' },
+};
+const danger: VariantStyle = {
+  container: `${PRESS} bg-danger-500 border-danger-700 active:bg-danger-600 dark:bg-[#E07B7B] dark:border-b-[#8A3F3F] dark:active:bg-[#D26D6D]`,
+  text: `${LABEL} text-white dark:text-[#2E0E0E]`,
+  indicator: { light: '#ffffff', dark: '#2E0E0E' },
+};
+
+const variantStyles: Record<ButtonVariant, VariantStyle> = {
+  default: primary,
+  brand: primary,
+  primary,
+  purple,
+  secondary: neutral,
+  white: neutral,
+  info,
+  blue: info,
+  mascot,
+  orange: mascot,
+  reward,
+  gold: reward,
+  destructive: danger,
+  danger,
   outline: {
-    container: 'bg-white border-2 border-primary-500 border-b-[4px] border-b-primary-700 active:translate-y-[2px] active:border-b-[2px] dark:bg-[#292E36] dark:border-[#46505C] dark:border-b-[#667382]',
-    text: 'text-primary-600 font-extrabold tracking-wider uppercase dark:text-white',
-    indicator: '#58CC02',
+    container: `${PRESS} bg-surface border-2 border-primary-500 border-b-primary-700 active:bg-primary-50 dark:border-[#7FA35E] dark:border-b-[#557044] dark:active:bg-pressed`,
+    text: `${LABEL} text-primary-700 dark:text-[#B5D894]`,
+    indicator: { light: '#3C8C00', dark: '#B5D894' },
   },
   ghost: {
-    container: 'bg-transparent active:bg-neutral-100 dark:active:bg-neutral-800',
+    container: 'bg-transparent active:bg-pressed',
     text: 'text-neutral-700 dark:text-neutral-200 font-bold',
-    indicator: '#757793',
+    indicator: { light: '#565879', dark: '#AEB4BE' },
   },
 };
 
@@ -166,6 +159,7 @@ export function Button({
   indicatorColor,
   ...props
 }: ButtonProps) {
+  const colorMode = useUniwind().theme === 'dark' ? 'dark' : 'light';
   const isIcon = size === 'icon';
   const shouldFullWidth = fullWidth ?? !isIcon;
 
@@ -188,7 +182,7 @@ export function Button({
   const textClasses = twMerge(
     currentVariant.text,
     currentSize.text,
-    'text-center dark:text-white',
+    'text-center',
     textClassName,
   );
 
@@ -207,7 +201,7 @@ export function Button({
         ? (
             <RNView className="flex-row items-center justify-center">
               <BouncingDots
-                color={indicatorColor ?? currentVariant.indicator}
+                color={indicatorColor ?? currentVariant.indicator[colorMode]}
                 size={size === 'sm' ? 6 : 8}
                 gap={size === 'sm' ? 4 : 6}
                 bounceHeight={size === 'sm' ? 5 : 7}

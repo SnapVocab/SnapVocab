@@ -30,9 +30,9 @@ export function MultipleGroupSection({
   }, [group.attributes]);
 
   return (
-    <View className="mb-6 rounded-3xl border-2 border-neutral-200/80 bg-white p-4 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
+    <View className="mb-6 rounded-3xl border-2 border-line bg-surface p-4 shadow-sm">
       {/* Section Header */}
-      <View className="mb-4 flex-row items-center justify-between border-b border-neutral-100 pb-3 dark:border-neutral-800">
+      <View className="mb-4 flex-row items-center justify-between border-b border-line pb-3">
         <View className="flex-row items-center">
           <View className="mr-2.5 size-8 items-center justify-center rounded-xl bg-emerald-100 dark:bg-emerald-950/60">
             <LayersIcon width={16} height={16} color="#059669" />
@@ -58,11 +58,11 @@ export function MultipleGroupSection({
             <View
               // eslint-disable-next-line react/no-array-index-key
               key={`item_${index}`}
-              className="rounded-2xl border border-neutral-200/80 bg-neutral-50/70 p-3.5 dark:border-neutral-800 dark:bg-neutral-800/40"
+              className="rounded-2xl border border-line bg-neutral-50/70 p-3.5 dark:bg-neutral-800/40"
             >
 
               {/* Item Card Header */}
-              <View className="mb-3 flex-row items-center justify-between border-b border-neutral-200/60 pb-2 dark:border-neutral-700/60">
+              <View className="mb-3 flex-row items-center justify-between border-b border-line pb-2">
                 <View className="rounded-lg bg-neutral-200/80 px-2 py-0.5 dark:bg-neutral-700">
                   <Text className="font-nunito text-xs font-extrabold text-neutral-700 dark:text-neutral-200">
                     {group.label || group.name}

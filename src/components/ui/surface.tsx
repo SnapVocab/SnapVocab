@@ -30,7 +30,7 @@ export const DEFAULT_SURFACE: SurfacePalette = {
     background: '#181A1F',
     surface: '#22252B',
     surfaceMuted: '#292E36',
-    border: '#46505C',
+    border: '#363B43',
     headerBg: '#22252B',
     text: '#F3F4F6',
     textMuted: '#B5BBC5',

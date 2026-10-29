@@ -19,7 +19,7 @@ export function TabSegmentedBar({
   const isFront = activeTab === 'FRONT';
 
   return (
-    <View className="bg-slate-50 px-4 py-3 dark:bg-neutral-900">
+    <View className="bg-surface px-4 py-3">
       <View className="flex-row rounded-2xl bg-neutral-200/80 p-1 dark:bg-neutral-800">
         {/* Front Tab */}
         <TouchableOpacity

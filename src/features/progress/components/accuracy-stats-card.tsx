@@ -30,7 +30,7 @@ export function AccuracyStatsCard({ summary, isLoading }: AccuracyStatsCardProps
         <Text className="font-nunito text-base font-bold text-neutral-800 dark:text-neutral-200">
           {t('progressUx.performance')}
         </Text>
-        <View className="gap-1.5 rounded-2xl bg-neutral-50/80 p-3.5 dark:bg-neutral-900/60">
+        <View className="gap-1.5 rounded-2xl border border-line bg-surface p-3.5">
           <Text className="font-nunito text-sm font-extrabold text-neutral-800 dark:text-neutral-200">
             {t('progressUx.noPerformanceData')}
           </Text>
@@ -59,7 +59,7 @@ export function AccuracyStatsCard({ summary, isLoading }: AccuracyStatsCardProps
       </Text>
 
       {/* Quiz count is already in the Activity row (unless SRS replaces it there with "due"). */}
-      <View className="flex-row items-center divide-x divide-neutral-200/60 rounded-2xl border border-neutral-100 bg-white p-3.5 dark:divide-neutral-800 dark:border-neutral-800 dark:bg-neutral-900">
+      <View className="flex-row items-center divide-x divide-neutral-200/60 rounded-2xl border border-line bg-surface p-3.5">
         <View className="flex-1 items-center px-2">
           <Text className="font-nunito text-2xl font-black text-primary-700 dark:text-primary-400">
             {summary.accuracy !== null

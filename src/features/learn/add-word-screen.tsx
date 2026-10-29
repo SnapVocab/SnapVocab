@@ -122,11 +122,11 @@ export function AddWordScreen() {
   }, [topicSchema?.groups]);
 
   return (
-    <SafeAreaView style={{ flex: 1 }} className="flex-1 bg-white dark:bg-neutral-900">
+    <SafeAreaView style={{ flex: 1 }} className="flex-1 bg-background">
       <FocusAwareStatusBar />
 
       {/* Header */}
-      <View className="flex-row items-center justify-between border-b border-neutral-100 px-4 pt-1 pb-3 dark:border-neutral-800">
+      <View className="flex-row items-center justify-between border-b border-line px-4 pt-1 pb-3">
         <BackButton onPress={() => router.back()} />
 
         <View className="flex-1 items-center px-2">
@@ -235,7 +235,7 @@ export function AddWordScreen() {
         </ScrollView>
 
         {!isFormLoading && !isFormError && (
-          <View className="border-t border-neutral-100 bg-white px-4 pt-3 pb-4 dark:border-neutral-800 dark:bg-neutral-900">
+          <View className="border-t border-line bg-surface px-4 pt-3 pb-4">
             <Button
               label={translate(isEditing
                 ? 'learn.add_word.update_button'

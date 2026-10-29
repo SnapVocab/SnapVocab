@@ -109,11 +109,11 @@ export function LookupScreen() {
   }, []);
 
   return (
-    <SafeAreaView edges={['top', 'bottom', 'left', 'right']} style={{ flex: 1 }} className="flex-1 bg-slate-50 dark:bg-neutral-900">
+    <SafeAreaView edges={['top', 'bottom', 'left', 'right']} style={{ flex: 1 }} className="flex-1 bg-background">
       <FocusAwareStatusBar />
 
       {/* Screen Header */}
-      <View className="flex-row items-center justify-between border-b border-neutral-100 bg-white px-4 py-3 dark:border-neutral-800 dark:bg-neutral-900">
+      <View className="flex-row items-center justify-between border-b border-line bg-surface px-4 py-3">
         <BackButton onPress={() => router.back()} hitSlop={12} />
 
         <Text className="font-nunito text-lg font-black text-mascot-navy dark:text-white">
@@ -133,7 +133,7 @@ export function LookupScreen() {
           showsVerticalScrollIndicator={false}
         >
           {/* Search Input Bar */}
-          <View className="flex-row items-center rounded-2xl border-2 border-neutral-200/90 bg-white px-4 py-2.5 shadow-sm dark:border-neutral-700 dark:bg-neutral-800">
+          <View className="flex-row items-center rounded-2xl border-2 border-line bg-white px-4 py-2.5 shadow-sm dark:bg-neutral-800">
             {isSuggestionsLoading ? (
               <ActivityIndicator size="small" color="#65A30D" />
             ) : (
@@ -188,7 +188,7 @@ export function LookupScreen() {
                       key={String(item.id)}
                       onPress={() => handleSelectWord(item.word, item.id)}
                       activeOpacity={0.7}
-                      className="flex-row items-center justify-between rounded-2xl border border-neutral-200/80 bg-white px-4 py-3 shadow-xs active:bg-neutral-100 dark:border-neutral-700 dark:bg-neutral-800 dark:active:bg-neutral-700"
+                      className="flex-row items-center justify-between rounded-2xl border border-line bg-white px-4 py-3 shadow-xs active:bg-pressed dark:bg-neutral-800"
                     >
                       <View className="flex-row items-center gap-3">
                         <View className="size-7 items-center justify-center rounded-full bg-slate-100 dark:bg-neutral-700">
@@ -204,8 +204,8 @@ export function LookupScreen() {
                 </View>
               ) : (
                 !isSuggestionsLoading && (
-                  <View className="mt-4 items-center justify-center rounded-2xl border border-neutral-100 bg-white py-8 dark:border-neutral-800 dark:bg-neutral-800/60">
-                    <Text className="font-inter text-xs text-neutral-400 dark:text-neutral-500">
+                  <View className="mt-4 items-center justify-center rounded-2xl border border-line bg-white py-8 dark:bg-neutral-800/60">
+                    <Text className="font-inter text-xs text-neutral-400 dark:text-neutral-400">
                       {translate('lookup.no_suggestions')}
                     </Text>
                   </View>
@@ -244,7 +244,7 @@ export function LookupScreen() {
                       key={item}
                       onPress={() => handleSelectWord(item)}
                       activeOpacity={0.7}
-                      className="flex-row items-center gap-2 rounded-full border border-neutral-200 bg-white px-3.5 py-2 active:bg-neutral-100 dark:border-neutral-700 dark:bg-neutral-800 dark:active:bg-neutral-700"
+                      className="flex-row items-center gap-2 rounded-full border border-line bg-white px-3.5 py-2 active:bg-pressed dark:bg-neutral-800"
                     >
                       <ClockIcon color="#94A3B8" width={15} height={15} />
                       <Text className="font-inter text-sm font-semibold text-slate-700 dark:text-neutral-200">
@@ -255,7 +255,7 @@ export function LookupScreen() {
                 </View>
               ) : (
                 <View className="mt-6 items-center justify-center py-6">
-                  <Text className="font-inter text-xs text-neutral-400 dark:text-neutral-500">
+                  <Text className="font-inter text-xs text-neutral-400 dark:text-neutral-400">
                     {translate('lookup.no_recent')}
                   </Text>
                 </View>

@@ -2,7 +2,6 @@ import type { PressableProps, ViewProps } from 'react-native';
 import * as React from 'react';
 import { Pressable, View } from 'react-native';
 import { twMerge } from 'tailwind-merge';
-import { useUniwind } from 'uniwind';
 
 import { Text } from './text';
 
@@ -10,24 +9,21 @@ export type CardProps = ViewProps & {
   variant?: 'default' | 'elevated' | 'selected' | 'success' | 'flat';
 };
 
-export function Card({ className, variant = 'default', style, ...props }: CardProps) {
-  const { theme } = useUniwind();
-  const neutralSurfaceClasses = theme === 'dark'
-    ? 'border-[#46505C] border-b-[#667382] bg-[#22252B]'
-    : 'border-neutral-200/90 border-b-neutral-300 bg-white';
-  const variantStyles = {
-    default: `border-2 border-b-[4px] ${neutralSurfaceClasses}`,
-    elevated: `border ${theme === 'dark' ? 'border-[#46505C] bg-[#22252B]' : 'border-neutral-100 bg-white shadow-md shadow-neutral-200/50'}`,
-    selected: 'bg-primary-50/80 border-2 border-primary-500 border-b-[4px] border-b-primary-600 dark:bg-neutral-800 dark:border-primary-400',
-    success: 'bg-emerald-50 border-2 border-emerald-500 border-b-[4px] border-b-emerald-600 dark:bg-neutral-800',
-    flat: `border ${theme === 'dark' ? 'border-[#46505C] bg-[#22252B]' : 'border-neutral-200 bg-neutral-50'}`,
-  };
+// Surface roles come from global.css tokens, which flip with the theme on their own.
+const cardVariants = {
+  default: 'border-2 border-b-[4px] border-line border-b-edge bg-surface',
+  elevated: 'border border-line bg-surface shadow-md shadow-black/5',
+  selected: 'border-2 border-b-[4px] border-primary-500 border-b-primary-600 bg-primary-50 dark:border-[#7FA35E] dark:border-b-[#557044] dark:bg-[#2A3324]',
+  success: 'border-2 border-b-[4px] border-emerald-500 border-b-emerald-600 bg-emerald-50 dark:border-emerald-500/70 dark:border-b-emerald-700 dark:bg-[#1F3029]',
+  flat: 'border border-line bg-surface-raised',
+};
 
+export function Card({ className, variant = 'default', style, ...props }: CardProps) {
   return (
     <View
       className={twMerge(
         'rounded-2xl p-4',
-        variantStyles[variant],
+        cardVariants[variant],
         className,
       )}
       style={style}
@@ -49,17 +45,13 @@ export function CardInteractive({
   style,
   ...props
 }: CardInteractiveProps) {
-  const { theme } = useUniwind();
-  const neutralSurfaceClasses = theme === 'dark'
-    ? 'border-[#46505C] border-b-[#667382] bg-[#22252B]'
-    : 'border-neutral-200/90 border-b-neutral-300 bg-white';
   return (
     <Pressable
       className={twMerge(
         'w-full flex-row items-center gap-3.5 rounded-2xl border-2 p-4 transition-all active:translate-y-[2px] active:border-b-2',
         selected
-          ? 'border-b-4 border-primary-500 border-b-primary-600 bg-primary-50/80'
-          : `border-b-4 ${neutralSurfaceClasses}`,
+          ? cardVariants.selected
+          : 'border-b-4 border-line border-b-edge bg-surface active:bg-pressed',
         className,
       )}
       style={style}

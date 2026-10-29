@@ -98,7 +98,7 @@ export function TopicItemOptionsBottomSheet({ bottomSheetRef, item, topicId, onE
         {currentView === 'MENU'
           ? (
               <>
-                <View className="mb-4 border-b border-neutral-100 pb-4 dark:border-neutral-800">
+                <View className="mb-4 border-b border-line pb-4">
                   <Text className="font-nunito text-lg font-extrabold text-mascot-navy dark:text-white">
                     {word}
                   </Text>

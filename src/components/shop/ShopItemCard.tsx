@@ -73,9 +73,9 @@ export function ItemCard({
     >
       <View style={{ height: 100 }} className={cn('relative items-center justify-center p-2', ARTWORK_BG[item.type])}>
         {item.equipped && (
-          <View className="absolute top-2 left-2 z-10 flex-row items-center gap-1 rounded-full bg-primary-500 px-2 py-0.5">
+          <View className="absolute top-2 left-2 z-10 flex-row items-center gap-1 rounded-full bg-brand px-2 py-0.5">
             <CheckIcon size={12} color="white" />
-            <Text className="font-nunito text-[11px] font-extrabold text-white">{t('shopUi.actionEquipped')}</Text>
+            <Text className="font-nunito text-[11px] font-extrabold text-on-brand">{t('shopUi.actionEquipped')}</Text>
           </View>
         )}
         {item.type === 'XP_BOOSTER' && item.quantity > 0 && (
@@ -113,7 +113,7 @@ export function ItemCard({
 }
 
 const ACTION_TONE = {
-  primary: { box: 'border-b-[3px] border-primary-700 bg-primary-500 active:translate-y-0.5 active:border-b', text: 'text-white' },
+  primary: { box: 'border-b-[3px] border-brand-edge bg-brand active:translate-y-0.5 active:border-b', text: 'text-on-brand' },
   secondary: { box: 'border-b-[3px] active:translate-y-0.5 active:border-b', text: '' },
   warning: { box: 'border-b-[3px] border-amber-300 bg-amber-50 active:translate-y-0.5 active:border-b', text: 'text-amber-800' },
   done: { box: 'border-b-2 border-primary-200 bg-primary-50', text: 'text-primary-700' },

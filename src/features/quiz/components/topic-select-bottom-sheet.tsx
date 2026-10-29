@@ -110,14 +110,14 @@ export function TopicSelectBottomSheet({
             <Pressable
               onPress={handleClose}
               hitSlop={8}
-              className="size-9 items-center justify-center rounded-full bg-neutral-100 active:bg-neutral-200 dark:bg-neutral-800 dark:active:bg-neutral-700"
+              className="size-9 items-center justify-center rounded-full bg-neutral-100 active:bg-pressed dark:bg-neutral-800"
             >
               <CloseIcon size={16} className="text-neutral-500 dark:text-neutral-300" />
             </Pressable>
           </View>
 
           {/* Search bar */}
-          <View className="mt-3.5 flex-row items-center rounded-xl border border-neutral-200 bg-neutral-50 px-3 py-2 dark:border-neutral-700 dark:bg-neutral-800">
+          <View className="mt-3.5 flex-row items-center rounded-xl border border-line bg-neutral-50 px-3 py-2 dark:bg-neutral-800">
             <SearchIcon size={18} className="text-neutral-400 dark:text-neutral-300" />
             <TextInput
               value={searchQuery}
@@ -175,8 +175,8 @@ export function TopicSelectBottomSheet({
                     className={cn(
                       'flex-row items-center justify-between rounded-2xl border-2 p-3.5 transition-all active:scale-[0.99]',
                       isSelected
-                        ? 'dark:bg-primary-950/40 border-primary-500 bg-primary-50/70 dark:border-primary-700'
-                        : 'border-neutral-100 bg-white active:bg-neutral-50 dark:border-neutral-700 dark:bg-neutral-900 dark:active:bg-neutral-800',
+                        ? 'border-primary-500 bg-primary-50/70 dark:border-primary-700 dark:bg-primary-500/15'
+                        : 'border-line bg-surface active:bg-pressed',
                     )}
                   >
                     <View className="flex-1 flex-row items-center gap-3 pr-2">
@@ -184,8 +184,8 @@ export function TopicSelectBottomSheet({
                         className={cn(
                           'size-10 items-center justify-center rounded-xl border',
                           isSelected
-                            ? 'border-primary-200 bg-white dark:border-primary-800 dark:bg-neutral-900'
-                            : 'border-neutral-200 bg-neutral-50 dark:border-neutral-700 dark:bg-neutral-800',
+                            ? 'border-primary-200 bg-surface dark:border-primary-800'
+                            : 'border-line bg-neutral-50 dark:bg-neutral-800',
                         )}
                       >
                         <Text className="text-[20px]">🎯</Text>
@@ -211,7 +211,7 @@ export function TopicSelectBottomSheet({
                           </View>
                           {topic.translation && (
                             <Text
-                              className="font-inter text-[11.5px] font-medium text-neutral-400 dark:text-neutral-500"
+                              className="font-inter text-[11.5px] font-medium text-neutral-400 dark:text-neutral-400"
                               numberOfLines={1}
                             >
                               ·
@@ -229,7 +229,7 @@ export function TopicSelectBottomSheet({
                           <CheckCircleIcon size={14} className="text-white" />
                         </View>
                       ) : (
-                        <View className="size-5 rounded-full border-2 border-neutral-300 dark:border-neutral-500" />
+                        <View className="size-5 rounded-full border-2 border-edge" />
                       )}
                     </View>
                   </Pressable>

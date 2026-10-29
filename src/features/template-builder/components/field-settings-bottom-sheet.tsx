@@ -111,9 +111,9 @@ export function FieldSettingsBottomSheet({
       backdropComponent={renderBackdrop}
       handleIndicatorStyle={{ backgroundColor: '#D1D5DB', width: 40 }}
     >
-      <View className="flex-1 bg-white dark:bg-neutral-900">
+      <View className="flex-1 bg-background">
         {/* Header */}
-        <View className="flex-row items-center justify-between border-b border-neutral-100 px-5 pb-3 dark:border-neutral-800">
+        <View className="flex-row items-center justify-between border-b border-line px-5 pb-3">
           <View>
             <Text
               tx="template_builder.field_settings.title"
@@ -183,7 +183,7 @@ export function FieldSettingsBottomSheet({
         {/* Frozen Action Row at Bottom */}
         <View
           style={{ paddingBottom: Math.max(insets.bottom + 12, 32) }}
-          className="flex-row items-center gap-3 border-t border-neutral-100 bg-white px-5 pt-3.5 dark:border-neutral-800 dark:bg-neutral-900"
+          className="flex-row items-center gap-3 border-t border-line bg-surface px-5 pt-3.5"
         >
           <TouchableOpacity
             onPress={handleDelete}
