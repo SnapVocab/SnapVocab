@@ -156,14 +156,14 @@
   --color-warning-900: #78350F;
 
   /* Semantic colors */
-  --color-background: #ffffff;
+  --color-background: #F7F8FA;
   --color-foreground: #1E2A44;
 
   --color-card: #ffffff;
   --color-card-foreground: #1E2A44;
 
   --color-muted: #EEEFF3;
-  --color-muted-foreground: #757793;
+  --color-muted-foreground: #62647F;
 
   --color-border: #D4D5DF;
   --color-input: #D4D5DF;
@@ -171,6 +171,22 @@
 
   --color-destructive: #EF4444;
   --color-destructive-foreground: #ffffff;
+
+  /* Surface roles. Flip with the theme below, so a screen never needs a dark: twin for them. */
+  --color-surface: #ffffff;
+  --color-surface-raised: #F7F8FA;
+  /* Fill a neutral control takes while held down. */
+  --color-pressed: #E3E6EC;
+  /* Hairline divider and the side border of a 3D card or control. */
+  --color-line: #E1E3EA;
+  /* The thicker bottom border that gives a 3D card or control its depth. */
+  --color-edge: #CDD0DA;
+
+  /* Brand action fill (primary buttons, selected chips). Dark mode softens it and darkens the label. */
+  --color-brand: #58CC02;
+  --color-brand-edge: #3C8C00;
+  --color-brand-pressed: #4CAD02;
+  --color-on-brand: #ffffff;
 }
 
 /* Theme-aware semantic and neutral colors. The dark palette uses soft slate surfaces. */
@@ -187,6 +203,17 @@
       --color-input: #363B43;
       --color-ring: #9BCB72;
 
+      --color-surface: #22252B;
+      --color-surface-raised: #292E36;
+      --color-pressed: #333842;
+      --color-line: #363B43;
+      --color-edge: #4A535F;
+
+      --color-brand: #91B86C;
+      --color-brand-edge: #557044;
+      --color-brand-pressed: #83AA60;
+      --color-on-brand: #1B2416;
+
       --color-neutral-50: #F3F4F6;
       --color-neutral-100: #E5E7EB;
       --color-neutral-200: #D1D5DB;
@@ -200,15 +227,26 @@
       --color-neutral-950: #15171B;
     }
     @variant light {
-      --color-background: #ffffff;
+      --color-background: #F7F8FA;
       --color-foreground: #1E2A44;
       --color-card: #ffffff;
       --color-card-foreground: #1E2A44;
       --color-muted: #EEEFF3;
-      --color-muted-foreground: #757793;
+      --color-muted-foreground: #62647F;
       --color-border: #D4D5DF;
       --color-input: #D4D5DF;
       --color-ring: #58CC02;
+
+      --color-surface: #ffffff;
+      --color-surface-raised: #F7F8FA;
+      --color-pressed: #E3E6EC;
+      --color-line: #E1E3EA;
+      --color-edge: #CDD0DA;
+
+      --color-brand: #58CC02;
+      --color-brand-edge: #3C8C00;
+      --color-brand-pressed: #4CAD02;
+      --color-on-brand: #ffffff;
 
       --color-neutral-50: #EEEFF3;
       --color-neutral-100: #D4D5DF;

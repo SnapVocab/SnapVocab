@@ -26,7 +26,7 @@ export default function SkeletonCollectionDetail() {
   return (
     <Animated.View style={animatedStyle} className="gap-4">
       {/* Hero Skeleton */}
-      <View className="rounded-3xl border border-neutral-200/80 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900">
+      <View className="rounded-3xl border border-line bg-surface p-5">
         <View className="flex-row items-start justify-between">
           <View className="flex-1 flex-row items-center gap-3.5">
             <View className="size-14 rounded-2xl bg-neutral-200/90 dark:bg-neutral-800" />
@@ -50,7 +50,7 @@ export default function SkeletonCollectionDetail() {
         {Array.from({ length: 4 }, (_, i) => `skeleton-word-${i}`).map(key => (
           <View
             key={key}
-            className="rounded-2xl border border-neutral-200/80 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900"
+            className="rounded-2xl border border-line bg-surface p-4"
           >
             <View className="flex-row items-center justify-between">
               <View className="h-5 w-1/3 rounded-md bg-neutral-200/90 dark:bg-neutral-800" />

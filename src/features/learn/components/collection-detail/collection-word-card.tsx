@@ -14,7 +14,7 @@ export default function CollectionWordCard({ item, onPress, onAudioPress }: Prop
   return (
     <Pressable
       onPress={onPress}
-      className="rounded-2xl border border-neutral-200/80 bg-white p-4 active:opacity-80 dark:border-neutral-800 dark:bg-neutral-900"
+      className="rounded-2xl border border-line bg-surface p-4 active:opacity-80"
     >
       {/* Top row: Word + phonetic + sound icon + mastery badge */}
       <View className="flex-row items-start justify-between">
@@ -25,7 +25,7 @@ export default function CollectionWordCard({ item, onPress, onAudioPress }: Prop
 
           {item.partOfSpeech
             ? (
-                <View className="rounded-md border border-neutral-200 bg-neutral-100 px-1.5 py-0.5 dark:border-neutral-700 dark:bg-neutral-800">
+                <View className="rounded-md border border-line bg-neutral-100 px-1.5 py-0.5 dark:bg-neutral-800">
                   <Text className="font-nunito text-[11px] font-bold text-neutral-600 dark:text-neutral-300">
                     {item.partOfSpeech}
                   </Text>
@@ -47,7 +47,7 @@ export default function CollectionWordCard({ item, onPress, onAudioPress }: Prop
           <Pressable
             onPress={onAudioPress}
             hitSlop={8}
-            className="size-8 items-center justify-center rounded-full bg-neutral-100 active:bg-neutral-200 dark:bg-neutral-800"
+            className="size-8 items-center justify-center rounded-full bg-neutral-100 active:bg-pressed dark:bg-neutral-800"
           >
             <VolumeIcon width={14} height={14} color="#71717A" />
           </Pressable>

@@ -37,7 +37,7 @@ export function CardActionToolbar({
         onPress={onFlip}
         disabled={disabled}
         android_ripple={{ color: 'transparent' }}
-        className="size-14 items-center justify-center rounded-2xl border border-neutral-200 bg-white shadow-xs active:scale-95 active:bg-neutral-100 dark:border-neutral-700 dark:bg-neutral-800"
+        className="size-14 items-center justify-center rounded-2xl border border-line bg-white shadow-xs active:scale-95 active:bg-pressed dark:bg-neutral-800"
       >
         <RotateCwIcon width={22} height={22} color="#475569" />
       </Pressable>

@@ -63,9 +63,9 @@ export function CardFace({
       </ScrollView>
 
       {isInteractive ? (
-        <View className="mt-2 flex-row items-center justify-center gap-1.5 border-t border-neutral-100 pt-3 dark:border-neutral-800">
+        <View className="mt-2 flex-row items-center justify-center gap-1.5 border-t border-line pt-3">
           <RotateCwIcon width={12} height={12} color="#8B91A5" />
-          <Text className="font-inter text-[10px] font-semibold text-neutral-400 dark:text-neutral-500">
+          <Text className="font-inter text-[10px] font-semibold text-neutral-400 dark:text-neutral-400">
             {translate('card_renderer.tap_to_flip')}
           </Text>
         </View>

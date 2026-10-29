@@ -1,6 +1,7 @@
 import type { DataType } from '../types';
 import * as React from 'react';
-import { Switch, TouchableOpacity, View } from 'react-native';
+import { TouchableOpacity, View } from 'react-native';
+import { Switch } from '@/components/ui/switch';
 import { Text } from '@/components/ui/text';
 import { translate } from '@/lib/i18n/utils';
 
@@ -33,7 +34,7 @@ export function DataTypeSelector({
             className={`rounded-xl border px-3 py-2 ${
               dataType === t.key
                 ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-950/40'
-                : 'border-neutral-200 bg-neutral-50 dark:border-neutral-700 dark:bg-neutral-800'
+                : 'border-line bg-neutral-50 dark:bg-neutral-800'
             }`}
           >
             <Text
@@ -68,7 +69,7 @@ export function ToggleSection({
   onToggleAudioAction: (v: boolean) => void;
 }) {
   return (
-    <View className="mb-4 rounded-2xl border border-neutral-200 bg-neutral-50 p-3 dark:border-neutral-700 dark:bg-neutral-800/50">
+    <View className="mb-4 rounded-2xl border border-line bg-neutral-50 p-3 dark:bg-neutral-800/50">
       <View className="flex-row items-center justify-between py-1.5">
         <View className="flex-1 pr-3">
           <Text
@@ -83,11 +84,10 @@ export function ToggleSection({
         <Switch
           value={required}
           onValueChange={onToggleRequired}
-          trackColor={{ false: '#E5E7EB', true: '#16A34A' }}
         />
       </View>
 
-      <View className="my-1 border-t border-neutral-200/60 dark:border-neutral-700/60" />
+      <View className="my-1 border-t border-line" />
 
       <View className="flex-row items-center justify-between py-1.5">
         <View className="flex-1 pr-3">
@@ -103,11 +103,10 @@ export function ToggleSection({
         <Switch
           value={hideIfEmpty}
           onValueChange={onToggleHideIfEmpty}
-          trackColor={{ false: '#E5E7EB', true: '#16A34A' }}
         />
       </View>
 
-      <View className="my-1 border-t border-neutral-200/60 dark:border-neutral-700/60" />
+      <View className="my-1 border-t border-line" />
 
       <View className="flex-row items-center justify-between py-1.5">
         <View className="flex-1 pr-3">
@@ -123,7 +122,6 @@ export function ToggleSection({
         <Switch
           value={audioAction}
           onValueChange={onToggleAudioAction}
-          trackColor={{ false: '#E5E7EB', true: '#16A34A' }}
         />
       </View>
     </View>

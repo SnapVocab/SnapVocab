@@ -47,8 +47,6 @@ function NameFields({
         )}
       />
 
-      <View className="h-4" />
-
       <Controller
         control={control}
         name="lastName"

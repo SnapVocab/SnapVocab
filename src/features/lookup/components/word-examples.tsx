@@ -28,7 +28,7 @@ export function WordExamples({ meanings }: WordExamplesProps) {
       {examples.map((item, idx) => (
         <View
           key={`example-${idx}-${item.example?.slice(0, 10)}`}
-          className="mb-3 rounded-3xl border border-neutral-200/90 bg-slate-50/90 p-4 dark:border-neutral-700 dark:bg-neutral-800/80"
+          className="mb-3 rounded-3xl border border-line bg-slate-50/90 p-4 dark:bg-neutral-800/80"
         >
           <Text className="font-inter text-sm font-bold text-slate-900 dark:text-white">
             {`"${item.example}"`}

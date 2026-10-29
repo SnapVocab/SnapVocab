@@ -1,6 +1,6 @@
 import type { ShopItemDTO } from './types';
 import type { ShopCategory } from '@/components/shop/shop-category-tabs';
-import { router } from 'expo-router';
+import { router, useSegments } from 'expo-router';
 import { PackageIcon, RefreshCwIcon } from 'lucide-react-native';
 import * as React from 'react';
 import { useMemo, useState } from 'react';
@@ -43,6 +43,7 @@ export default function ShopScreen() {
 
 function ShopScreenContent() {
   const s = useSurface();
+  const isShopTab = (useSegments() as string[]).includes('(tabs)');
   const { t, i18n } = useTranslation();
   const [activeCategory, setActiveCategory] = useState<ShopCategory>('all');
   const [previewFrameItem, setPreviewFrameItem] = useState<ShopItemDTO | null>(null);
@@ -109,17 +110,18 @@ function ShopScreenContent() {
     >
       <ScreenHeader
         title={t('shop.title')}
-        onBack={() => router.back()}
+        // As the Shop tab it is a root destination: no back. Pushed from elsewhere it keeps one.
+        onBack={isShopTab ? undefined : () => router.back()}
         right={(
           <View className="flex-row items-center gap-2">
             <Pressable
               accessibilityRole="button"
               accessibilityLabel={t('shopUi.walletBalance', { count: coinBalance })}
               onPress={() => router.push('/profile/wallet' as any)}
-              className="flex-row items-center gap-1.5 rounded-full border border-reward-200 bg-reward-50 px-3 py-1.5 active:scale-95"
+              className="flex-row items-center gap-1.5 rounded-full border border-reward-200 bg-reward-50 px-3 py-1.5 active:scale-95 dark:border-amber-400/25 dark:bg-amber-400/10"
             >
               <Coin3D size="xs" />
-              <Text className="font-nunito text-[14px] font-extrabold text-reward-700 tabular-nums">
+              <Text className="font-nunito text-[14px] font-extrabold text-reward-700 tabular-nums dark:text-amber-300">
                 {coinBalance.toLocaleString(i18n.language)}
               </Text>
             </Pressable>
@@ -181,10 +183,10 @@ function ShopScreenContent() {
             </Text>
             <Pressable
               onPress={() => refetchCatalog()}
-              className="flex-row items-center gap-2 rounded-xl bg-primary-500 px-5 py-2.5 active:bg-primary-600"
+              className="flex-row items-center gap-2 rounded-xl bg-brand px-5 py-2.5 active:bg-brand-pressed"
             >
               <RefreshCwIcon size={16} color="white" />
-              <Text className="font-nunito text-[14px] font-extrabold text-white uppercase">
+              <Text className="font-nunito text-[14px] font-extrabold text-on-brand uppercase">
                 {t('shopUi.retry')}
               </Text>
             </Pressable>

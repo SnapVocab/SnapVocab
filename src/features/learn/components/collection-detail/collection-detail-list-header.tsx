@@ -28,7 +28,7 @@ export function CollectionDetailListHeader({
   return (
     <View className="mb-3">
       {/* Search Box */}
-      <View className="mb-3 flex-row items-center rounded-2xl border border-neutral-200/80 bg-white px-3.5 py-2.5 dark:border-neutral-800 dark:bg-neutral-900">
+      <View className="mb-3 flex-row items-center rounded-2xl border border-line bg-surface px-3.5 py-2.5">
         <SearchIcon width={18} height={18} color="#9CA3AF" />
         <TextInput
           value={searchQuery}

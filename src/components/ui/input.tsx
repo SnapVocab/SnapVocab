@@ -19,21 +19,21 @@ const inputTv = tv({
   variants: {
     focused: {
       true: {
-        input: 'border-primary-500 bg-white dark:border-primary-400 dark:bg-neutral-800',
+        input: 'border-primary-500 bg-surface dark:border-[#9BCB72]',
       },
       false: {
-        input: 'border-neutral-200 bg-neutral-50/60 dark:border-neutral-700 dark:bg-neutral-800',
+        input: 'border-edge bg-surface-raised',
       },
     },
     error: {
       true: {
-        input: 'border-danger-500 bg-danger-50/20',
-        label: 'text-danger-600',
+        input: 'border-danger-500 bg-danger-50/40 dark:border-danger-400 dark:bg-danger-500/10',
+        label: 'text-danger-600 dark:text-danger-400',
       },
     },
     disabled: {
       true: {
-        input: 'bg-neutral-200 dark:bg-neutral-700',
+        input: 'bg-muted opacity-60',
       },
     },
   },
@@ -172,14 +172,14 @@ export function Input({ ref, ...props }: NInputProps & { ref?: React.Ref<NTextIn
         ? (
             <Text
               testID={testID ? `${testID}-error` : undefined}
-              className="mt-1.5 px-1 text-sm font-medium text-danger-500 dark:text-danger-600"
+              className="mt-1.5 px-1 text-sm font-medium text-danger-600 dark:text-danger-400"
             >
               {error}
             </Text>
           )
         : hint
           ? (
-              <Text className="mt-1.5 px-1 text-xs text-neutral-400">
+              <Text className="mt-1.5 px-1 text-xs text-neutral-500 dark:text-neutral-400">
                 {hint}
               </Text>
             )

@@ -39,7 +39,7 @@ export function StatsScreen() {
   }, [queryClient]);
 
   return (
-    <SafeAreaView edges={['top', 'left', 'right']} style={{ flex: 1 }} className="flex-1 bg-[#F7F8FA] dark:bg-neutral-950">
+    <SafeAreaView edges={['top', 'left', 'right']} style={{ flex: 1 }} className="flex-1 bg-background dark:bg-neutral-950">
       <FocusAwareStatusBar />
 
       <ScreenHeader title={translate('progressUx.statsTitle')} onBack={() => router.back()} />

@@ -52,8 +52,8 @@ export function MascotAdviceCard({ summary, streak }: MascotAdviceCardProps) {
     <View
       className={`mb-3 flex-row items-center gap-3 rounded-2xl p-3.5 shadow-2xs ${
         isContextual
-          ? 'border border-emerald-500/20 bg-emerald-50/50 dark:border-emerald-500/20 dark:bg-neutral-900'
-          : 'border border-neutral-100 bg-white dark:border-neutral-800 dark:bg-neutral-900'
+          ? 'border border-emerald-500/20 bg-emerald-50/50 dark:border-emerald-500/20 dark:bg-emerald-500/10'
+          : 'border border-line bg-surface'
       }`}
     >
       <Snapy

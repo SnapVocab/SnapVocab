@@ -3,10 +3,11 @@ import type { AddFieldParams } from '../store-types';
 import type { CustomFieldInput, DataType, SchemaAttributeDTO, SemanticRole, TopicSchemaDTO } from '../types';
 import { BottomSheetBackdrop, BottomSheetModal, BottomSheetScrollView } from '@gorhom/bottom-sheet';
 import * as React from 'react';
-import { Switch, TouchableOpacity, View } from 'react-native';
+import { TouchableOpacity, View } from 'react-native';
 import { Button } from '@/components/ui/button';
 import { CloseIcon, PlusIcon } from '@/components/ui/icons';
 import { Input } from '@/components/ui/input';
+import { Switch } from '@/components/ui/switch';
 import { Text } from '@/components/ui/text';
 import { translate } from '@/lib/i18n/utils';
 import { DataTypeSelector, RoleSelector } from './field-settings-selectors';
@@ -96,9 +97,9 @@ export function AddFieldSheet({
       backdropComponent={renderBackdrop}
       handleIndicatorStyle={{ backgroundColor: '#D1D5DB', width: 40 }}
     >
-      <View className="flex-1 bg-white px-5 pb-6 dark:bg-neutral-900">
+      <View className="flex-1 bg-background px-5 pb-6">
         {/* Header */}
-        <View className="flex-row items-center justify-between border-b border-neutral-100 pb-3 dark:border-neutral-800">
+        <View className="flex-row items-center justify-between border-b border-line pb-3">
           <View>
             <Text
               tx="template_builder.add_field_sheet.title"
@@ -181,7 +182,7 @@ export function AddFieldSheet({
                         <TouchableOpacity
                           key={attr.attributeId}
                           onPress={() => handleSelectAttribute(attr)}
-                          className="flex-row items-center justify-between rounded-xl border border-neutral-200 bg-white p-3 shadow-sm active:opacity-70 dark:border-neutral-700 dark:bg-neutral-800"
+                          className="flex-row items-center justify-between rounded-xl border border-line bg-white p-3 shadow-sm active:opacity-70 dark:bg-neutral-800"
                           activeOpacity={0.7}
                         >
                           <View className="flex-1">
@@ -238,7 +239,7 @@ export function AddFieldSheet({
               <RoleSelector role={customRole} onSelect={setCustomRole} />
 
               {/* Required Toggle */}
-              <View className="mb-4 rounded-2xl border border-neutral-200 bg-neutral-50 p-3 dark:border-neutral-700 dark:bg-neutral-800/50">
+              <View className="mb-4 rounded-2xl border border-line bg-neutral-50 p-3 dark:bg-neutral-800/50">
                 <View className="flex-row items-center justify-between py-1.5">
                   <View className="flex-1 pr-3">
                     <Text
@@ -253,7 +254,6 @@ export function AddFieldSheet({
                   <Switch
                     value={customRequired}
                     onValueChange={setCustomRequired}
-                    trackColor={{ false: '#E5E7EB', true: '#16A34A' }}
                   />
                 </View>
               </View>

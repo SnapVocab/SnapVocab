@@ -24,7 +24,7 @@ export function DetectedItemCard({ item, color, selected, onPress }: Props) {
       testID={`scan-item-${item.label}`}
       // Only override when selected: an explicit `undefined` border colour renders black.
       style={selected ? { borderColor: color } : undefined}
-      className="flex-row overflow-hidden rounded-3xl border-2 border-b-4 border-neutral-100 bg-white dark:border-neutral-800 dark:bg-neutral-900"
+      className="flex-row overflow-hidden rounded-3xl border-2 border-b-4 border-line bg-surface"
     >
       {/* Same colour as the box on the photo. */}
       <View style={{ width: 6, backgroundColor: color }} />

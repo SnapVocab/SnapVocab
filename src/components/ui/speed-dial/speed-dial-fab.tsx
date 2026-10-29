@@ -13,6 +13,7 @@ import Animated, {
   withSpring,
   withTiming,
 } from 'react-native-reanimated';
+import { useUniwind } from 'uniwind';
 import { cn } from '@/lib/utils';
 import { PlusIcon } from '../icons';
 import { SpeedDialItem } from './speed-dial-item';
@@ -29,6 +30,7 @@ export function SpeedDialFAB({
   className = '',
   testID = 'speed-dial-fab',
 }: SpeedDialFABProps) {
+  const isDark = useUniwind().theme === 'dark';
   // 1. Trạng thái đóng/mở menu
   const [isOpen, setIsOpen] = useState(false);
 
@@ -128,10 +130,10 @@ export function SpeedDialFAB({
           android_ripple={{ color: 'transparent' }}
           accessibilityRole="button"
           accessibilityLabel={isOpen ? 'Close speed dial menu' : 'Open speed dial menu'}
-          className="size-14 items-center justify-center rounded-full bg-primary-600 shadow-xl shadow-primary-900/30 active:scale-95 active:opacity-90 dark:bg-primary-500"
+          className="size-14 items-center justify-center rounded-full bg-brand shadow-xl shadow-black/20 active:scale-95 active:bg-brand-pressed"
         >
           <Animated.View style={mainIconAnimatedStyle}>
-            {mainIcon ?? <PlusIcon width={26} height={26} color="#FFFFFF" />}
+            {mainIcon ?? <PlusIcon width={26} height={26} color={isDark ? '#1B2416' : '#FFFFFF'} />}
           </Animated.View>
         </AnimatedPressable>
       </View>

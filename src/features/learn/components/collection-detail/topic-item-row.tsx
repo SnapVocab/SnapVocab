@@ -18,7 +18,7 @@ export function TopicItemRow({ item, onPress, onLongPress }: Props) {
   const resetLongPressTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
   const { theme } = useUniwind();
   const cardSurfaceClasses = theme === 'dark'
-    ? 'border-[#46505C] border-b-[#667382] bg-[#22252B]'
+    ? 'border-line border-b-edge bg-surface'
     : 'border-neutral-200/90 border-b-neutral-300 bg-white';
   const { word, phonetic, partOfSpeech, translation } = React.useMemo(
     () => extractTopicItemDisplay(item),
@@ -131,7 +131,7 @@ export function TopicItemRow({ item, onPress, onLongPress }: Props) {
           />
         </Pressable>
 
-        <View className="size-9 items-center justify-center rounded-xl border-2 border-b-[3px] border-neutral-200/60 border-b-neutral-300 bg-neutral-100/60 dark:border-[#46505C] dark:border-b-[#667382] dark:bg-[#292E36]">
+        <View className="size-9 items-center justify-center rounded-xl border-2 border-b-[3px] border-line border-b-edge bg-surface-raised">
           <ChevronRightIcon width={14} height={14} color="#94A3B8" />
         </View>
       </View>

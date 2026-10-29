@@ -17,7 +17,7 @@ export function CollectionBreadcrumbBar({ parentStack, rootName, onBreadcrumbPre
   }
 
   return (
-    <View className="border-b border-neutral-100 bg-white/90 px-4 py-2 dark:border-neutral-800 dark:bg-neutral-900/90">
+    <View className="border-b border-line bg-surface/90 px-4 py-2">
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -27,7 +27,7 @@ export function CollectionBreadcrumbBar({ parentStack, rootName, onBreadcrumbPre
         <Pressable
           onPress={() => onBreadcrumbPress(-1)}
           hitSlop={6}
-          className="flex-row items-center gap-1.5 rounded-xl border-2 border-b-[3px] border-neutral-200/90 border-b-neutral-300 bg-neutral-50 px-2.5 py-1 active:translate-y-px active:border-b-2 dark:border-[#46505C] dark:border-b-[#667382] dark:bg-[#292E36]"
+          className="flex-row items-center gap-1.5 rounded-xl border-2 border-b-[3px] border-line border-b-edge bg-surface-raised px-2.5 py-1 active:translate-y-px active:border-b-2"
         >
           <FolderIcon width={12} height={12} color="#65A30D" />
           <Text className="font-nunito text-xs font-black text-lime-700 dark:text-lime-400">
@@ -48,8 +48,8 @@ export function CollectionBreadcrumbBar({ parentStack, rootName, onBreadcrumbPre
                 hitSlop={6}
                 className={`flex-row items-center rounded-xl border-2 border-b-[3px] px-2.5 py-1 ${
                   isLast
-                    ? 'border-primary-300 border-b-primary-500 bg-primary-50 dark:border-[#46505C] dark:border-b-[#9BCB72] dark:bg-[#22252B]'
-                    : 'border-neutral-200/90 border-b-neutral-300 bg-white active:translate-y-px active:border-b-2 dark:border-[#46505C] dark:border-b-[#667382] dark:bg-[#292E36]'
+                    ? 'border-primary-300 border-b-primary-500 bg-primary-50 dark:border-line dark:border-b-[#9BCB72] dark:bg-surface'
+                    : 'border-line border-b-edge bg-white active:translate-y-px active:border-b-2 dark:bg-surface-raised'
                 }`}
               >
                 <Text

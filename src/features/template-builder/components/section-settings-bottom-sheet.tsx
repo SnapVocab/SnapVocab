@@ -2,10 +2,11 @@ import type { BottomSheetBackdropProps } from '@gorhom/bottom-sheet';
 import type { BuilderSection, ColumnLayout } from '../types';
 import { BottomSheetBackdrop, BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet';
 import * as React from 'react';
-import { Switch, TouchableOpacity, View } from 'react-native';
+import { TouchableOpacity, View } from 'react-native';
 import { Button } from '@/components/ui/button';
 import { CloseIcon, TrashIcon } from '@/components/ui/icons';
 import { Input } from '@/components/ui/input';
+import { Switch } from '@/components/ui/switch';
 import { Text } from '@/components/ui/text';
 import { translate } from '@/lib/i18n/utils';
 
@@ -72,8 +73,8 @@ export function SectionSettingsBottomSheet({
       backdropComponent={renderBackdrop}
       handleIndicatorStyle={{ backgroundColor: '#D1D5DB', width: 40 }}
     >
-      <BottomSheetView className="rounded-t-3xl bg-white px-5 pt-1 pb-8 dark:bg-neutral-900">
-        <View className="flex-row items-center justify-between border-b border-neutral-100 pb-3 dark:border-neutral-800">
+      <BottomSheetView className="rounded-t-3xl bg-surface px-5 pt-1 pb-8">
+        <View className="flex-row items-center justify-between border-b border-line pb-3">
           <View>
             <Text
               tx="template_builder.section_settings.title"
@@ -114,7 +115,7 @@ export function SectionSettingsBottomSheet({
         </View>
 
         {/* Action Row: Delete Icon Button + Apply Button on Same Line */}
-        <View className="flex-row items-center gap-3 border-t border-neutral-100 pt-3 dark:border-neutral-800">
+        <View className="flex-row items-center gap-3 border-t border-line pt-3">
           <TouchableOpacity
             onPress={handleDelete}
             className="size-12 items-center justify-center rounded-2xl border border-red-200 bg-red-50 active:opacity-70 dark:border-red-900 dark:bg-red-950/30"
@@ -154,7 +155,7 @@ function ColumnLayoutSelector({
           className={`flex-1 items-center rounded-xl border py-3 ${
             columns === 1
               ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-950/40'
-              : 'border-neutral-200 bg-neutral-50 dark:border-neutral-700 dark:bg-neutral-800'
+              : 'border-line bg-neutral-50 dark:bg-neutral-800'
           }`}
         >
           <Text
@@ -174,7 +175,7 @@ function ColumnLayoutSelector({
           className={`flex-1 items-center rounded-xl border py-3 ${
             columns === 2
               ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-950/40'
-              : 'border-neutral-200 bg-neutral-50 dark:border-neutral-700 dark:bg-neutral-800'
+              : 'border-line bg-neutral-50 dark:bg-neutral-800'
           }`}
         >
           <Text
@@ -202,7 +203,7 @@ function RepeatableOption({
   onToggleRepeatable: (v: boolean) => void;
 }) {
   return (
-    <View className="mb-6 rounded-2xl border border-neutral-200 bg-neutral-50 p-3 dark:border-neutral-700 dark:bg-neutral-800/50">
+    <View className="mb-6 rounded-2xl border border-line bg-neutral-50 p-3 dark:bg-neutral-800/50">
       <View className="flex-row items-center justify-between py-1.5">
         <View className="flex-1 pr-3">
           <Text
@@ -217,7 +218,6 @@ function RepeatableOption({
         <Switch
           value={repeatable}
           onValueChange={onToggleRepeatable}
-          trackColor={{ false: '#E5E7EB', true: '#16A34A' }}
         />
       </View>
     </View>

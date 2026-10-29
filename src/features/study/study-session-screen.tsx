@@ -8,6 +8,7 @@ import { ActivityIndicator, Alert, View } from 'react-native';
 import { BackButton, Pressable, SafeAreaView, Text } from '@/components/ui';
 import { RotateCwIcon, TrophyIcon } from '@/components/ui/icons';
 import { Snapy } from '@/components/ui/snapy';
+import { useColorMode } from '@/components/ui/surface';
 import { DynamicCardRenderer } from '@/features/card-renderer/dynamic-card-renderer';
 import { useCollection } from '@/features/learn/api';
 import { useSchema, useTopicSchema } from '@/features/template-builder/api';
@@ -18,30 +19,36 @@ const RATINGS: {
   value: FsrsRating;
   titleKey: TxKeyPath;
   color: string;
+  /** Same hue at 300: the 600 ink sinks into the dark tinted fill. */
+  darkColor: string;
   background: string;
 }[] = [
   {
     value: 'AGAIN',
     titleKey: 'learn.hub.rating_again',
     color: '#E11D48',
+    darkColor: '#FDA4AF',
     background: 'bg-rose-50 dark:bg-rose-950/40',
   },
   {
     value: 'HARD',
     titleKey: 'learn.hub.rating_hard',
     color: '#D97706',
+    darkColor: '#FCD34D',
     background: 'bg-amber-50 dark:bg-amber-950/40',
   },
   {
     value: 'GOOD',
     titleKey: 'learn.hub.rating_good',
     color: '#059669',
+    darkColor: '#6EE7B7',
     background: 'bg-emerald-50 dark:bg-emerald-950/40',
   },
   {
     value: 'EASY',
     titleKey: 'learn.hub.rating_easy',
     color: '#0284C7',
+    darkColor: '#7DD3FC',
     background: 'bg-sky-50 dark:bg-sky-950/40',
   },
 ];
@@ -154,7 +161,7 @@ export function StudySessionScreen() {
       <SafeAreaView
         edges={['top', 'bottom', 'left', 'right']}
         style={{ flex: 1 }}
-        className="flex-1 bg-[#F7F8F2] dark:bg-[#181A1F]"
+        className="flex-1 bg-background"
       >
         <View className="flex-1 items-center justify-center px-8">
           <Snapy pose="tap_trung" animation="idle" style={{ width: 120, height: 120 }} />
@@ -174,7 +181,7 @@ export function StudySessionScreen() {
       <SafeAreaView
         edges={['top', 'bottom', 'left', 'right']}
         style={{ flex: 1 }}
-        className="flex-1 items-center justify-center bg-[#F7F8F2] p-6 dark:bg-[#181A1F]"
+        className="flex-1 items-center justify-center bg-background p-6"
       >
         <Snapy pose="bat_ngo" animation="none" style={{ width: 112, height: 112 }} />
         <Text className="mt-4 text-center font-nunito text-lg font-black text-mascot-navy dark:text-white">
@@ -196,9 +203,9 @@ export function StudySessionScreen() {
     <SafeAreaView
       edges={['top', 'bottom', 'left', 'right']}
       style={{ flex: 1 }}
-      className="flex-1 bg-[#F7F8F2] dark:bg-[#181A1F]"
+      className="flex-1 bg-background"
     >
-      <View className="bg-white px-4 pt-2 pb-4 dark:bg-[#22252B]">
+      <View className="bg-surface px-4 pt-2 pb-4">
         <View className="flex-row items-center gap-3">
           <BackButton onPress={() => router.back()} className="mr-0.5" />
           <View className="flex-1">
@@ -222,7 +229,7 @@ export function StudySessionScreen() {
             </Text>
           </View>
         </View>
-        <View className="mt-3 h-3 overflow-hidden rounded-full border border-emerald-100 bg-emerald-50 dark:border-[#46505C] dark:bg-[#292E36]">
+        <View className="mt-3 h-3 overflow-hidden rounded-full border border-emerald-100 bg-emerald-50 dark:border-line dark:bg-surface-raised">
           <View
             className="h-full rounded-full bg-emerald-500"
             style={{
@@ -262,7 +269,7 @@ export function StudySessionScreen() {
               </Pressable>
             )}
           </View>
-          <View className="bg-white px-4 pt-3 pb-5 dark:bg-[#22252B]">
+          <View className="bg-surface px-4 pt-3 pb-5">
             {side === 'BACK' ? (
               <StudyRatingControls
                 isPending={submitRating.isPending}
@@ -323,6 +330,7 @@ type StudyRatingControlsProps = {
 };
 
 function StudyRatingControls({ isPending, onRate, showGuide, onToggleGuide }: StudyRatingControlsProps) {
+  const isDark = useColorMode() === 'dark';
   return (
     <>
       <View className="flex-row gap-1.5">
@@ -333,9 +341,9 @@ function StudyRatingControls({ isPending, onRate, showGuide, onToggleGuide }: St
             disabled={isPending}
             accessibilityRole="button"
             accessibilityState={{ disabled: isPending }}
-            className={`h-12 flex-1 items-center justify-center rounded-xl border-2 border-b-4 border-neutral-200 border-b-neutral-300 active:translate-y-px active:border-b-2 dark:border-[#46505C] dark:border-b-[#363B43] ${rating.background}`}
+            className={`h-12 flex-1 items-center justify-center rounded-xl border-2 border-b-4 border-line border-b-edge active:translate-y-px active:border-b-2 ${rating.background}`}
           >
-            <Text style={{ color: rating.color }} className="font-nunito text-xs font-black">
+            <Text style={{ color: isDark ? rating.darkColor : rating.color }} className="font-nunito text-xs font-black">
               {isPending ? translate('learn.hub.study_saving') : translate(rating.titleKey)}
             </Text>
           </Pressable>
@@ -352,7 +360,7 @@ function StudyRatingControls({ isPending, onRate, showGuide, onToggleGuide }: St
         </Text>
       </Pressable>
       {showGuide && (
-        <View className="mt-1 gap-1 rounded-xl border border-neutral-200 bg-neutral-50 px-3 py-2 dark:border-[#46505C] dark:bg-[#292E36]">
+        <View className="mt-1 gap-1 rounded-xl border border-line bg-surface-raised px-3 py-2">
           {RATINGS.map(rating => (
             <Text key={rating.value} className="font-inter text-xs/5 text-neutral-600 dark:text-neutral-200">
               <Text style={{ color: rating.color }} className="font-bold">

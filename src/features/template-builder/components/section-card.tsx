@@ -25,9 +25,9 @@ export function SectionCard({
   const col2Fields = isTwoColumns ? section.fields.filter(f => f.column === 2) : [];
 
   return (
-    <View className="mb-4 rounded-2xl border-2 border-neutral-200 bg-white p-4 shadow-sm dark:border-neutral-700 dark:bg-neutral-800/90">
+    <View className="mb-4 rounded-2xl border-2 border-line bg-white p-4 shadow-sm dark:bg-neutral-800/90">
       {/* Section Header */}
-      <View className="flex-row items-center justify-between border-b border-neutral-100 pb-3 dark:border-neutral-700/60">
+      <View className="flex-row items-center justify-between border-b border-line pb-3">
         <View className="flex-1 flex-row items-center">
           <Text
             className="font-nunito text-base font-black text-mascot-navy dark:text-white"
@@ -86,7 +86,7 @@ export function SectionCard({
               </View>
               <TouchableOpacity
                 onPress={() => onAddFieldPress(section.id, 1)}
-                className="mt-2 flex-row items-center justify-center rounded-xl border border-dashed border-neutral-300 py-2.5 active:opacity-70 dark:border-neutral-600"
+                className="mt-2 flex-row items-center justify-center rounded-xl border border-dashed border-edge py-2.5 active:opacity-70"
                 activeOpacity={0.7}
               >
                 <PlusIcon color="#9CA3AF" width={14} height={14} />
@@ -117,7 +117,7 @@ export function SectionCard({
               </View>
               <TouchableOpacity
                 onPress={() => onAddFieldPress(section.id, 2)}
-                className="mt-2 flex-row items-center justify-center rounded-xl border border-dashed border-neutral-300 py-2.5 active:opacity-70 dark:border-neutral-600"
+                className="mt-2 flex-row items-center justify-center rounded-xl border border-dashed border-edge py-2.5 active:opacity-70"
                 activeOpacity={0.7}
               >
                 <PlusIcon color="#9CA3AF" width={14} height={14} />

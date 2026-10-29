@@ -94,7 +94,7 @@ export function FlipCardContainer({
           {/* Front Face */}
           <Animated.View
             style={[StyleSheet.absoluteFillObject, frontAnimatedStyle]}
-            className="overflow-hidden rounded-[28px] border border-neutral-200 bg-white shadow-xl shadow-slate-900/10 dark:border-neutral-700 dark:bg-neutral-900 dark:shadow-black/30"
+            className="overflow-hidden rounded-[28px] border border-line bg-surface shadow-xl shadow-slate-900/10 dark:shadow-black/30"
             pointerEvents={currentSide === 'FRONT' ? 'auto' : 'none'}
           >
             {frontContent}
@@ -103,7 +103,7 @@ export function FlipCardContainer({
           {/* Back Face */}
           <Animated.View
             style={[StyleSheet.absoluteFillObject, backAnimatedStyle]}
-            className="overflow-hidden rounded-[28px] border border-neutral-200 bg-white shadow-xl shadow-slate-900/10 dark:border-neutral-700 dark:bg-neutral-900 dark:shadow-black/30"
+            className="overflow-hidden rounded-[28px] border border-line bg-surface shadow-xl shadow-slate-900/10 dark:shadow-black/30"
             pointerEvents={currentSide === 'BACK' ? 'auto' : 'none'}
           >
             {backContent}

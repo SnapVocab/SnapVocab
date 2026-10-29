@@ -8,6 +8,7 @@ import { XPOrb3D } from '@/components/snapvocab';
 import { Snapy } from '@/components/Snapy';
 import { FocusAwareStatusBar, SafeAreaView, Text } from '@/components/ui';
 import { ChevronRightIcon, TargetIcon } from '@/components/ui/icons';
+import { useColorMode } from '@/components/ui/surface';
 import { useAuthStore } from '@/features/auth/use-auth-store';
 import {
   invalidateProgress,
@@ -21,8 +22,14 @@ import { translate } from '@/lib/i18n';
 import { HomeSearchBar, StudyTodayCard } from './components';
 
 // Same chunky 3D surface as HomeSearchBar.
-const CARD_3D = 'mb-3 rounded-2xl border-2 border-b-4 border-neutral-200/90 border-b-neutral-300 bg-white dark:border-[#46505C] dark:border-b-[#667382] dark:bg-[#22252B]';
-const PRESSABLE_3D = 'active:translate-y-[2px] active:border-b-2';
+const CARD_3D = 'mb-3 rounded-2xl border-2 border-b-4 border-line border-b-edge bg-surface';
+const PRESSABLE_3D = 'active:translate-y-[2px] active:border-b-2 active:bg-pressed';
+
+// The two progress cards share one row structure, so label, value and caption line up across them.
+const STAT_HEADER = 'h-6 flex-row items-center gap-1.5';
+const STAT_LABEL = 'font-nunito text-[11px] font-black tracking-wide text-neutral-500 uppercase dark:text-neutral-300';
+const STAT_VALUE = 'mt-2 font-nunito text-2xl font-black text-mascot-navy dark:text-white';
+const STAT_CAPTION = 'mt-0.5 font-inter text-[11px]/4 text-neutral-500 dark:text-neutral-300';
 
 function greetingKey() {
   const hour = new Date().getHours();
@@ -40,6 +47,7 @@ export function HomeScreen() {
   const streakQuery = useStreak();
   const xp = useXpOverview();
   const [isRefreshing, setIsRefreshing] = React.useState(false);
+  const isDark = useColorMode() === 'dark';
 
   const onRefresh = React.useCallback(async () => {
     setIsRefreshing(true);
@@ -108,13 +116,13 @@ export function HomeScreen() {
           accessibilityRole="button"
           className={`${CARD_3D} ${PRESSABLE_3D} mt-1 flex-row items-center gap-3 p-4`}
         >
-          <View className="size-11 items-center justify-center rounded-xl border-2 border-b-[3px] border-primary-400 border-b-primary-600 bg-primary-500">
-            <TargetIcon color="#FFFFFF" size={22} />
+          <View className="size-11 items-center justify-center rounded-xl border-b-[3px] border-brand-edge bg-brand">
+            <TargetIcon color={isDark ? '#1B2416' : '#FFFFFF'} size={22} />
           </View>
           <Text className="flex-1 font-nunito text-[16px] font-black text-mascot-navy dark:text-white">
             {translate('home.daily_mission')}
           </Text>
-          <ChevronRightIcon color="#58CC02" />
+          <ChevronRightIcon color={isDark ? '#9BCB72' : '#58CC02'} />
         </Pressable>
       </ScrollView>
     </SafeAreaView>
@@ -148,13 +156,15 @@ function HomeProgressRow({
         accessibilityRole="button"
         className={`${CARD_3D} ${PRESSABLE_3D} min-h-[112px] flex-1 p-3`}
       >
-        <Text className="font-nunito text-[11px] font-black tracking-wide text-neutral-500 uppercase dark:text-neutral-300">
-          {translate('home.vocabulary_title')}
-        </Text>
-        <Text className="mt-2 font-nunito text-2xl font-black text-mascot-navy dark:text-white">
+        <View className={STAT_HEADER}>
+          <Text className={STAT_LABEL} numberOfLines={1}>
+            {translate('home.vocabulary_title')}
+          </Text>
+        </View>
+        <Text className={STAT_VALUE} numberOfLines={1}>
           {isVocabularyLoading ? '…' : vocabulary ? numberFormat.format(vocabulary.totalWords) : '↻'}
         </Text>
-        <Text className="mt-0.5 font-inter text-[11px]/4 text-neutral-500 dark:text-neutral-300" numberOfLines={2}>
+        <Text className={STAT_CAPTION} numberOfLines={2}>
           {translate(vocabulary && SRS_ENABLED ? 'home.words_in_storage_progress' : 'home.words_in_storage', {
             learned: vocabulary?.learnedCount ?? 0,
             mastered: vocabulary?.masteredCount ?? 0,
@@ -167,14 +177,14 @@ function HomeProgressRow({
         accessibilityRole="button"
         className={`${CARD_3D} ${PRESSABLE_3D} min-h-[112px] flex-1 p-3`}
       >
-        <View className="flex-row items-center gap-2">
-          <XPOrb3D size={30} animation="none" />
-          <Text className="font-nunito text-[11px] font-black tracking-wide text-neutral-500 uppercase dark:text-neutral-300">XP</Text>
+        <View className={STAT_HEADER}>
+          <XPOrb3D size={24} animation="none" />
+          <Text className={STAT_LABEL} numberOfLines={1}>XP</Text>
         </View>
-        <Text className="mt-2 font-nunito text-xl font-black text-mascot-navy dark:text-white" numberOfLines={1}>
+        <Text className={STAT_VALUE} numberOfLines={1}>
           {isXpLoading ? '…' : xp ? `${numberFormat.format(xp.totalXp)} XP` : '↻'}
         </Text>
-        <Text className="mt-0.5 font-inter text-[11px]/4 text-neutral-500 dark:text-neutral-300" numberOfLines={1}>
+        <Text className={STAT_CAPTION} numberOfLines={2}>
           {xp?.level ? translate('progressUx.levelNumber', { count: xp.level.levelNumber }) : translate('progressUx.noLevelCompact')}
         </Text>
       </Pressable>

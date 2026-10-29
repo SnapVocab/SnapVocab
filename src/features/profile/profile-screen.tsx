@@ -74,7 +74,7 @@ export function ProfileScreen() {
     <SafeAreaView style={{ flex: 1 }} className="flex-1 bg-background" edges={['top']}>
       <FocusAwareStatusBar />
 
-      <View className="z-10 flex-row items-center justify-between border-b border-neutral-100 bg-white px-5 py-3.5 dark:border-[#363B43] dark:bg-[#22252B]">
+      <View className="z-10 flex-row items-center justify-between border-b border-neutral-100 bg-surface px-5 py-3.5 dark:border-line">
         <Text
           className="font-nunito text-xl font-extrabold tracking-tight text-mascot-navy dark:text-white"
           tx="profile.title"
@@ -126,7 +126,7 @@ export function ProfileScreen() {
         </View>
 
         {/* Wallet and inventory are live; achievements still show what is coming. */}
-        <View className="mt-5 overflow-hidden rounded-3xl border border-neutral-200/80 bg-white shadow-sm shadow-black/5 dark:border-[#46505C] dark:bg-[#22252B]">
+        <View className="mt-5 overflow-hidden rounded-3xl border border-line bg-surface shadow-sm shadow-black/5">
           <ComingSoonRow
             icon={<TrophyIcon color={iconColor.stat.trophy} width={20} height={20} />}
             tint="bg-reward-50 border-reward-100 dark:bg-reward-500/15 dark:border-reward-500/30"
@@ -153,7 +153,8 @@ export function ProfileScreen() {
           />
         </View>
 
-        <View className="items-center pt-6 pb-2">
+        {/* Below the fold at rest: the camera FAB rises over the last ~60px above the tab bar. */}
+        <View className="items-center pt-14 pb-2">
           <Text className="text-xs font-bold text-neutral-400">SnapVocab</Text>
           <Text className="mt-0.5 text-[11px] font-medium text-neutral-400" tx="profile.tagline" />
         </View>
@@ -178,7 +179,7 @@ function HeaderButton({
       onPress={onPress}
       testID={testID}
       accessibilityLabel={label}
-      className="size-10 items-center justify-center rounded-full border border-neutral-200/60 bg-neutral-50 active:scale-95 dark:border-neutral-700 dark:bg-neutral-800"
+      className="size-10 items-center justify-center rounded-full border border-line bg-neutral-50 active:scale-95 dark:bg-neutral-800"
     >
       {children}
     </Pressable>
@@ -190,7 +191,7 @@ function IdentityCard({ user, frame }: { user: User; frame?: InventoryItemDTO })
   const joined = formatDate(user.createdAt);
 
   return (
-    <View className="items-center rounded-3xl border border-neutral-200/80 bg-white p-5 shadow-sm shadow-black/5 dark:border-[#46505C] dark:bg-[#22252B]">
+    <View className="items-center rounded-3xl border border-line bg-surface p-5 shadow-sm shadow-black/5">
       {frame ? (
         // Same renderer as the Shop preview, so the bought frame looks the same here.
         <AvatarFrame
@@ -245,7 +246,7 @@ function StatTile({
   labelTx: 'profile.streak' | 'profile.xp' | 'profile.coin';
 }) {
   return (
-    <View className="flex-1 items-center rounded-2xl border border-neutral-200/80 bg-white p-3.5 shadow-sm shadow-black/5 dark:border-[#46505C] dark:bg-[#22252B]">
+    <View className="flex-1 items-center rounded-2xl border border-line bg-surface p-3.5 shadow-sm shadow-black/5">
       <View className={`mb-2 size-9 items-center justify-center rounded-xl border ${tint}`}>
         {icon}
       </View>
@@ -281,7 +282,7 @@ function ComingSoonRow({
       accessibilityRole={onPress ? 'button' : undefined}
       onPress={onPress}
       disabled={!onPress}
-      className={`flex-row items-center p-4 active:bg-neutral-50 dark:active:bg-[#292E36] ${last ? '' : 'border-b border-neutral-100 dark:border-[#363B43]'}`}
+      className={`flex-row items-center p-4 active:bg-pressed ${last ? '' : 'border-b border-neutral-100 dark:border-line'}`}
     >
       <View className={`mr-3.5 size-10 items-center justify-center rounded-xl border ${tint}`}>
         {icon}

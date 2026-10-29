@@ -11,7 +11,7 @@ function SavedWordsCard({ totalWords }: { totalWords: number }) {
   const empty = totalWords === 0;
 
   return (
-    <View className="mb-3 gap-3 rounded-2xl border border-neutral-100 bg-white p-4 shadow-2xs dark:border-neutral-800 dark:bg-neutral-900">
+    <View className="mb-3 gap-3 rounded-2xl border border-line bg-surface p-4 shadow-2xs">
       <Text className="font-inter text-[13px] text-neutral-500 dark:text-neutral-400">
         {t('progressUx.srsUnavailable')}
       </Text>
@@ -76,7 +76,7 @@ export function LearningStateCard({ summary, isLoading }: LearningStateCardProps
   }
 
   return (
-    <View className="mb-3.5 gap-3.5 rounded-3xl border border-neutral-100 bg-white p-5 shadow-xs dark:border-neutral-800 dark:bg-neutral-900">
+    <View className="mb-3.5 gap-3.5 rounded-3xl border border-line bg-surface p-5 shadow-xs">
       {/* Section Header */}
       <Text className="font-nunito text-sm font-bold text-neutral-500 dark:text-neutral-400">
         {t('progressUx.vocabulary')}
@@ -125,7 +125,7 @@ export function LearningStateCard({ summary, isLoading }: LearningStateCardProps
       </Text>
 
       {/* Action CTA */}
-      <View className="border-t border-neutral-100 pt-3 dark:border-neutral-800">
+      <View className="border-t border-line pt-3">
         <LearningAction label={ctaLabel} route={ctaRoute} />
       </View>
     </View>

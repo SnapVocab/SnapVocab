@@ -122,8 +122,8 @@ export function ThemePreviewModal({ item, ...props }: PreviewModalProps) {
             <Text style={{ color: t.textMuted }} className="font-inter text-[11px] font-bold uppercase">{tx('shopUi.categories.boosters')}</Text>
             <Text style={{ color: t.text }} className="font-nunito text-[14px] font-extrabold">{tx('shopUi.previewBoosterItem')}</Text>
             <Text style={{ color: t.textMuted }} className="font-inter text-[12px]">{tx('shopUi.previewBoosterDescription')}</Text>
-            <View className="mt-2 h-8 items-center justify-center rounded-xl border-b-[3px] border-primary-700 bg-primary-500">
-              <Text className="font-nunito text-[12px] font-extrabold text-white">
+            <View className="mt-2 h-8 items-center justify-center rounded-xl border-b-[3px] border-brand-edge bg-brand">
+              <Text className="font-nunito text-[12px] font-extrabold text-on-brand">
                 {tx('shopUi.actionBuy')}
                 {' '}
                 {new Intl.NumberFormat(i18n.language).format(100)}

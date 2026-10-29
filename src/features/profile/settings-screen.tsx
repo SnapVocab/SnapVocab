@@ -89,7 +89,7 @@ export function SettingsScreen() {
     <SafeAreaView style={{ flex: 1 }} className="flex-1 bg-background" edges={['top', 'bottom']}>
       <FocusAwareStatusBar />
 
-      <View className="h-14 flex-row items-center border-b border-neutral-100 bg-white px-4 dark:border-neutral-800 dark:bg-neutral-900">
+      <View className="h-14 flex-row items-center border-b border-line bg-surface px-4">
         <BackButton onPress={() => router.back()} testID="settings-back" className="-ml-1" />
         <Text
           className="mr-9 flex-1 text-center font-nunito text-lg font-extrabold text-mascot-navy dark:text-white"
@@ -161,7 +161,7 @@ export function SettingsScreen() {
           />
         </SettingsSection>
 
-        <View className="mt-8 overflow-hidden rounded-3xl border border-danger-100 bg-white shadow-sm shadow-black/5 dark:border-danger-500/30 dark:bg-neutral-900">
+        <View className="mt-8 overflow-hidden rounded-3xl border border-danger-100 bg-surface shadow-sm shadow-black/5 dark:border-danger-500/30">
           <Pressable
             onPress={confirmLogout}
             disabled={logout.isPending}
