@@ -142,6 +142,7 @@
       "update_success": "Word updated successfully!",
       "validation_failed": "Please fill in all required fields (*)"
     },
+    "choose_activity": "Pick your next adventure.",
     "collection_detail": {
       "card_counter": "{{current}} / {{total}} cards",
       "card_not_found": "Card data not found",
@@ -194,7 +195,7 @@
       "options_study": "Practice This Collection",
       "retry": "Try again",
       "save": "Save Changes",
-      "subtitle": "Vocabulary and learning topics",
+      "subtitle": "Learn and review flashcards by collection.",
       "system": "System",
       "title": "Collections",
       "update_error": "Failed to update collection. Please try again."
@@ -301,6 +302,9 @@
     },
     "learn": "Continue",
     "lesson_progress": "Lesson {{lesson}} · {{progress}}/{{total}} words",
+    "open_collections": "Explore collections",
+    "play_quiz": "Play a quiz",
+    "quiz_subtitle": "Put your vocabulary to the test.",
     "tab_label": "Learn",
     "title": "Learn",
     "topic": {

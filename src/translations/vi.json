@@ -142,6 +142,7 @@
       "update_success": "Cập nhật từ vựng thành công!",
       "validation_failed": "Vui lòng điền đầy đủ các thông tin bắt buộc (*)"
     },
+    "choose_activity": "Chọn chuyến khám phá tiếp theo.",
     "collection_detail": {
       "card_counter": "{{current}} / {{total}} thẻ",
       "card_not_found": "Không tìm thấy dữ liệu thẻ",
@@ -194,7 +195,7 @@
       "options_study": "Luyện tập bộ từ này",
       "retry": "Thử lại",
       "save": "Lưu thay đổi",
-      "subtitle": "Kho từ vựng và chủ đề học",
+      "subtitle": "Học và ôn flashcard theo bộ sưu tập.",
       "system": "Hệ thống",
       "title": "Bộ sưu tập",
       "update_error": "Không thể cập nhật bộ sưu tập. Vui lòng thử lại."
@@ -301,6 +302,9 @@
     },
     "learn": "Học tiếp",
     "lesson_progress": "Bài {{lesson}} · {{progress}}/{{total}} từ",
+    "open_collections": "Khám phá bộ sưu tập",
+    "play_quiz": "Chơi quiz",
+    "quiz_subtitle": "Thử sức với vốn từ vựng của bạn.",
     "tab_label": "Học",
     "title": "Học tập",
     "topic": {

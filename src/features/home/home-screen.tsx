@@ -79,8 +79,6 @@ export function HomeScreen() {
             </Text>
             <Text className="font-nunito text-lg font-black text-mascot-navy dark:text-white" numberOfLines={1}>
               {displayName}
-              {' '}
-              👋
             </Text>
             <Text className="mt-1 font-inter text-xs text-neutral-500 dark:text-neutral-400">
               {dueCount

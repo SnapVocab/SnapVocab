@@ -65,12 +65,12 @@ export function ActivityHistoryChart() {
   return (
     <View className="mb-4 gap-2.5 px-1 pt-1">
       {/* Header and Period Switcher */}
-      <View className="flex-row items-center justify-between">
+      <View className="gap-2">
         <Text className="font-nunito text-base font-bold text-neutral-800 dark:text-neutral-200">
           {t('progressUx.history')}
         </Text>
 
-        <View accessibilityRole="tablist" className="flex-row gap-1 rounded-xl bg-neutral-100 p-1 dark:bg-neutral-800">
+        <View accessibilityRole="tablist" className="flex-row gap-1 self-end rounded-xl bg-neutral-100 p-1 dark:bg-neutral-800">
           {(['DAY', 'WEEK', 'MONTH'] as const).map((value) => {
             const isTabActive = period === value;
             return (

@@ -6,9 +6,9 @@ import type { TxKeyPath } from '@/lib/i18n';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import * as React from 'react';
 import { useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, Alert, Pressable, ScrollView, Text, View } from 'react-native';
+import { Alert, Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { ScreenHeader } from '@/components/ui';
+import { BouncingDots, ScreenHeader } from '@/components/ui';
 import {
   AlertTriangleIcon,
   ArrowRightIcon,
@@ -578,6 +578,9 @@ export function QuizSetupScreen() {
         <Pressable
           onPress={handleStartQuiz}
           disabled={!selectedTopicId || isBusy}
+          accessibilityRole="button"
+          accessibilityLabel={selectedTopicId ? translate('quiz.start_counted', { count: questionCount }) : translate('quiz.select_topic_to_start')}
+          accessibilityState={{ disabled: !selectedTopicId || isBusy, busy: isBusy }}
           className={cn(
             'h-14 w-full flex-row items-center justify-center gap-2 rounded-2xl border-b-4 transition-all',
             !selectedTopicId
@@ -587,7 +590,7 @@ export function QuizSetupScreen() {
           )}
         >
           {isBusy ? (
-            <ActivityIndicator size="small" color="#FFFFFF" />
+            <BouncingDots color={isDark ? '#1B2416' : '#FFFFFF'} />
           ) : (
             <>
               <Text

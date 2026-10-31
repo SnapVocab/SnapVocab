@@ -49,6 +49,7 @@ jest.mock('@/components/ui', () => {
     UserAvatar: RN.View,
     Button: RN.View,
     FocusAwareStatusBar: () => null,
+    useSurface: () => ({ headerBg: '#FFFFFF' }),
   };
 });
 jest.mock('@/components/ui/icons', () => new Proxy({}, { get: () => () => null }));
