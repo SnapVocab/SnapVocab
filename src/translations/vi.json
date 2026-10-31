@@ -416,11 +416,15 @@
     "unclaimed_warning": "Nhớ nhận thưởng trước khi nhiệm vụ được làm mới."
   },
   "profile": {
+    "account_data": "hồ sơ",
+    "booster_active": "Tăng XP ×{{multiplier}} đang hoạt động",
+    "booster_hint": "Tăng XP nhận được khi đang kích hoạt. Tổng XP hiện có không thay đổi.",
     "coin": "Coin",
     "coming_soon": "Sắp có",
     "edit": "Chỉnh sửa hồ sơ",
     "error_description": "Kiểm tra kết nối rồi thử lại.",
     "error_title": "Không tải được hồ sơ",
+    "inventory_data": "kho đồ",
     "joined": "Tham gia {{date}}",
     "level": "Cấp {{level}}",
     "menu": {
@@ -433,6 +437,7 @@
       "inventory": "Khung avatar, giao diện, booster",
       "wallet": "Số dư và lịch sử Coin"
     },
+    "refresh_error": "Không thể cập nhật {{sections}}. Thông tin đã lưu có thể chưa mới nhất.",
     "retry": "Thử lại",
     "settings": "Cài đặt",
     "streak": "Chuỗi ngày",

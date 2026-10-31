@@ -416,11 +416,15 @@
     "unclaimed_warning": "Claim before missions reset."
   },
   "profile": {
+    "account_data": "profile",
+    "booster_active": "XP boost ×{{multiplier}} is active",
+    "booster_hint": "Increases XP you earn while active. Your existing XP stays the same.",
     "coin": "Coins",
     "coming_soon": "Coming soon",
     "edit": "Edit profile",
     "error_description": "Check your connection and try again.",
     "error_title": "Could not load your profile",
+    "inventory_data": "inventory",
     "joined": "Joined {{date}}",
     "level": "Level {{level}}",
     "menu": {
@@ -433,6 +437,7 @@
       "inventory": "Avatar frames, themes, boosters",
       "wallet": "Balance and Coin history"
     },
+    "refresh_error": "Could not update {{sections}}. Saved information may be out of date.",
     "retry": "Try again",
     "settings": "Settings",
     "streak": "Day streak",
