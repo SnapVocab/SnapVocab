@@ -3,11 +3,13 @@ import type { ShopItemDTO } from '@/features/shop/types';
 import { XIcon } from 'lucide-react-native';
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
-import { Modal, Pressable, Text, View } from 'react-native';
+import { Modal, Pressable, ScrollView, Text, View } from 'react-native';
 import { AvatarFrame, getAvatarFrame } from '@/components/snapvocab';
-import { Button, useColorMode, useSurface } from '@/components/ui';
+import { useColorMode, useSurface } from '@/components/ui';
 import { useAuthStore } from '@/features/auth/use-auth-store';
 import { getThemeDefinition } from '@/features/shop/theme/theme-context';
+import { shopItemDescription, shopItemTitle } from '@/features/shop/utils/item-presentation';
+import { ShopButton as Button } from './shop-button';
 
 /** What a preview needs; Shop passes a catalog item, Kho đồ an owned inventory item (no price). */
 export type PreviewItem = Pick<ShopItemDTO, 'type' | 'code' | 'name' | 'config'> & {
@@ -31,7 +33,7 @@ function PreviewSheet({ item, onClose, onAction, children }: PreviewModalProps &
   return (
     <Modal visible transparent animationType="slide" onRequestClose={onClose}>
       <View className="flex-1 justify-end bg-black/60">
-        <View style={{ backgroundColor: s.surface }} className="rounded-t-[32px] px-5 pt-4 pb-8">
+        <View style={{ backgroundColor: s.surface }} className="max-h-[90%] rounded-t-[28px] px-5 pt-4 pb-8">
           <View className="mb-4 flex-row items-center justify-between">
             <Text style={{ color: s.text }} className="font-nunito text-[18px] font-extrabold">
               {isTheme ? t('shopUi.previewTheme') : t('shopUi.previewFrame')}
@@ -47,15 +49,17 @@ function PreviewSheet({ item, onClose, onAction, children }: PreviewModalProps &
             </Pressable>
           </View>
 
-          {children}
+          <ScrollView showsVerticalScrollIndicator={false}>
+            {children}
 
-          <Text style={{ color: s.text }} className="mt-4 text-center font-nunito text-[18px] font-extrabold">{item.name}</Text>
-          {item.description ? (
-            <Text style={{ color: s.textMuted }} className="my-1 text-center font-inter text-[13px] leading-relaxed">{item.description}</Text>
-          ) : null}
-          {isTheme && (
-            <Text style={{ color: s.text }} className="mt-1 text-center font-inter text-[13px] font-semibold">{t('shopUi.themeScope')}</Text>
-          )}
+            <Text style={{ color: s.text }} className="mt-4 text-center font-nunito text-[18px] font-extrabold">{shopItemTitle(item, t)}</Text>
+            {shopItemDescription(item, t) ? (
+              <Text style={{ color: s.textMuted }} className="my-1 text-center font-inter text-[13px] leading-relaxed">{shopItemDescription(item, t)}</Text>
+            ) : null}
+            {isTheme && (
+              <Text style={{ color: s.text }} className="mt-1 text-center font-inter text-[13px] font-semibold">{t('shopUi.themeScope')}</Text>
+            )}
+          </ScrollView>
 
           <View className="mt-4">
             {item.equipped ? (
@@ -122,7 +126,7 @@ export function ThemePreviewModal({ item, ...props }: PreviewModalProps) {
             <Text style={{ color: t.textMuted }} className="font-inter text-[11px] font-bold uppercase">{tx('shopUi.categories.boosters')}</Text>
             <Text style={{ color: t.text }} className="font-nunito text-[14px] font-extrabold">{tx('shopUi.previewBoosterItem')}</Text>
             <Text style={{ color: t.textMuted }} className="font-inter text-[12px]">{tx('shopUi.previewBoosterDescription')}</Text>
-            <View className="mt-2 h-8 items-center justify-center rounded-xl border-b-[3px] border-brand-edge bg-brand">
+            <View className="mt-2 h-8 items-center justify-center rounded-xl bg-brand">
               <Text className="font-nunito text-[12px] font-extrabold text-on-brand">
                 {tx('shopUi.actionBuy')}
                 {' '}
