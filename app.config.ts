@@ -70,7 +70,7 @@ const plugins: ExpoConfig['plugins'] = [
   [
     'expo-splash-screen',
     {
-      backgroundColor: '#FF6C00',
+      backgroundColor: '#2416ED',
       image: './assets/splash-icon.png',
       imageWidth: 150,
     },
@@ -119,7 +119,9 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   android: {
     adaptiveIcon: {
       foregroundImage: './assets/adaptive-icon.png',
-      backgroundColor: '#FF6C00',
+      backgroundImage: './assets/adaptive-background.png',
+      monochromeImage: './assets/adaptive-monochrome.png',
+      backgroundColor: '#2416ED',
     },
     package: Env.EXPO_PUBLIC_PACKAGE,
     softwareKeyboardLayoutMode: 'resize',

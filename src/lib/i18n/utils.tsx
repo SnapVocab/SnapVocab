@@ -15,16 +15,23 @@ export type TxKeyPath = RecursiveKeyOf<DefaultLocale>;
 
 export const LOCAL = 'local';
 
-export const getLanguage = () => storage.getString(LOCAL); // 'Marc' getItem<Language | undefined>(LOCAL);
+function resolveLanguage(saved: string | undefined): Language {
+  if (saved === 'en' || saved === 'vi')
+    return saved;
+  return 'en';
+}
+
+export const getLanguage = (): Language => resolveLanguage(storage.getString(LOCAL));
 
 export const translate = memoize(
   (key: TxKeyPath, options = undefined) =>
     i18n.t(key, options) as unknown as string,
   (key: TxKeyPath, options: typeof TranslateOptions) =>
-    options ? key + JSON.stringify(options) : key,
+    `${i18n.language}:${options ? key + JSON.stringify(options) : key}`,
 );
 
 export function changeLanguage(lang: Language) {
+  storage.set(LOCAL, lang);
   i18n.changeLanguage(lang);
 
   I18nManager.forceRTL(false);
@@ -40,7 +47,7 @@ export function changeLanguage(lang: Language) {
 }
 
 export function useSelectedLanguage() {
-  const [language, setLang] = useMMKVString(LOCAL);
+  const [language, setLang] = useMMKVString(LOCAL, storage);
 
   const setLanguage = useCallback(
     (lang: Language) => {
@@ -51,5 +58,5 @@ export function useSelectedLanguage() {
     [setLang],
   );
 
-  return { language: language as Language, setLanguage };
+  return { language: resolveLanguage(language), setLanguage };
 }

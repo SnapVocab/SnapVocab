@@ -8,6 +8,7 @@ import type {
   WalletDTO,
 } from '../types';
 import { client } from '@/lib/api';
+import i18n from '@/lib/i18n';
 import {
   activateItem,
   equipItem,
@@ -24,6 +25,10 @@ jest.mock('@/lib/api', () => ({
 }));
 
 const mockedClient = client as unknown as jest.Mock;
+
+beforeAll(async () => {
+  await i18n.changeLanguage('vi');
+});
 
 describe('shop API layer and backend contracts', () => {
   beforeEach(() => {

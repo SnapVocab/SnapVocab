@@ -1,5 +1,5 @@
 import type { ThemePreference, UpdateUserSettings } from './types';
-import type { ColorSchemeType } from '@/lib/hooks';
+import type { ColorSchemeType } from '@/lib/hooks/use-selected-theme';
 import type { Language } from '@/lib/i18n/resources';
 import Env from 'env';
 import { useRouter } from 'expo-router';
@@ -25,7 +25,7 @@ import {
   TargetIcon,
   ThemeModeIcon,
 } from '@/components/ui/icons';
-import { useSelectedTheme } from '@/lib/hooks';
+import { useSelectedTheme } from '@/lib/hooks/use-selected-theme';
 import { translate, useSelectedLanguage } from '@/lib/i18n';
 import { useLogout, useUpdateSettings, useUserSettings } from './api';
 import { OptionSheet } from './components/option-sheet';
@@ -61,11 +61,10 @@ export function SettingsScreen() {
   const { data: settings } = useUserSettings();
   const updateSettings = useUpdateSettings();
   const logout = useLogout();
-  const { setSelectedTheme } = useSelectedTheme();
-  const { setLanguage } = useSelectedLanguage();
+  const { selectedTheme, setSelectedTheme } = useSelectedTheme();
+  const { language, setLanguage } = useSelectedLanguage();
 
-  // Language and appearance apply on this device straight away; the server copy
-  // keeps them for the next install or another device.
+  // Account learning preferences use the API; appearance/language stay on this device.
   const save = (change: UpdateUserSettings) => {
     updateSettings.mutate(change, { onError: () => showErrorMessage(translate('settings.error')) });
   };
@@ -81,8 +80,9 @@ export function SettingsScreen() {
     );
   };
 
-  const languageLabel = LANGUAGES.find(l => l.value === settings?.uiLanguage)?.label;
-  const themeLabel = THEMES.find(t => t.value === settings?.theme)?.label;
+  const languageLabel = LANGUAGES.find(l => l.value === language)?.label;
+  const localTheme = THEMES.find(t => t.scheme === selectedTheme)!;
+  const themeLabel = localTheme.label;
   const reminder = formatTimeOfDay(settings?.srsReminderAt);
 
   return (
@@ -189,15 +189,10 @@ export function SettingsScreen() {
         visible={sheet === 'language'}
         titleTx="settings.select_language"
         options={LANGUAGES}
-        selected={(settings?.uiLanguage ?? 'vi') as Language}
+        selected={language}
         onSelect={(value) => {
           setSheet(null);
-          // Switching the language restarts the app, so let the save finish
-          // first; otherwise the reload cuts the request off.
-          updateSettings.mutate({ uiLanguage: value }, {
-            onError: () => showErrorMessage(translate('settings.error')),
-            onSettled: () => setLanguage(value),
-          });
+          setLanguage(value);
         }}
         onClose={() => setSheet(null)}
       />
@@ -206,10 +201,9 @@ export function SettingsScreen() {
         visible={sheet === 'theme'}
         titleTx="settings.select_theme"
         options={THEMES}
-        selected={settings?.theme ?? 'SYSTEM'}
+        selected={localTheme.value}
         onSelect={(value) => {
           setSelectedTheme(THEMES.find(t => t.value === value)!.scheme);
-          save({ theme: value });
           setSheet(null);
         }}
         onClose={() => setSheet(null)}

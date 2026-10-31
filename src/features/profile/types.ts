@@ -3,9 +3,6 @@
 export type ThemePreference = 'LIGHT' | 'DARK' | 'SYSTEM';
 
 export type UserSettings = {
-  /** App interface language, not the language being learned. */
-  uiLanguage: string;
-  theme: ThemePreference;
   dailyGoal: number;
   /** "HH:mm:ss" local time of the review reminder; null when off. */
   srsReminderAt: string | null;
@@ -17,8 +14,6 @@ export type UserSettings = {
  * switched off with `srsReminderCleared` rather than a null time.
  */
 export type UpdateUserSettings = {
-  uiLanguage?: string;
-  theme?: ThemePreference;
   dailyGoal?: number;
   srsReminderAt?: string;
   srsReminderCleared?: boolean;

@@ -3,8 +3,12 @@ import { cleanup, fireEvent, render, screen } from '@testing-library/react-nativ
 import * as React from 'react';
 import { ThemePreviewModal } from '@/components/shop/item-preview-modal';
 import { ShopItemCard } from '@/components/shop/ShopItemCard';
-// Initializes i18next with the (mocked) Vietnamese locale, so cards render real copy.
-import '@/lib/i18n';
+import i18n from '@/lib/i18n';
+
+// Explicit locale for assertions, independent of the first-install default.
+beforeAll(async () => {
+  await i18n.changeLanguage('vi');
+});
 
 jest.mock('lucide-react-native', () => ({ CheckIcon: () => null, XIcon: () => null }));
 jest.mock('@/components/snapvocab', () => ({

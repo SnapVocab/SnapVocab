@@ -3,6 +3,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { act, renderHook } from '@testing-library/react-native';
 import * as React from 'react';
 import { client } from '@/lib/api';
+import i18n from '@/lib/i18n';
 import { useShopActions } from '../hooks/use-shop-actions';
 import { shopKeys } from '../hooks/use-shop-queries';
 import { isBoosterLive } from '../utils/booster-timer';
@@ -15,6 +16,10 @@ jest.mock('../theme/theme-context', () => ({ useShopTheme: () => ({ setEquippedT
 let mockKeySeq = 0;
 jest.mock('@/features/quiz/utils/idempotency', () => ({ generateIdempotencyKey: () => `key-${++mockKeySeq}` }));
 const request = client as unknown as jest.Mock;
+
+beforeAll(async () => {
+  await i18n.changeLanguage('vi');
+});
 
 const booster: ShopItemDTO = {
   itemId: 9,
