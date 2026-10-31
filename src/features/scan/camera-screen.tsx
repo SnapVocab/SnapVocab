@@ -4,10 +4,9 @@ import * as ImagePicker from 'expo-image-picker';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useRef, useState } from 'react';
 import { Pressable, StyleSheet } from 'react-native';
-import { SystemBars } from 'react-native-edge-to-edge';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { showErrorMessage, View } from '@/components/ui';
+import { FocusAwareStatusBar, showErrorMessage, View } from '@/components/ui';
 import { CloseIcon, FlashIcon, FlashOffIcon, ImagesIcon } from '@/components/ui/icons';
 import { translate } from '@/lib/i18n';
 import { useScanQuota, useStartScan } from './api';
@@ -104,7 +103,7 @@ export function CameraScreen() {
   if (photo) {
     return (
       <>
-        <SystemBars style="light" />
+        <FocusAwareStatusBar style="light" />
         <PhotoPreview
           uri={photo.uri}
           sending={startScan.isPending}
@@ -122,7 +121,7 @@ export function CameraScreen() {
   if (!permission.granted) {
     return (
       <>
-        <SystemBars style="light" />
+        <FocusAwareStatusBar style="light" />
         <CameraPermissionGate
           onRequestPermission={requestPermission}
           onPickFromLibrary={pickFromLibrary}
@@ -134,7 +133,7 @@ export function CameraScreen() {
 
   return (
     <View style={{ flex: 1 }} className="flex-1 bg-black">
-      <SystemBars style="light" />
+      <FocusAwareStatusBar style="light" />
 
       <View style={StyleSheet.absoluteFill}>
         {isFocused && (

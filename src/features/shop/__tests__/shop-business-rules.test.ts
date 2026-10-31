@@ -2,10 +2,10 @@ import type { ShopItemDTO, ShopItemType } from '../types';
 import { generateIdempotencyKey } from '@/features/quiz/utils/idempotency';
 
 describe('shop & Economy business rules verification', () => {
-  describe('canonical types strictly limited to 3 items', () => {
-    it('only allows THEME, AVATAR_FRAME, and XP_BOOSTER', () => {
-      const canonicalTypes: ShopItemType[] = ['THEME', 'AVATAR_FRAME', 'XP_BOOSTER'];
-      expect(canonicalTypes).toHaveLength(3);
+  describe('supported catalog types', () => {
+    it('allows cosmetics, XP boosters and streak freezes', () => {
+      const canonicalTypes: ShopItemType[] = ['THEME', 'AVATAR_FRAME', 'XP_BOOSTER', 'STREAK_FREEZE'];
+      expect(canonicalTypes).toHaveLength(4);
 
       const isCanonical = (type: string): type is ShopItemType => {
         return canonicalTypes.includes(type as ShopItemType);
@@ -18,7 +18,7 @@ describe('shop & Economy business rules verification', () => {
       // Verify old mock types are rejected
       expect(isCanonical('BOOSTER')).toBe(false);
       expect(isCanonical('SPECIAL')).toBe(false);
-      expect(isCanonical('STREAK_FREEZE')).toBe(false);
+      expect(isCanonical('STREAK_FREEZE')).toBe(true);
       expect(isCanonical('CHEST')).toBe(false);
       expect(isCanonical('DECK')).toBe(false);
       expect(isCanonical('HEART_REFILL')).toBe(false);

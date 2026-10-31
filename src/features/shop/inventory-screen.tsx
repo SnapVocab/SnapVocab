@@ -11,7 +11,6 @@ import * as React from 'react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
-  ActivityIndicator,
   Pressable,
   RefreshControl,
   ScrollView,
@@ -25,6 +24,7 @@ import { ShopCategoryTabs } from '@/components/shop/shop-category-tabs';
 import { CardAction, ItemCard } from '@/components/shop/ShopItemCard';
 import { Snapy } from '@/components/Snapy';
 import { ScreenHeader, useSurface } from '@/components/ui';
+import { ShopCatalogSkeleton } from './components/shop-catalog-skeleton';
 import {
   useEquipMutation,
   useInventory,
@@ -71,6 +71,9 @@ function InventoryScreenContent() {
   const { t } = useTranslation();
 
   const [activeCategory, setActiveCategory] = useState<ShopCategory>('all');
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const refreshEpoch = useRef(0);
+  const catalogRef = useRef<ScrollView>(null);
   const [feedbackMessage, setFeedbackMessage] = useState<string | null>(null);
   const [previewFrameItem, setPreviewFrameItem] = useState<InventoryItemDTO | null>(null);
   const [previewThemeItem, setPreviewThemeItem] = useState<InventoryItemDTO | null>(null);
@@ -82,9 +85,32 @@ function InventoryScreenContent() {
     isLoading,
     isError,
     refetch,
-    isFetching,
     serverOffset,
   } = useInventory();
+
+  const refreshFromGesture = async () => {
+    if (isRefreshing)
+      return;
+    const epoch = ++refreshEpoch.current;
+    setIsRefreshing(true);
+    try {
+      await refetch();
+    }
+    catch {
+      setFeedbackMessage(t('shopUi.refreshError'));
+    }
+    finally {
+      if (epoch === refreshEpoch.current)
+        setIsRefreshing(false);
+    }
+  };
+
+  const changeCategory = (category: ShopCategory) => {
+    refreshEpoch.current++;
+    setIsRefreshing(false);
+    setActiveCategory(category);
+    catalogRef.current?.scrollTo({ y: 0, animated: false });
+  };
 
   const equipMutation = useEquipMutation();
   const unequipMutation = useUnequipMutation();
@@ -148,12 +174,6 @@ function InventoryScreenContent() {
       (equipMutation.isPending && equipMutation.variables?.itemId === item.itemId)
       || (unequipMutation.isPending && unequipMutation.variables?.slot === item.type);
 
-    const description = isUnknownTheme
-      ? t('shopUi.themeUnavailable')
-      : isBooster
-        ? t('shopUi.boosterDescription', { multiplier: item.config?.multiplier ?? 2, minutes: item.config?.durationMinutes ?? 30 })
-        : undefined;
-
     const preview = () => {
       if (item.type === 'AVATAR_FRAME') {
         setPreviewFrameItem(item);
@@ -167,7 +187,6 @@ function InventoryScreenContent() {
       <ItemCard
         key={item.itemId}
         item={item}
-        description={description}
         maxQuantity={item.config?.maxQuantity}
         onPress={isBooster ? undefined : preview}
         onFrameError={onFrameError}
@@ -176,7 +195,7 @@ function InventoryScreenContent() {
           activeBooster
             ? <CardAction tone="disabled" label={activeBooster.itemId === item.itemId ? t('shopUi.actionActive') : t('shopUi.actionWaitBooster')} />
             : <CardAction tone="primary" label={t('shopUi.actionActivate')} onPress={() => setBoosterItem(item)} />
-        ) : isUnknownTheme ? (
+        ) : isUnknownTheme || item.type === 'STREAK_FREEZE' ? (
           <CardAction tone="disabled" label={t('shopUi.actionUnsupported')} />
         ) : item.equipped ? (
           <CardAction tone="secondary" label={t('shopUi.actionUnequip')} loading={isActionPending} onPress={() => handleToggleEquip(item)} />
@@ -217,16 +236,17 @@ function InventoryScreenContent() {
         </View>
       )}
 
-      <ShopCategoryTabs value={activeCategory} onChange={setActiveCategory} />
+      <ShopCategoryTabs value={activeCategory} onChange={changeCategory} />
 
       {/* 3. CONTENT AREA */}
       <ScrollView
+        ref={catalogRef}
         contentContainerStyle={{ padding: 16, paddingBottom: 60 }}
         showsVerticalScrollIndicator={false}
         refreshControl={(
           <RefreshControl
-            refreshing={isFetching}
-            onRefresh={refetch}
+            refreshing={isRefreshing}
+            onRefresh={refreshFromGesture}
             colors={['#2563EB']}
             tintColor="#2563EB"
           />
@@ -259,12 +279,7 @@ function InventoryScreenContent() {
         )}
 
         {isLoading ? (
-          <View className="items-center justify-center py-20">
-            <ActivityIndicator size="large" color="#2563EB" />
-            <Text style={{ color: s.textMuted }} className="mt-3 font-inter text-[14px] font-medium">
-              {t('shopUi.inventoryLoading')}
-            </Text>
-          </View>
+          <ShopCatalogSkeleton label={t('shopUi.inventoryLoading')} />
         ) : isError ? (
           <View style={{ backgroundColor: s.surface, borderColor: s.border }} className="items-center justify-center rounded-3xl border p-8">
             <Snapy pose="suy_nghi" animation="idle" className="mb-4 size-24 opacity-80" />

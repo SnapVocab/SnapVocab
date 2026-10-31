@@ -5,10 +5,11 @@ import * as React from 'react';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Modal, Text, View } from 'react-native';
-import { Button, useSurface } from '@/components/ui';
+import { useSurface } from '@/components/ui';
 import { generateIdempotencyKey } from '@/features/quiz/utils/idempotency';
 import { isOutcomeUnknown, parseShopError } from '@/features/shop/api';
 import { useActivateBoosterMutation } from '@/features/shop/hooks/use-shop-queries';
+import { ShopButton as Button } from './shop-button';
 
 /** HH:mm, plus the date when expiry is not on the server's current day (a 180-minute booster can cross midnight). */
 function formatUntil(expiresAt: string, serverNow: string, locale: string) {
@@ -67,7 +68,7 @@ export function BoosterActivateModal({ item, onClose }: { item: BoosterItem | nu
   return (
     <Modal visible transparent animationType="fade" onRequestClose={close}>
       <View className="flex-1 items-center justify-center bg-black/60 p-5">
-        <View style={{ backgroundColor: s.surface, borderColor: s.border }} className="w-full max-w-[350px] items-center rounded-[32px] border-2 border-b-[6px] p-6">
+        <View style={{ backgroundColor: s.surface, borderColor: s.border }} className="w-full max-w-[350px] items-center rounded-[28px] border p-6">
           <View className="mb-3 size-16 items-center justify-center rounded-2xl bg-amber-400">
             <ZapIcon size={32} color="white" />
           </View>

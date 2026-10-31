@@ -3,10 +3,9 @@ import type { ShopCategory } from '@/components/shop/shop-category-tabs';
 import { router, useSegments } from 'expo-router';
 import { PackageIcon, RefreshCwIcon } from 'lucide-react-native';
 import * as React from 'react';
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
-  ActivityIndicator,
   Pressable,
   RefreshControl,
   ScrollView,
@@ -19,10 +18,12 @@ import { FramePreviewModal, ThemePreviewModal } from '@/components/shop/item-pre
 import { OutOfCoinModal } from '@/components/shop/OutOfCoinModal';
 import { PurchaseSuccessModal } from '@/components/shop/PurchaseSuccessModal';
 import { ShopCategoryTabs } from '@/components/shop/shop-category-tabs';
+import { ShopItemDetailModal } from '@/components/shop/shop-item-detail-modal';
 import { ShopItemCard } from '@/components/shop/ShopItemCard';
 import { Coin3D } from '@/components/snapvocab';
 import { Snapy } from '@/components/Snapy';
-import { ScreenHeader, useSurface } from '@/components/ui';
+import { FocusAwareStatusBar, ScreenHeader, useSurface } from '@/components/ui';
+import { ShopCatalogSkeleton } from './components/shop-catalog-skeleton';
 import { useShopActions } from './hooks/use-shop-actions';
 import {
   useCoinBalance,
@@ -31,6 +32,9 @@ import {
 } from './hooks/use-shop-queries';
 import { isThemeKnown, ShopSurface } from './theme/theme-context';
 import { isBoosterLive } from './utils/booster-timer';
+import { shopItemTitle } from './utils/item-presentation';
+
+const ITEM_ORDER = { XP_BOOSTER: 0, STREAK_FREEZE: 1, AVATAR_FRAME: 2, THEME: 3 };
 
 /** Shop-area screen: it and its modals take the equipped theme's surfaces. */
 export default function ShopScreen() {
@@ -47,6 +51,10 @@ function ShopScreenContent() {
   const { t, i18n } = useTranslation();
   const [activeCategory, setActiveCategory] = useState<ShopCategory>('all');
   const [previewFrameItem, setPreviewFrameItem] = useState<ShopItemDTO | null>(null);
+  const [detailItem, setDetailItem] = useState<ShopItemDTO | null>(null);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const catalogRef = useRef<ScrollView>(null);
+  const refreshEpoch = useRef(0);
 
   // Queries
   const {
@@ -54,10 +62,10 @@ function ShopScreenContent() {
     isLoading: isLoadingCatalog,
     isError: isCatalogError,
     refetch: refetchCatalog,
-    isFetching: isFetchingCatalog,
   } = useShopCatalog(activeCategory === 'all' ? undefined : activeCategory);
 
-  const { balance: coinBalance, refetch: refetchWallet } = useCoinBalance();
+  const { balance: coinBalance, refetch: refetchWallet, isLoading: isWalletLoading, isError: isWalletError } = useCoinBalance();
+  const purchaseDisabled = isWalletLoading || isWalletError;
   const { data: inventoryData, refetch: refetchInventory, serverOffset } = useInventory();
 
   const hasActiveBooster = isBoosterLive(inventoryData?.activeBooster, serverOffset);
@@ -67,13 +75,17 @@ function ShopScreenContent() {
     if (!catalogItems) {
       return [];
     }
-    return catalogItems.filter((item) => {
+    const visible = catalogItems.filter((item) => {
       if (item.type === 'THEME' && !isThemeKnown(item.config?.themeKey)) {
         return false;
       }
       return true;
-    });
-  }, [catalogItems]);
+    }).map(item => ({ ...item, name: shopItemTitle(item, t) }));
+    visible.sort((a, b) => ITEM_ORDER[a.type] - ITEM_ORDER[b.type]
+      || (a.type === 'XP_BOOSTER' && b.type === 'XP_BOOSTER'
+        ? (a.config?.durationMinutes ?? 30) - (b.config?.durationMinutes ?? 30) : 0));
+    return visible;
+  }, [catalogItems, t]);
 
   // Actions & Mutations Hook
   const {
@@ -102,12 +114,37 @@ function ShopScreenContent() {
     refetchInventory,
   });
 
+  const refreshFromGesture = async () => {
+    if (isRefreshing)
+      return;
+    setIsRefreshing(true);
+    const epoch = ++refreshEpoch.current;
+    try {
+      await handleRefresh();
+    }
+    catch {
+      setErrorMessage(t('shopUi.refreshError'));
+    }
+    finally {
+      if (epoch === refreshEpoch.current)
+        setIsRefreshing(false);
+    }
+  };
+
+  const changeCategory = (category: ShopCategory) => {
+    refreshEpoch.current++;
+    setIsRefreshing(false);
+    setActiveCategory(category);
+    catalogRef.current?.scrollTo({ y: 0, animated: false });
+  };
+
   return (
     <SafeAreaView
       className="flex-1"
-      style={{ backgroundColor: s.background }}
+      style={{ flex: 1, backgroundColor: s.headerBg }}
       edges={['top']}
     >
+      <FocusAwareStatusBar />
       <ScreenHeader
         title={t('shop.title')}
         // As the Shop tab it is a root destination: no back. Pushed from elsewhere it keeps one.
@@ -116,13 +153,13 @@ function ShopScreenContent() {
           <View className="flex-row items-center gap-2">
             <Pressable
               accessibilityRole="button"
-              accessibilityLabel={t('shopUi.walletBalance', { count: coinBalance })}
+              accessibilityLabel={purchaseDisabled ? t('shopUi.walletUnavailable') : t('shopUi.walletBalance', { count: coinBalance })}
               onPress={() => router.push('/profile/wallet' as any)}
               className="flex-row items-center gap-1.5 rounded-full border border-reward-200 bg-reward-50 px-3 py-1.5 active:scale-95 dark:border-amber-400/25 dark:bg-amber-400/10"
             >
               <Coin3D size="xs" />
               <Text className="font-nunito text-[14px] font-extrabold text-reward-700 tabular-nums dark:text-amber-300">
-                {coinBalance.toLocaleString(i18n.language)}
+                {purchaseDisabled ? '–' : coinBalance.toLocaleString(i18n.language)}
               </Text>
             </Pressable>
             <Pressable
@@ -150,28 +187,40 @@ function ShopScreenContent() {
         </View>
       )}
 
-      <ShopCategoryTabs value={activeCategory} onChange={setActiveCategory} />
+      <View style={{ backgroundColor: s.headerBg }} className="flex-row items-center gap-3 px-4 pb-3">
+        <View className="flex-1 gap-1">
+          <Text style={{ color: s.text }} className="font-nunito text-lg font-black">{t('shopUi.rewardHeading')}</Text>
+          <Text style={{ color: s.textMuted }} className="font-inter text-[13px]">{t('shopUi.rewardSubtitle')}</Text>
+        </View>
+        <Snapy pose="proud" animation="none" className="size-16" />
+      </View>
+      <ShopCategoryTabs value={activeCategory} onChange={changeCategory} />
+      {isWalletError && (
+        <View className="flex-row items-center gap-3 px-4 py-2">
+          <Text style={{ color: s.textMuted }} className="flex-1 font-inter text-xs">{t('shopUi.walletLoadError')}</Text>
+          <Pressable accessibilityRole="button" onPress={() => refetchWallet()} className="min-h-11 justify-center px-2">
+            <Text style={{ color: s.text }} className="font-nunito text-sm font-bold">{t('shopUi.retry')}</Text>
+          </Pressable>
+        </View>
+      )}
 
       {/* 3. MAIN CATALOG CONTENT */}
       <ScrollView
+        ref={catalogRef}
+        style={{ backgroundColor: s.background }}
         contentContainerStyle={{ padding: 16, paddingBottom: 110 }}
         showsVerticalScrollIndicator={false}
         refreshControl={(
           <RefreshControl
-            refreshing={isFetchingCatalog}
-            onRefresh={handleRefresh}
+            refreshing={isRefreshing}
+            onRefresh={refreshFromGesture}
             colors={['#2563EB']}
             tintColor="#2563EB"
           />
         )}
       >
         {isLoadingCatalog ? (
-          <View className="items-center justify-center py-20">
-            <ActivityIndicator size="large" color="#2563EB" />
-            <Text style={{ color: s.textMuted }} className="mt-3 font-inter text-[14px] font-medium">
-              {t('shopUi.loadingCatalog')}
-            </Text>
-          </View>
+          <ShopCatalogSkeleton label={t('shopUi.loadingCatalog')} />
         ) : isCatalogError ? (
           <View style={{ backgroundColor: s.surface, borderColor: s.border }} className="items-center justify-center rounded-3xl border p-8">
             <Snapy pose="suy_nghi" animation="idle" className="mb-4 size-24 opacity-80" />
@@ -208,6 +257,8 @@ function ShopScreenContent() {
                 key={item.itemId}
                 item={item}
                 userCoins={coinBalance}
+                showType={activeCategory === 'all'}
+                purchaseDisabled={purchaseDisabled}
                 onPress={handleItemPress}
                 onPreview={(i) => {
                   if (i.type === 'AVATAR_FRAME') {
@@ -215,6 +266,9 @@ function ShopScreenContent() {
                   }
                   else if (i.type === 'THEME') {
                     setPreviewThemeItem(i);
+                  }
+                  else {
+                    setDetailItem(i);
                   }
                 }}
               />
@@ -224,6 +278,15 @@ function ShopScreenContent() {
       </ScrollView>
 
       {/* 4. MODALS */}
+      <ShopItemDetailModal
+        item={detailItem}
+        purchaseDisabled={purchaseDisabled}
+        onClose={() => setDetailItem(null)}
+        onBuy={(item) => {
+          setDetailItem(null);
+          handleItemPress(item);
+        }}
+      />
       <PurchaseSuccessModal
         visible={Boolean(purchaseIntent)}
         item={purchaseIntent?.item ?? null}

@@ -1,9 +1,9 @@
 /**
  * Canonical Shop types and DTOs according to docs/decisions/shop.md
- * ONLY 3 types: THEME, AVATAR_FRAME, XP_BOOSTER.
+ * Includes STREAK_FREEZE items already present in the backend catalog.
  */
 
-export type ShopItemType = 'THEME' | 'AVATAR_FRAME' | 'XP_BOOSTER';
+export type ShopItemType = 'THEME' | 'AVATAR_FRAME' | 'XP_BOOSTER' | 'STREAK_FREEZE';
 
 export type ThemeKey = 'DEFAULT' | 'MIDNIGHT_NEON' | 'SUNSET_AMBER' | 'FOREST_MINT';
 

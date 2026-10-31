@@ -5,7 +5,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Alert, View } from 'react-native';
-import { BackButton, Pressable, SafeAreaView, Text } from '@/components/ui';
+import { BackButton, BouncingDots, Pressable, SafeAreaView, Text } from '@/components/ui';
 import { RotateCwIcon, TrophyIcon } from '@/components/ui/icons';
 import { Snapy } from '@/components/ui/snapy';
 import { useColorMode } from '@/components/ui/surface';
@@ -340,12 +340,17 @@ function StudyRatingControls({ isPending, onRate, showGuide, onToggleGuide }: St
             onPress={() => onRate(rating.value)}
             disabled={isPending}
             accessibilityRole="button"
-            accessibilityState={{ disabled: isPending }}
+            accessibilityLabel={translate(rating.titleKey)}
+            accessibilityState={{ disabled: isPending, busy: isPending }}
             className={`h-12 flex-1 items-center justify-center rounded-xl border-2 border-b-4 border-line border-b-edge active:translate-y-px active:border-b-2 ${rating.background}`}
           >
-            <Text style={{ color: isDark ? rating.darkColor : rating.color }} className="font-nunito text-xs font-black">
-              {isPending ? translate('learn.hub.study_saving') : translate(rating.titleKey)}
-            </Text>
+            {isPending ? (
+              <BouncingDots color={isDark ? rating.darkColor : rating.color} size={6} gap={4} bounceHeight={5} />
+            ) : (
+              <Text style={{ color: isDark ? rating.darkColor : rating.color }} className="font-nunito text-xs font-black">
+                {translate(rating.titleKey)}
+              </Text>
+            )}
           </Pressable>
         ))}
       </View>

@@ -14,8 +14,9 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import { AvatarFrame, Coin3D } from '@/components/snapvocab';
-import { Button, useSurface } from '@/components/ui';
+import { useSurface } from '@/components/ui';
 import { useAuthStore } from '@/features/auth/use-auth-store';
+import { ShopButton as Button } from './shop-button';
 import { SHOP_TYPE_LABEL } from './shop-category-tabs';
 
 type PurchaseSuccessModalProps = {

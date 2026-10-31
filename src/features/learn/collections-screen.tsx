@@ -4,7 +4,7 @@ import { useRouter } from 'expo-router';
 import { useCallback, useRef, useState } from 'react';
 import { ScrollView } from 'react-native';
 import Animated, { FadeIn } from 'react-native-reanimated';
-import { Button, FocusAwareStatusBar, SafeAreaView, View } from '@/components/ui';
+import { Button, FocusAwareStatusBar, SafeAreaView, useSurface, View } from '@/components/ui';
 import { translate } from '@/lib/i18n';
 import { setItem } from '@/lib/storage';
 import { useCollections } from './api';
@@ -19,6 +19,7 @@ import {
 } from './components';
 
 export function CollectionsScreen() {
+  const surface = useSurface();
   const router = useRouter();
   const [viewType, setViewType] = useState<'USER' | 'SYSTEM'>('USER');
   const [selectedCollection, setSelectedCollection] = useState<Collection | null>(null);
@@ -59,13 +60,13 @@ export function CollectionsScreen() {
   }, []);
 
   return (
-    <SafeAreaView style={{ flex: 1 }} className="flex-1 bg-background">
+    <SafeAreaView style={{ flex: 1, backgroundColor: surface.headerBg }}>
       <FocusAwareStatusBar />
 
       {/* Header bar */}
       <CollectionHeader />
 
-      <View className="flex-1 px-3 pt-4">
+      <View className="flex-1 bg-background px-3 pt-4">
         {/* Switcher Tab: Mine / System */}
         <CollectionSwitcher viewType={viewType} onChange={setViewType} />
 

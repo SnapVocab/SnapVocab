@@ -150,6 +150,7 @@ export function useCoinBalance() {
   return {
     balance: query.data?.balance ?? user?.coin ?? 0,
     isLoading: query.isLoading,
+    isError: query.isError,
     refetch: query.refetch,
   };
 }
