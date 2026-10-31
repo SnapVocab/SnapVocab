@@ -27,6 +27,7 @@ export default antfu(
 
     // Global ignores
     ignores: [
+      '.impeccable/**',
       'dist/*',
       'node_modules',
       '__tests__/',

@@ -130,11 +130,11 @@ describe('progress UX while the backend has no SRS lifecycle', () => {
       render(<MascotAdviceCard summary={summaryOf({ totalWords: 3, dueCount: 5 })} streak={streakOf()} />);
       expect(screen.queryByText(/cần ôn/)).toBeNull();
       expect(screen.getByText('Bạn đã lưu 3 từ!')).toBeTruthy();
-      expect(screen.getByText('Hoàn thành một bài quiz hôm nay để bắt đầu chuỗi ngày học.')).toBeTruthy();
+      expect(screen.getByText('Hoàn thành quiz hoặc ôn một thẻ hôm nay để duy trì chuỗi ngày học.')).toBeTruthy();
     });
 
     it('mascot generic tip uses real copy, not a raw i18n key', () => {
-      render(<MascotAdviceCard summary={summaryOf({ totalWords: 3 })} streak={streakOf({ currentStreak: 2 })} />);
+      render(<MascotAdviceCard summary={summaryOf({ totalWords: 3 })} streak={streakOf({ currentStreak: 2, lastStudiedDate: '2026-10-06' })} />);
       expect(screen.getByText('Mẹo nhỏ từ Snapy')).toBeTruthy();
       expect(screen.queryByText(/progressUx\./)).toBeNull();
     });
@@ -154,16 +154,16 @@ describe('progress UX while the backend has no SRS lifecycle', () => {
   });
 
   describe('streak semantics', () => {
-    it('never studied: "not started" with the quiz-only rule', () => {
-      render(<StreakStatsCard streak={streakOf()} />);
+    it('baseline 1 without study history still prompts the learner to study', () => {
+      render(<StreakStatsCard streak={streakOf({ currentStreak: 1 })} />);
       expect(screen.getByText('Chuỗi ngày học')).toBeTruthy();
-      expect(screen.getByText('Chưa bắt đầu · Hoàn thành một bài quiz hôm nay để bắt đầu chuỗi.')).toBeTruthy();
+      expect(screen.getByText('Hoàn thành quiz hoặc ôn một thẻ hôm nay để duy trì chuỗi học tập.')).toBeTruthy();
     });
 
     it('current 0 with a past record is an interrupted streak, not "not started"', () => {
       render(<StreakStatsCard streak={streakOf({ longestStreak: 12, lastStudiedDate: '2026-09-20' })} />);
       expect(screen.getByText('Chuỗi hiện tại đã gián đoạn')).toBeTruthy();
-      expect(screen.getByText('Kỷ lục: 12 ngày · Hoàn thành một bài quiz để bắt đầu lại.')).toBeTruthy();
+      expect(screen.getByText('Kỷ lục: 12 ngày · Hoàn thành quiz hoặc ôn một thẻ để bắt đầu lại.')).toBeTruthy();
       expect(screen.queryByText(/Chưa bắt đầu/)).toBeNull();
     });
 

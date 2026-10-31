@@ -19,8 +19,8 @@ export function StreakStatsCard({ streak, isLoading }: StreakStatsCardProps) {
     );
   }
 
-  const active = streak.currentStreak > 0;
-  // currentStreak is 0 both for "never studied" and "missed a day"; longestStreak tells them apart.
+  // The current streak baseline is 1, but it must not imply a study history.
+  const active = streak.currentStreak > 0 && streak.lastStudiedDate !== null;
   const broken = !active && streak.longestStreak > 0;
 
   if (!active) {

@@ -1,7 +1,8 @@
 import type { AxiosError } from 'axios';
 import type { ApiResponse } from '@/features/auth/api';
 import type { TopicItemData } from '@/features/learn/types';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { invalidateProgress } from '@/features/progress/api';
 import { client } from '@/lib/api';
 
 export type FsrsRating = 'AGAIN' | 'HARD' | 'GOOD' | 'EASY';
@@ -54,6 +55,7 @@ type SubmitRatingParams = StudyScope & {
   rating: FsrsRating;
 };
 export function useSubmitStudyRating() {
+  const queryClient = useQueryClient();
   return useMutation<
     ReviewResult,
     AxiosError<ApiResponse<unknown>>,
@@ -71,5 +73,6 @@ export function useSubmitStudyRating() {
         })
       ).data.data;
     },
+    onSuccess: () => invalidateProgress(queryClient),
   });
 }
