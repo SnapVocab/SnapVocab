@@ -28,7 +28,7 @@ export function MascotAdviceCard({ summary, streak }: MascotAdviceCardProps) {
     title = t('progressUx.snapyDueTitle', { count: dueCount });
     body = t('progressUx.snapyDueBody', { count: dueCount });
   }
-  else if (savedCount > 0 && currentStreak === 0) {
+  else if (savedCount > 0 && !streak.lastStudiedDate) {
     title = t('progressUx.snapyNewWordsTitle', { count: savedCount });
     body = t('progressUx.snapyNewWordsBody', { count: savedCount });
   }
