@@ -1,25 +1,34 @@
 import type { ReactNode } from 'react';
 import type { ShopItemDTO } from '@/features/shop/types';
-import { CheckIcon } from 'lucide-react-native';
+import { CheckIcon, SnowflakeIcon } from 'lucide-react-native';
 import * as React from 'react';
-import { ActivityIndicator, Image, Pressable, Text, View } from 'react-native';
+import { useTranslation } from 'react-i18next';
+import { Image, Pressable, Text, View } from 'react-native';
 import { AvatarFrame, Coin3D } from '@/components/snapvocab';
-import { useSurface } from '@/components/ui';
+import { BouncingDots, useSurface } from '@/components/ui';
 import { useAuthStore } from '@/features/auth/use-auth-store';
 import { isStackable } from '@/features/shop/types';
-import { translate } from '@/lib/i18n';
+import { shopItemTitle } from '@/features/shop/utils/item-presentation';
 import { cn } from '@/lib/utils';
-import { shopTypeLabel } from './shop-category-tabs';
+import { SHOP_TYPE_LABEL } from './shop-category-tabs';
 
 type CardItem = Pick<ShopItemDTO, 'type' | 'code' | 'name' | 'iconUrl' | 'config' | 'quantity' | 'equipped'>;
 
-const ARTWORK_BG = { THEME: 'bg-purple-50', AVATAR_FRAME: 'bg-amber-50', XP_BOOSTER: 'bg-emerald-50', STREAK_FREEZE: 'bg-sky-50' } as const;
+const ARTWORK_BG = {
+  THEME: 'bg-purple-50 dark:bg-purple-400/10',
+  AVATAR_FRAME: 'bg-amber-50 dark:bg-amber-400/10',
+  XP_BOOSTER: 'bg-emerald-50 dark:bg-emerald-400/10',
+  STREAK_FREEZE: 'bg-sky-50 dark:bg-sky-400/10',
+} as const;
 
 /** Item artwork: frames on the learner's own avatar (Snapy fallback), otherwise icon or bundled art. */
 export function ItemArtwork({ item, size = 76, onFrameError }: { item: Omit<CardItem, 'quantity' | 'equipped'>; size?: number; onFrameError?: () => void }) {
   const avatarUrl = useAuthStore(s => s.user?.avatarUrl);
   // A signed icon URL can expire or 404: fall back to the bundled art instead of a blank tile.
   const [iconFailed, setIconFailed] = React.useState(false);
+  if (item.type === 'STREAK_FREEZE' && (!item.iconUrl || iconFailed)) {
+    return <SnowflakeIcon size={size} color="#0284C7" />;
+  }
   if (item.type === 'AVATAR_FRAME') {
     return (
       <AvatarFrame
@@ -47,35 +56,36 @@ export function ItemArtwork({ item, size = 76, onFrameError }: { item: Omit<Card
   );
 }
 
-/** Card shell shared by Shop and Kho đồ: same artwork, type label, 2-line name; only description and action differ. */
+/** Compact collectible tile; long descriptions belong in the item's detail sheet. */
 export function ItemCard({
   item,
-  description,
+  showType = true,
   maxQuantity,
   onPress,
   onFrameError,
   children,
 }: {
   item: CardItem;
-  description?: string | null;
+  showType?: boolean;
   maxQuantity?: number | null;
   onPress?: () => void;
   onFrameError?: () => void;
   children: ReactNode;
 }) {
   const surfaceTokens = useSurface();
+  const { t } = useTranslation();
   return (
     <Pressable
       onPress={onPress}
       disabled={!onPress}
       style={{ backgroundColor: surfaceTokens.surface, borderColor: item.equipped ? '#58CC02' : surfaceTokens.border }}
-      className="mb-3.5 w-[48%] overflow-hidden rounded-[22px] border border-b-[3px] shadow-sm shadow-black/5 active:opacity-95"
+      className="mb-4 w-[48%] overflow-hidden rounded-2xl border-2 border-b-4 active:translate-y-[2px] active:border-b-2"
     >
-      <View style={{ height: 100 }} className={cn('relative items-center justify-center p-2', ARTWORK_BG[item.type])}>
+      <View style={{ height: 96 }} className={cn('relative items-center justify-center p-2', ARTWORK_BG[item.type])}>
         {item.equipped && (
-          <View className="absolute top-2 left-2 z-10 flex-row items-center gap-1 rounded-full bg-primary-500 px-2 py-0.5">
+          <View className="absolute top-2 left-2 z-10 flex-row items-center gap-1 rounded-full bg-brand px-2 py-0.5">
             <CheckIcon size={12} color="white" />
-            <Text className="font-nunito text-[11px] font-extrabold text-white">{translate('shop.actions.in_use')}</Text>
+            <Text className="font-nunito text-[11px] font-extrabold text-on-brand">{t('shopUi.actionEquipped')}</Text>
           </View>
         )}
         {isStackable(item.type) && item.quantity > 0 && (
@@ -90,21 +100,19 @@ export function ItemCard({
 
       <View className="flex-1 justify-between gap-2.5 p-2.5 pt-2">
         <View>
-          <Text style={{ color: surfaceTokens.textMuted }} className="mb-0.5 font-inter text-[11px] font-bold tracking-wide uppercase" numberOfLines={1}>
-            {shopTypeLabel(item.type)}
-          </Text>
+          {showType && (
+            <Text style={{ color: surfaceTokens.textMuted }} className="mb-1 font-inter text-[11px] font-bold" numberOfLines={1}>
+              {t(SHOP_TYPE_LABEL[item.type])}
+            </Text>
+          )}
           <Text
-            style={{ color: surfaceTokens.text, minHeight: 38 }}
-            className="font-nunito text-[15px] leading-tight font-extrabold"
+            style={{ color: surfaceTokens.text, minHeight: item.type === 'XP_BOOSTER' ? undefined : 38 }}
+            className="font-nunito text-[16px] leading-tight font-black"
             numberOfLines={2}
           >
-            {item.name}
+            {shopItemTitle(item, t)}
           </Text>
-          {description ? (
-            <Text style={{ color: surfaceTokens.textMuted }} className="mt-1 font-inter text-[12px] leading-snug" numberOfLines={2}>
-              {description}
-            </Text>
-          ) : null}
+          {item.type === 'XP_BOOSTER' && <Text style={{ color: surfaceTokens.textMuted }} className="mt-1 font-nunito text-[13px] font-bold">{t('shopUi.duration', { minutes: item.config?.durationMinutes ?? 30 })}</Text>}
         </View>
         {children}
       </View>
@@ -113,50 +121,57 @@ export function ItemCard({
 }
 
 const ACTION_TONE = {
-  primary: { box: 'border-b-[3px] border-primary-700 bg-primary-500 active:translate-y-0.5 active:border-b', text: 'text-white' },
-  secondary: { box: 'border-b-[3px] active:translate-y-0.5 active:border-b', text: '' },
-  warning: { box: 'border-b-[3px] border-amber-300 bg-amber-50 active:translate-y-0.5 active:border-b', text: 'text-amber-800' },
-  done: { box: 'border-b-2 border-primary-200 bg-primary-50', text: 'text-primary-700' },
-  disabled: { box: 'border-b-2', text: '' },
+  primary: { box: 'border-brand-edge bg-brand active:bg-brand-pressed', text: 'text-[#17330B]' },
+  secondary: { box: 'active:opacity-70', text: '' },
+  warning: { box: 'border-reward-700 bg-reward-400 active:opacity-80 dark:border-[#8A6E22] dark:bg-[#E6C25E]', text: 'text-[#4A3300] dark:text-[#2A2006]' },
+  done: { box: 'bg-primary-50 dark:bg-primary-400/15', text: 'text-primary-700 dark:text-primary-300' },
+  disabled: { box: '', text: '' },
 } as const;
 
-/** The one card button: 40px, raised bottom border, Nunito 13px. `done`/`disabled` render as status, not buttons. */
+/** Raised action matching Home; done/disabled tones render a flat status. */
 export function CardAction({
   label,
   tone,
   onPress,
   loading,
   coin,
+  accessibilityLabel,
+  disabled = false,
 }: {
-  label: string;
+  label?: string;
   tone: keyof typeof ACTION_TONE;
   onPress?: () => void;
   loading?: boolean;
   coin?: number;
+  accessibilityLabel?: string;
+  disabled?: boolean;
 }) {
   const style = ACTION_TONE[tone];
   const s = useSurface();
+  const { i18n } = useTranslation();
   // Neutral tones sit on the area's muted surface; colored tones are fixed semantic colors.
   const neutral = tone === 'secondary' || tone === 'disabled';
   const interactive = Boolean(onPress) && tone !== 'done' && tone !== 'disabled';
   return (
     <Pressable
       accessibilityRole={interactive ? 'button' : undefined}
+      accessibilityLabel={accessibilityLabel}
       onPress={interactive ? onPress : undefined}
-      disabled={!interactive || loading}
+      disabled={!interactive || loading || disabled}
+      accessibilityState={{ disabled: !interactive || loading || disabled, busy: loading }}
       style={neutral ? { backgroundColor: s.surfaceMuted, borderColor: s.border } : undefined}
-      className={cn('h-10 flex-row items-center justify-center gap-1 rounded-xl', style.box)}
+      className={cn('h-12 flex-row items-center justify-center gap-1.5 rounded-xl', style.box, interactive && 'border-b-4 active:translate-y-[2px] active:border-b-2', disabled && 'opacity-50')}
     >
       {loading ? (
-        <ActivityIndicator size="small" color={tone === 'primary' ? 'white' : '#757793'} />
+        <BouncingDots size={6} gap={4} color={tone === 'primary' ? '#17330B' : s.textMuted} />
       ) : (
         <>
           {tone === 'done' && <CheckIcon size={14} color="#3C8C00" />}
-          <Text style={neutral ? { color: tone === 'disabled' ? s.textMuted : s.text } : undefined} className={cn('font-nunito text-[13px] font-extrabold', style.text)}>{label}</Text>
+          {label && <Text style={neutral ? { color: tone === 'disabled' ? s.textMuted : s.text } : undefined} className={cn('font-nunito text-[13px] font-extrabold', style.text)}>{label}</Text>}
           {coin !== undefined && (
             <>
               <Coin3D size="xs" />
-              <Text className={cn('font-nunito text-[13px] font-extrabold tabular-nums', style.text)}>{coin.toLocaleString('vi-VN')}</Text>
+              <Text className={cn('font-nunito text-[13px] font-extrabold tabular-nums', style.text)}>{coin.toLocaleString(i18n.language)}</Text>
             </>
           )}
         </>
@@ -170,31 +185,35 @@ export type ShopItemCardProps = {
   onPress: (item: ShopItemDTO) => void;
   onPreview?: (item: ShopItemDTO) => void;
   userCoins: number;
+  showType?: boolean;
+  purchaseDisabled?: boolean;
 };
 
 /** Shop variant: card body previews cosmetics; the button buys, equips/applies, or shows status. */
-export function ShopItemCard({ item, onPress, onPreview, userCoins }: ShopItemCardProps) {
+export function ShopItemCard({ item, onPress, onPreview, userCoins, showType, purchaseDisabled }: ShopItemCardProps) {
+  const { t } = useTranslation();
   const isCosmetic = item.type === 'THEME' || item.type === 'AVATAR_FRAME';
   const isOutOfCoin = item.blockReason === 'INSUFFICIENT_COINS' || userCoins < item.price;
 
   return (
     <ItemCard
       item={item}
-      description={item.description}
+      showType={showType}
       maxQuantity={item.config?.maxQuantity}
-      onPress={() => (isCosmetic && onPreview ? onPreview(item) : onPress(item))}
+      onPress={() => (onPreview ? onPreview(item) : onPress(item))}
     >
       {item.equipped ? (
-        <CardAction tone="done" label={translate('shop.actions.in_use')} />
+        <CardAction tone="done" label={t('shopUi.actionEquipped')} />
       ) : isCosmetic && item.owned ? (
-        <CardAction tone="primary" label={translate(item.type === 'THEME' ? 'shop.actions.apply' : 'shop.actions.equip')} onPress={() => onPress(item)} />
+        <CardAction tone="primary" label={item.type === 'THEME' ? t('shopUi.actionApply') : t('shopUi.actionEquip')} onPress={() => onPress(item)} />
       ) : isStackable(item.type) && item.blockReason === 'MAX_QUANTITY_REACHED' ? (
-        <CardAction tone="disabled" label={translate('shop.actions.max_reached')} />
+        <CardAction tone="disabled" label={t('shopUi.actionMaxed')} />
       ) : (
         // A theme is bought from its preview sheet (shop.md §11.1): the palette is seen before Coin is spent.
         <CardAction
           tone={isOutOfCoin ? 'warning' : 'primary'}
-          label={`${translate('shop.actions.buy')} ·`}
+          accessibilityLabel={t('shopUi.buyItem', { name: shopItemTitle(item, t), price: item.price })}
+          disabled={purchaseDisabled}
           coin={item.price}
           onPress={() => (item.type === 'THEME' && onPreview ? onPreview(item) : onPress(item))}
         />

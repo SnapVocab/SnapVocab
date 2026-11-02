@@ -8,6 +8,7 @@ import { AppState, Pressable, RefreshControl, ScrollView, View } from 'react-nat
 import { Button, FocusAwareStatusBar, SafeAreaView, ScreenHeader, Text } from '@/components/ui';
 import { BookIcon, CameraIcon, CheckCircleIcon, ChevronRightIcon, FlameIcon, ShoppingBagIcon, SRSReviewIcon, TargetIcon } from '@/components/ui/icons';
 import { RewardIcon } from '@/components/ui/rewards';
+import { useColorMode } from '@/components/ui/surface';
 import { translate } from '@/lib/i18n';
 import { missionErrorCode, useClaimMission, useDailyMissions } from './api';
 
@@ -20,8 +21,18 @@ export const actions: Partial<Record<MissionTriggerEvent, { href: Href; tx: TxKe
   LEARNING_ACTIVITY_RECORDED: { href: '/study/session', tx: 'missions.action.study' },
   SHOP_ITEM_PURCHASED: { href: '/shop', tx: 'missions.action.shop' },
   BOOSTER_USED: { href: '/profile/inventory', tx: 'missions.action.booster' },
-  SRS_REVIEW_COMPLETED: { href: '/study/session', tx: 'missions.action.study' },
+  SRS_REVIEW_COMPLETED: { href: '/study/session', tx: 'missions.action.srs_review' },
   SCAN_WORD_SAVED: { href: '/camera', tx: 'missions.action.scan' },
+};
+
+const missionCopy: Record<string, { name: TxKeyPath; description: TxKeyPath }> = {
+  ADD_5_WORDS: { name: 'missions.catalog.add_5_words.name', description: 'missions.catalog.add_5_words.description' },
+  QUIZ_SCORE_80: { name: 'missions.catalog.quiz_score_80.name', description: 'missions.catalog.quiz_score_80.description' },
+  FINISH_2_SHORT_QUIZZES: { name: 'missions.catalog.finish_2_short_quizzes.name', description: 'missions.catalog.finish_2_short_quizzes.description' },
+  PERFECT_MINI_QUIZ: { name: 'missions.catalog.perfect_mini_quiz.name', description: 'missions.catalog.perfect_mini_quiz.description' },
+  KEEP_DAILY_STREAK: { name: 'missions.catalog.keep_daily_streak.name', description: 'missions.catalog.keep_daily_streak.description' },
+  USE_XP_BOOSTER: { name: 'missions.catalog.use_xp_booster.name', description: 'missions.catalog.use_xp_booster.description' },
+  BUY_SHOP_ITEM: { name: 'missions.catalog.buy_shop_item.name', description: 'missions.catalog.buy_shop_item.description' },
 };
 
 const categoryTiles: Partial<Record<MissionCategory, { Icon: typeof BookIcon; tile: string; color: string }>> = {
@@ -44,6 +55,7 @@ export function MissionsScreen() {
   const { data, dataUpdatedAt, refetch } = query;
   const claim = useClaimMission();
   const router = useRouter();
+  const isDark = useColorMode() === 'dark';
   const keys = React.useRef(new Map<number, string>());
   const inFlight = React.useRef(false);
   const [, tick] = React.useReducer((n: number) => n + 1, 0);
@@ -106,10 +118,20 @@ export function MissionsScreen() {
   const ended = !!data && msLeft <= 0;
 
   return (
-    <SafeAreaView className="flex-1 bg-[#F7F8FA] dark:bg-neutral-950" edges={['top']}>
+    <SafeAreaView style={{ flex: 1 }} className="flex-1 bg-background dark:bg-neutral-950" edges={['top']}>
       <FocusAwareStatusBar />
       <ScreenHeader title={translate('missions.title')} onBack={() => router.back()} />
-      <ScrollView className="px-5" contentContainerClassName="gap-3 pt-5 pb-10" refreshControl={<RefreshControl refreshing={query.isRefetching} onRefresh={() => void query.refetch()} />}>
+      <ScrollView
+        style={{ flex: 1 }}
+        contentContainerStyle={{
+          flexGrow: 1,
+          paddingHorizontal: 20,
+          paddingTop: 20,
+          paddingBottom: 64,
+          rowGap: 12,
+        }}
+        refreshControl={<RefreshControl refreshing={query.isRefetching} onRefresh={() => void query.refetch()} />}
+      >
         <View className="gap-1">
           <Text tx="missions.subtitle" className="font-inter text-[13px] font-medium text-neutral-500 dark:text-neutral-300" />
           {data && (
@@ -128,14 +150,26 @@ export function MissionsScreen() {
 
         {query.isPending && Array.from({ length: 5 }, (_, i) => <View key={i} className="h-36 rounded-2xl bg-neutral-200 dark:bg-neutral-800" />)}
         {query.isError && (
-          <View className="gap-2 rounded-2xl bg-white p-4 dark:bg-neutral-900">
+          <View className="gap-2 rounded-2xl bg-surface p-4">
             <Text tx={query.data ? 'missions.cached_error' : 'missions.load_error'} />
             <Button tx="missions.retry" onPress={() => void query.refetch()} />
           </View>
         )}
 
+        {data && missions.length === 0 && (
+          <View className="items-center rounded-2xl border border-line bg-surface p-6">
+            <Text className="mb-1 text-center font-nunito text-base font-extrabold text-mascot-navy dark:text-white">
+              {translate('missions.empty_title')}
+            </Text>
+            <Text className="text-center font-inter text-sm text-neutral-500 dark:text-neutral-300">
+              {translate('missions.empty_body')}
+            </Text>
+          </View>
+        )}
+
         {missions.map((mission) => {
           const { Icon, tile, color } = categoryTiles[mission.category] ?? fallbackTile;
+          const copy = missionCopy[mission.code];
           const action = actions[mission.triggerEvent];
           const ratio = Math.min(1, mission.currentProgress / Math.max(1, mission.targetValue));
           const claimable = mission.status === 'COMPLETED' && !ended;
@@ -145,18 +179,18 @@ export function MissionsScreen() {
               key={mission.id}
               // Info: light border. Ready: lifted like Quiz's selected card. Claimed: muted surface only.
               className={`gap-3 rounded-2xl border-2 p-4 ${claimable
-                ? 'border-b-4 border-primary-500 bg-primary-50 dark:bg-neutral-900'
+                ? 'border-b-2 border-primary-500 bg-primary-50 dark:border-[#7FA35E] dark:bg-[#2A3324]'
                 : claimed
-                  ? 'border-neutral-100 bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-950'
-                  : 'border-neutral-100 bg-white dark:border-neutral-800 dark:bg-neutral-900'}`}
+                  ? 'border-b-2 border-line border-b-edge bg-surface-raised'
+                  : 'border-b-2 border-line border-b-edge bg-surface'}`}
             >
-              <View className="flex-row items-center gap-3">
+              <View className="flex-row items-start gap-3">
                 <View className={`size-11 items-center justify-center rounded-xl ${tile}`}>
                   <Icon width={22} height={22} color={color} />
                 </View>
                 <View className="flex-1">
-                  <Text className="font-nunito text-[15px] font-extrabold text-mascot-navy dark:text-white">{mission.name}</Text>
-                  <Text className="font-inter text-[13px] text-neutral-500 dark:text-neutral-300">{mission.description}</Text>
+                  <Text className="font-nunito text-[15px] font-extrabold text-mascot-navy dark:text-white">{copy ? translate(copy.name) : mission.name}</Text>
+                  <Text className="font-inter text-[13px] text-neutral-500 dark:text-neutral-300">{copy ? translate(copy.description) : mission.description}</Text>
                   {mission.triggerEvent === 'TOPIC_ITEM_CREATED' && mission.status === 'IN_PROGRESS' && (
                     <Text tx="missions.add_word_hint" className="mt-1 font-inter text-xs text-neutral-500 dark:text-neutral-300" />
                   )}
@@ -169,8 +203,8 @@ export function MissionsScreen() {
               </View>
 
               <View className="flex-row items-center gap-3">
-                <View className="h-2.5 flex-1 overflow-hidden rounded-full bg-neutral-200 dark:bg-neutral-800">
-                  <View className="h-full rounded-full bg-primary-500" style={{ width: `${ratio * 100}%` }} />
+                <View className="h-2.5 flex-1 overflow-hidden rounded-full bg-line dark:bg-edge">
+                  <View className="h-full rounded-full bg-brand" style={{ width: `${ratio * 100}%` }} />
                 </View>
                 {mission.status !== 'IN_PROGRESS'
                   ? <CheckCircleIcon width={18} height={18} color="#58CC02" />
@@ -196,7 +230,7 @@ export function MissionsScreen() {
                 {mission.status === 'IN_PROGRESS' && !ended && action && (
                   <Pressable accessibilityRole="button" onPress={() => router.push(action.href)} hitSlop={8} className="min-h-11 flex-row items-center gap-0.5 active:opacity-60">
                     <Text tx={action.tx} className="font-nunito text-sm font-extrabold text-primary-800 dark:text-primary-300" />
-                    <ChevronRightIcon width={16} height={16} color="#2F6E00" />
+                    <ChevronRightIcon width={16} height={16} color={isDark ? '#A0E063' : '#2F6E00'} />
                   </Pressable>
                 )}
               </View>
@@ -213,7 +247,7 @@ export function MissionsScreen() {
                 <Text accessibilityRole="alert" tx={missionErrorCode(claim.error) === 'MISSION_EXPIRED' ? 'missions.expired_error' : 'missions.claim_error'} className="text-center text-sm" />
               )}
               {granted?.missionId === mission.id && (
-                <View accessibilityRole="alert" className="flex-row flex-wrap items-center justify-center gap-2 rounded-xl bg-primary-50 p-3 dark:bg-neutral-900">
+                <View accessibilityRole="alert" className="flex-row flex-wrap items-center justify-center gap-2 rounded-xl bg-primary-50 p-3 dark:bg-primary-500/15">
                   <CheckCircleIcon width={18} height={18} color="#58CC02" />
                   <Text className="font-nunito text-sm font-extrabold text-primary-800 dark:text-primary-300">
                     {[

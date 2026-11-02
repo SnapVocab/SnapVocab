@@ -26,7 +26,7 @@ export default function CollectionDetailHero({
   const isSystem = type === 'SYSTEM';
   const { theme } = useUniwind();
   const cardSurfaceClasses = theme === 'dark'
-    ? 'border-[#363B43] border-b-[#181A1F] bg-[#22252B]'
+    ? 'border-line border-b-[#181A1F] bg-surface'
     : 'border-neutral-200/90 border-b-neutral-300 bg-white';
   const progressPercent = totalWords > 0
     ? Math.min(100, Math.round((masteredWords / totalWords) * 100))
@@ -107,7 +107,7 @@ export default function CollectionDetailHero({
               %
             </Text>
           </View>
-          <View className="h-3 overflow-hidden rounded-full border border-neutral-200/80 bg-neutral-100 dark:border-neutral-700 dark:bg-neutral-800">
+          <View className="h-3 overflow-hidden rounded-full border border-line bg-neutral-100 dark:bg-neutral-800">
             <View
               className="h-full rounded-full bg-primary-500"
               style={{ width: `${progressPercent}%` }}
@@ -120,7 +120,7 @@ export default function CollectionDetailHero({
       )}
 
       {/* Stats row */}
-      <View className="mt-4 flex-row items-center justify-between gap-2.5 rounded-2xl border border-neutral-200/80 bg-neutral-50/80 p-3 dark:border-neutral-700/80 dark:bg-neutral-800/60">
+      <View className="mt-4 flex-row items-center justify-between gap-2.5 rounded-2xl border border-line bg-neutral-50/80 p-3 dark:bg-neutral-800/60">
         {/* Total Cards */}
         <View className="flex-1 items-center">
           <View className="flex-row items-center gap-1.5">

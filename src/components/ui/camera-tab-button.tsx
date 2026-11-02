@@ -1,5 +1,6 @@
 import type { BottomTabBarButtonProps } from '@react-navigation/bottom-tabs';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { useUniwind } from 'uniwind';
 
@@ -7,6 +8,7 @@ import colors from '@/components/ui/colors';
 import { CameraIcon } from '@/components/ui/icons';
 
 export function CameraTabButton({ onPress, accessibilityState }: BottomTabBarButtonProps) {
+  const { t } = useTranslation();
   const { theme } = useUniwind();
   const isDark = theme === 'dark';
   const focused = accessibilityState?.selected;
@@ -17,7 +19,7 @@ export function CameraTabButton({ onPress, accessibilityState }: BottomTabBarBut
         onPress={onPress}
         style={styles.pressable}
         accessibilityRole="button"
-        accessibilityLabel="Camera"
+        accessibilityLabel={t('home.scan_camera')}
       >
         <View
           style={[

@@ -42,7 +42,7 @@ export function WordMeanings({ meanings }: WordMeaningsProps) {
       {groupedMeanings.map(group => (
         <View
           key={group.pos}
-          className="mb-3.5 rounded-3xl border border-neutral-200/90 bg-white p-4 shadow-xs dark:border-neutral-700 dark:bg-neutral-800"
+          className="mb-3.5 rounded-3xl border border-line bg-white p-4 shadow-xs dark:bg-neutral-800"
         >
           {/* Part of speech badge */}
           <View className="mb-3.5 items-center justify-center self-start rounded-lg bg-lime-100 px-3 py-1.5 dark:bg-lime-950/50">

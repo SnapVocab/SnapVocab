@@ -5,6 +5,7 @@ import { ScrollView, View } from 'react-native';
 import { BackButton, Button } from '@/components/ui';
 import { CheckIcon, RotateCwIcon, TrophyIcon } from '@/components/ui/icons';
 import { Text } from '@/components/ui/text';
+import { translate } from '@/lib/i18n';
 import { CardActionToolbar } from './components/card-action-toolbar';
 import { DynamicCardRenderer } from './dynamic-card-renderer';
 
@@ -12,11 +13,12 @@ export function CardStudyView({
   items,
   template,
   schema,
-  topicName = 'Học từ vựng',
+  topicName,
   onComplete,
   onExit,
 }: CardStudyViewProps) {
   const router = useRouter();
+  const displayTopicName = topicName || translate('cardRenderer.studyTitle');
 
   const [currentIndex, setCurrentIndex] = React.useState(0);
   const [currentSide, setCurrentSide] = React.useState<CardSide>('FRONT');
@@ -89,22 +91,22 @@ export function CardStudyView({
             <TrophyIcon width={40} height={40} color="#D97706" />
           </View>
           <Text className="mt-5 font-nunito text-2xl font-black tracking-tight text-mascot-navy dark:text-white">
-            HOÀN THÀNH BÀI HỌC!
+            {translate('cardRenderer.studyCompleteTitle')}
           </Text>
           <Text className="mt-1 font-inter text-sm font-medium text-neutral-500 dark:text-neutral-400">
-            Bạn đã xuất sắc ôn tập xong danh sách thẻ từ
+            {translate('cardRenderer.studyCompleteBody')}
           </Text>
 
           {/* Stats Grid */}
           <View className="mt-8 w-full flex-row items-center justify-between gap-3">
             {/* Accuracy */}
-            <View className="flex-1 items-center rounded-2xl border border-neutral-200/80 bg-white p-4 shadow-xs dark:border-neutral-800 dark:bg-neutral-900">
+            <View className="flex-1 items-center rounded-2xl border border-line bg-surface p-4 shadow-xs">
               <Text className="font-nunito text-2xl font-black text-primary-600 dark:text-primary-400">
                 {accuracy}
                 %
               </Text>
               <Text className="mt-1 font-inter text-xs font-bold text-neutral-400">
-                Độ chính xác
+                {translate('cardRenderer.accuracy')}
               </Text>
             </View>
 
@@ -114,7 +116,7 @@ export function CardStudyView({
                 {remCount}
               </Text>
               <Text className="mt-1 font-inter text-xs font-bold text-emerald-700 dark:text-emerald-300">
-                Đã thuộc
+                {translate('cardRenderer.mastered')}
               </Text>
             </View>
 
@@ -125,7 +127,7 @@ export function CardStudyView({
                 {xp}
               </Text>
               <Text className="mt-1 font-inter text-xs font-bold text-amber-700 dark:text-amber-300">
-                Kinh nghiệm XP
+                {translate('cardRenderer.xpEarned')}
               </Text>
             </View>
           </View>
@@ -134,13 +136,13 @@ export function CardStudyView({
         {/* Action Buttons */}
         <View className="w-full gap-3 pb-6">
           <Button
-            label="Luyện tập lại"
+            label={translate('cardRenderer.practiceAgain')}
             variant="outline"
             icon={<RotateCwIcon color="#4D7C0F" width={18} height={18} />}
             onPress={handleRestart}
           />
           <Button
-            label="Hoàn tất bài học"
+            label={translate('cardRenderer.finishLesson')}
             icon={<CheckIcon color="#FFFFFF" width={18} height={18} />}
             onPress={handleBack}
           />
@@ -154,22 +156,20 @@ export function CardStudyView({
   return (
     <View className="flex-1 bg-slate-50 dark:bg-neutral-950">
       {/* Top Header & Progress */}
-      <View className="border-b border-neutral-200/70 bg-white px-5 pt-3 pb-4 dark:border-neutral-800 dark:bg-neutral-900">
+      <View className="border-b border-line bg-surface px-5 pt-3 pb-4">
         <View className="flex-row items-center justify-between">
           <BackButton onPress={handleBack} />
 
           <View className="mx-3 flex-1 items-center">
             <Text className="font-nunito text-base font-extrabold text-mascot-navy dark:text-white" numberOfLines={1}>
-              {topicName}
+              {displayTopicName}
             </Text>
             <Text className="mt-0.5 font-inter text-xs font-bold text-neutral-400">
               {currentIndex + 1}
               {' '}
               /
               {' '}
-              {total}
-              {' '}
-              thẻ
+              {translate('cardRenderer.cardCount', { count: total })}
             </Text>
           </View>
 
@@ -209,7 +209,7 @@ export function CardStudyView({
       </ScrollView>
 
       {/* Bottom Action Toolbar */}
-      <View className="border-t border-neutral-200/70 bg-white px-4 pt-1 pb-6 dark:border-neutral-800 dark:bg-neutral-900">
+      <View className="border-t border-line bg-surface px-4 pt-1 pb-6">
         <CardActionToolbar
           onForgot={() => advanceCard(false)}
           onFlip={handleFlip}

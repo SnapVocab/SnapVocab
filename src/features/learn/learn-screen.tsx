@@ -1,152 +1,53 @@
-import type { BottomSheetModal } from '@gorhom/bottom-sheet';
-import type { Href } from 'expo-router';
-import type { CollectionRef } from './types';
-import { useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
-import { useCallback, useRef, useState } from 'react';
-import { Pressable, RefreshControl, ScrollView } from 'react-native';
-import { FocusAwareStatusBar, SafeAreaView, Text, View } from '@/components/ui';
-import { PlusIcon } from '@/components/ui/icons';
-import { invalidateStudy, useStudyLibrary } from '@/features/study/api';
-import { TodayBlock } from '@/features/study/today-block';
+import { ArrowRightIcon } from 'lucide-react-native';
+import { Image, Pressable, ScrollView } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { FocusAwareStatusBar, Text, useSurface, View } from '@/components/ui';
 import { translate } from '@/lib/i18n';
-import { CollectionOptionsBottomSheet, LibraryGroup, LibraryLinkRow, LibraryRow } from './components';
 
-/** Rows shown before "Xem tất cả" (learn_ui.md §8.2 D). */
-const LIBRARY_PREVIEW = 6;
-
-/**
- * Tab "Học" (learn_ui.md IA B): today's session on top, the learner's library below. No streak, XP or
- * progress here: rewards belong to the end of a session (§7.2).
- */
 export function LearnScreen() {
+  const surface = useSurface();
+  const insets = useSafeAreaInsets();
   const router = useRouter();
-  const queryClient = useQueryClient();
-  const library = useStudyLibrary();
-  const [selected, setSelected] = useState<CollectionRef | null>(null);
-  const [sheetMode, setSheetMode] = useState<'OPTIONS' | 'CREATE'>('OPTIONS');
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  const sheetRef = useRef<BottomSheetModal>(null);
-
-  const refresh = useCallback(() => invalidateStudy(queryClient), [queryClient]);
-  const onPullRefresh = useCallback(async () => {
-    setIsRefreshing(true);
-    await refresh();
-    setIsRefreshing(false);
-  }, [refresh]);
-
-  const openCollection = useCallback((collection: CollectionRef) => {
-    router.push({
-      pathname: '/(app)/collections/[id]',
-      params: {
-        id: String(collection.id),
-        name: collection.name,
-        translation: collection.translation,
-        type: collection.type,
-      },
-    });
-  }, [router]);
-
-  const studyCollection = useCallback((collection: CollectionRef) => {
-    router.push({
-      pathname: '/(app)/study/session',
-      params: { collectionId: String(collection.id), collectionName: collection.name },
-    } as Href);
-  }, [router]);
-
-  const openSheet = useCallback((mode: 'OPTIONS' | 'CREATE', collection: CollectionRef | null) => {
-    setSelected(collection);
-    setSheetMode(mode);
-    sheetRef.current?.present();
-  }, []);
-
-  const rows = library.data ?? [];
+  const options = [
+    { id: 'collections', title: translate('home.collections'), description: translate('learn.collections.subtitle'), action: translate('learn.open_collections'), art: require('../../assets/images/snapy-reading.png'), route: '/collections', tone: 'bg-primary-50 dark:bg-primary-400/10', button: 'bg-brand', buttonText: 'text-[#17330B] dark:text-[#17330B]' },
+    { id: 'quiz', title: translate('home.quiz'), description: translate('learn.quiz_subtitle'), action: translate('learn.play_quiz'), art: require('../../assets/images/mascot/actions/snapy-nhay-len.png'), route: '/study/quiz-setup', tone: 'bg-violet-50 dark:bg-violet-400/10', button: 'bg-violet-600', buttonText: 'text-white' },
+  ] as const;
 
   return (
-    <SafeAreaView style={{ flex: 1 }} className="flex-1 bg-background">
+    <View style={{ flex: 1, backgroundColor: surface.background }}>
       <FocusAwareStatusBar />
-      <ScrollView
-        className="flex-1"
-        showsVerticalScrollIndicator={false}
-        contentContainerClassName="pb-10"
-        refreshControl={<RefreshControl refreshing={isRefreshing} onRefresh={onPullRefresh} tintColor="#58CC02" />}
-      >
-        <Text className="px-5 pt-4 pb-3 font-nunito text-3xl font-black text-mascot-navy dark:text-white">
+      <View style={{ paddingTop: insets.top + 16, backgroundColor: surface.headerBg }} className="px-5 pb-3">
+        <Text className="font-nunito text-2xl font-black text-mascot-navy dark:text-white">
           {translate('learn.tab_label')}
         </Text>
-
-        <TodayBlock />
-
-        <View className="px-4">
-          <View className="mb-2 ml-1 flex-row items-center justify-between">
-            <Text className="font-nunito text-[15px] font-extrabold tracking-widest text-mascot-navy uppercase dark:text-white">
-              {translate('learn.library.title')}
-            </Text>
-            <Pressable
-              onPress={() => openSheet('CREATE', null)}
-              hitSlop={8}
-              accessibilityRole="button"
-              accessibilityLabel={translate('learn.library.create')}
-              className="size-10 items-center justify-center"
-              testID="library-create"
-            >
-              <PlusIcon width={20} height={20} color="#58CC02" />
-            </Pressable>
-          </View>
-
-          <LibraryGroup>
-            {library.isLoading && [0, 1, 2].map(i => (
-              <View key={i} className="h-16 border-b border-neutral-50 dark:border-neutral-800" />
-            ))}
-            {library.isError && (
-              <LibraryLinkRow label={translate('learn.library.error')} onPress={() => void library.refetch()} />
-            )}
-            {rows.slice(0, LIBRARY_PREVIEW).map(collection => (
-              <LibraryRow
-                key={collection.id}
-                collection={collection}
-                onPress={() => openCollection(collection)}
-                onOptionsPress={collection.type === 'USER' ? () => openSheet('OPTIONS', collection) : undefined}
-              />
-            ))}
-            {rows.length > LIBRARY_PREVIEW && (
-              <LibraryLinkRow
-                label={translate('learn.library.see_all', { count: rows.length })}
-                onPress={() => router.push({ pathname: '/(app)/collections', params: { view: 'mine' } } as Href)}
-              />
-            )}
-            <LibraryLinkRow
-              label={translate('learn.library.explore')}
-              onPress={() => router.push({ pathname: '/(app)/collections', params: { view: 'explore' } } as Href)}
-              last
-            />
-          </LibraryGroup>
-
-          <View className="mt-6">
-            <LibraryGroup>
-              <LibraryLinkRow
-                label={translate('learn.library.practice_quiz')}
-                onPress={() => router.push('/(app)/study/quiz-setup' as Href)}
-                last
-              />
-            </LibraryGroup>
-          </View>
-        </View>
+        <Text className="mt-0.5 font-inter text-[13px] font-medium text-neutral-500 dark:text-neutral-400">
+          {translate('learn.choose_activity')}
+        </Text>
+      </View>
+      <ScrollView style={{ flex: 1 }} contentContainerClassName="gap-4 px-4 pt-5 pb-8">
+        {options.map(({ id, title, description, action, art, route, tone, button, buttonText }) => (
+          <Pressable
+            key={id}
+            accessibilityRole="button"
+            accessibilityLabel={title}
+            accessibilityHint={description}
+            onPress={() => router.push(route)}
+            className={`min-h-44 flex-row items-center gap-2 overflow-hidden rounded-2xl border-2 border-b-4 border-line border-b-edge p-5 active:translate-y-[2px] active:border-b-2 ${tone}`}
+          >
+            <View className="flex-1 items-start gap-2">
+              <Text className="font-nunito text-[22px] font-black text-mascot-navy dark:text-white">{title}</Text>
+              <Text className="font-inter text-sm/5 text-neutral-600 dark:text-neutral-300">{description}</Text>
+              <View className={`mt-2 min-h-12 flex-row items-center gap-2 rounded-xl border-b-4 px-4 py-2 ${id === 'quiz' ? 'border-violet-800 dark:border-violet-950' : 'border-brand-edge'} ${button}`}>
+                <Text className={`shrink font-nunito text-[13px] font-black ${buttonText}`}>{action}</Text>
+                <ArrowRightIcon size={16} color={id === 'quiz' ? '#FFFFFF' : '#17330B'} />
+              </View>
+            </View>
+            <Image accessible={false} source={art} className="size-28" resizeMode="contain" />
+          </Pressable>
+        ))}
       </ScrollView>
-
-      <CollectionOptionsBottomSheet
-        bottomSheetRef={sheetRef}
-        collection={selected}
-        mode={sheetMode}
-        onCreated={(created) => {
-          void refresh();
-          openCollection(created);
-        }}
-        onSaveEdit={() => void refresh()}
-        onDelete={() => void refresh()}
-        onStudy={studyCollection}
-      />
-    </SafeAreaView>
+    </View>
   );
 }
 

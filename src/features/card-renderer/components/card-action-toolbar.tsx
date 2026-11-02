@@ -2,6 +2,7 @@ import * as React from 'react';
 import { Pressable, View } from 'react-native';
 import { CheckIcon, CloseIcon, RotateCwIcon } from '@/components/ui/icons';
 import { Text } from '@/components/ui/text';
+import { translate } from '@/lib/i18n';
 
 type Props = {
   onForgot: () => void;
@@ -27,7 +28,7 @@ export function CardActionToolbar({
       >
         <CloseIcon width={18} height={18} color="#E11D48" />
         <Text className="font-nunito text-base font-black text-rose-600 dark:text-rose-400">
-          Chưa nhớ
+          {translate('cardRenderer.forgot')}
         </Text>
       </Pressable>
 
@@ -36,7 +37,7 @@ export function CardActionToolbar({
         onPress={onFlip}
         disabled={disabled}
         android_ripple={{ color: 'transparent' }}
-        className="size-14 items-center justify-center rounded-2xl border border-neutral-200 bg-white shadow-xs active:scale-95 active:bg-neutral-100 dark:border-neutral-700 dark:bg-neutral-800"
+        className="size-14 items-center justify-center rounded-2xl border border-line bg-white shadow-xs active:scale-95 active:bg-pressed dark:bg-neutral-800"
       >
         <RotateCwIcon width={22} height={22} color="#475569" />
       </Pressable>
@@ -50,7 +51,7 @@ export function CardActionToolbar({
       >
         <CheckIcon width={18} height={18} color="#059669" />
         <Text className="font-nunito text-base font-black text-emerald-600 dark:text-emerald-400">
-          Đã thuộc
+          {translate('cardRenderer.remembered')}
         </Text>
       </Pressable>
     </View>

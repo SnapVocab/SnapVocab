@@ -65,12 +65,12 @@ export function ActivityHistoryChart() {
   return (
     <View className="mb-4 gap-2.5 px-1 pt-1">
       {/* Header and Period Switcher */}
-      <View className="flex-row items-center justify-between">
+      <View className="gap-2">
         <Text className="font-nunito text-base font-bold text-neutral-800 dark:text-neutral-200">
           {t('progressUx.history')}
         </Text>
 
-        <View accessibilityRole="tablist" className="flex-row gap-1 rounded-xl bg-neutral-100 p-1 dark:bg-neutral-800">
+        <View accessibilityRole="tablist" className="flex-row gap-1 self-end rounded-xl bg-neutral-100 p-1 dark:bg-neutral-800">
           {(['DAY', 'WEEK', 'MONTH'] as const).map((value) => {
             const isTabActive = period === value;
             return (
@@ -115,7 +115,7 @@ export function ActivityHistoryChart() {
         <SectionError message={t('progressUx.error')} onRetry={() => void query.refetch()} />
       ) : total === 0 ? (
         /* Genuine Flat Empty State: No Nested Card */
-        <View className="items-center justify-center gap-1.5 rounded-2xl bg-neutral-50/80 p-4 dark:bg-neutral-900/60">
+        <View className="items-center justify-center gap-1.5 rounded-2xl border border-line bg-surface p-4">
           <Text className="font-nunito text-sm font-extrabold text-neutral-800 dark:text-neutral-200">
             {t('progressUx.historyEmpty')}
           </Text>
@@ -130,7 +130,7 @@ export function ActivityHistoryChart() {
         </View>
       ) : (
         /* Chart With Data */
-        <View className="gap-2.5 rounded-2xl border border-neutral-100 bg-white p-3.5 dark:border-neutral-800 dark:bg-neutral-900">
+        <View className="gap-2.5 rounded-2xl border border-line bg-surface p-3.5">
           <View className="flex-row items-center justify-between">
             <Text className="font-nunito text-sm font-black text-neutral-900 dark:text-white">
               {t('progressUx.activityTotal', { count: total })}
@@ -143,7 +143,7 @@ export function ActivityHistoryChart() {
           </View>
 
           {/* Bar Chart Grid */}
-          <View className="flex-row items-end justify-between border-b border-neutral-100 pt-2 pb-1 dark:border-neutral-800">
+          <View className="flex-row items-end justify-between border-b border-line pt-2 pb-1">
             {visible.map((bucket) => {
               const isToday = period === 'DAY' && bucket.periodStart === today;
               const isSelected = selectedStart === bucket.periodStart;

@@ -1,5 +1,6 @@
 import { useRouter } from 'expo-router';
 import { Alert } from 'react-native';
+import { translate } from '@/lib/i18n';
 import { useCompleteQuiz } from '../api/quiz-api';
 import { classifyQuizError } from '../utils';
 import { useExpiredSessionHandler } from './use-expired-session-handler';
@@ -34,9 +35,9 @@ export function useFinishQuiz(quizId: number, onResync?: () => void) {
           return;
         }
         Alert.alert(
-          'Chưa xác nhận hoàn tất bài quiz',
-          'Kết quả chỉ được ghi nhận khi máy chủ xác nhận. Kiểm tra kết nối rồi thử lại.',
-          [{ text: 'Để sau', style: 'cancel' }, { text: 'Thử lại', onPress: finish }],
+          translate('quiz.finish_unconfirmed_title'),
+          translate('quiz.finish_unconfirmed_body'),
+          [{ text: translate('quiz.later'), style: 'cancel' }, { text: translate('quiz.retry'), onPress: finish }],
         );
       },
     });

@@ -139,7 +139,7 @@ describe('daily Mission screen lifecycle', () => {
     render(<MissionsScreen />);
     expect(screen.getAllByText(/^Mission \d$/)).toHaveLength(5);
     expect(screen.getAllByText('missions.action.quiz')).toHaveLength(2);
-    fireEvent.press(screen.getByText('missions.action.study'));
+    fireEvent.press(screen.getByText('missions.action.srs_review'));
     expect(mockPush).toHaveBeenCalledWith('/study/session');
   });
 

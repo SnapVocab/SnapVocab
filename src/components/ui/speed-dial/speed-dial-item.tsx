@@ -49,7 +49,7 @@ export function SpeedDialItem({
       <Pressable
         onPress={onPress}
         android_ripple={{ color: 'transparent' }}
-        className="rounded-2xl border border-neutral-200/80 bg-white px-3.5 py-2 shadow-lg shadow-black/10 active:opacity-80 dark:border-neutral-700 dark:bg-neutral-800"
+        className="rounded-2xl border border-line bg-white px-3.5 py-2 shadow-lg shadow-black/10 active:opacity-80 dark:bg-neutral-800"
       >
         <Text
           className={`font-nunito text-xs font-black tracking-wide text-mascot-navy dark:text-white ${

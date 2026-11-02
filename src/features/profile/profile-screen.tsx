@@ -1,9 +1,13 @@
 import type { Href } from 'expo-router';
 import type { ReactNode } from 'react';
 import type { User } from '../auth/api';
+import type { InventoryItemDTO } from '@/features/shop/types';
 import { useRouter } from 'expo-router';
+import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ScrollView } from 'react-native';
-import { AvatarFrame } from '@/components/snapvocab';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { AvatarFrame, Coin3D } from '@/components/snapvocab';
 import {
   Button,
   FocusAwareStatusBar,
@@ -12,7 +16,7 @@ import {
   Pressable,
   SafeAreaView,
   Text,
-  useSurfaceOverride,
+  useSurface,
   View,
 } from '@/components/ui';
 import {
@@ -28,44 +32,54 @@ import {
 import { useAuthStore } from '@/features/auth/use-auth-store';
 import { ProfileBadgeStrip, useBadges } from '@/features/badges';
 import { useStreak } from '@/features/progress/api';
-import { ShopSurface } from '@/features/shop/theme/theme-context';
+import { useInventory } from '@/features/shop/hooks/use-shop-queries';
 import { isBoosterLive } from '@/features/shop/utils/booster-timer';
 import { translate } from '@/lib/i18n';
 import { useMe } from './api';
 import { formatDate, fullName, initials } from './display';
 import { useIconColors } from './use-icon-colors';
 
-/** MH-PROFILE-01. Themed screen (shop.md §6.4): an equipped theme re-skins its surfaces. */
+/** Personal identity and live learning rewards. */
 export function ProfileScreen() {
-  return (
-    <ShopSurface>
-      <ProfileScreenContent />
-    </ShopSurface>
-  );
-}
-
-function ProfileScreenContent() {
+  const surface = useSurface();
+  const insets = useSafeAreaInsets();
   const router = useRouter();
   const stored = useAuthStore(s => s.user);
   const iconColor = useIconColors();
-  const t = useSurfaceOverride();
-  const screenStyle = [{ flex: 1 }, t && { backgroundColor: t.background }];
-  const { data, isLoading, refetch, isRefetching } = useMe();
+  const { i18n } = useTranslation();
+  const { data, isLoading, isError, refetch, isRefetching } = useMe();
   // Live streak from Progress; users.streakDays is stored and not reset after a missed day.
   const streak = useStreak();
   // Render the stored copy while the fresh one loads, so the screen never blanks.
   const user = data ?? stored;
-  // Equipped frame and running booster ride on the user (GET /api/users/me, shop.md §10.1), so the stored
-  // copy shows them at app start. Device clock for the ×2 badge; Kho đồ's countdown uses server time.
-  const frameUrl = user?.equipped?.avatarFrameUrl;
-  const boosterLive = isBoosterLive(user?.activeBooster, 0);
+  // Equipped frame and running booster come from the inventory (shop.md §11.3); no extra API.
+  const inventory = useInventory();
   const badges = useBadges().data;
   const openAchievements = (badgeId?: number) =>
     router.push((badgeId ? `/profile/achievements?open=${badgeId}` : '/profile/achievements') as Href);
+  const [, tick] = useState(0);
+  const frame = inventory.data?.items.find(i => i.type === 'AVATAR_FRAME' && i.equipped);
+  const boosterLive = isBoosterLive(inventory.data?.activeBooster, inventory.serverOffset);
+  useEffect(() => {
+    if (!boosterLive)
+      return;
+    const timer = setInterval(() => tick(n => n + 1), 1000);
+    return () => clearInterval(timer);
+  }, [boosterLive]);
+  const failedSources = [
+    isError && translate('profile.account_data'),
+    streak.isError && translate('profile.streak'),
+    inventory.isError && translate('profile.inventory_data'),
+  ].filter(Boolean).join(', ');
+  const retryFailed = () => Promise.allSettled([
+    ...(isError ? [refetch()] : []),
+    ...(streak.isError ? [streak.refetch()] : []),
+    ...(inventory.isError ? [inventory.refetch()] : []),
+  ]);
 
   if (!user) {
     return (
-      <SafeAreaView style={screenStyle} className="flex-1 bg-background" edges={['top']}>
+      <SafeAreaView style={{ flex: 1 }} className="flex-1 bg-background" edges={['top']}>
         <FocusAwareStatusBar />
         <View style={{ flex: 1 }} className="flex-1 items-center justify-center px-8">
           <Mascot pose="sad" className="mb-4 size-32" />
@@ -85,23 +99,16 @@ function ProfileScreenContent() {
   }
 
   return (
-    <SafeAreaView style={screenStyle} className="flex-1 bg-background" edges={['top']}>
+    <View style={{ flex: 1, backgroundColor: surface.background }}>
       <FocusAwareStatusBar />
 
-      <View style={t && { backgroundColor: t.headerBg, borderColor: t.border }} className="z-10 flex-row items-center justify-between border-b border-neutral-100 bg-white px-5 py-3.5 dark:border-neutral-800 dark:bg-neutral-900">
+      <View style={{ paddingTop: insets.top + 14, backgroundColor: surface.headerBg }} className="z-10 flex-row items-center justify-between border-b border-neutral-100 px-5 pb-3.5 dark:border-line">
         <Text
           className="font-nunito text-xl font-extrabold tracking-tight text-mascot-navy dark:text-white"
           tx="profile.title"
         />
 
         <View className="flex-row items-center gap-2">
-          <HeaderButton
-            onPress={() => router.push('/edit-profile')}
-            testID="profile-edit-button"
-            label={translate('profile.edit')}
-          >
-            <EditIcon color={iconColor.action} width={18} height={18} />
-          </HeaderButton>
           <HeaderButton
             onPress={() => router.push('/settings')}
             testID="profile-settings-button"
@@ -113,10 +120,19 @@ function ProfileScreenContent() {
       </View>
 
       <ScrollView
+        className="bg-background"
         contentContainerStyle={{ padding: 16, paddingBottom: 150 }}
         showsVerticalScrollIndicator={false}
       >
-        <IdentityCard user={user} frameUrl={frameUrl}>
+        {!!failedSources && (
+          <View accessibilityRole="alert" className="mb-4 gap-3 rounded-2xl border-2 border-amber-300 bg-amber-50 p-4 dark:border-amber-500/40 dark:bg-amber-950/40">
+            <Text className="font-inter text-sm text-amber-950 dark:text-amber-100">
+              {translate('profile.refresh_error', { sections: failedSources })}
+            </Text>
+            <Button size="sm" variant="secondary" tx="profile.retry" onPress={retryFailed} loading={isRefetching || streak.isRefetching || inventory.isRefetching} />
+          </View>
+        )}
+        <IdentityCard user={user} frame={frame} onEdit={() => router.push('/edit-profile')} locale={i18n.language}>
           <ProfileBadgeStrip view={badges} onPress={openAchievements} />
         </IdentityCard>
 
@@ -125,25 +141,38 @@ function ProfileScreenContent() {
             icon={<FlameIcon color={iconColor.stat.streak} />}
             tint="bg-mascot-100 border-mascot-200 dark:bg-mascot-500/15 dark:border-mascot-500/30"
             value={streak.data?.currentStreak ?? '–'}
+            locale={i18n.language}
             labelTx="profile.streak"
           />
           <StatTile
             icon={<StarIcon color={iconColor.stat.xp} />}
             tint="bg-reward-50 border-reward-100 dark:bg-reward-500/15 dark:border-reward-500/30"
-            value={boosterLive ? `${user.exp ?? 0} ×2` : user.exp ?? 0}
+            value={user.exp ?? '–'}
+            locale={i18n.language}
             labelTx="profile.xp"
           />
           <StatTile
-            icon={<WalletIcon color={iconColor.stat.coin} />}
-            tint="bg-info-50 border-info-100 dark:bg-info-500/15 dark:border-info-500/30"
-            value={user.coin ?? 0}
+            icon={<Coin3D size="sm" />}
+            tint="bg-reward-50 border-reward-100 dark:bg-reward-500/15 dark:border-reward-500/30"
+            value={user.coin ?? '–'}
+            locale={i18n.language}
             labelTx="profile.coin"
           />
         </View>
 
-        {/* Achievements, wallet and inventory are live. */}
-        <View style={t && { backgroundColor: t.surface, borderColor: t.border }} className="mt-5 overflow-hidden rounded-3xl border border-neutral-200/80 bg-white shadow-sm shadow-black/5 dark:border-neutral-800 dark:bg-neutral-900">
-          <ComingSoonRow
+        {boosterLive && !inventory.isError && (
+          <View className="mt-3 rounded-xl border-2 border-reward-200 bg-reward-50 px-4 py-3 dark:border-reward-500/30 dark:bg-reward-500/10">
+            <Text className="text-reward-800 font-nunito text-sm font-extrabold dark:text-reward-200">
+              {translate('profile.booster_active', { multiplier: inventory.data!.activeBooster!.multiplier })}
+            </Text>
+            <Text className="text-reward-800 mt-1 font-inter text-xs dark:text-reward-200">
+              {translate('profile.booster_hint')}
+            </Text>
+          </View>
+        )}
+
+        <View className="mt-5 overflow-hidden rounded-2xl border-2 border-b-4 border-line border-b-edge bg-surface">
+          <ProfileMenuRow
             icon={<TrophyIcon color={iconColor.stat.trophy} width={20} height={20} />}
             tint="bg-reward-50 border-reward-100 dark:bg-reward-500/15 dark:border-reward-500/30"
             tx="profile.menu.achievements"
@@ -153,15 +182,15 @@ function ProfileScreenContent() {
             chevron={iconColor.muted}
             onPress={() => openAchievements()}
           />
-          <ComingSoonRow
-            icon={<WalletIcon color={iconColor.stat.coin} width={20} height={20} />}
-            tint="bg-info-50 border-info-100 dark:bg-info-500/15 dark:border-info-500/30"
+          <ProfileMenuRow
+            icon={<Coin3D size="sm" />}
+            tint="bg-reward-50 border-reward-100 dark:bg-reward-500/15 dark:border-reward-500/30"
             tx="profile.menu.wallet"
             hintTx="profile.menu_hints.wallet"
             chevron={iconColor.muted}
             onPress={() => router.push('/profile/wallet' as Href)}
           />
-          <ComingSoonRow
+          <ProfileMenuRow
             icon={<BoxIcon color={iconColor.stat.inventory} width={20} height={20} />}
             tint="bg-purple-50 border-purple-100 dark:bg-purple-500/15 dark:border-purple-500/30"
             tx="profile.menu.inventory"
@@ -172,12 +201,8 @@ function ProfileScreenContent() {
           />
         </View>
 
-        <View className="items-center pt-6 pb-2">
-          <Text className="text-xs font-bold text-neutral-400">SnapVocab</Text>
-          <Text className="mt-0.5 text-[11px] font-medium text-neutral-400" tx="profile.tagline" />
-        </View>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -192,65 +217,68 @@ function HeaderButton({
   testID: string;
   label: string;
 }) {
-  const t = useSurfaceOverride();
   return (
     <Pressable
       onPress={onPress}
       testID={testID}
       accessibilityLabel={label}
-      style={t && { backgroundColor: t.surfaceMuted, borderColor: t.border }}
-      className="size-10 items-center justify-center rounded-full border border-neutral-200/60 bg-neutral-50 active:scale-95 dark:border-neutral-700 dark:bg-neutral-800"
+      accessibilityRole="button"
+      className="size-11 items-center justify-center rounded-xl border-2 border-b-4 border-line border-b-edge bg-surface active:translate-y-[2px] active:border-b-2"
     >
       {children}
     </Pressable>
   );
 }
 
-function IdentityCard({ user, frameUrl, children }: { user: User; frameUrl?: string | null; children?: ReactNode }) {
+function IdentityCard({ user, frame, onEdit, locale, children }: { user: User; frame?: InventoryItemDTO; onEdit: () => void; locale: string; children?: ReactNode }) {
   const name = fullName(user);
-  const joined = formatDate(user.createdAt);
-  const t = useSurfaceOverride();
+  const joined = formatDate(user.createdAt, locale);
 
   return (
-    <View style={t && { backgroundColor: t.surface, borderColor: t.border }} className="items-center rounded-3xl border border-neutral-200/80 bg-white p-5 shadow-sm shadow-black/5 dark:border-neutral-800 dark:bg-neutral-900">
-      {frameUrl ? (
+    <View className="gap-4 rounded-2xl border-2 border-b-4 border-line border-b-edge bg-surface p-4">
+      <View className="flex-row items-center gap-4">
+        {frame ? (
         // Same renderer as the Shop preview, so the bought frame looks the same here.
-        <AvatarFrame
-          frameUrl={frameUrl}
-          avatarUri={user.avatarUrl}
-          initials={initials(name)}
-          size="xl"
-          showGlow={false}
-          className="mb-3"
-        />
-      ) : (
-        <View className="mb-3 size-28 items-center justify-center rounded-full border-2 border-primary-400 bg-primary-50/50 p-1.5 dark:bg-primary-500/10">
-          <View className="size-full items-center justify-center overflow-hidden rounded-full bg-primary-500">
-            {user.avatarUrl
-              ? <Image source={{ uri: user.avatarUrl }} contentFit="cover" style={{ width: '100%', height: '100%' }} />
-              : <Text className="font-nunito text-3xl font-extrabold text-white">{initials(name)}</Text>}
+          <AvatarFrame
+            frameId={frame.code}
+            frameUrl={frame.config?.frameUrl}
+            avatarUri={user.avatarUrl}
+            initials={initials(name)}
+            size={80}
+            showGlow={false}
+          />
+        ) : (
+          <View className="size-20 shrink-0 items-center justify-center rounded-full border-2 border-primary-400 bg-primary-50/50 p-1 dark:bg-primary-500/10">
+            <View className="size-full items-center justify-center overflow-hidden rounded-full bg-primary-500">
+              {user.avatarUrl
+                ? <Image source={{ uri: user.avatarUrl }} contentFit="cover" style={{ width: '100%', height: '100%' }} />
+                : <Text className="font-nunito text-2xl font-extrabold text-[#17330B] dark:text-[#17330B]">{initials(name)}</Text>}
+            </View>
           </View>
+        )}
+
+        <View className="min-w-0 flex-1">
+          <Text className="mb-1 font-nunito text-[22px] font-black text-mascot-navy dark:text-white">
+            {name}
+          </Text>
+
+          {/* An email is far longer than the design's username, so it gets its own line. */}
+          <Text numberOfLines={1} className="text-[13px] font-semibold text-neutral-500 dark:text-neutral-300">
+            {user.email}
+          </Text>
+          {!!joined && (
+            <Text className="mt-1 text-xs font-medium text-neutral-500 dark:text-neutral-400">
+              {translate('profile.joined', { date: joined })}
+            </Text>
+          )}
         </View>
-      )}
-
-      <Text className="mb-1 text-center font-nunito text-[22px] font-extrabold text-mascot-navy dark:text-white">
-        {name}
-      </Text>
-
-      {/* An email is far longer than the design's username, so it gets its own line. */}
-      <Text numberOfLines={1} className="max-w-full text-[13px] font-semibold text-neutral-400">
-        {user.email}
-      </Text>
-      {!!joined && (
-        <Text className="mt-0.5 mb-3 text-[13px] font-medium text-neutral-400">
-          {translate('profile.joined', { date: joined })}
-        </Text>
-      )}
+      </View>
 
       {!!user.bio && (
         <Text className="text-center text-sm text-neutral-600 dark:text-neutral-300">{user.bio}</Text>
       )}
       {children}
+      <Button size="sm" variant="secondary" tx="profile.edit" testID="profile-edit-button" onPress={onEdit} icon={<EditIcon width={16} height={16} color="#757793" />} />
     </View>
   );
 }
@@ -260,19 +288,21 @@ function StatTile({
   tint,
   value,
   labelTx,
+  locale,
 }: {
   icon: ReactNode;
   tint: string;
   value: number | string;
   labelTx: 'profile.streak' | 'profile.xp' | 'profile.coin';
+  locale: string;
 }) {
-  const t = useSurfaceOverride();
+  const formatted = typeof value === 'number' ? value.toLocaleString(locale) : value;
   return (
-    <View style={t && { backgroundColor: t.surface, borderColor: t.border }} className="flex-1 items-center rounded-2xl border border-neutral-200/80 bg-white p-3.5 shadow-sm shadow-black/5 dark:border-neutral-800 dark:bg-neutral-900">
+    <View accessible accessibilityLabel={`${translate(labelTx)}: ${formatted}`} className="min-w-0 flex-1 items-center rounded-2xl border-2 border-b-4 border-line border-b-edge bg-surface px-2 py-3.5">
       <View className={`mb-2 size-9 items-center justify-center rounded-xl border ${tint}`}>
         {icon}
       </View>
-      <Text className="font-nunito text-lg font-extrabold text-mascot-navy dark:text-white">{value}</Text>
+      <Text adjustsFontSizeToFit minimumFontScale={0.7} numberOfLines={1} className="max-w-full font-nunito text-lg font-black text-mascot-navy dark:text-white">{formatted}</Text>
       <Text
         className="mt-0.5 text-center text-[11px] font-bold text-neutral-500 uppercase dark:text-neutral-300"
         tx={labelTx}
@@ -281,7 +311,7 @@ function StatTile({
   );
 }
 
-function ComingSoonRow({
+function ProfileMenuRow({
   icon,
   tint,
   tx,
@@ -298,38 +328,30 @@ function ComingSoonRow({
   hintTx: 'profile.menu_hints.achievements' | 'profile.menu_hints.wallet' | 'profile.menu_hints.inventory';
   chevron: string;
   last?: boolean;
-  /** Present = the screen exists: row navigates and drops the "coming soon" badge. */
-  onPress?: () => void;
+  onPress: () => void;
   /** Live summary replacing the static hint, e.g. "4/12 huy hiệu". */
   hint?: string;
   /** Unseen-badge dot on the icon tile (badges.md §2.3). */
   dot?: boolean;
 }) {
-  const t = useSurfaceOverride();
   return (
     <Pressable
-      accessibilityRole={onPress ? 'button' : undefined}
-      accessibilityLabel={[translate(tx), hint ?? translate(hintTx), dot ? translate('badges.profile.has_new') : null].filter(Boolean).join(', ')}
+      accessibilityRole="button"
+      accessibilityLabel={translate(tx)}
+      accessibilityHint={[hint ?? translate(hintTx), dot ? translate('badges.profile.has_new') : null].filter(Boolean).join(', ')}
       onPress={onPress}
-      disabled={!onPress}
-      style={t && { borderColor: t.border }}
-      className={`flex-row items-center p-4 active:bg-neutral-50 dark:active:bg-neutral-800 ${last ? '' : 'border-b border-neutral-100 dark:border-neutral-800'}`}
+      className={`flex-row items-center p-4 active:bg-pressed ${last ? '' : 'border-b border-neutral-100 dark:border-line'}`}
     >
       <View className={`mr-3.5 size-10 items-center justify-center rounded-xl border ${tint}`}>
         {icon}
         {dot && <View className="absolute -top-1 -right-1 size-[11px] rounded-full border-2 border-white bg-danger-500 dark:border-neutral-900" />}
       </View>
       <View className="flex-1">
-        <Text className={`text-[15px] font-bold ${onPress ? 'text-mascot-navy' : 'text-neutral-600'} dark:text-neutral-200`} tx={tx} />
+        <Text className="font-nunito text-[16px] font-black text-mascot-navy dark:text-white" tx={tx} />
         {hint
-          ? <Text className="text-[14px] font-medium text-neutral-500 dark:text-neutral-400">{hint}</Text>
-          : <Text className="text-[13px] font-medium text-neutral-400" tx={hintTx} />}
+          ? <Text className="text-[13px] font-medium text-neutral-500 dark:text-neutral-300">{hint}</Text>
+          : <Text className="text-[13px] font-medium text-neutral-500 dark:text-neutral-300" tx={hintTx} />}
       </View>
-      {!onPress && (
-        <View style={t && { backgroundColor: t.surfaceMuted }} className="mr-1 rounded-full bg-neutral-100 px-2 py-0.5 dark:bg-neutral-800">
-          <Text className="text-[11px] font-bold text-neutral-500 dark:text-neutral-300" tx="profile.coming_soon" />
-        </View>
-      )}
       <ChevronRightIcon color={chevron} width={18} height={18} />
     </Pressable>
   );

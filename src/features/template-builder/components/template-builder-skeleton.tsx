@@ -25,11 +25,11 @@ export function TemplateBuilderSkeleton() {
   }, [pulseAnim]);
 
   return (
-    <SafeAreaView style={{ flex: 1 }} className="flex-1 bg-slate-50 dark:bg-neutral-900">
+    <SafeAreaView style={{ flex: 1 }} className="flex-1 bg-background">
       <FocusAwareStatusBar />
 
       {/* Header Skeleton */}
-      <View className="flex-row items-center justify-between border-b border-neutral-200/80 bg-white px-4 py-3 dark:border-neutral-800 dark:bg-neutral-900">
+      <View className="flex-row items-center justify-between border-b border-line bg-surface px-4 py-3">
         <View className="flex-row items-center gap-3">
           <Animated.View
             style={{ opacity: pulseAnim }}
@@ -69,9 +69,9 @@ export function TemplateBuilderSkeleton() {
       {/* Canvas Section Cards Skeleton */}
       <ScrollView className="flex-1 px-4 pt-2" showsVerticalScrollIndicator={false}>
         {/* Section Card 1 */}
-        <View className="mb-4 rounded-3xl border border-neutral-200/80 bg-white p-4 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
+        <View className="mb-4 rounded-3xl border border-line bg-surface p-4 shadow-sm">
           {/* Section Header */}
-          <View className="mb-3 flex-row items-center justify-between border-b border-neutral-100 pb-3 dark:border-neutral-800">
+          <View className="mb-3 flex-row items-center justify-between border-b border-line pb-3">
             <View className="flex-row items-center gap-2">
               <Animated.View
                 style={{ opacity: pulseAnim }}
@@ -92,30 +92,30 @@ export function TemplateBuilderSkeleton() {
           <View className="gap-2.5">
             <Animated.View
               style={{ opacity: pulseAnim }}
-              className="h-14 rounded-2xl border border-neutral-200/60 bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-800/40"
+              className="h-14 rounded-2xl border border-line bg-neutral-50 dark:bg-neutral-800/40"
             />
             <View className="flex-row gap-2.5">
               <Animated.View
                 style={{ opacity: pulseAnim }}
-                className="h-14 flex-1 rounded-2xl border border-neutral-200/60 bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-800/40"
+                className="h-14 flex-1 rounded-2xl border border-line bg-neutral-50 dark:bg-neutral-800/40"
               />
               <Animated.View
                 style={{ opacity: pulseAnim }}
-                className="h-14 flex-1 rounded-2xl border border-neutral-200/60 bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-800/40"
+                className="h-14 flex-1 rounded-2xl border border-line bg-neutral-50 dark:bg-neutral-800/40"
               />
             </View>
 
             {/* Add Field Placeholder */}
             <Animated.View
               style={{ opacity: pulseAnim }}
-              className="h-10 rounded-xl border border-dashed border-neutral-300/80 bg-neutral-50/50 dark:border-neutral-700/60 dark:bg-neutral-800/20"
+              className="h-10 rounded-xl border border-dashed border-edge bg-neutral-50/50 dark:bg-neutral-800/20"
             />
           </View>
         </View>
 
         {/* Section Card 2 */}
-        <View className="mb-4 rounded-3xl border border-neutral-200/80 bg-white p-4 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
-          <View className="mb-3 flex-row items-center justify-between border-b border-neutral-100 pb-3 dark:border-neutral-800">
+        <View className="mb-4 rounded-3xl border border-line bg-surface p-4 shadow-sm">
+          <View className="mb-3 flex-row items-center justify-between border-b border-line pb-3">
             <View className="flex-row items-center gap-2">
               <Animated.View
                 style={{ opacity: pulseAnim }}
@@ -135,7 +135,7 @@ export function TemplateBuilderSkeleton() {
           <View className="gap-2.5">
             <Animated.View
               style={{ opacity: pulseAnim }}
-              className="h-14 rounded-2xl border border-neutral-200/60 bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-800/40"
+              className="h-14 rounded-2xl border border-line bg-neutral-50 dark:bg-neutral-800/40"
             />
           </View>
         </View>
@@ -148,7 +148,7 @@ export function TemplateBuilderSkeleton() {
       </ScrollView>
 
       {/* Bottom Save Button Skeleton */}
-      <View className="border-t border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900">
+      <View className="border-t border-line bg-surface p-4">
         <Animated.View
           style={{ opacity: pulseAnim }}
           className="h-12 w-full rounded-2xl bg-neutral-200 dark:bg-neutral-800"

@@ -42,13 +42,13 @@ export function StreakStatsCard({ streak, isLoading }: StreakStatsCardProps) {
     );
   }
 
-  const active = streak.currentStreak > 0;
-  // currentStreak is 0 both for "never studied" and "missed a day"; longestStreak tells them apart.
+  // The current streak baseline is 1, but it must not imply a study history.
+  const active = streak.currentStreak > 0 && streak.lastStudiedDate !== null;
   const broken = !active && streak.longestStreak > 0;
 
   if (!active) {
     return (
-      <View className="mb-3 flex-row items-center gap-3.5 rounded-2xl border border-neutral-100 bg-white p-3.5 shadow-2xs dark:border-neutral-800 dark:bg-neutral-900">
+      <View className="mb-3 flex-row items-center gap-3.5 rounded-2xl border border-line bg-surface p-3.5 shadow-2xs">
         <StreakFlame3D size={36} state="inactive" animation="none" />
         <View className="flex-1">
           <Text className="font-nunito text-sm font-bold text-neutral-800 dark:text-neutral-200">
@@ -67,7 +67,7 @@ export function StreakStatsCard({ streak, isLoading }: StreakStatsCardProps) {
 
   // The current streak is already in the Activity row; this card adds the record and last study day.
   return (
-    <View className="mb-3 flex-row items-center gap-3.5 rounded-2xl border border-neutral-100 bg-white p-4 shadow-2xs dark:border-neutral-800 dark:bg-neutral-900">
+    <View className="mb-3 flex-row items-center gap-3.5 rounded-2xl border border-line bg-surface p-4 shadow-2xs">
       <StreakFlame3D size={40} state="active" animation="none" />
       <View className="flex-1 gap-0.5">
         <Text className="font-nunito text-xl font-black text-mascot-700 dark:text-mascot-500">

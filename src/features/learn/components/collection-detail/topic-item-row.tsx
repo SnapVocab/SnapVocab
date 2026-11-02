@@ -10,12 +10,15 @@ import { extractTopicItemDisplay } from './topic-item-utils';
 type Props = {
   item: TopicItemData;
   onPress?: () => void;
+  onLongPress?: () => void;
 };
 
-export function TopicItemRow({ item, onPress }: Props) {
+export function TopicItemRow({ item, onPress, onLongPress }: Props) {
+  const didLongPressRef = React.useRef(false);
+  const resetLongPressTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
   const { theme } = useUniwind();
   const cardSurfaceClasses = theme === 'dark'
-    ? 'border-[#46505C] border-b-[#667382] bg-[#22252B]'
+    ? 'border-line border-b-edge bg-surface'
     : 'border-neutral-200/90 border-b-neutral-300 bg-white';
   const { word, phonetic, partOfSpeech, translation } = React.useMemo(
     () => extractTopicItemDisplay(item),
@@ -43,9 +46,37 @@ export function TopicItemRow({ item, onPress }: Props) {
     [speak, word],
   );
 
+  const handlePress = React.useCallback(() => {
+    if (didLongPressRef.current) {
+      didLongPressRef.current = false;
+      if (resetLongPressTimerRef.current) {
+        clearTimeout(resetLongPressTimerRef.current);
+      }
+      return;
+    }
+    onPress?.();
+  }, [onPress]);
+
+  const handleLongPress = React.useCallback(() => {
+    didLongPressRef.current = true;
+    resetLongPressTimerRef.current = setTimeout(() => {
+      didLongPressRef.current = false;
+      resetLongPressTimerRef.current = null;
+    }, 1000);
+    onLongPress?.();
+  }, [onLongPress]);
+
+  React.useEffect(() => () => {
+    if (resetLongPressTimerRef.current) {
+      clearTimeout(resetLongPressTimerRef.current);
+    }
+  }, []);
+
   return (
     <Pressable
-      onPress={onPress}
+      onPress={handlePress}
+      onLongPress={handleLongPress}
+      delayLongPress={350}
       className={`flex-row items-center justify-between rounded-2xl border-2 border-b-4 px-4 py-3.5 shadow-2xs active:translate-y-[2px] active:border-b-2 ${cardSurfaceClasses}`}
     >
       {/* Left Column: Word, Phonetic, POS & Translation */}
@@ -100,7 +131,7 @@ export function TopicItemRow({ item, onPress }: Props) {
           />
         </Pressable>
 
-        <View className="size-9 items-center justify-center rounded-xl border-2 border-b-[3px] border-neutral-200/60 border-b-neutral-300 bg-neutral-100/60 dark:border-[#46505C] dark:border-b-[#667382] dark:bg-[#292E36]">
+        <View className="size-9 items-center justify-center rounded-xl border-2 border-b-[3px] border-line border-b-edge bg-surface-raised">
           <ChevronRightIcon width={14} height={14} color="#94A3B8" />
         </View>
       </View>

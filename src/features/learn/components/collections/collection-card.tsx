@@ -23,7 +23,7 @@ export default function CollectionCard({
   const canShowOption = showOption && !isSystemCollection;
   const { theme } = useUniwind();
   const cardSurfaceClasses = theme === 'dark'
-    ? 'border-[#46505C] border-b-[#667382] bg-[#22252B]'
+    ? 'border-line border-b-edge bg-surface'
     : 'border-neutral-200/90 border-b-neutral-300 bg-white';
 
   return (
@@ -74,13 +74,13 @@ export default function CollectionCard({
                 onOptionsPress?.();
               }}
               hitSlop={12}
-              className="size-10 items-center justify-center rounded-xl border-2 border-b-[3px] border-neutral-200/80 border-b-neutral-300 bg-neutral-100/80 active:translate-y-px active:border-b-2 dark:border-[#46505C] dark:border-b-[#667382] dark:bg-[#292E36]"
+              className="size-10 items-center justify-center rounded-xl border-2 border-b-[3px] border-line border-b-edge bg-surface-raised active:translate-y-px active:border-b-2"
             >
-              <MoreVerticalIcon width={16} height={16} color="#71717A" />
+              <MoreVerticalIcon width={20} height={20} color="#71717A" />
             </Pressable>
           )
         : (
-            <View className="size-10 items-center justify-center rounded-xl border-2 border-b-[3px] border-neutral-200/60 border-b-neutral-300 bg-neutral-100/60 dark:border-[#46505C] dark:border-b-[#667382] dark:bg-[#292E36]">
+            <View className="size-10 items-center justify-center rounded-xl border-2 border-b-[3px] border-line border-b-edge bg-surface-raised">
               <ChevronRightIcon width={16} height={16} color="#71717A" />
             </View>
           )}

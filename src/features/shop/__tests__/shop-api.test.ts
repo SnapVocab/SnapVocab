@@ -8,6 +8,7 @@ import type {
   WalletDTO,
 } from '../types';
 import { client } from '@/lib/api';
+import i18n from '@/lib/i18n';
 import {
   activateItem,
   equipItem,
@@ -22,9 +23,12 @@ import {
 jest.mock('@/lib/api', () => ({
   client: jest.fn(),
 }));
-jest.mock('@/lib/i18n', () => require('./vi-translate'));
 
 const mockedClient = client as unknown as jest.Mock;
+
+beforeAll(async () => {
+  await i18n.changeLanguage('vi');
+});
 
 describe('shop API layer and backend contracts', () => {
   beforeEach(() => {
@@ -367,7 +371,7 @@ describe('shop API layer and backend contracts', () => {
 
       const parsed = parseShopError(raceError);
       expect(parsed.code).toBe('CONCURRENT_MODIFICATION');
-      expect(parsed.message).toContain('bận xử lý giao dịch');
+      expect(parsed.message).toContain('Cửa hàng đang bận');
     });
   });
 });

@@ -14,6 +14,7 @@ export * from './pressable';
 export * from './screen-header';
 export * from './speed-dial';
 export * from './surface';
+export * from './switch';
 export * from './text';
 export * from './user-avatar';
 export * from './utils';

@@ -20,6 +20,7 @@ import {
 } from '@/components/ui/icons';
 import { Snapy } from '@/components/ui/snapy';
 import { useTts } from '@/lib/hooks/use-tts';
+import { translate } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 import { useAttemptMatchingPair } from '../api/quiz-api';
 import { useExpiredSessionHandler } from '../hooks/use-expired-session-handler';
@@ -88,7 +89,7 @@ export type MatchingQuizViewProps = {
   onResync: () => void;
 };
 
-const SCORING_RULE = 'Điểm tính theo lần ghép đầu tiên của mỗi từ. Vẫn cần ghép đúng hết để hoàn tất.';
+const SCORING_RULE = 'quiz.matching_scoring_rule';
 
 export function MatchingQuizView({ quiz, onExit, onResync }: MatchingQuizViewProps) {
   const matchingRounds = quiz.matchingRounds || [];
@@ -135,7 +136,7 @@ export function MatchingQuizView({ quiz, onExit, onResync }: MatchingQuizViewPro
   // Mascot and modal state
   const [mascotPose, setMascotPose] = useState<SnapyPose>('tap_trung');
   const [mascotAnim, setMascotAnim] = useState<string>('idle');
-  const [bubbleText, setBubbleText] = useState<string>(SCORING_RULE);
+  const [bubbleText, setBubbleText] = useState<string>(translate(SCORING_RULE));
   const [showExitModal, setShowExitModal] = useState(false);
 
   // Live Stopwatch
@@ -218,8 +219,8 @@ export function MatchingQuizView({ quiz, onExit, onResync }: MatchingQuizViewPro
             setMascotAnim('celebrate');
             // `correct` = this pair is right; `outcome` = what the pair scores (first attempt only).
             setBubbleText(data.outcome === 'CORRECT'
-              ? 'Đúng ngay lần đầu! ✨'
-              : 'Đã ghép đúng. Cặp này không tính điểm vì lần đầu chưa đúng.');
+              ? translate('quiz.match_first_try_correct')
+              : translate('quiz.match_correct_no_score'));
 
             if (data.round.completed) {
               if (currentRoundIndex + 1 < matchingRounds.length) {
@@ -241,8 +242,8 @@ export function MatchingQuizView({ quiz, onExit, onResync }: MatchingQuizViewPro
             setMascotPose('bat_ngo');
             setMascotAnim('shake');
             setBubbleText(data.attemptNo === 1
-              ? 'Chưa đúng! Cặp này không được tính điểm, nhưng hãy ghép lại cho đúng nhé.'
-              : 'Chưa chính xác! Thử lại nhé! 🤔');
+              ? translate('quiz.match_first_try_wrong')
+              : translate('quiz.match_try_again'));
 
             setTimeout(() => {
               setSelectedLeftKey(null);
@@ -263,7 +264,7 @@ export function MatchingQuizView({ quiz, onExit, onResync }: MatchingQuizViewPro
             setSelectedLeftKey(null);
             setSelectedRightKey(null);
             setIdempotencyKey(generateIdempotencyKey());
-            setBubbleText('Không gửi được cặp ghép. Hãy chọn lại.');
+            setBubbleText(translate('quiz.match_send_error'));
           }
           else {
             setUnconfirmedPair({ left: leftKey, right: rightKey });
@@ -323,23 +324,23 @@ export function MatchingQuizView({ quiz, onExit, onResync }: MatchingQuizViewPro
   const progressPercent = totalPairsOverall > 0 ? (matchedOverall / totalPairsOverall) * 100 : 0;
 
   return (
-    <SafeAreaView className="flex-1 bg-[#F7F8FA]" edges={['top', 'bottom']}>
+    <SafeAreaView className="flex-1 bg-background" edges={['top', 'bottom']}>
 
       {/* 1. TOP PROGRESS BAR */}
-      <View className="z-10 flex-row items-center justify-between border-b border-neutral-100 bg-[#F7F8FA] px-4 py-3">
+      <View className="z-10 flex-row items-center justify-between border-b border-line bg-background px-4 py-3">
         <TouchableOpacity
           onPress={() => setShowExitModal(true)}
           accessibilityRole="button"
-          accessibilityLabel="Thoát bài quiz"
+          accessibilityLabel={translate('quiz.exit')}
           hitSlop={8}
           activeOpacity={0.7}
           className="-ml-2 size-10 items-center justify-center rounded-full"
         >
-          <CloseIcon size={24} className="text-neutral-500" />
+          <CloseIcon size={24} className="text-neutral-500 dark:text-neutral-400" />
         </TouchableOpacity>
 
         <View className="mx-3 flex-1">
-          <View className="h-3 w-full overflow-hidden rounded-full bg-neutral-200">
+          <View className="h-3 w-full overflow-hidden rounded-full bg-line">
             <View
               className="h-full rounded-full bg-purple-500"
               style={{ width: `${progressPercent}%` }}
@@ -348,15 +349,15 @@ export function MatchingQuizView({ quiz, onExit, onResync }: MatchingQuizViewPro
         </View>
 
         {/* Live Stopwatch Badge */}
-        <View className="mr-2 flex-row items-center gap-1.5 rounded-full border border-neutral-200 bg-white px-2.5 py-1 shadow-sm">
-          <ClockIcon size={13} className="text-purple-600" />
-          <Text className="font-inter text-[12px] font-bold text-neutral-600 tabular-nums">
+        <View className="mr-2 flex-row items-center gap-1.5 rounded-full border border-line bg-surface px-2.5 py-1 shadow-sm">
+          <ClockIcon size={13} className="text-purple-600 dark:text-purple-300" />
+          <Text className="font-inter text-[12px] font-bold text-neutral-600 tabular-nums dark:text-neutral-300">
             {formatTimer(elapsedSeconds)}
           </Text>
         </View>
 
-        <Text className="text-right font-nunito text-[15px] font-extrabold text-neutral-500 tabular-nums">
-          Vòng
+        <Text className="text-right font-nunito text-[15px] font-extrabold text-neutral-500 tabular-nums dark:text-neutral-400">
+          {translate('quiz.round')}
           {' '}
           {currentRoundIndex + 1}
           /
@@ -375,11 +376,11 @@ export function MatchingQuizView({ quiz, onExit, onResync }: MatchingQuizViewPro
           {/* MASCOT WITH SPEECH BUBBLE */}
           <View className="mb-4 flex-row items-center justify-center gap-2">
             <Snapy pose={mascotPose} animation={mascotAnim} style={{ width: 85, height: 85 }} />
-            <View className="relative max-w-[210px] rounded-2xl border-2 border-neutral-200 bg-white px-3.5 py-2.5 shadow-sm">
-              <Text className="font-nunito text-[13px] font-extrabold text-mascot-navy">
+            <View className="relative max-w-[210px] rounded-2xl border-2 border-line bg-surface px-3.5 py-2.5 shadow-sm">
+              <Text className="font-nunito text-[13px] font-extrabold text-mascot-navy dark:text-neutral-50">
                 {bubbleText}
               </Text>
-              <View className="absolute top-5 -left-2 size-3 rotate-45 border-b-2 border-l-2 border-neutral-200 bg-white" />
+              <View className="absolute top-5 -left-2 size-3 rotate-45 border-b-2 border-l-2 border-line bg-surface" />
             </View>
           </View>
 
@@ -389,7 +390,7 @@ export function MatchingQuizView({ quiz, onExit, onResync }: MatchingQuizViewPro
             {/* LEFT COLUMN */}
             <View className="flex-1 gap-2.5">
               <Text className="mb-1 text-center font-inter text-[12px] font-bold tracking-wider text-neutral-400 uppercase">
-                {quiz.direction === 'VI_EN' ? 'Tiếng Việt' : 'Tiếng Anh'}
+                {quiz.direction === 'VI_EN' ? translate('quiz.vietnamese') : translate('quiz.english')}
               </Text>
               {activeRound?.leftTiles?.map((tile) => {
                 const isMatched = matchedLeftKeys.has(tile.key);
@@ -406,12 +407,12 @@ export function MatchingQuizView({ quiz, onExit, onResync }: MatchingQuizViewPro
                     className={cn(
                       'min-h-[58px] justify-center rounded-2xl border-2 p-3 transition-all',
                       isMatched
-                        ? 'border-neutral-200 bg-neutral-100 opacity-30'
+                        ? 'border-line bg-muted opacity-30'
                         : isFailed
-                          ? 'border-error-500 bg-error-50'
+                          ? 'border-error-500 bg-error-50 dark:bg-error-500/15'
                           : isSelected
-                            ? 'border-b-4 border-purple-500 bg-purple-50'
-                            : 'border-b-[3px] border-neutral-200 bg-white active:bg-neutral-50',
+                            ? 'border-b-4 border-purple-500 bg-purple-50 dark:bg-purple-500/15'
+                            : 'border-b-[3px] border-line bg-surface active:bg-pressed',
                     )}
                   >
                     <Text
@@ -420,10 +421,10 @@ export function MatchingQuizView({ quiz, onExit, onResync }: MatchingQuizViewPro
                         isMatched
                           ? 'text-neutral-400'
                           : isFailed
-                            ? 'text-error-700'
+                            ? 'text-error-700 dark:text-error-300'
                             : isSelected
-                              ? 'text-purple-700'
-                              : 'text-mascot-navy',
+                              ? 'text-purple-700 dark:text-purple-300'
+                              : 'text-mascot-navy dark:text-neutral-50',
                       )}
                     >
                       {tile.label}
@@ -436,7 +437,7 @@ export function MatchingQuizView({ quiz, onExit, onResync }: MatchingQuizViewPro
             {/* RIGHT COLUMN */}
             <View className="flex-1 gap-2.5">
               <Text className="mb-1 text-center font-inter text-[12px] font-bold tracking-wider text-neutral-400 uppercase">
-                {quiz.direction === 'VI_EN' ? 'Tiếng Anh' : 'Tiếng Việt'}
+                {quiz.direction === 'VI_EN' ? translate('quiz.english') : translate('quiz.vietnamese')}
               </Text>
               {activeRound?.rightTiles?.map((tile) => {
                 const isMatched = matchedRightKeys.has(tile.key);
@@ -453,12 +454,12 @@ export function MatchingQuizView({ quiz, onExit, onResync }: MatchingQuizViewPro
                     className={cn(
                       'min-h-[58px] justify-center rounded-2xl border-2 p-3 transition-all',
                       isMatched
-                        ? 'border-neutral-200 bg-neutral-100 opacity-30'
+                        ? 'border-line bg-muted opacity-30'
                         : isFailed
-                          ? 'border-error-500 bg-error-50'
+                          ? 'border-error-500 bg-error-50 dark:bg-error-500/15'
                           : isSelected
-                            ? 'border-b-4 border-purple-500 bg-purple-50'
-                            : 'border-b-[3px] border-neutral-200 bg-white active:bg-neutral-50',
+                            ? 'border-b-4 border-purple-500 bg-purple-50 dark:bg-purple-500/15'
+                            : 'border-b-[3px] border-line bg-surface active:bg-pressed',
                     )}
                   >
                     <Text
@@ -467,10 +468,10 @@ export function MatchingQuizView({ quiz, onExit, onResync }: MatchingQuizViewPro
                         isMatched
                           ? 'text-neutral-400'
                           : isFailed
-                            ? 'text-error-700'
+                            ? 'text-error-700 dark:text-error-300'
                             : isSelected
-                              ? 'text-purple-700'
-                              : 'text-mascot-navy',
+                              ? 'text-purple-700 dark:text-purple-300'
+                              : 'text-mascot-navy dark:text-neutral-50',
                       )}
                     >
                       {tile.label}
@@ -487,30 +488,30 @@ export function MatchingQuizView({ quiz, onExit, onResync }: MatchingQuizViewPro
 
       {/* 3. ATTEMPT SPINNER FOOTER (IF NETWORK PENDING) */}
       {attemptMutation.isPending && (
-        <View className="flex-row items-center justify-center gap-2 border-t border-neutral-100 bg-white py-3">
+        <View className="flex-row items-center justify-center gap-2 border-t border-line bg-surface py-3">
           <ActivityIndicator size="small" color="#9333EA" />
-          <Text className="font-nunito text-[14px] font-extrabold text-purple-600">Đang chấm cặp ghép...</Text>
+          <Text className="font-nunito text-[14px] font-extrabold text-purple-600 dark:text-purple-300">{translate('quiz.grading_pair')}</Text>
         </View>
       )}
 
       {/* 4. UNCONFIRMED PAIR: resend exactly the same attempt */}
       {unconfirmedPair && !attemptMutation.isPending && (
-        <View className="gap-2 border-t border-neutral-100 bg-white p-4">
-          <Text accessibilityLiveRegion="polite" className="text-center font-inter text-[13px] font-semibold text-neutral-600">
-            Chưa xác nhận được cặp ghép. Kiểm tra kết nối rồi gửi lại cặp này.
+        <View className="gap-2 border-t border-line bg-surface p-4">
+          <Text accessibilityLiveRegion="polite" className="text-center font-inter text-[13px] font-semibold text-neutral-600 dark:text-neutral-300">
+            {translate('quiz.match_unconfirmed')}
           </Text>
           <Pressable
             onPress={() => submitPairAttempt(unconfirmedPair.left, unconfirmedPair.right)}
             className="h-12 w-full items-center justify-center rounded-xl border-b-2 border-purple-700 bg-purple-500 active:bg-purple-600"
           >
-            <Text className="font-nunito text-[15px] font-extrabold text-white">Gửi lại</Text>
+            <Text className="font-nunito text-[15px] font-extrabold text-white">{translate('quiz.resend')}</Text>
           </Pressable>
         </View>
       )}
 
       {/* 5. ALL ROUNDS MATCHED: completion stays reachable if the first complete call failed */}
       {allRoundsDone && (
-        <View className="border-t border-neutral-100 bg-white p-4">
+        <View className="border-t border-line bg-surface p-4">
           <Pressable
             onPress={finishQuiz.finish}
             disabled={finishQuiz.isPending}
@@ -519,7 +520,7 @@ export function MatchingQuizView({ quiz, onExit, onResync }: MatchingQuizViewPro
           >
             {finishQuiz.isPending
               ? <ActivityIndicator size="small" color="#FFFFFF" />
-              : <Text className="font-nunito text-[15px] font-extrabold text-white">Hoàn tất bài quiz</Text>}
+              : <Text className="font-nunito text-[15px] font-extrabold text-white">{translate('quiz.finish_quiz')}</Text>}
           </Pressable>
         </View>
       )}

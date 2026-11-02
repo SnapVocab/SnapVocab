@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { ActivityIndicator, Modal, Pressable, Text, View } from 'react-native';
 import { LogOutIcon } from '@/components/ui/icons';
+import { translate } from '@/lib/i18n';
 import { useCancelQuiz } from '../api/quiz-api';
 import { useExpiredSessionHandler } from '../hooks/use-expired-session-handler';
 
@@ -47,21 +48,21 @@ export function QuizExitModal({ visible, quizId, onClose, onExited }: QuizExitMo
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={handleStay}>
       <View className="flex-1 items-center justify-center bg-black/50 p-6">
-        <View className="w-full max-w-sm rounded-3xl bg-white p-6 shadow-xl">
-          <View className="mb-4 size-14 items-center justify-center self-center rounded-2xl bg-amber-50">
+        <View className="w-full max-w-sm rounded-3xl bg-surface p-6 shadow-xl">
+          <View className="mb-4 size-14 items-center justify-center self-center rounded-2xl bg-amber-50 dark:bg-amber-500/15">
             <LogOutIcon size={28} className="text-amber-500" />
           </View>
 
-          <Text className="mb-2 text-center font-nunito text-[20px] font-extrabold text-mascot-navy">
-            Dừng làm bài Quiz?
+          <Text className="mb-2 text-center font-nunito text-[20px] font-extrabold text-mascot-navy dark:text-neutral-50">
+            {translate('quiz.exit_title')}
           </Text>
-          <Text className="mb-6 text-center font-inter text-[14px] leading-relaxed text-neutral-500">
-            Tiến trình làm bài này sẽ bị hủy. Bạn có muốn thoát không?
+          <Text className="mb-6 text-center font-inter text-[14px] leading-relaxed text-neutral-500 dark:text-neutral-400">
+            {translate('quiz.exit_body')}
           </Text>
 
           {failed && (
-            <Text accessibilityLiveRegion="polite" className="mb-4 text-center font-inter text-[13px] font-semibold text-error-700">
-              Chưa hủy được bài quiz. Kiểm tra kết nối rồi thử lại.
+            <Text accessibilityLiveRegion="polite" className="mb-4 text-center font-inter text-[13px] font-semibold text-error-700 dark:text-error-300">
+              {translate('quiz.cancel_error')}
             </Text>
           )}
 
@@ -69,20 +70,20 @@ export function QuizExitModal({ visible, quizId, onClose, onExited }: QuizExitMo
             <Pressable
               onPress={handleStay}
               disabled={cancelMutation.isPending}
-              className="h-12 w-full items-center justify-center rounded-xl border-b-2 border-primary-700 bg-primary-500 active:bg-primary-600"
+              className="h-12 w-full items-center justify-center rounded-xl border-b-2 border-brand-edge bg-brand active:bg-brand-pressed"
             >
-              <Text className="font-nunito text-[15px] font-extrabold text-white">Tiếp tục làm bài</Text>
+              <Text className="font-nunito text-[15px] font-extrabold text-on-brand">{translate('quiz.keep_playing')}</Text>
             </Pressable>
 
             <Pressable
               onPress={handleExit}
               disabled={cancelMutation.isPending}
               accessibilityState={{ busy: cancelMutation.isPending }}
-              className="h-12 w-full items-center justify-center rounded-xl bg-neutral-100 active:bg-neutral-200"
+              className="h-12 w-full items-center justify-center rounded-xl bg-muted active:bg-pressed"
             >
               {cancelMutation.isPending
                 ? <ActivityIndicator size="small" color="#6B7280" />
-                : <Text className="font-nunito text-[15px] font-extrabold text-neutral-600">{failed ? 'Thử hủy lại' : 'Thoát'}</Text>}
+                : <Text className="font-nunito text-[15px] font-extrabold text-neutral-600 dark:text-neutral-300">{failed ? translate('quiz.retry_cancel') : translate('quiz.exit')}</Text>}
             </Pressable>
           </View>
         </View>

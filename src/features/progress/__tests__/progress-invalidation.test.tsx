@@ -3,6 +3,7 @@ import { act, renderHook, waitFor } from '@testing-library/react-native';
 import * as React from 'react';
 import { useAddTopicItem, useDeleteCollection } from '@/features/learn/api';
 import { useCompleteQuiz } from '@/features/quiz/api/quiz-api';
+import { useSubmitStudyRating } from '@/features/study/api';
 import { client } from '@/lib/api';
 
 jest.mock('@/lib/api', () => ({ client: jest.fn() }));
@@ -24,6 +25,15 @@ function setup() {
 
 describe('mutations refresh the progress data they change', () => {
   beforeEach(() => jest.clearAllMocks());
+
+  it('an accepted SRS rating refreshes streak, history and daily missions', async () => {
+    mockedClient.mockResolvedValue({ data: { data: { topicItemId: 21, reps: 1 } } });
+    const { wrapper, invalidatedKeys } = setup();
+    const { result } = renderHook(() => useSubmitStudyRating(), { wrapper });
+    act(() => result.current.mutate({ collectionId: 3, topicItemId: 21, rating: 'GOOD' }));
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(invalidatedKeys()).toEqual(expect.arrayContaining([['progress'], ['daily-missions']]));
+  });
 
   it('quiz completion refreshes progress (summary/streak/history/home-widget), XP and the user', async () => {
     mockedClient.mockResolvedValue({ data: { data: { quizId: 7, xp: { amount: 50 } } } });

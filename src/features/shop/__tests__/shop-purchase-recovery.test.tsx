@@ -3,19 +3,23 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { act, renderHook } from '@testing-library/react-native';
 import * as React from 'react';
 import { client } from '@/lib/api';
+import i18n from '@/lib/i18n';
 import { useShopActions } from '../hooks/use-shop-actions';
 import { shopKeys } from '../hooks/use-shop-queries';
 import { isBoosterLive } from '../utils/booster-timer';
 
 const mockUpdateUser = jest.fn();
 jest.mock('@/lib/api', () => ({ client: jest.fn() }));
-jest.mock('@/lib/i18n', () => require('./vi-translate'));
 jest.mock('@/features/auth/use-auth-store', () => ({ useAuthStore: { getState: () => ({ updateUser: mockUpdateUser }) } }));
 jest.mock('@/components/ui', () => ({ showErrorMessage: jest.fn(), showSuccessMessage: jest.fn() }));
 jest.mock('../theme/theme-context', () => ({ useShopTheme: () => ({ setEquippedTheme: jest.fn() }) }));
 let mockKeySeq = 0;
 jest.mock('@/features/quiz/utils/idempotency', () => ({ generateIdempotencyKey: () => `key-${++mockKeySeq}` }));
 const request = client as unknown as jest.Mock;
+
+beforeAll(async () => {
+  await i18n.changeLanguage('vi');
+});
 
 const booster: ShopItemDTO = {
   itemId: 9,
@@ -72,7 +76,7 @@ describe('purchase recovery uses the server result and keeps the key of an unkno
     act(() => view.result.current.handleItemPress(booster));
     request.mockRejectedValueOnce(new Error('timeout of 10000ms exceeded'));
     await act(() => view.result.current.handleConfirmPurchase());
-    expect(view.result.current.errorMessage).toContain('Chưa xác nhận được kết quả mua');
+    expect(view.result.current.errorMessage).toContain('Giao dịch trước chưa được xác nhận');
     act(() => view.result.current.handleClosePurchaseModal());
 
     // Reopen: same key; the server replays the committed purchase (booster since spent → quantity 0).

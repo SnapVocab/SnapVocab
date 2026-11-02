@@ -76,8 +76,6 @@ export function LoginForm() {
         )}
       />
 
-      <View className="h-4" />
-
       <Controller
         control={control}
         name="password"

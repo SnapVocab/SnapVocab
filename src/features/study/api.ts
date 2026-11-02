@@ -2,7 +2,8 @@ import type { QueryClient } from '@tanstack/react-query';
 import type { AxiosError } from 'axios';
 import type { ApiResponse } from '@/features/auth/api';
 import type { TopicItemData } from '@/features/learn/types';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { invalidateProgress } from '@/features/progress/api';
 import { client } from '@/lib/api';
 
 export type FsrsRating = 'AGAIN' | 'HARD' | 'GOOD' | 'EASY';
@@ -106,6 +107,7 @@ type SubmitRatingParams = StudyScope & {
   rating: FsrsRating;
 };
 export function useSubmitStudyRating() {
+  const queryClient = useQueryClient();
   return useMutation<ReviewResult, StudyError, SubmitRatingParams>({
     mutationFn: async ({ topicItemId, rating, ...scope }) =>
       (
@@ -115,5 +117,7 @@ export function useSubmitStudyRating() {
           data: { rating },
         })
       ).data.data,
+    // A rating moves streak, XP and missions (master 2026-10-31).
+    onSuccess: () => invalidateProgress(queryClient),
   });
 }

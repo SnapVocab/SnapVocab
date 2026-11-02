@@ -32,7 +32,7 @@ export function parseShopError(error: unknown): ParsedShopError {
 
     return {
       code,
-      message: (errorBody as any).message || getFriendlyErrorMessage(code, details),
+      message: getFriendlyErrorMessage(code, details),
       statusCode,
       details,
     };
@@ -41,7 +41,7 @@ export function parseShopError(error: unknown): ParsedShopError {
   // Network / timeout error: the raw axios text ("Network Error", "timeout of …") is not user copy.
   return {
     code: 'NETWORK_ERROR',
-    message: translate('shop.errors.network'),
+    message: translate('shopUi.errors.NETWORK_ERROR'),
     statusCode: 0,
   };
 }
@@ -60,32 +60,32 @@ export function isOutcomeUnknown(error: ParsedShopError): boolean {
 export function getFriendlyErrorMessage(code: string, details?: Record<string, unknown>): string {
   switch (code) {
     case 'PRICE_CHANGED':
-      return details?.currentPrice != null
-        ? translate('shop.errors.price_changed_to', { price: details.currentPrice })
-        : translate('shop.errors.price_changed');
+      return translate('shopUi.errors.PRICE_CHANGED', {
+        price: details?.currentPrice != null ? ` ${details.currentPrice} Coin` : '',
+      });
     case 'INSUFFICIENT_COINS':
-      return translate('shop.errors.insufficient_coins');
+      return translate('shopUi.errors.INSUFFICIENT_COINS');
     case 'ITEM_ALREADY_OWNED':
     case 'ALREADY_OWNED':
-      return translate('shop.errors.already_owned');
+      return translate('shopUi.errors.ITEM_ALREADY_OWNED');
     case 'MAX_QUANTITY_REACHED':
-      return translate('shop.errors.max_quantity');
+      return translate('shopUi.errors.MAX_QUANTITY_REACHED');
     case 'ITEM_NOT_AVAILABLE':
-      return translate('shop.errors.not_available');
+      return translate('shopUi.errors.ITEM_NOT_AVAILABLE');
     case 'SHOP_ITEM_NOT_FOUND':
-      return translate('shop.errors.not_found');
+      return translate('shopUi.errors.SHOP_ITEM_NOT_FOUND');
     case 'BOOSTER_ALREADY_ACTIVE':
-      return translate('shop.errors.booster_active');
+      return translate('shopUi.errors.BOOSTER_ALREADY_ACTIVE');
     case 'ITEM_QUANTITY_EMPTY':
-      return translate('shop.errors.quantity_empty');
+      return translate('shopUi.errors.ITEM_QUANTITY_EMPTY');
     case 'CONCURRENT_MODIFICATION':
-      return translate('shop.errors.busy');
+      return translate('shopUi.errors.CONCURRENT_MODIFICATION');
     case 'IDEMPOTENCY_KEY_REUSED':
-      return translate('shop.errors.key_reused');
+      return translate('shopUi.errors.IDEMPOTENCY_KEY_REUSED');
     case 'IDEMPOTENCY_KEY_REQUIRED':
-      return translate('shop.errors.key_required');
+      return translate('shopUi.errors.IDEMPOTENCY_KEY_REQUIRED');
     default:
-      return translate('shop.errors.generic');
+      return translate('shopUi.errors.UNKNOWN_ERROR');
   }
 }
 

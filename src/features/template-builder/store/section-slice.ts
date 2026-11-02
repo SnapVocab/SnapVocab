@@ -1,6 +1,7 @@
 import type { StateCreator } from 'zustand';
 import type { SaveSectionParams, TemplateBuilderState } from '../store-types';
 import type { BuilderSection, CardSide } from '../types';
+import { translate } from '@/lib/i18n';
 import { createEmptySection } from '../mappers';
 import { removeSectionFromList, updateSectionInList } from '../store-helpers';
 
@@ -27,7 +28,7 @@ export const createSectionSlice: StateCreator<TemplateBuilderState, [], [], Sect
   openAddSection: (side?: CardSide) => {
     const targetSide = side ?? get().activeSide;
     const newSection = createEmptySection({
-      name: targetSide === 'FRONT' ? 'Phần mới (Mặt trước)' : 'Phần mới (Mặt sau)',
+      name: translate(targetSide === 'FRONT' ? 'template_builder.default_new_front_section' : 'template_builder.default_new_back_section'),
       side: targetSide,
       columns: 1,
     });
@@ -54,7 +55,7 @@ export const createSectionSlice: StateCreator<TemplateBuilderState, [], [], Sect
     if (isCreatingSection) {
       const newSec: BuilderSection = {
         ...editingSection,
-        name: name.trim() || 'Phần mới',
+        name: name.trim() || translate('template_builder.section_settings.default_new_section'),
         columns,
         repeatable,
         fields: [],

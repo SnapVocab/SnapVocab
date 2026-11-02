@@ -6,6 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { BackButton, Button, FocusAwareStatusBar, Mascot, SafeAreaView, showErrorMessage, Text, View } from '@/components/ui';
 import { CameraIcon, SparklesIcon } from '@/components/ui/icons';
+import { useColorMode } from '@/components/ui/surface';
 import { translate } from '@/lib/i18n';
 import { useScanStatus, useStartScan } from './api';
 import { DetectedItemCard } from './components/detected-item-card';
@@ -22,6 +23,7 @@ type Params = {
 };
 
 export function ScanResultScreen() {
+  const isDark = useColorMode() === 'dark';
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const params = useLocalSearchParams<Params>();
@@ -70,7 +72,7 @@ export function ScanResultScreen() {
   const allLow = items.length > 0 && items.every(item => item.reliability === 'LOW');
 
   const header = (
-    <View className="h-14 flex-row items-center border-b border-neutral-100 bg-white px-4 dark:border-neutral-800 dark:bg-neutral-900">
+    <View className="h-14 flex-row items-center border-b border-line bg-surface px-4">
       <BackButton onPress={backToCamera} testID="scan-result-back" />
       <Text
         className="flex-1 text-center font-nunito text-lg font-extrabold text-mascot-navy dark:text-white"
@@ -98,7 +100,7 @@ export function ScanResultScreen() {
   }
 
   return (
-    <SafeAreaView style={{ flex: 1 }} className="flex-1 bg-[#F7F8FA] dark:bg-neutral-950" edges={['top']}>
+    <SafeAreaView style={{ flex: 1 }} className="flex-1 bg-background dark:bg-neutral-950" edges={['top']}>
       <FocusAwareStatusBar />
       {header}
 
@@ -182,12 +184,12 @@ export function ScanResultScreen() {
       {items.length > 0 && (
         <View
           style={{ paddingBottom: insets.bottom + 12 }}
-          className="absolute inset-x-0 bottom-0 flex-row gap-3 border-t border-neutral-100 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900"
+          className="absolute inset-x-0 bottom-0 flex-row gap-3 border-t border-line bg-surface p-4"
         >
           {/* Words are saved one by one (each needs a topic and a check of its translation): no "save all". */}
           <Button
             variant="white"
-            icon={<CameraIcon color="#3D3F5E" />}
+            icon={<CameraIcon color={isDark ? '#F3F4F6' : '#3D3F5E'} />}
             tx="scan.result.retake"
             onPress={backToCamera}
             testID="scan-retake-button"

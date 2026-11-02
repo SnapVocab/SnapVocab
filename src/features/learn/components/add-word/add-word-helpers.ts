@@ -13,23 +13,34 @@ export function targetWordField(schema?: TopicSchemaDTO): { group: string; attri
   return first ? { group: singles[0].name, attribute: first.name } : null;
 }
 
-export function initializeFormData(schema?: TopicSchemaDTO): Record<string, any> {
+export function initializeFormData(
+  schema?: TopicSchemaDTO,
+  existingGroups?: Record<string, any>,
+): Record<string, any> {
   if (!schema?.groups)
     return {};
   const initial: Record<string, any> = {};
 
   for (const group of schema.groups) {
     if (group.multiple) {
-      const emptyItem: Record<string, any> = {};
-      for (const attr of group.attributes || []) {
-        emptyItem[attr.name] = attr.dataType === 'BOOLEAN' ? false : '';
-      }
-      initial[group.name] = [emptyItem];
+      const savedInstances = Array.isArray(existingGroups?.[group.name])
+        ? existingGroups[group.name]
+        : null;
+      const instances = savedInstances ?? [{}];
+      initial[group.name] = instances.map((savedInstance: Record<string, any>) => {
+        const instance: Record<string, any> = {};
+        for (const attr of group.attributes || []) {
+          instance[attr.name] = savedInstance[attr.name]
+            ?? (attr.dataType === 'BOOLEAN' ? false : '');
+        }
+        return instance;
+      });
     }
     else {
       const singleValues: Record<string, any> = {};
       for (const attr of group.attributes || []) {
-        singleValues[attr.name] = attr.dataType === 'BOOLEAN' ? false : '';
+        singleValues[attr.name] = existingGroups?.[group.name]?.[attr.name]
+          ?? (attr.dataType === 'BOOLEAN' ? false : '');
       }
       initial[group.name] = singleValues;
     }

@@ -33,6 +33,8 @@ jest.mock('@/components/Snapy', () => ({
   Snapy: require('react-native').View,
 }));
 jest.mock('react-i18next', () => ({
+  // @/lib/i18n registers this plugin at import time.
+  initReactI18next: { type: '3rdParty', init: () => {} },
   useTranslation: () => ({
     i18n: { language: 'vi' },
     t: (key: string, args: Record<string, unknown> = {}) => {
@@ -129,7 +131,7 @@ describe('progress UX with SRS metrics switched off', () => {
     });
 
     it('mascot generic tip uses real copy, not a raw i18n key', () => {
-      render(<MascotAdviceCard summary={summaryOf({ totalWords: 3 })} streak={streakOf({ currentStreak: 2 })} />);
+      render(<MascotAdviceCard summary={summaryOf({ totalWords: 3 })} streak={streakOf({ currentStreak: 2, lastStudiedDate: '2026-10-06' })} />);
       expect(screen.getByText('Mẹo nhỏ từ Snapy')).toBeTruthy();
       expect(screen.queryByText(/progressUx\./)).toBeNull();
     });
@@ -149,10 +151,10 @@ describe('progress UX with SRS metrics switched off', () => {
   });
 
   describe('streak semantics', () => {
-    it('never studied: "not started" with the quiz-or-review rule', () => {
-      render(<StreakStatsCard streak={streakOf()} />);
+    it('baseline 1 without study history still prompts the learner to study', () => {
+      render(<StreakStatsCard streak={streakOf({ currentStreak: 1 })} />);
       expect(screen.getByText('Chuỗi ngày học')).toBeTruthy();
-      expect(screen.getByText('Chưa bắt đầu · Làm quiz, ôn thẻ hoặc lưu từ đã quét hôm nay để bắt đầu chuỗi.')).toBeTruthy();
+      expect(screen.getByText('Làm quiz, ôn thẻ hoặc lưu từ đã quét hôm nay để duy trì chuỗi học tập.')).toBeTruthy();
     });
 
     it('current 0 with a past record is an interrupted streak, not "not started"', () => {

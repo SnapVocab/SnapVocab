@@ -46,7 +46,7 @@ export function SectionError({ onRetry, message }: { onRetry: () => void; messag
   return (
     <View
       accessibilityRole="alert"
-      className="mb-3 gap-2 rounded-2xl border border-neutral-100 bg-white p-3.5 dark:border-neutral-800 dark:bg-neutral-900"
+      className="mb-3 gap-2 rounded-2xl border border-line bg-surface p-3.5"
     >
       <Text className="font-inter text-[13px] text-neutral-500">{message ?? t('progressUx.loadError')}</Text>
       <Pressable
@@ -70,7 +70,7 @@ export function RatioBar({ progress, label, color = '#1CB0F6' }: { progress: num
       accessibilityRole="progressbar"
       accessibilityLabel={label}
       accessibilityValue={{ min: 0, max: 100, now: Math.round(value * 100) }}
-      className="overflow-hidden rounded-full bg-neutral-200 dark:bg-neutral-700"
+      className="overflow-hidden rounded-full bg-line dark:bg-edge"
     >
       <Svg width="100%" height={10} viewBox="0 0 100 10" preserveAspectRatio="none">
         <Rect width={value * 100} height={10} fill={color} />

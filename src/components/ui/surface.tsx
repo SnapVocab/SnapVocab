@@ -27,13 +27,13 @@ export const DEFAULT_SURFACE: SurfacePalette = {
     textMuted: '#565879',
   },
   dark: {
-    background: '#0A0A0A',
-    surface: '#0D0E1A',
-    surfaceMuted: '#171A2F',
-    border: '#171A2F',
-    headerBg: '#0D0E1A',
-    text: '#FFFFFF',
-    textMuted: '#9597AD',
+    background: '#181A1F',
+    surface: '#22252B',
+    surfaceMuted: '#292E36',
+    border: '#363B43',
+    headerBg: '#22252B',
+    text: '#F3F4F6',
+    textMuted: '#B5BBC5',
   },
 };
 

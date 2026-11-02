@@ -1,7 +1,8 @@
 import { useRouter } from 'expo-router';
 import * as React from 'react';
 import { Pressable, View } from 'react-native';
-import { Text, useSurfaceOverride } from '@/components/ui';
+import { useUniwind } from 'uniwind';
+import { Text } from '@/components/ui';
 import { SearchIcon } from '@/components/ui/icons';
 import { translate } from '@/lib/i18n/utils';
 
@@ -10,8 +11,8 @@ export type HomeSearchBarProps = {
 };
 
 export function HomeSearchBar({ onPress }: HomeSearchBarProps) {
+  const { theme } = useUniwind();
   const router = useRouter();
-  const t = useSurfaceOverride();
 
   const handlePress = () => {
     if (onPress) {
@@ -25,22 +26,21 @@ export function HomeSearchBar({ onPress }: HomeSearchBarProps) {
   return (
     <Pressable
       onPress={handlePress}
-      style={t && { backgroundColor: t.surface, borderColor: t.border }}
-      className="mb-4 flex-row items-center justify-between rounded-2xl border-2 border-b-4 border-neutral-200/90 border-b-neutral-300 bg-white p-3.5 active:translate-y-[2px] active:border-b-2 dark:border-neutral-700 dark:border-b-neutral-800 dark:bg-neutral-900"
+      className="mb-3 flex-row items-center justify-between rounded-2xl border-2 border-b-4 border-line border-b-edge bg-surface px-3.5 py-2.5 active:translate-y-[2px] active:border-b-2 active:bg-pressed"
     >
       {/* Left: Guided hint / Heading */}
       <View className="flex-1 pr-3">
-        <Text className="font-nunito text-[16px] font-black text-mascot-navy dark:text-white">
+        <Text className="font-nunito text-[15px] font-black text-mascot-navy dark:text-white" numberOfLines={1}>
           {translate('home.search_hint')}
         </Text>
-        <Text className="mt-0.5 font-inter text-xs font-medium text-neutral-400 dark:text-neutral-500">
+        <Text className="mt-0.5 font-inter text-[11px] font-medium text-neutral-500 dark:text-neutral-400" numberOfLines={1}>
           {translate('home.search_placeholder')}
         </Text>
       </View>
 
       {/* Right: 3D Chunky Search Action Button */}
-      <View className="size-11 items-center justify-center rounded-xl border-2 border-b-[3px] border-primary-400 border-b-primary-600 bg-primary-500">
-        <SearchIcon color="#FFFFFF" width={20} height={20} />
+      <View className="size-10 items-center justify-center rounded-xl border-2 border-b-[3px] border-primary-200 border-b-primary-300 bg-primary-50 dark:border-line dark:border-b-edge dark:bg-surface-raised">
+        <SearchIcon color={theme === 'dark' ? '#A3CF7C' : '#4E9B1C'} width={20} height={20} />
       </View>
     </Pressable>
   );

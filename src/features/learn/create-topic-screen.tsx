@@ -81,11 +81,11 @@ export function CreateTopicScreen() {
   const isLoading = isPending || isSubmitting;
 
   return (
-    <SafeAreaView style={{ flex: 1 }} className="flex-1 bg-white dark:bg-neutral-900">
+    <SafeAreaView style={{ flex: 1 }} className="flex-1 bg-background">
       <FocusAwareStatusBar />
 
       {/* Header */}
-      <View className="flex-row items-center justify-between border-b border-neutral-100 px-4 pt-1 pb-3 dark:border-neutral-800">
+      <View className="flex-row items-center justify-between border-b border-line px-4 pt-1 pb-3">
         <BackButton onPress={() => router.back()} />
 
         <View className="flex-1 items-center px-2">
@@ -186,7 +186,7 @@ export function CreateTopicScreen() {
               {translate('learn.create_topic.layout_section_title')}
             </Text>
 
-            <View className="rounded-2xl border-2 border-neutral-200 bg-white p-4 shadow-sm dark:border-neutral-700 dark:bg-neutral-800/80">
+            <View className="rounded-2xl border-2 border-line bg-white p-4 shadow-sm dark:bg-neutral-800/80">
               {/* Header row */}
               <View className="flex-row items-center justify-between">
                 <View className="mr-2 flex-1 flex-row items-center">
@@ -215,7 +215,7 @@ export function CreateTopicScreen() {
                   onPress={() => {
                     router.push('/template-builder');
                   }}
-                  className="flex-row items-center rounded-xl border border-neutral-200 bg-neutral-100 px-2.5 py-1.5 active:opacity-75 dark:border-neutral-600 dark:bg-neutral-700"
+                  className="flex-row items-center rounded-xl border border-line bg-neutral-100 px-2.5 py-1.5 active:opacity-75 dark:bg-neutral-700"
                 >
                   <SlidersIcon color={colors.mascot.navy} width={15} height={15} />
                   <Text className="ml-1.5 font-inter text-xs font-bold text-mascot-navy dark:text-white">
@@ -252,7 +252,7 @@ export function CreateTopicScreen() {
         </ScrollView>
 
         {/* Bottom CTA Button */}
-        <View className="border-t border-neutral-100 bg-white px-4 pt-3 pb-4 dark:border-neutral-800 dark:bg-neutral-900">
+        <View className="border-t border-line bg-surface px-4 pt-3 pb-4">
           <Button
             label={translate('learn.create_topic.submit_button')}
             disabled={!isValid || isLoading}

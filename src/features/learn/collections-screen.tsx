@@ -1,33 +1,41 @@
-import type { Href } from 'expo-router';
-import type { CollectionRef } from './types';
-import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useCallback, useMemo, useState } from 'react';
-import { ScrollView, TextInput } from 'react-native';
-import { FocusAwareStatusBar, SafeAreaView, View } from '@/components/ui';
-import { SearchIcon } from '@/components/ui/icons';
-import { useStudyLibrary } from '@/features/study/api';
+import type { BottomSheetModal } from '@gorhom/bottom-sheet';
+import type { Collection, CollectionRef } from './types';
+import { useRouter } from 'expo-router';
+import { useCallback, useRef, useState } from 'react';
+import { ScrollView } from 'react-native';
+import Animated, { FadeIn } from 'react-native-reanimated';
+import { Button, FocusAwareStatusBar, SafeAreaView, useSurface, View } from '@/components/ui';
 import { translate } from '@/lib/i18n';
+import { setItem } from '@/lib/storage';
 import { useCollections } from './api';
 import {
   CollectionCard,
   CollectionEmptyState,
   CollectionErrorState,
   CollectionHeader,
-  LibraryGroup,
-  LibraryRow,
+  CollectionOptionsBottomSheet,
+  CollectionSwitcher,
   SkeletonCollectionList,
 } from './components';
 
-/**
- * Two lists behind the Learn tab (learn_ui.md §8.2 D): `view=mine` is every collection in "Bộ từ của bạn"
- * (with search, the only place it exists), `view=explore` browses the system collections.
- */
 export function CollectionsScreen() {
+  const surface = useSurface();
   const router = useRouter();
-  const { view } = useLocalSearchParams<{ view?: 'mine' | 'explore' }>();
-  const explore = view === 'explore';
+  const [viewType, setViewType] = useState<'USER' | 'SYSTEM'>('USER');
+  const [selectedCollection, setSelectedCollection] = useState<Collection | null>(null);
+  const [sheetMode, setSheetMode] = useState<'OPTIONS' | 'CREATE'>('OPTIONS');
+  const bottomSheetRef = useRef<BottomSheetModal>(null);
 
-  const openCollection = useCallback((collection: CollectionRef) => {
+  const {
+    data: collections,
+    isError,
+    isLoading,
+    isRefetching,
+    refetch,
+  } = useCollections({ type: viewType });
+
+  const handleCardPress = useCallback((collection: CollectionRef) => {
+    setItem('last_studied_collection_id', collection.id);
     router.push({
       pathname: '/(app)/collections/[id]',
       params: {
@@ -36,72 +44,86 @@ export function CollectionsScreen() {
         translation: collection.translation,
         type: collection.type,
       },
-    } as Href);
+    });
   }, [router]);
 
+  const handleOptionsPress = useCallback((collection: Collection) => {
+    setSelectedCollection(collection);
+    setSheetMode('OPTIONS');
+    bottomSheetRef.current?.present();
+  }, []);
+
+  const handleCreatePress = useCallback(() => {
+    setSelectedCollection(null);
+    setSheetMode('CREATE');
+    bottomSheetRef.current?.present();
+  }, []);
+
   return (
-    <SafeAreaView style={{ flex: 1 }} className="flex-1 bg-background">
+    <SafeAreaView style={{ flex: 1, backgroundColor: surface.headerBg }}>
       <FocusAwareStatusBar />
-      <CollectionHeader
-        title={translate(explore ? 'learn.library.explore_title' : 'learn.library.title')}
-        subtitle={translate(explore ? 'learn.library.explore_subtitle' : 'learn.library.mine_subtitle')}
-      />
-      {explore ? <ExploreList onOpen={openCollection} /> : <MineList onOpen={openCollection} />}
-    </SafeAreaView>
-  );
-}
 
-function MineList({ onOpen }: { onOpen: (collection: CollectionRef) => void }) {
-  const library = useStudyLibrary();
-  const [query, setQuery] = useState('');
-  const rows = useMemo(() => {
-    const needle = query.trim().toLowerCase();
-    return (library.data ?? []).filter(c =>
-      !needle || c.name.toLowerCase().includes(needle) || c.translation?.toLowerCase().includes(needle));
-  }, [library.data, query]);
+      {/* Header bar */}
+      <CollectionHeader />
 
-  return (
-    <ScrollView className="flex-1 px-4 pt-4" contentContainerClassName="pb-10" keyboardShouldPersistTaps="handled">
-      <View className="mb-3 flex-row items-center rounded-2xl border border-neutral-200/80 bg-white px-3.5 py-2.5 dark:border-neutral-800 dark:bg-neutral-900">
-        <SearchIcon width={18} height={18} color="#9CA3AF" />
-        <TextInput
-          value={query}
-          onChangeText={setQuery}
-          placeholder={translate('learn.library.search_placeholder')}
-          placeholderTextColor="#9CA3AF"
-          className="ml-2.5 flex-1 font-inter text-sm text-neutral-800 dark:text-white"
+      <View className="flex-1 bg-background px-3 pt-4">
+        {/* Switcher Tab: Mine / System */}
+        <CollectionSwitcher viewType={viewType} onChange={setViewType} />
+
+        <ScrollView
+          className="flex-1"
+          showsVerticalScrollIndicator={false}
+          contentContainerClassName="pt-3 pb-8"
+        >
+          {/* Loading State */}
+          {isLoading && !collections && <SkeletonCollectionList count={5} />}
+
+          {/* Error State */}
+          {isError && !collections && (
+            <CollectionErrorState isRetrying={isRefetching} onRetry={() => refetch()} />
+          )}
+
+          {/* Empty State */}
+          {!isLoading && !isError && collections && collections.length === 0 && (
+            <CollectionEmptyState />
+          )}
+
+          {/* Data State */}
+          {collections && collections.length > 0 && (
+            <Animated.View key={viewType} entering={FadeIn.duration(200)} className="gap-2.5">
+              {collections.map(item => (
+                <CollectionCard
+                  key={item.id}
+                  name={item.name}
+                  translation={item.translation}
+                  isSystemCollection={item.type === 'SYSTEM'}
+                  onPress={() => handleCardPress(item)}
+                  onOptionsPress={() => handleOptionsPress(item)}
+                />
+              ))}
+            </Animated.View>
+          )}
+        </ScrollView>
+
+        <Button
+          label={`${translate('learn.collections.create_new_collection')}`}
+          onPress={handleCreatePress}
         />
       </View>
-      {library.isLoading && <SkeletonCollectionList count={5} />}
-      {library.isError && <CollectionErrorState isRetrying={library.isRefetching} onRetry={() => void library.refetch()} />}
-      {library.data && rows.length === 0 && <CollectionEmptyState />}
-      {rows.length > 0 && (
-        <LibraryGroup>
-          {rows.map(collection => (
-            <LibraryRow key={collection.id} collection={collection} onPress={() => onOpen(collection)} />
-          ))}
-        </LibraryGroup>
-      )}
-    </ScrollView>
-  );
-}
 
-function ExploreList({ onOpen }: { onOpen: (collection: CollectionRef) => void }) {
-  const system = useCollections({ type: 'SYSTEM' });
-  return (
-    <ScrollView className="flex-1 px-4 pt-4" contentContainerClassName="gap-2.5 pb-10">
-      {system.isLoading && <SkeletonCollectionList count={5} />}
-      {system.isError && <CollectionErrorState isRetrying={system.isRefetching} onRetry={() => void system.refetch()} />}
-      {system.data?.length === 0 && <CollectionEmptyState />}
-      {system.data?.map(collection => (
-        <CollectionCard
-          key={collection.id}
-          name={collection.name}
-          translation={collection.translation}
-          isSystemCollection
-          onPress={() => onOpen(collection)}
-        />
-      ))}
-    </ScrollView>
+      {/* Collection Options Bottom Sheet */}
+      <CollectionOptionsBottomSheet
+        bottomSheetRef={bottomSheetRef}
+        collection={selectedCollection}
+        mode={sheetMode}
+        onCreated={(newCol) => {
+          refetch();
+          handleCardPress(newCol);
+        }}
+        onSaveEdit={() => refetch()}
+        onDelete={() => refetch()}
+        onStudy={handleCardPress}
+      />
+    </SafeAreaView>
   );
 }

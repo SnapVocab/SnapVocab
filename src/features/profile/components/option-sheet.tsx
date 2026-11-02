@@ -63,9 +63,9 @@ export function OptionSheet<T extends string | number>({
       <Pressable onPress={onClose} className="flex-1 justify-end bg-black/40">
         <Pressable
           onPress={e => e.stopPropagation()}
-          className="rounded-t-[32px] bg-white p-6 pb-10 shadow-xl dark:bg-neutral-900"
+          className="rounded-t-[32px] bg-surface p-6 pb-10 shadow-xl"
         >
-          <View className="mb-6 h-1.5 w-12 self-center rounded-full bg-neutral-200 dark:bg-neutral-700" />
+          <View className="mb-6 h-1.5 w-12 self-center rounded-full bg-edge" />
 
           <View className={`${descriptionTx ? 'mb-1' : 'mb-6'} flex-row items-center justify-between`}>
             <Text
@@ -94,10 +94,10 @@ export function OptionSheet<T extends string | number>({
                   key={String(option.value)}
                   onPress={() => onSelect(option.value)}
                   testID={`option-${option.value}`}
-                  className={`h-16 flex-row items-center rounded-2xl border-2 px-4 active:opacity-70 ${
+                  className={`h-16 flex-row items-center rounded-2xl border-2 px-4 active:bg-pressed ${
                     option.value === selected
-                      ? 'border-primary-400 bg-primary-50 dark:bg-primary-500/15'
-                      : 'border-neutral-100 bg-white dark:border-neutral-700 dark:bg-neutral-900'
+                      ? 'border-primary-400 bg-primary-50 dark:border-[#7FA35E] dark:bg-primary-500/15'
+                      : 'border-line bg-surface'
                   }`}
                 >
                   {!!option.emoji && <Text className="mr-3 text-2xl">{option.emoji}</Text>}

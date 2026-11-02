@@ -34,13 +34,13 @@ export function QuickOverviewRow({ summary, streak, isLoading = false }: QuickOv
       <Text className="font-nunito text-base font-bold text-neutral-800 dark:text-neutral-200">
         {t('progressUx.quickOverview')}
       </Text>
-      <View className="flex-row items-center divide-x divide-neutral-100 rounded-2xl border border-neutral-100 bg-white p-3.5 shadow-2xs dark:divide-neutral-800 dark:border-neutral-800 dark:bg-neutral-900">
+      <View className="flex-row divide-x divide-line rounded-2xl border border-line bg-surface p-3.5 shadow-2xs">
         {/* Col 1: Từ đã lưu */}
         <View className="flex-1 items-center px-2">
           <Text className="font-nunito text-2xl font-black text-neutral-900 dark:text-white">
             {summary.totalWords}
           </Text>
-          <Text className="font-inter text-[13px] font-semibold text-neutral-500 dark:text-neutral-400">
+          <Text className="text-center font-inter text-[13px]/4 font-semibold text-neutral-500 dark:text-neutral-400">
             {t('progressUx.overviewSaved')}
           </Text>
         </View>
@@ -50,7 +50,7 @@ export function QuickOverviewRow({ summary, streak, isLoading = false }: QuickOv
           <Text className="font-nunito text-2xl font-black text-mascot-700 dark:text-mascot-500">
             {streak.currentStreak}
           </Text>
-          <Text className="font-inter text-[13px] font-semibold text-neutral-500 dark:text-neutral-400">
+          <Text className="text-center font-inter text-[13px]/4 font-semibold text-neutral-500 dark:text-neutral-400">
             {t('progressUx.overviewStreak')}
           </Text>
         </View>
@@ -64,7 +64,7 @@ export function QuickOverviewRow({ summary, streak, isLoading = false }: QuickOv
           >
             {third.value}
           </Text>
-          <Text className="font-inter text-[13px] font-semibold text-neutral-500 dark:text-neutral-400">
+          <Text className="text-center font-inter text-[13px]/4 font-semibold text-neutral-500 dark:text-neutral-400">
             {third.label}
           </Text>
         </View>

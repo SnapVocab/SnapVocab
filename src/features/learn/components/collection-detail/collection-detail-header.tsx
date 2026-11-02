@@ -1,7 +1,6 @@
 import { useRouter } from 'expo-router';
 import { Pressable, View } from 'react-native';
 import { BackButton, Text } from '@/components/ui';
-
 import { MoreVerticalIcon } from '@/components/ui/icons';
 import { translate } from '@/lib/i18n';
 
@@ -24,7 +23,7 @@ export default function CollectionDetailHeader({
   const handleBack = onBackPress ?? (() => router.back());
 
   return (
-    <View className="flex-row items-center justify-between border-b border-neutral-100 px-3 py-4 dark:border-neutral-800">
+    <View className="flex-row items-center justify-between border-b border-line px-3 py-4">
       <BackButton onPress={handleBack} hitSlop={12} />
 
       <View className="pointer-events-none absolute inset-x-14 items-center">
@@ -50,9 +49,9 @@ export default function CollectionDetailHeader({
               onPress={onOptionsPress}
               hitSlop={12}
               android_ripple={{ color: 'transparent' }}
-              className="size-10 items-center justify-center rounded-xl border border-neutral-200/80 bg-neutral-100/60 active:opacity-60 dark:border-neutral-700 dark:bg-neutral-800"
+              className="size-10 items-center justify-center rounded-xl border border-line bg-neutral-100/60 active:opacity-60 dark:bg-neutral-800"
             >
-              <MoreVerticalIcon width={16} height={16} color="#71717A" />
+              <MoreVerticalIcon width={20} height={20} color="#71717A" />
             </Pressable>
           )
         : (

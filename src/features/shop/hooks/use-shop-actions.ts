@@ -1,5 +1,6 @@
 import type { PurchaseResultDTO, ShopItemDTO } from '../types';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { generateIdempotencyKey } from '@/features/quiz/utils/idempotency';
 import { translate } from '@/lib/i18n';
 import { isOutcomeUnknown, parseShopError } from '../api';
@@ -32,6 +33,7 @@ export function useShopActions({
   refetchWallet,
   refetchInventory,
 }: UseShopActionsProps) {
+  const { t } = useTranslation();
   const [outOfCoinItem, setOutOfCoinItem] = useState<ShopItemDTO | null>(null);
   const [previewThemeItem, setPreviewThemeItem] = useState<ShopItemDTO | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -55,7 +57,9 @@ export function useShopActions({
     const idempotencyKey = unresolvedPurchaseKeys.get(item.itemId) ?? generateIdempotencyKey();
     setPurchaseIntent({ item, idempotencyKey });
     setPurchaseResult(null);
-    setErrorMessage(unresolvedPurchaseKeys.has(item.itemId) ? translate('shop.purchase.previous_unconfirmed') : null);
+    setErrorMessage(unresolvedPurchaseKeys.has(item.itemId)
+      ? t('shopUi.purchaseOutcomeUnknown')
+      : null);
   };
 
   const handleItemPress = (item: ShopItemDTO) => {
@@ -108,7 +112,7 @@ export function useShopActions({
 
       if (isOutcomeUnknown(parsed)) {
         unresolvedPurchaseKeys.set(item.itemId, idempotencyKey);
-        setErrorMessage(translate('shop.purchase.unconfirmed'));
+        setErrorMessage(t('shopUi.purchaseOutcomeUnknown'));
         void handleRefresh().catch(() => {});
         return;
       }
@@ -121,7 +125,7 @@ export function useShopActions({
             prev ? { ...prev, item: { ...prev.item, price: newPrice } } : null,
           );
         }
-        setErrorMessage(parsed.message);
+        setErrorMessage(localizedError(parsed.code, parsed.details));
         refetchCatalog();
       }
       else if (parsed.code === 'INSUFFICIENT_COINS') {
@@ -131,21 +135,21 @@ export function useShopActions({
         void refetchWallet();
       }
       else if (parsed.code === 'CONCURRENT_MODIFICATION') {
-        setErrorMessage(parsed.message);
+        setErrorMessage(localizedError(parsed.code, parsed.details));
         await handleRefresh();
       }
       else if (parsed.code === 'ITEM_ALREADY_OWNED') {
-        setErrorMessage(translate('shop.errors.already_owned'));
+        setErrorMessage(localizedError(parsed.code, parsed.details));
         setPurchaseIntent(null);
         await handleRefresh();
       }
       else if (parsed.code === 'MAX_QUANTITY_REACHED') {
-        setErrorMessage(translate('shop.errors.max_quantity'));
+        setErrorMessage(localizedError(parsed.code, parsed.details));
         setPurchaseIntent(null);
         await handleRefresh();
       }
       else {
-        setErrorMessage(parsed.message);
+        setErrorMessage(localizedError(parsed.code, parsed.details));
       }
     }
   };
@@ -195,4 +199,12 @@ export function useShopActions({
     setBoosterItem,
     startPurchaseIntent,
   };
+
+  function localizedError(code: string, details?: Record<string, unknown>) {
+    const price = details?.currentPrice;
+    return t(`shopUi.errors.${code}` as any, {
+      price: price == null ? '' : ` (${String(price)} Coin)`,
+      defaultValue: t('shopUi.errors.UNKNOWN_ERROR'),
+    });
+  }
 }

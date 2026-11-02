@@ -18,7 +18,7 @@ export function CollectionMenuView({ collection, onOpenEdit, onOpenDelete, onStu
   return (
     <>
       {/* Header Preview */}
-      <View className="mb-4 flex-row items-center border-b border-neutral-100 pb-4 dark:border-neutral-800">
+      <View className="mb-4 flex-row items-center border-b border-line pb-4">
         <View className="mr-3.5 size-12 items-center justify-center rounded-2xl border border-lime-200 bg-lime-50 dark:border-lime-900/60 dark:bg-lime-950/40">
           <FolderIcon width={22} height={22} color="#65A30D" />
         </View>

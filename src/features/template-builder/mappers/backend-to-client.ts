@@ -6,6 +6,7 @@ import type {
   TemplateElementDTO,
   TopicSchemaDTO,
 } from '../types';
+import { translate } from '@/lib/i18n';
 import {
   createDefaultFallbackSections,
   createEmptySection,
@@ -49,25 +50,25 @@ export function templateDTOToBuilderSections(
     elements: frontElements,
     schema,
     side: 'FRONT',
-    defaultSectionName: 'Thông tin chung',
+    defaultSectionName: translate('template_builder.default_section_general'),
   });
 
   const backSections = parseElementsToSections({
     elements: backElements,
     schema,
     side: 'BACK',
-    defaultSectionName: 'Nghĩa & Ví dụ',
+    defaultSectionName: translate('template_builder.default_section_meaning_examples'),
   });
 
   return {
     frontSections:
       frontSections.length > 0
         ? frontSections
-        : [createEmptySection({ name: 'Thông tin chung', side: 'FRONT', columns: 2 })],
+        : [createEmptySection({ name: translate('template_builder.default_section_general'), side: 'FRONT', columns: 2 })],
     backSections:
       backSections.length > 0
         ? backSections
-        : [createEmptySection({ name: 'Nghĩa & Ví dụ', side: 'BACK', columns: 1 })],
+        : [createEmptySection({ name: translate('template_builder.default_section_meaning_examples'), side: 'BACK', columns: 1 })],
   };
 }
 
@@ -151,7 +152,7 @@ export function parseElementsToSections({
         attributeName: attribute?.name ?? 'custom_field',
         groupName,
         groupMultiple: repeatable,
-        fieldLabel: fieldDto.fieldLabel || attribute?.label || 'Trường dữ liệu',
+        fieldLabel: fieldDto.fieldLabel || attribute?.label || translate('template_builder.default_field_generic'),
         semanticRole: fieldDto.semanticRole ?? null,
         required: attribute?.required ?? false,
         hideIfEmpty: fieldDto.hideIfEmpty ?? false,

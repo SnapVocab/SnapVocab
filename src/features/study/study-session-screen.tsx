@@ -5,20 +5,52 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import * as React from 'react';
 import { ActivityIndicator, Alert, View } from 'react-native';
-import { BackButton, Button, Pressable, SafeAreaView, Text } from '@/components/ui';
+import { BackButton, BouncingDots, Button, Pressable, SafeAreaView, Text } from '@/components/ui';
 import { FlameIcon, RotateCwIcon } from '@/components/ui/icons';
 import { Snapy } from '@/components/ui/snapy';
+import { useColorMode } from '@/components/ui/surface';
 import { DynamicCardRenderer } from '@/features/card-renderer/dynamic-card-renderer';
 import { invalidateProgress, useStreak } from '@/features/progress';
 import { useSchema, useTopicSchema } from '@/features/template-builder/api';
 import { translate } from '@/lib/i18n';
 import { invalidateStudy, useStudyQueue, useStudyToday, useSubmitStudyRating } from './api';
 
-const RATINGS: { value: FsrsRating; tx: TxKeyPath; color: string; background: string }[] = [
-  { value: 'AGAIN', tx: 'learn.session.rating_again', color: '#E11D48', background: 'bg-rose-50 dark:bg-rose-950/40' },
-  { value: 'HARD', tx: 'learn.session.rating_hard', color: '#D97706', background: 'bg-amber-50 dark:bg-amber-950/40' },
-  { value: 'GOOD', tx: 'learn.session.rating_good', color: '#059669', background: 'bg-emerald-50 dark:bg-emerald-950/40' },
-  { value: 'EASY', tx: 'learn.session.rating_easy', color: '#0284C7', background: 'bg-sky-50 dark:bg-sky-950/40' },
+const RATINGS: {
+  value: FsrsRating;
+  titleKey: TxKeyPath;
+  color: string;
+  /** Same hue at 300: the 600 ink sinks into the dark tinted fill. */
+  darkColor: string;
+  background: string;
+}[] = [
+  {
+    value: 'AGAIN',
+    titleKey: 'learn.hub.rating_again',
+    color: '#E11D48',
+    darkColor: '#FDA4AF',
+    background: 'bg-rose-50 dark:bg-rose-950/40',
+  },
+  {
+    value: 'HARD',
+    titleKey: 'learn.hub.rating_hard',
+    color: '#D97706',
+    darkColor: '#FCD34D',
+    background: 'bg-amber-50 dark:bg-amber-950/40',
+  },
+  {
+    value: 'GOOD',
+    titleKey: 'learn.hub.rating_good',
+    color: '#059669',
+    darkColor: '#6EE7B7',
+    background: 'bg-emerald-50 dark:bg-emerald-950/40',
+  },
+  {
+    value: 'EASY',
+    titleKey: 'learn.hub.rating_easy',
+    color: '#0284C7',
+    darkColor: '#7DD3FC',
+    background: 'bg-sky-50 dark:bg-sky-950/40',
+  },
 ];
 
 const NO_STATS = { reviewed: 0, mastered: 0, xp: 0 };
@@ -57,6 +89,7 @@ export function StudySessionScreen() {
 
   const allCards = queueQuery.data?.cards ?? [];
   const cards = allCards.filter(card => !removedCardIds.has(card.item.topicItemId));
+  const [showRatingGuide, setShowRatingGuide] = React.useState(false);
   const currentCard = cards[0];
   const total = allCards.length;
   const done = total - cards.length;
@@ -111,6 +144,7 @@ export function StudySessionScreen() {
       setRemovedCardIds(new Set());
       setStats(NO_STATS);
       setSide('FRONT');
+      setShowRatingGuide(false);
     }
   };
 
@@ -119,7 +153,11 @@ export function StudySessionScreen() {
 
   if (queueQuery.isLoading) {
     return (
-      <SafeAreaView edges={['top', 'bottom', 'left', 'right']} style={{ flex: 1 }} className="flex-1 bg-[#F7F8F2] dark:bg-neutral-950">
+      <SafeAreaView
+        edges={['top', 'bottom', 'left', 'right']}
+        style={{ flex: 1 }}
+        className="flex-1 bg-background"
+      >
         <View className="flex-1 items-center justify-center px-8">
           <Snapy pose="tap_trung" animation="idle" style={{ width: 120, height: 120 }} />
           <ActivityIndicator size="large" color="#16A34A" className="mt-4" />
@@ -133,7 +171,11 @@ export function StudySessionScreen() {
 
   if (queueQuery.isError) {
     return (
-      <SafeAreaView edges={['top', 'bottom', 'left', 'right']} style={{ flex: 1 }} className="flex-1 items-center justify-center bg-[#F7F8F2] p-6 dark:bg-neutral-950">
+      <SafeAreaView
+        edges={['top', 'bottom', 'left', 'right']}
+        style={{ flex: 1 }}
+        className="flex-1 items-center justify-center bg-background p-6"
+      >
         <Snapy pose="bat_ngo" animation="none" style={{ width: 112, height: 112 }} />
         <Text className="mt-4 text-center font-nunito text-lg font-black text-mascot-navy dark:text-white">
           {translate('learn.session.queue_error')}
@@ -144,8 +186,12 @@ export function StudySessionScreen() {
   }
 
   return (
-    <SafeAreaView edges={['top', 'bottom', 'left', 'right']} style={{ flex: 1 }} className="flex-1 bg-[#F7F8F2] dark:bg-neutral-950">
-      <View className="bg-white px-4 pt-2 pb-4 dark:bg-neutral-900">
+    <SafeAreaView
+      edges={['top', 'bottom', 'left', 'right']}
+      style={{ flex: 1 }}
+      className="flex-1 bg-background"
+    >
+      <View className="bg-surface px-4 pt-2 pb-4">
         <View className="flex-row items-center gap-3">
           <BackButton onPress={() => router.back()} className="mr-0.5" />
           <View className="flex-1">
@@ -212,25 +258,15 @@ export function StudySessionScreen() {
                   </Pressable>
                 )}
               </View>
-              <View className="bg-white px-4 pt-3 pb-5 dark:bg-neutral-900">
+              <View className="bg-surface px-4 pt-3 pb-5">
                 {side === 'BACK'
                   ? (
-                      <View className="flex-row gap-1.5">
-                        {RATINGS.map(rating => (
-                          <Pressable
-                            key={rating.value}
-                            onPress={() => handleRate(rating.value)}
-                            disabled={submitRating.isPending}
-                            accessibilityRole="button"
-                            accessibilityState={{ disabled: submitRating.isPending }}
-                            className={`h-12 flex-1 items-center justify-center rounded-xl border-2 border-b-4 border-neutral-200 border-b-neutral-300 active:translate-y-px active:border-b-2 dark:border-neutral-700 dark:border-b-neutral-800 ${rating.background}`}
-                          >
-                            <Text style={{ color: rating.color }} className="font-nunito text-sm font-black">
-                              {submitRating.isPending ? translate('learn.session.saving') : translate(rating.tx)}
-                            </Text>
-                          </Pressable>
-                        ))}
-                      </View>
+                      <StudyRatingControls
+                        isPending={submitRating.isPending}
+                        onRate={handleRate}
+                        showGuide={showRatingGuide}
+                        onToggleGuide={() => setShowRatingGuide(value => !value)}
+                      />
                     )
                   : (
                       <Text className="text-center font-inter text-xs font-semibold text-neutral-400">
@@ -312,5 +348,65 @@ function SessionSummary({ stats, next, onNext, onDone }: SummaryProps) {
           : <Button label={translate('learn.session.done')} variant="primary" onPress={onDone} />}
       </View>
     </View>
+  );
+}
+
+type StudyRatingControlsProps = {
+  isPending: boolean;
+  onRate: (rating: FsrsRating) => void;
+  showGuide: boolean;
+  onToggleGuide: () => void;
+};
+
+function StudyRatingControls({ isPending, onRate, showGuide, onToggleGuide }: StudyRatingControlsProps) {
+  const isDark = useColorMode() === 'dark';
+  return (
+    <>
+      <View className="flex-row gap-1.5">
+        {RATINGS.map(rating => (
+          <Pressable
+            key={rating.value}
+            onPress={() => onRate(rating.value)}
+            disabled={isPending}
+            accessibilityRole="button"
+            accessibilityLabel={translate(rating.titleKey)}
+            accessibilityState={{ disabled: isPending, busy: isPending }}
+            className={`h-12 flex-1 items-center justify-center rounded-xl border-2 border-b-4 border-line border-b-edge active:translate-y-px active:border-b-2 ${rating.background}`}
+          >
+            {isPending ? (
+              <BouncingDots color={isDark ? rating.darkColor : rating.color} size={6} gap={4} bounceHeight={5} />
+            ) : (
+              <Text style={{ color: isDark ? rating.darkColor : rating.color }} className="font-nunito text-xs font-black">
+                {translate(rating.titleKey)}
+              </Text>
+            )}
+          </Pressable>
+        ))}
+      </View>
+      <Pressable
+        onPress={onToggleGuide}
+        accessibilityRole="button"
+        accessibilityState={{ expanded: showGuide }}
+        className="mt-2 min-h-10 items-center justify-center"
+      >
+        <Text className="font-inter text-xs font-semibold text-neutral-500 dark:text-neutral-300">
+          {translate(showGuide ? 'learn.hub.rating_guide_hide' : 'learn.hub.rating_guide_show')}
+        </Text>
+      </Pressable>
+      {showGuide && (
+        <View className="mt-1 gap-1 rounded-xl border border-line bg-surface-raised px-3 py-2">
+          {RATINGS.map(rating => (
+            <Text key={rating.value} className="font-inter text-xs/5 text-neutral-600 dark:text-neutral-200">
+              <Text style={{ color: rating.color }} className="font-bold">
+                {translate(rating.titleKey)}
+                :
+                {' '}
+              </Text>
+              {translate(`learn.hub.rating_${rating.value.toLowerCase()}_hint` as TxKeyPath)}
+            </Text>
+          ))}
+        </View>
+      )}
+    </>
   );
 }

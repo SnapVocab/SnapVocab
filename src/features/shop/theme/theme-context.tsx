@@ -26,6 +26,8 @@ function palette(light: Surfaces, dark: Surfaces): SurfacePalette {
  * Shop area — Cửa hàng, Kho đồ, Ví Coin and their modals (via ShopSurface). Tab bar and every other
  * screen keep their default look. The learner-facing scope sentence is `shop.theme.scope`.
  */
+export const SHOP_THEME_SCOPE = 'shopUi.themeScope';
+
 export const SHOP_THEMES: Record<string, ThemeDefinition> = {
   DEFAULT: {
     key: 'DEFAULT',

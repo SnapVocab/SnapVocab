@@ -9,8 +9,8 @@ import {
 } from 'lucide-react-native';
 import * as React from 'react';
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
-  ActivityIndicator,
   Pressable,
   RefreshControl,
   ScrollView,
@@ -25,6 +25,7 @@ import { CardAction, ItemCard } from '@/components/shop/ShopItemCard';
 import { Snapy } from '@/components/Snapy';
 import { ScreenHeader, useSurface } from '@/components/ui';
 import { translate } from '@/lib/i18n';
+import { ShopCatalogSkeleton } from './components/shop-catalog-skeleton';
 import {
   useEquipMutation,
   useInventory,
@@ -69,8 +70,12 @@ function useBoosterCountdown(active: ActiveBoosterDTO | null | undefined, server
 
 function InventoryScreenContent() {
   const s = useSurface();
+  const { t } = useTranslation();
 
   const [activeCategory, setActiveCategory] = useState<ShopCategory>('all');
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const refreshEpoch = useRef(0);
+  const catalogRef = useRef<ScrollView>(null);
   const [feedbackMessage, setFeedbackMessage] = useState<string | null>(null);
   const [previewFrameItem, setPreviewFrameItem] = useState<InventoryItemDTO | null>(null);
   const [previewThemeItem, setPreviewThemeItem] = useState<InventoryItemDTO | null>(null);
@@ -82,9 +87,32 @@ function InventoryScreenContent() {
     isLoading,
     isError,
     refetch,
-    isFetching,
     serverOffset,
   } = useInventory();
+
+  const refreshFromGesture = async () => {
+    if (isRefreshing)
+      return;
+    const epoch = ++refreshEpoch.current;
+    setIsRefreshing(true);
+    try {
+      await refetch();
+    }
+    catch {
+      setFeedbackMessage(t('shopUi.refreshError'));
+    }
+    finally {
+      if (epoch === refreshEpoch.current)
+        setIsRefreshing(false);
+    }
+  };
+
+  const changeCategory = (category: ShopCategory) => {
+    refreshEpoch.current++;
+    setIsRefreshing(false);
+    setActiveCategory(category);
+    catalogRef.current?.scrollTo({ y: 0, animated: false });
+  };
 
   const equipMutation = useEquipMutation();
   const unequipMutation = useUnequipMutation();
@@ -131,7 +159,7 @@ function InventoryScreenContent() {
 
     // Check unknown theme
     if (item.type === 'THEME' && !isThemeKnown(item.config?.themeKey)) {
-      setFeedbackMessage(translate('shop.inventory.update_required'));
+      setFeedbackMessage(t('shopUi.themeUnavailable'));
       return;
     }
 
@@ -153,14 +181,6 @@ function InventoryScreenContent() {
       (equipMutation.isPending && equipMutation.variables?.itemId === item.itemId)
       || (unequipMutation.isPending && unequipMutation.variables?.slot === item.type);
 
-    const description = isUnknownTheme
-      ? translate('shop.inventory.update_required')
-      : isBooster
-        ? translate('shop.booster.effect', { multiplier: item.config?.multiplier ?? 2, minutes: item.config?.durationMinutes ?? 30 })
-        : isFreeze
-          ? translate('shop.freeze.auto')
-          : undefined;
-
     const preview = () => {
       if (item.type === 'AVATAR_FRAME') {
         setPreviewFrameItem(item);
@@ -174,7 +194,6 @@ function InventoryScreenContent() {
       <ItemCard
         key={item.itemId}
         item={item}
-        description={description}
         maxQuantity={item.config?.maxQuantity}
         onPress={isBooster || isFreeze ? undefined : preview}
         onFrameError={onFrameError}
@@ -183,16 +202,16 @@ function InventoryScreenContent() {
           <CardAction tone="done" label={translate('shop.freeze.ready')} />
         ) : isBooster ? (
           activeBooster
-            ? <CardAction tone="disabled" label={translate(activeBooster.itemId === item.itemId ? 'shop.inventory.running' : 'shop.inventory.wait_booster')} />
-            : <CardAction tone="primary" label={translate('shop.actions.activate')} onPress={() => setBoosterItem(item)} />
-        ) : isUnknownTheme ? (
-          <CardAction tone="disabled" label={translate('shop.inventory.unsupported')} />
+            ? <CardAction tone="disabled" label={activeBooster.itemId === item.itemId ? t('shopUi.actionActive') : t('shopUi.actionWaitBooster')} />
+            : <CardAction tone="primary" label={t('shopUi.actionActivate')} onPress={() => setBoosterItem(item)} />
+        ) : isUnknownTheme || item.type === 'STREAK_FREEZE' ? (
+          <CardAction tone="disabled" label={t('shopUi.actionUnsupported')} />
         ) : item.equipped ? (
-          <CardAction tone="secondary" label={translate('shop.actions.unequip')} loading={isActionPending} onPress={() => handleToggleEquip(item)} />
+          <CardAction tone="secondary" label={t('shopUi.actionUnequip')} loading={isActionPending} onPress={() => handleToggleEquip(item)} />
         ) : (
           <CardAction
             tone="primary"
-            label={translate(item.type === 'THEME' ? 'shop.actions.apply' : 'shop.actions.equip')}
+            label={item.type === 'THEME' ? t('shopUi.actionApply') : t('shopUi.actionEquip')}
             loading={isActionPending}
             onPress={() => handleToggleEquip(item)}
           />
@@ -211,7 +230,7 @@ function InventoryScreenContent() {
       edges={['top']}
     >
       <ScreenHeader
-        title={translate('shop.inventory.title')}
+        title={t('shopUi.inventory')}
         onBack={() => router.back()}
       />
 
@@ -221,21 +240,22 @@ function InventoryScreenContent() {
             {feedbackMessage}
           </Text>
           <Pressable onPress={() => setFeedbackMessage(null)} className="ml-2 px-2 py-0.5">
-            <Text className="font-nunito text-[13px] font-bold text-white">{translate('shop.close')}</Text>
+            <Text className="font-nunito text-[13px] font-bold text-white">{t('shopUi.close')}</Text>
           </Pressable>
         </View>
       )}
 
-      <ShopCategoryTabs value={activeCategory} onChange={setActiveCategory} />
+      <ShopCategoryTabs value={activeCategory} onChange={changeCategory} />
 
       {/* 3. CONTENT AREA */}
       <ScrollView
+        ref={catalogRef}
         contentContainerStyle={{ padding: 16, paddingBottom: 60 }}
         showsVerticalScrollIndicator={false}
         refreshControl={(
           <RefreshControl
-            refreshing={isFetching}
-            onRefresh={refetch}
+            refreshing={isRefreshing}
+            onRefresh={refreshFromGesture}
             colors={['#2563EB']}
             tintColor="#2563EB"
           />
@@ -250,10 +270,10 @@ function InventoryScreenContent() {
               </View>
               <View>
                 <Text className="font-nunito text-[16px] font-extrabold text-amber-950">
-                  {translate('shop.inventory.booster_banner', { multiplier: activeBooster.multiplier })}
+                  {t('shopUi.boosterActiveTitle', { multiplier: activeBooster.multiplier })}
                 </Text>
                 <Text className="font-inter text-[12px] font-medium text-amber-800">
-                  {translate('shop.inventory.booster_hint')}
+                  {t('shopUi.boosterActiveBody')}
                 </Text>
               </View>
             </View>
@@ -268,28 +288,23 @@ function InventoryScreenContent() {
         )}
 
         {isLoading ? (
-          <View className="items-center justify-center py-20">
-            <ActivityIndicator size="large" color="#2563EB" />
-            <Text style={{ color: s.textMuted }} className="mt-3 font-inter text-[14px] font-medium">
-              {translate('shop.inventory.loading')}
-            </Text>
-          </View>
+          <ShopCatalogSkeleton label={t('shopUi.inventoryLoading')} />
         ) : isError ? (
           <View style={{ backgroundColor: s.surface, borderColor: s.border }} className="items-center justify-center rounded-3xl border p-8">
             <Snapy pose="suy_nghi" animation="idle" className="mb-4 size-24 opacity-80" />
             <Text style={{ color: s.text }} className="mb-2 font-nunito text-[18px] font-extrabold">
-              {translate('shop.inventory.error_title')}
+              {t('shopUi.inventoryErrorTitle')}
             </Text>
             <Text style={{ color: s.textMuted }} className="mb-5 text-center font-inter text-[13px]">
-              {translate('shop.inventory.error_description')}
+              {t('shopUi.inventoryErrorBody')}
             </Text>
             <Pressable
               onPress={() => refetch()}
-              className="flex-row items-center gap-2 rounded-xl bg-primary-500 px-5 py-2.5 active:bg-primary-600"
+              className="flex-row items-center gap-2 rounded-xl bg-brand px-5 py-2.5 active:bg-brand-pressed"
             >
               <RefreshCwIcon size={16} color="white" />
-              <Text className="font-nunito text-[14px] font-extrabold text-white uppercase">
-                {translate('shop.retry')}
+              <Text className="font-nunito text-[14px] font-extrabold text-on-brand uppercase">
+                {t('shopUi.retry')}
               </Text>
             </Pressable>
           </View>
@@ -298,18 +313,18 @@ function InventoryScreenContent() {
           <View style={{ backgroundColor: s.surface, borderColor: s.border }} className="items-center justify-center rounded-3xl border p-8">
             <Snapy pose="suy_nghi" animation="idle" className="mb-4 size-28 opacity-90" />
             <Text style={{ color: s.text }} className="mb-1 font-nunito text-[20px] font-extrabold">
-              {translate('shop.inventory.empty_title')}
+              {t('shopUi.inventoryEmptyTitle')}
             </Text>
             <Text style={{ color: s.textMuted }} className="mb-6 px-4 text-center font-inter text-[14px] leading-relaxed">
-              {translate('shop.inventory.empty_description')}
+              {t('shopUi.inventoryEmptyBody')}
             </Text>
             <Pressable
               onPress={() => router.push('/(tabs)/shop' as any)}
-              className="flex-row items-center gap-2 rounded-2xl border-b-4 border-primary-700 bg-primary-500 px-6 py-3 active:border-b-2"
+              className="flex-row items-center gap-2 rounded-2xl border-b-4 border-brand-edge bg-brand px-6 py-3 active:border-b-2"
             >
               <PackageIcon size={18} color="white" />
-              <Text className="font-nunito text-[14px] font-extrabold tracking-wide text-white uppercase">
-                {translate('shop.inventory.go_shop')}
+              <Text className="font-nunito text-[14px] font-extrabold tracking-wide text-on-brand uppercase">
+                {t('shopUi.goToShop')}
               </Text>
             </Pressable>
           </View>

@@ -9,6 +9,7 @@ import {
 } from 'lucide-react-native';
 import * as React from 'react';
 import { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   ActivityIndicator,
   Pressable,
@@ -21,37 +22,36 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Coin3D } from '@/components/snapvocab';
 import { Snapy } from '@/components/Snapy';
 import { ScreenHeader, useSurface } from '@/components/ui';
-import { translate } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 import { useCoinBalance, useInfiniteWallet } from './hooks/use-shop-queries';
 import { ShopSurface } from './theme/theme-context';
 
-function getSourceInfo(sourceType: CoinSourceType) {
+function getSourceInfo(sourceType: CoinSourceType, t: (key: string) => string) {
   switch (sourceType) {
     case 'SHOP_PURCHASE':
       return {
-        label: translate('shop.wallet.source.shop_purchase'),
+        label: t('shopUi.sourcePurchase'),
         icon: <ShoppingCartIcon size={20} color="#64748B" />,
       };
     case 'MISSION_REWARD':
       return {
-        label: translate('shop.wallet.source.mission_reward'),
+        label: t('shopUi.sourceMission'),
         icon: <TargetIcon size={20} color="#EAB308" />,
       };
     case 'ADMIN_ADJUSTMENT':
       return {
-        label: translate('shop.wallet.source.admin_adjustment'),
+        label: t('shopUi.sourceAdmin'),
         icon: <ShieldAlertIcon size={20} color="#3B82F6" />,
       };
     default:
       return {
-        label: translate('shop.wallet.source.other'),
+        label: t('shopUi.sourceGeneric'),
         icon: <CoinsIcon size={20} color="#64748B" />,
       };
   }
 }
 
-function formatRelativeDate(isoString: string): string {
+function formatRelativeDate(isoString: string, t: (key: string, options?: Record<string, unknown>) => string): string {
   try {
     const date = new Date(isoString);
     if (Number.isNaN(date.getTime()))
@@ -65,15 +65,15 @@ function formatRelativeDate(isoString: string): string {
     const diffDays = Math.round((startOfDay(now) - startOfDay(date)) / 86400000);
 
     if (diffMins < 1)
-      return translate('shop.wallet.time.just_now');
+      return t('shopUi.justNow');
     if (diffMins < 60)
-      return translate('shop.wallet.time.minutes_ago', { minutes: diffMins });
+      return t('shopUi.minutesAgo', { count: diffMins });
     if (diffHours < 24)
-      return translate('shop.wallet.time.hours_ago', { hours: diffHours });
+      return t('shopUi.hoursAgo', { count: diffHours });
     if (diffDays === 1)
-      return translate('shop.wallet.time.yesterday');
+      return t('shopUi.yesterday');
     if (diffDays < 7)
-      return translate('shop.wallet.time.days_ago', { days: diffDays });
+      return t('shopUi.daysAgo', { count: diffDays });
 
     return date.toLocaleDateString('vi-VN', {
       day: '2-digit',
@@ -97,6 +97,7 @@ export default function WalletScreen() {
 
 function WalletScreenContent() {
   const s = useSurface();
+  const { t, i18n } = useTranslation();
 
   // Single source of truth shared with the coin pill (purchase writes it synchronously).
   const { balance: displayedBalance, refetch: refetchBalance } = useCoinBalance();
@@ -121,7 +122,7 @@ function WalletScreenContent() {
 
   const renderTransaction = (tx: WalletTransactionDTO) => {
     const isEarn = tx.amount > 0;
-    const info = getSourceInfo(tx.sourceType);
+    const info = getSourceInfo(tx.sourceType, t);
 
     return (
       <View
@@ -134,7 +135,7 @@ function WalletScreenContent() {
           style={isEarn ? undefined : { backgroundColor: s.surfaceMuted }}
           className={cn(
             'mr-4 size-12 items-center justify-center rounded-2xl border',
-            isEarn ? 'border-reward-100 bg-reward-50' : 'border-transparent',
+            isEarn ? 'border-reward-100 bg-reward-50 dark:border-amber-400/25 dark:bg-amber-400/10' : 'border-transparent',
           )}
         >
           {info.icon}
@@ -149,7 +150,7 @@ function WalletScreenContent() {
             {info.label}
           </Text>
           <Text style={{ color: s.textMuted }} className="mt-1 font-inter text-[12px] font-medium">
-            {formatRelativeDate(tx.createdAt)}
+            {formatRelativeDate(tx.createdAt, t)}
           </Text>
         </View>
 
@@ -177,15 +178,15 @@ function WalletScreenContent() {
     >
       {/* Coin only: level/XP lives in Progress, from the backend's level table. */}
       <ScreenHeader
-        title={translate('shop.wallet.title')}
+        title={t('shopUi.walletTitle')}
         onBack={() => router.back()}
         right={(
           <Pressable
             accessibilityRole="button"
             onPress={() => router.push('/(tabs)/shop' as any)}
-            className="rounded-full border border-reward-200 bg-reward-50 px-3 py-1.5 active:scale-95"
+            className="rounded-full border border-reward-200 bg-reward-50 px-3 py-1.5 active:scale-95 dark:border-amber-400/25 dark:bg-amber-400/10"
           >
-            <Text className="font-nunito text-[13px] font-extrabold text-reward-700">{translate('shop.title')}</Text>
+            <Text className="font-nunito text-[13px] font-extrabold text-reward-700 dark:text-amber-300">{t('shop.title')}</Text>
           </Pressable>
         )}
       />
@@ -208,15 +209,15 @@ function WalletScreenContent() {
         {/* ========================================= */}
         {/* 2. COIN BALANCE CARD (Authoritative Balance) */}
         {/* ========================================= */}
-        <View style={{ backgroundColor: s.surface }} className="mb-8 items-center justify-center rounded-[32px] border-2 border-b-[6px] border-reward-200 p-6 shadow-sm shadow-reward-500/10">
+        <View style={{ backgroundColor: s.surface }} className="mb-8 items-center justify-center rounded-[32px] border-2 border-b-[6px] border-reward-200 p-6 shadow-sm shadow-reward-500/10 dark:border-amber-400/40">
           <Text style={{ color: s.textMuted }} className="mb-3 font-nunito text-[13px] font-extrabold tracking-widest uppercase">
-            {translate('shop.wallet.balance')}
+            {t('shopUi.inventoryBalanceTitle')}
           </Text>
 
           <View className="flex-row items-center justify-center gap-3">
             <Coin3D size="lg" />
             <Text style={{ color: s.text }} className="font-nunito text-[48px] leading-tight font-extrabold tabular-nums">
-              {displayedBalance.toLocaleString('vi-VN')}
+              {displayedBalance.toLocaleString(i18n.language)}
             </Text>
           </View>
           <Text className="mt-1 font-inter text-[15px] font-bold tracking-wider text-reward-600 uppercase">
@@ -228,28 +229,28 @@ function WalletScreenContent() {
         {/* 4. TRANSACTION HISTORY */}
         {/* ========================================= */}
         <Text style={{ color: s.text }} className="mb-4 ml-1 font-nunito text-[16px] font-extrabold">
-          {translate('shop.wallet.history')}
+          {t('shopUi.transactionHistory')}
         </Text>
 
         {isLoading ? (
           <View className="items-center justify-center py-10">
             <ActivityIndicator size="large" color="#2563EB" />
             <Text style={{ color: s.textMuted }} className="mt-3 font-inter text-[13px]">
-              {translate('shop.wallet.loading')}
+              {t('shopUi.walletLoading')}
             </Text>
           </View>
         ) : isError ? (
           <View style={{ backgroundColor: s.surface, borderColor: s.border }} className="items-center justify-center rounded-3xl border p-8">
             <Snapy pose="suy_nghi" animation="idle" className="mb-3 size-20 opacity-80" />
             <Text style={{ color: s.text }} className="mb-2 font-nunito text-[16px] font-extrabold">
-              {translate('shop.wallet.error_title')}
+              {t('shopUi.walletErrorTitle')}
             </Text>
             <Pressable
               onPress={() => refetch()}
-              className="flex-row items-center gap-2 rounded-xl bg-primary-500 px-4 py-2"
+              className="flex-row items-center gap-2 rounded-xl bg-brand px-4 py-2"
             >
               <RefreshCwIcon size={14} color="white" />
-              <Text className="font-nunito text-[12px] font-bold text-white">{translate('shop.retry')}</Text>
+              <Text className="font-nunito text-[12px] font-bold text-on-brand">{t('shopUi.retry')}</Text>
             </Pressable>
           </View>
         ) : transactions.length === 0 ? (
@@ -257,10 +258,10 @@ function WalletScreenContent() {
           <View style={{ backgroundColor: s.surface, borderColor: s.border }} className="items-center justify-center rounded-3xl border p-8">
             <Snapy pose="suy_nghi" animation="idle" className="mb-4 size-24 opacity-80" />
             <Text style={{ color: s.text }} className="mb-2 font-nunito text-[18px] font-extrabold">
-              {translate('shop.wallet.empty_title')}
+              {t('shopUi.walletEmptyTitle')}
             </Text>
             <Text style={{ color: s.textMuted }} className="px-4 text-center font-inter text-[14px] font-medium">
-              {translate('shop.wallet.empty_description')}
+              {t('shopUi.walletEmptyBody')}
             </Text>
           </View>
         ) : (
@@ -280,7 +281,7 @@ function WalletScreenContent() {
                   <ActivityIndicator size="small" color="#2563EB" />
                 ) : (
                   <Text className="font-nunito text-[13px] font-extrabold text-primary-600">
-                    {translate('shop.wallet.load_more')}
+                    {t('shopUi.loadOlderTransactions')}
                   </Text>
                 )}
               </Pressable>

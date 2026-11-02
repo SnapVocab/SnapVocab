@@ -82,3 +82,12 @@ export type AddTopicItemParams = {
   /** The scan the word was saved from: feeds the Scan daily mission (daily_mission.md §6.1). */
   scanRequestId?: string;
 };
+
+export type UpdateTopicItemParams = AddTopicItemParams & {
+  itemId: number | string;
+};
+
+export type DeleteTopicItemParams = {
+  topicId: number | string;
+  itemId: number | string;
+};

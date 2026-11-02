@@ -1,6 +1,6 @@
 import type { ThemePreference, UpdateUserSettings } from './types';
 import type { PushPermission } from '@/features/notifications/push';
-import type { ColorSchemeType } from '@/lib/hooks';
+import type { ColorSchemeType } from '@/lib/hooks/use-selected-theme';
 import type { Language } from '@/lib/i18n/resources';
 import Env from 'env';
 import { useRouter } from 'expo-router';
@@ -27,7 +27,7 @@ import {
   ThemeModeIcon,
 } from '@/components/ui/icons';
 import { askPermission, pushToggle, readPermission, registerDevice } from '@/features/notifications/push';
-import { useSelectedTheme } from '@/lib/hooks';
+import { useSelectedTheme } from '@/lib/hooks/use-selected-theme';
 import { translate, useSelectedLanguage } from '@/lib/i18n';
 import { useLogout, useUpdateSettings, useUserSettings } from './api';
 import { OptionSheet } from './components/option-sheet';
@@ -37,8 +37,8 @@ import { formatTimeOfDay, reminderOptions } from './display';
 import { useIconColors } from './use-icon-colors';
 
 const LANGUAGES = [
-  { value: 'vi' as Language, label: 'Tiếng Việt', emoji: '🇻🇳' },
-  { value: 'en' as Language, label: 'English', emoji: '🇬🇧' },
+  { value: 'vi' as Language, label: translate('settings.language_name_vi'), emoji: '🇻🇳' },
+  { value: 'en' as Language, label: translate('settings.language_name_en'), emoji: '🇬🇧' },
 ];
 
 const THEMES: { value: ThemePreference; label: string; scheme: ColorSchemeType }[] = [
@@ -63,11 +63,10 @@ export function SettingsScreen() {
   const { data: settings } = useUserSettings();
   const updateSettings = useUpdateSettings();
   const logout = useLogout();
-  const { setSelectedTheme } = useSelectedTheme();
-  const { setLanguage } = useSelectedLanguage();
+  const { selectedTheme, setSelectedTheme } = useSelectedTheme();
+  const { language, setLanguage } = useSelectedLanguage();
 
-  // Language and appearance apply on this device straight away; the server copy
-  // keeps them for the next install or another device.
+  // Account learning preferences use the API; appearance/language stay on this device.
   const save = (change: UpdateUserSettings) => {
     updateSettings.mutate(change, { onError: () => showErrorMessage(translate('settings.error')) });
   };
@@ -115,15 +114,16 @@ export function SettingsScreen() {
       save({ pushEnabled: true });
   };
 
-  const languageLabel = LANGUAGES.find(l => l.value === settings?.uiLanguage)?.label;
-  const themeLabel = THEMES.find(t => t.value === settings?.theme)?.label;
+  const languageLabel = LANGUAGES.find(l => l.value === language)?.label;
+  const localTheme = THEMES.find(t => t.scheme === selectedTheme)!;
+  const themeLabel = localTheme.label;
   const reminder = formatTimeOfDay(settings?.srsReminderAt);
 
   return (
     <SafeAreaView style={{ flex: 1 }} className="flex-1 bg-background" edges={['top', 'bottom']}>
       <FocusAwareStatusBar />
 
-      <View className="h-14 flex-row items-center border-b border-neutral-100 bg-white px-4 dark:border-neutral-800 dark:bg-neutral-900">
+      <View className="h-14 flex-row items-center border-b border-line bg-surface px-4">
         <BackButton onPress={() => router.back()} testID="settings-back" className="-ml-1" />
         <Text
           className="mr-9 flex-1 text-center font-nunito text-lg font-extrabold text-mascot-navy dark:text-white"
@@ -198,7 +198,7 @@ export function SettingsScreen() {
           />
         </SettingsSection>
 
-        <View className="mt-8 overflow-hidden rounded-3xl border border-danger-100 bg-white shadow-sm shadow-black/5 dark:border-danger-500/30 dark:bg-neutral-900">
+        <View className="mt-8 overflow-hidden rounded-3xl border border-danger-100 bg-surface shadow-sm shadow-black/5 dark:border-danger-500/30">
           <Pressable
             onPress={confirmLogout}
             disabled={logout.isPending}
@@ -226,15 +226,10 @@ export function SettingsScreen() {
         visible={sheet === 'language'}
         titleTx="settings.select_language"
         options={LANGUAGES}
-        selected={(settings?.uiLanguage ?? 'vi') as Language}
+        selected={language}
         onSelect={(value) => {
           setSheet(null);
-          // Switching the language restarts the app, so let the save finish
-          // first; otherwise the reload cuts the request off.
-          updateSettings.mutate({ uiLanguage: value }, {
-            onError: () => showErrorMessage(translate('settings.error')),
-            onSettled: () => setLanguage(value),
-          });
+          setLanguage(value);
         }}
         onClose={() => setSheet(null)}
       />
@@ -243,10 +238,9 @@ export function SettingsScreen() {
         visible={sheet === 'theme'}
         titleTx="settings.select_theme"
         options={THEMES}
-        selected={settings?.theme ?? 'SYSTEM'}
+        selected={localTheme.value}
         onSelect={(value) => {
           setSelectedTheme(THEMES.find(t => t.value === value)!.scheme);
-          save({ theme: value });
           setSheet(null);
         }}
         onClose={() => setSheet(null)}
