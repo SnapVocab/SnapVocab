@@ -7,6 +7,7 @@ import { Modal, Pressable, ScrollView, Text, View } from 'react-native';
 import { AvatarFrame, getAvatarFrame } from '@/components/snapvocab';
 import { useSurface } from '@/components/ui';
 import { useAuthStore } from '@/features/auth/use-auth-store';
+import { FlipCardContainer } from '@/features/card-renderer/components/flip-card-container';
 import { shopItemDescription, shopItemTitle } from '@/features/shop/utils/item-presentation';
 import { ShopButton as Button } from './shop-button';
 
@@ -34,7 +35,7 @@ function PreviewSheet({ item, onClose, onAction, children }: PreviewModalProps &
         <View style={{ backgroundColor: s.surface }} className="max-h-[90%] rounded-t-[28px] px-5 pt-4 pb-8">
           <View className="mb-4 flex-row items-center justify-between">
             <Text style={{ color: s.text }} className="font-nunito text-[18px] font-extrabold">
-              {t('shopUi.previewFrame')}
+              {item.type === 'CARD_FRAME' ? t('shopUi.previewCardFrame') : t('shopUi.previewFrame')}
             </Text>
             <Pressable
               accessibilityRole="button"
@@ -71,12 +72,33 @@ function PreviewSheet({ item, onClose, onAction, children }: PreviewModalProps &
   );
 }
 
-/** The tapped frame on the learner's own avatar, at profile size. */
+/** The tapped frame on the learner's own avatar at profile size; a card frame on a sample card that flips like in study. */
 export function FramePreviewModal({ item, ...props }: PreviewModalProps) {
   const avatarUrl = useAuthStore(state => state.user?.avatarUrl);
   const s = useSurface();
+  const { t } = useTranslation();
   if (!item) {
     return null;
+  }
+  if (item.type === 'CARD_FRAME') {
+    const face = (text: string, hint: string) => (
+      <View className="flex-1 items-center justify-center gap-2 px-4">
+        <Text style={{ color: s.text }} className="text-center font-nunito text-[28px] font-black">{text}</Text>
+        <Text style={{ color: s.textMuted }} className="text-center font-inter text-[12px] font-semibold">{hint}</Text>
+      </View>
+    );
+    return (
+      <PreviewSheet item={item} {...props}>
+        <View style={{ backgroundColor: s.background }} className="rounded-3xl px-6 py-5">
+          <FlipCardContainer
+            frameUrl={item.config?.frameUrl}
+            maxHeight={360}
+            frontContent={face(t('shopUi.cardFrameSampleFront'), t('shopUi.cardFrameTapToFlip'))}
+            backContent={face(t('shopUi.cardFrameSampleBack'), t('shopUi.cardFrameStudyHint'))}
+          />
+        </View>
+      </PreviewSheet>
+    );
   }
   const description = item.description || getAvatarFrame(item.code)?.description;
   return (

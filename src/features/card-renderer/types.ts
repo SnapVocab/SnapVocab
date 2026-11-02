@@ -53,6 +53,10 @@ export type DynamicCardRendererProps = {
   autoPlayAudio?: boolean;
   className?: string;
   minHeight?: number;
+  /** Equipped card frame (study only, PD-CF-01); see FlipCardContainer. */
+  frameUrl?: string | null;
+  maxHeight?: number;
+  onFrameError?: () => void;
 };
 
 export type StudyCardItem = {

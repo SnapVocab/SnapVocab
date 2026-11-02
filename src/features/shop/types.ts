@@ -1,9 +1,9 @@
 /**
  * Canonical Shop types and DTOs according to docs/decisions/shop.md
- * Types: AVATAR_FRAME, XP_BOOSTER, STREAK_FREEZE (docs/decisions/streak_freeze.md).
+ * Types: AVATAR_FRAME, CARD_FRAME (plan/shop-item/card_frame_plan.md), XP_BOOSTER, STREAK_FREEZE (docs/decisions/streak_freeze.md).
  */
 
-export const SHOP_ITEM_TYPES = ['AVATAR_FRAME', 'XP_BOOSTER', 'STREAK_FREEZE'] as const;
+export const SHOP_ITEM_TYPES = ['AVATAR_FRAME', 'CARD_FRAME', 'XP_BOOSTER', 'STREAK_FREEZE'] as const;
 export type ShopItemType = (typeof SHOP_ITEM_TYPES)[number];
 
 /** Held in units up to `config.maxQuantity`; buying past it is MAX_QUANTITY_REACHED (shop.md S9). */
@@ -24,7 +24,12 @@ export type BlockReason =
   | 'MAX_QUANTITY_REACHED'
   | 'INSUFFICIENT_COINS';
 
-export type EquipmentSlot = 'AVATAR_FRAME';
+export type EquipmentSlot = 'AVATAR_FRAME' | 'CARD_FRAME';
+
+/** Cosmetics worn in a slot (one per slot); everything else is used up or passive. */
+export function isEquippable(type: ShopItemType): type is EquipmentSlot {
+  return type === 'AVATAR_FRAME' || type === 'CARD_FRAME';
+}
 
 export type ItemConfig = {
   frameUrl?: string | null;

@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { generateIdempotencyKey } from '@/features/quiz/utils/idempotency';
 import { translate } from '@/lib/i18n';
 import { isOutcomeUnknown, parseShopError } from '../api';
-import { isStackable } from '../types';
+import { isEquippable, isStackable } from '../types';
 import {
   useEquipMutation,
   usePurchaseMutation,
@@ -68,7 +68,7 @@ export function useShopActions({
       return;
     }
 
-    if (item.type === 'AVATAR_FRAME' && item.owned) {
+    if (isEquippable(item.type) && item.owned) {
       equipMutation.mutate({
         slot: item.type,
         itemId: item.itemId,
@@ -163,7 +163,7 @@ export function useShopActions({
   };
 
   const handleEquipNow = (item: ShopItemDTO) => {
-    if (item.type === 'AVATAR_FRAME') {
+    if (isEquippable(item.type)) {
       equipMutation.mutate({
         slot: item.type,
         itemId: item.itemId,

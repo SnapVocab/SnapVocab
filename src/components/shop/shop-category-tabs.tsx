@@ -13,10 +13,11 @@ export type ShopCategory = 'all' | ShopItemType;
 export const SHOP_TYPE_LABEL: Record<ShopItemType, string> = {
   XP_BOOSTER: 'shopUi.categories.boosters',
   AVATAR_FRAME: 'shopUi.categories.frames',
+  CARD_FRAME: 'shopUi.categories.cardFrames',
   STREAK_FREEZE: 'shopUi.categories.streakFreezes',
 };
 
-const CATEGORIES: ShopCategory[] = ['all', 'XP_BOOSTER', 'AVATAR_FRAME', 'STREAK_FREEZE'];
+const CATEGORIES: ShopCategory[] = ['all', 'XP_BOOSTER', 'AVATAR_FRAME', 'CARD_FRAME', 'STREAK_FREEZE'];
 
 export function ShopCategoryTabs({ value, onChange }: { value: ShopCategory; onChange: (value: ShopCategory) => void }) {
   const s = useSurface();

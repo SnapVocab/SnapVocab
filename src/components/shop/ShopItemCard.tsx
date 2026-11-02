@@ -7,26 +7,31 @@ import { Image, Pressable, Text, View } from 'react-native';
 import { AvatarFrame, Coin3D } from '@/components/snapvocab';
 import { BouncingDots, useSurface } from '@/components/ui';
 import { useAuthStore } from '@/features/auth/use-auth-store';
-import { isStackable } from '@/features/shop/types';
+import { isEquippable, isStackable } from '@/features/shop/types';
 import { shopItemTitle } from '@/features/shop/utils/item-presentation';
 import { cn } from '@/lib/utils';
+import { CardFrameThumb } from './card-frame-thumb';
 import { SHOP_TYPE_LABEL } from './shop-category-tabs';
 
 type CardItem = Pick<ShopItemDTO, 'type' | 'code' | 'name' | 'iconUrl' | 'config' | 'quantity' | 'equipped'>;
 
 const ARTWORK_BG = {
   AVATAR_FRAME: 'bg-amber-50 dark:bg-amber-400/10',
+  CARD_FRAME: 'bg-rose-50 dark:bg-rose-400/10',
   XP_BOOSTER: 'bg-emerald-50 dark:bg-emerald-400/10',
   STREAK_FREEZE: 'bg-sky-50 dark:bg-sky-400/10',
 } as const;
 
-/** Item artwork: frames on the learner's own avatar (Snapy fallback), otherwise icon or bundled art. */
+/** Item artwork: avatar frames on the learner's own avatar (Snapy fallback), card frames on a mini card, otherwise icon or bundled art. */
 export function ItemArtwork({ item, size = 76, onFrameError }: { item: Omit<CardItem, 'quantity' | 'equipped'>; size?: number; onFrameError?: () => void }) {
   const avatarUrl = useAuthStore(s => s.user?.avatarUrl);
   // A signed icon URL can expire or 404: fall back to the bundled art instead of a blank tile.
   const [iconFailed, setIconFailed] = React.useState(false);
   if (item.type === 'STREAK_FREEZE' && (!item.iconUrl || iconFailed)) {
     return <SnowflakeIcon size={size} color="#0284C7" />;
+  }
+  if (item.type === 'CARD_FRAME') {
+    return <CardFrameThumb frameUrl={item.config?.frameUrl} height={size + 12} onFrameError={onFrameError} />;
   }
   if (item.type === 'AVATAR_FRAME') {
     return (
@@ -189,7 +194,7 @@ export type ShopItemCardProps = {
 /** Shop variant: card body previews cosmetics; the button buys, equips, or shows status. */
 export function ShopItemCard({ item, onPress, onPreview, userCoins, showType, purchaseDisabled }: ShopItemCardProps) {
   const { t } = useTranslation();
-  const isCosmetic = item.type === 'AVATAR_FRAME';
+  const isCosmetic = isEquippable(item.type);
   const isOutOfCoin = item.blockReason === 'INSUFFICIENT_COINS' || userCoins < item.price;
 
   return (

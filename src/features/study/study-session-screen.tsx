@@ -9,6 +9,7 @@ import { BackButton, BouncingDots, Button, Pressable, SafeAreaView, Text } from 
 import { FlameIcon, RotateCwIcon } from '@/components/ui/icons';
 import { Snapy } from '@/components/ui/snapy';
 import { useColorMode } from '@/components/ui/surface';
+import { useEquippedCardFrame } from '@/features/card-renderer/card-frame';
 import { DynamicCardRenderer } from '@/features/card-renderer/dynamic-card-renderer';
 import { invalidateProgress, useStreak } from '@/features/progress';
 import { useSchema, useTopicSchema } from '@/features/template-builder/api';
@@ -79,6 +80,9 @@ export function StudySessionScreen() {
   const streak = useStreak().data?.currentStreak;
   const [removedCardIds, setRemovedCardIds] = React.useState<Set<number>>(() => new Set());
   const [side, setSide] = React.useState<CardSide>('FRONT');
+  const { frameUrl, onFrameError } = useEquippedCardFrame();
+  // A framed card is 3:4 and shrinks to the height left between the header and the answer button.
+  const [frameAreaHeight, setFrameAreaHeight] = React.useState(0);
   const [stats, setStats] = React.useState(NO_STATS);
 
   // Learn and Home refresh once when the learner leaves, not after every card.
@@ -234,18 +238,38 @@ export function StudySessionScreen() {
                         <ActivityIndicator color="#16A34A" />
                       </View>
                     )
-                  : (
-                      <DynamicCardRenderer
-                        key={currentCard.item.topicItemId}
-                        template={template}
-                        schema={topicSchema || fullSchema}
-                        data={currentCard.item}
-                        side={side}
-                        onFlip={setSide}
-                        isInteractive
-                        minHeight={400}
-                      />
-                    )}
+                  : frameUrl
+                    ? (
+                        <View className="flex-1 justify-center" onLayout={e => setFrameAreaHeight(e.nativeEvent.layout.height)}>
+                          {frameAreaHeight > 0 && (
+                            <DynamicCardRenderer
+                              key={currentCard.item.topicItemId}
+                              template={template}
+                              schema={topicSchema || fullSchema}
+                              data={currentCard.item}
+                              side={side}
+                              onFlip={setSide}
+                              isInteractive
+                              minHeight={400}
+                              frameUrl={frameUrl}
+                              maxHeight={frameAreaHeight}
+                              onFrameError={onFrameError}
+                            />
+                          )}
+                        </View>
+                      )
+                    : (
+                        <DynamicCardRenderer
+                          key={currentCard.item.topicItemId}
+                          template={template}
+                          schema={topicSchema || fullSchema}
+                          data={currentCard.item}
+                          side={side}
+                          onFlip={setSide}
+                          isInteractive
+                          minHeight={400}
+                        />
+                      )}
                 {side === 'FRONT' && !schemaLoading && (
                   <Pressable
                     onPress={() => setSide('BACK')}

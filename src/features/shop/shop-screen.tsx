@@ -30,11 +30,11 @@ import {
   useInventory,
   useShopCatalog,
 } from './hooks/use-shop-queries';
-import { isKnownItemType } from './types';
+import { isEquippable, isKnownItemType } from './types';
 import { isBoosterLive } from './utils/booster-timer';
 import { shopItemTitle } from './utils/item-presentation';
 
-const ITEM_ORDER = { XP_BOOSTER: 0, STREAK_FREEZE: 1, AVATAR_FRAME: 2 };
+const ITEM_ORDER = { XP_BOOSTER: 0, STREAK_FREEZE: 1, AVATAR_FRAME: 2, CARD_FRAME: 3 };
 
 export default function ShopScreen() {
   const s = useSurface();
@@ -250,7 +250,7 @@ export default function ShopScreen() {
                 purchaseDisabled={purchaseDisabled}
                 onPress={handleItemPress}
                 onPreview={(i) => {
-                  if (i.type === 'AVATAR_FRAME') {
+                  if (isEquippable(i.type)) {
                     setPreviewFrameItem(i);
                   }
                   else {

@@ -11,6 +11,21 @@ beforeAll(async () => {
   await i18n.changeLanguage('vi');
 });
 
+// Card frame preview flips like the study card: FlipCardContainer needs these (jest-setup's mocks fall short).
+jest.mock('react-native-reanimated', () => ({
+  __esModule: true,
+  default: { View: require('react-native').View },
+  useSharedValue: (value: number) => ({ value }),
+  useAnimatedStyle: (fn: () => object) => fn(),
+  withTiming: (value: number) => value,
+  interpolate: (_value: number, _input: number[], output: number[]) => output[0],
+  runOnJS: (fn: () => void) => fn,
+}));
+jest.mock('react-native-gesture-handler', () => {
+  const tap: any = new Proxy({}, { get: () => () => tap });
+  return { GestureDetector: ({ children }: { children: React.ReactNode }) => children, Gesture: { Tap: () => tap } };
+});
+jest.mock('@/components/ui/image', () => ({ Image: require('react-native').View }));
 jest.mock('lucide-react-native', () => ({ CheckIcon: () => null, XIcon: () => null, SnowflakeIcon: () => null }));
 jest.mock('@/components/snapvocab', () => ({
   AvatarFrame: require('react-native').View,
@@ -58,6 +73,32 @@ describe('shop previews and cards act on the item\'s real state', () => {
     render(<FramePreviewModal item={{ ...frame, ...state }} onClose={jest.fn()} onAction={onAction} />);
     fireEvent.press(screen.getByText(label));
     expect(onAction).toHaveBeenCalledTimes(state.equipped ? 0 : 1);
+  });
+
+  it.each([
+    [{ owned: false, equipped: false }, 'Mua · 300 Coin'],
+    [{ owned: true, equipped: false }, 'Trang bị'],
+    [{ owned: true, equipped: true }, 'Đang dùng'],
+  ])('card frame preview shows a framed sample card; footer for %o is "%s"', (state, label) => {
+    const cardFrame: ShopItemDTO = { ...frame, type: 'CARD_FRAME', config: { frameUrl: 'https://cdn/card.png' }, ...state };
+    const onAction = jest.fn();
+    render(<FramePreviewModal item={cardFrame} onClose={jest.fn()} onAction={onAction} />);
+    expect(screen.getByText('Thử khung thẻ')).toBeTruthy();
+    fireEvent(screen.getByTestId('card-frame'), 'layout', { nativeEvent: { layout: { width: 300, height: 0, x: 0, y: 0 } } });
+    expect(screen.getByTestId('card-frame-front')).toBeTruthy();
+    expect(screen.getByText('apple')).toBeTruthy();
+    expect(screen.getByText('quả táo')).toBeTruthy();
+    fireEvent.press(screen.getByText(label));
+    expect(onAction).toHaveBeenCalledTimes(state.equipped ? 0 : 1);
+  });
+
+  it('owned card frame card offers Trang bị and goes through the equip path', () => {
+    const cardFrame: ShopItemDTO = { ...frame, type: 'CARD_FRAME', owned: true, blockReason: 'ALREADY_OWNED' };
+    const onPress = jest.fn();
+    render(<ShopItemCard item={cardFrame} userCoins={1000} onPress={onPress} />);
+    expect(screen.getByText('Khung thẻ')).toBeTruthy();
+    fireEvent.press(screen.getByText('Trang bị'));
+    expect(onPress).toHaveBeenCalledWith(cardFrame);
   });
 
   it('booster card buy button goes straight to purchase', () => {

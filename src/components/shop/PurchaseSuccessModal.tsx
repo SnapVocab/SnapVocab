@@ -16,7 +16,9 @@ import Animated, {
 import { AvatarFrame, Coin3D } from '@/components/snapvocab';
 import { useSurface } from '@/components/ui';
 import { useAuthStore } from '@/features/auth/use-auth-store';
+import { isEquippable } from '@/features/shop/types';
 import { translate } from '@/lib/i18n';
+import { CardFrameThumb } from './card-frame-thumb';
 import { ShopButton as Button } from './shop-button';
 import { SHOP_TYPE_LABEL } from './shop-category-tabs';
 
@@ -82,7 +84,7 @@ export function PurchaseSuccessModal({
     return null;
 
   const remainingCoins = Math.max(0, userCoins - item.price);
-  const isFrame = item.type === 'AVATAR_FRAME';
+  const isFrame = isEquippable(item.type);
   const isBooster = item.type === 'XP_BOOSTER';
   const isFreeze = item.type === 'STREAK_FREEZE';
 
@@ -204,7 +206,9 @@ export function PurchaseSuccessModal({
                   }}
                   className="mb-2.5 items-center justify-center bg-amber-50 shadow-sm"
                 >
-                  {isFrame ? (
+                  {item.type === 'CARD_FRAME' ? (
+                    <CardFrameThumb frameUrl={item.config?.frameUrl} height={84} />
+                  ) : isFrame ? (
                     <AvatarFrame
                       frameId={item.code}
                       frameUrl={item.config?.frameUrl}

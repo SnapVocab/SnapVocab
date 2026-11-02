@@ -1,12 +1,16 @@
 import type { ShopItemDTO } from '../types';
 import { generateIdempotencyKey } from '@/features/quiz/utils/idempotency';
-import { isKnownItemType as isCanonical, isStackable, SHOP_ITEM_TYPES } from '../types';
+import { isKnownItemType as isCanonical, isEquippable, isStackable, SHOP_ITEM_TYPES } from '../types';
 
 describe('shop & Economy business rules verification', () => {
-  describe('canonical types strictly limited to 3 items', () => {
+  describe('canonical types strictly limited to 4 items', () => {
     // Shop and Kho đồ hide every other type, so a type added server-side never reaches this app version.
-    it('only allows AVATAR_FRAME, XP_BOOSTER and STREAK_FREEZE', () => {
-      expect(SHOP_ITEM_TYPES).toHaveLength(3);
+    it('only allows AVATAR_FRAME, CARD_FRAME, XP_BOOSTER and STREAK_FREEZE', () => {
+      expect(SHOP_ITEM_TYPES).toHaveLength(4);
+      // card_frame_plan.md: worn in its own slot like the avatar frame.
+      expect(isCanonical('CARD_FRAME')).toBe(true);
+      expect(isEquippable('CARD_FRAME')).toBe(true);
+      expect(isEquippable('XP_BOOSTER')).toBe(false);
 
       expect(isCanonical('AVATAR_FRAME')).toBe(true);
       expect(isCanonical('XP_BOOSTER')).toBe(true);

@@ -166,7 +166,7 @@ export function usePurchaseMutation() {
 }
 
 /**
- * Equip Item Mutation (AVATAR_FRAME)
+ * Equip Item Mutation (AVATAR_FRAME or CARD_FRAME)
  */
 export function useEquipMutation() {
   const queryClient = useQueryClient();
@@ -178,8 +178,8 @@ export function useEquipMutation() {
     { slot: EquipmentSlot; itemId: number }
   >({
     mutationFn: ({ slot, itemId }) => equipItem(slot, itemId),
-    onSuccess: () => {
-      showSuccessMessage(t('shopUi.toastFrameEquipped'));
+    onSuccess: (data) => {
+      showSuccessMessage(t(data.slot === 'CARD_FRAME' ? 'shopUi.toastCardFrameEquipped' : 'shopUi.toastFrameEquipped'));
       invalidateOwnedState(queryClient);
     },
     onError: error => onItemActionError(queryClient, error, t),
@@ -187,7 +187,7 @@ export function useEquipMutation() {
 }
 
 /**
- * Unequip Item Mutation (AVATAR_FRAME)
+ * Unequip Item Mutation (AVATAR_FRAME or CARD_FRAME)
  */
 export function useUnequipMutation() {
   const queryClient = useQueryClient();
@@ -199,8 +199,8 @@ export function useUnequipMutation() {
     { slot: EquipmentSlot }
   >({
     mutationFn: ({ slot }) => unequipItem(slot),
-    onSuccess: () => {
-      showSuccessMessage(t('shopUi.toastFrameRemoved'));
+    onSuccess: (data) => {
+      showSuccessMessage(t(data.slot === 'CARD_FRAME' ? 'shopUi.toastCardFrameRemoved' : 'shopUi.toastFrameRemoved'));
       invalidateOwnedState(queryClient);
     },
     onError: error => onItemActionError(queryClient, error, t),

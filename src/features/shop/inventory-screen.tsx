@@ -31,7 +31,7 @@ import {
   useInventory,
   useUnequipMutation,
 } from './hooks/use-shop-queries';
-import { isKnownItemType } from './types';
+import { isEquippable, isKnownItemType } from './types';
 import { formatRemainingTime, getRemainingBoosterMs } from './utils/booster-timer';
 
 /**
@@ -142,7 +142,7 @@ export default function InventoryScreen() {
   const handleToggleEquip = (item: InventoryItemDTO) => {
     setFeedbackMessage(null);
 
-    if (item.type !== 'AVATAR_FRAME') {
+    if (!isEquippable(item.type)) {
       return;
     }
 
@@ -164,7 +164,7 @@ export default function InventoryScreen() {
       || (unequipMutation.isPending && unequipMutation.variables?.slot === item.type);
 
     const preview = () => {
-      if (item.type === 'AVATAR_FRAME') {
+      if (isEquippable(item.type)) {
         setPreviewFrameItem(item);
       }
     };
