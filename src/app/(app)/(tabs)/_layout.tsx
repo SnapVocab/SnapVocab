@@ -13,7 +13,6 @@ import {
 } from '@/components/ui/icons';
 import { HomeHeader } from '@/features/home';
 import { useMe } from '@/features/profile/api';
-import { ShopSurface } from '@/features/shop/theme/theme-context';
 import { translate } from '@/lib/i18n';
 
 export default function TabLayout() {
@@ -21,10 +20,10 @@ export default function TabLayout() {
   // Edge-to-edge: the system gesture/nav bar draws over the app, so the tab bar
   // grows by the bottom inset instead of letting it cover the labels.
   const { bottom } = useSafeAreaInsets();
-  // GET /api/users/me on app start / login: its equipped theme, frame and booster land on the stored user,
-  // which ShopThemeProvider and Profile read (shop.md §10.1).
+  // GET /api/users/me on app start / login: its equipped frame and booster land on the stored user,
+  // which Profile reads (shop.md §10.1).
   useMe();
-  // App-wide chrome: default surfaces for the user's light/dark mode; Shop themes stay inside themed screens.
+  // App-wide chrome: default surfaces for the user's light/dark mode.
   const surface = useSurface();
   const isDark = useColorMode() === 'dark';
 
@@ -52,16 +51,13 @@ export default function TabLayout() {
         options={{
           title: translate('home.tab_label'),
           headerShown: true,
-          // The navigator renders the header outside HomeScreen, so it takes the theme on its own.
           header: () => (
-            <ShopSurface>
-              <HomeHeader
-                onStreakPress={() => router.push('/stats')}
-                onCoinPress={() => router.push('/profile/wallet')}
-                onAvatarPress={() => router.push('/profile')}
-                onNotificationPress={() => router.push('/notifications' as Href)}
-              />
-            </ShopSurface>
+            <HomeHeader
+              onStreakPress={() => router.push('/stats')}
+              onCoinPress={() => router.push('/profile/wallet')}
+              onAvatarPress={() => router.push('/profile')}
+              onNotificationPress={() => router.push('/notifications' as Href)}
+            />
           ),
           tabBarIcon: ({ color }) => <HomeIcon color={color} />,
           tabBarButtonTestID: 'home-tab',

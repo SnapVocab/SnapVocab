@@ -24,7 +24,6 @@ import { Snapy } from '@/components/Snapy';
 import { ScreenHeader, useSurface } from '@/components/ui';
 import { cn } from '@/lib/utils';
 import { useCoinBalance, useInfiniteWallet } from './hooks/use-shop-queries';
-import { ShopSurface } from './theme/theme-context';
 
 function getSourceInfo(sourceType: CoinSourceType, t: (key: string) => string) {
   switch (sourceType) {
@@ -86,16 +85,7 @@ function formatRelativeDate(isoString: string, t: (key: string, options?: Record
   }
 }
 
-/** Shop-area screen: it and its modals take the equipped theme's surfaces. */
 export default function WalletScreen() {
-  return (
-    <ShopSurface>
-      <WalletScreenContent />
-    </ShopSurface>
-  );
-}
-
-function WalletScreenContent() {
   const s = useSurface();
   const { t, i18n } = useTranslation();
 

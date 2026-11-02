@@ -15,7 +15,6 @@ import { SHOP_TYPE_LABEL } from './shop-category-tabs';
 type CardItem = Pick<ShopItemDTO, 'type' | 'code' | 'name' | 'iconUrl' | 'config' | 'quantity' | 'equipped'>;
 
 const ARTWORK_BG = {
-  THEME: 'bg-purple-50 dark:bg-purple-400/10',
   AVATAR_FRAME: 'bg-amber-50 dark:bg-amber-400/10',
   XP_BOOSTER: 'bg-emerald-50 dark:bg-emerald-400/10',
   STREAK_FREEZE: 'bg-sky-50 dark:bg-sky-400/10',
@@ -43,9 +42,7 @@ export function ItemArtwork({ item, size = 76, onFrameError }: { item: Omit<Card
       />
     );
   }
-  const fallback = item.type === 'THEME'
-    ? require('../../assets/images/shop/icon8_clean.png')
-    : require('../../assets/images/shop/icon1_clean.png');
+  const fallback = require('../../assets/images/shop/icon1_clean.png');
   return (
     <Image
       source={item.iconUrl && !iconFailed ? { uri: item.iconUrl } : fallback}
@@ -189,10 +186,10 @@ export type ShopItemCardProps = {
   purchaseDisabled?: boolean;
 };
 
-/** Shop variant: card body previews cosmetics; the button buys, equips/applies, or shows status. */
+/** Shop variant: card body previews cosmetics; the button buys, equips, or shows status. */
 export function ShopItemCard({ item, onPress, onPreview, userCoins, showType, purchaseDisabled }: ShopItemCardProps) {
   const { t } = useTranslation();
-  const isCosmetic = item.type === 'THEME' || item.type === 'AVATAR_FRAME';
+  const isCosmetic = item.type === 'AVATAR_FRAME';
   const isOutOfCoin = item.blockReason === 'INSUFFICIENT_COINS' || userCoins < item.price;
 
   return (
@@ -205,17 +202,16 @@ export function ShopItemCard({ item, onPress, onPreview, userCoins, showType, pu
       {item.equipped ? (
         <CardAction tone="done" label={t('shopUi.actionEquipped')} />
       ) : isCosmetic && item.owned ? (
-        <CardAction tone="primary" label={item.type === 'THEME' ? t('shopUi.actionApply') : t('shopUi.actionEquip')} onPress={() => onPress(item)} />
+        <CardAction tone="primary" label={t('shopUi.actionEquip')} onPress={() => onPress(item)} />
       ) : isStackable(item.type) && item.blockReason === 'MAX_QUANTITY_REACHED' ? (
         <CardAction tone="disabled" label={t('shopUi.actionMaxed')} />
       ) : (
-        // A theme is bought from its preview sheet (shop.md §11.1): the palette is seen before Coin is spent.
         <CardAction
           tone={isOutOfCoin ? 'warning' : 'primary'}
           accessibilityLabel={t('shopUi.buyItem', { name: shopItemTitle(item, t), price: item.price })}
           disabled={purchaseDisabled}
           coin={item.price}
-          onPress={() => (item.type === 'THEME' && onPreview ? onPreview(item) : onPress(item))}
+          onPress={() => onPress(item)}
         />
       )}
     </ItemCard>

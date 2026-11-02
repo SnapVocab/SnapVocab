@@ -72,17 +72,17 @@ describe('shop API layer and backend contracts', () => {
         },
         {
           itemId: 103,
-          code: 'theme_midnight_neon',
-          type: 'THEME',
-          name: 'Đêm Neon Huyền Ảo',
-          description: 'Giao diện bóng đêm neon',
+          code: 'STREAK_FREEZE',
+          type: 'STREAK_FREEZE',
+          name: 'Bảo vệ chuỗi học',
+          description: 'Giữ chuỗi khi lỡ một ngày học',
           iconUrl: null,
           price: 500,
           availableUntil: null,
-          config: { themeKey: 'MIDNIGHT_NEON' },
+          config: { maxQuantity: 1 },
           owned: true,
           quantity: 1,
-          equipped: true,
+          equipped: false,
           canPurchase: false,
           blockReason: 'ALREADY_OWNED',
         },
@@ -97,7 +97,7 @@ describe('shop API layer and backend contracts', () => {
       expect(result[0].itemId).toBe(101);
       expect(result[0].type).toBe('AVATAR_FRAME');
       expect(result[1].type).toBe('XP_BOOSTER');
-      expect(result[2].type).toBe('THEME');
+      expect(result[2].type).toBe('STREAK_FREEZE');
       expect(result[2].blockReason).toBe('ALREADY_OWNED');
       expect(mockedClient).toHaveBeenCalledWith({
         url: '/api/shop/items',
@@ -197,17 +197,17 @@ describe('shop API layer and backend contracts', () => {
   describe('4. PUT & DELETE /api/me/equipment/{slot}', () => {
     it('equips item into slot via PUT /api/me/equipment/{slot}', async () => {
       const mockEquip: EquipmentDTO = {
-        slot: 'THEME',
+        slot: 'AVATAR_FRAME',
         item: {
           itemId: 103,
-          code: 'theme_midnight_neon',
-          type: 'THEME',
+          code: 'FRAME_GOLD',
+          type: 'AVATAR_FRAME',
           status: 'PUBLISHED',
-          name: 'Đêm Neon Huyền Ảo',
+          name: 'Khung Vàng',
           iconUrl: null,
           quantity: 1,
           equipped: true,
-          config: { themeKey: 'MIDNIGHT_NEON' },
+          config: { frameUrl: 'https://cdn/frame.png' },
         },
       };
 
@@ -215,11 +215,11 @@ describe('shop API layer and backend contracts', () => {
         data: { statusCode: 200, data: mockEquip, error: null },
       });
 
-      const result = await equipItem('THEME', 103);
-      expect(result.slot).toBe('THEME');
+      const result = await equipItem('AVATAR_FRAME', 103);
+      expect(result.slot).toBe('AVATAR_FRAME');
       expect(result.item?.equipped).toBe(true);
       expect(mockedClient).toHaveBeenCalledWith({
-        url: '/api/me/equipment/THEME',
+        url: '/api/me/equipment/AVATAR_FRAME',
         method: 'PUT',
         data: { itemId: 103 },
       });

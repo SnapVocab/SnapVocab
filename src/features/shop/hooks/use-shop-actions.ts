@@ -35,7 +35,6 @@ export function useShopActions({
 }: UseShopActionsProps) {
   const { t } = useTranslation();
   const [outOfCoinItem, setOutOfCoinItem] = useState<ShopItemDTO | null>(null);
-  const [previewThemeItem, setPreviewThemeItem] = useState<ShopItemDTO | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [boosterItem, setBoosterItem] = useState<ShopItemDTO | null>(null);
 
@@ -69,7 +68,7 @@ export function useShopActions({
       return;
     }
 
-    if ((item.type === 'THEME' || item.type === 'AVATAR_FRAME') && item.owned) {
+    if (item.type === 'AVATAR_FRAME' && item.owned) {
       equipMutation.mutate({
         slot: item.type,
         itemId: item.itemId,
@@ -164,7 +163,7 @@ export function useShopActions({
   };
 
   const handleEquipNow = (item: ShopItemDTO) => {
-    if (item.type === 'THEME' || item.type === 'AVATAR_FRAME') {
+    if (item.type === 'AVATAR_FRAME') {
       equipMutation.mutate({
         slot: item.type,
         itemId: item.itemId,
@@ -182,8 +181,6 @@ export function useShopActions({
   return {
     outOfCoinItem,
     setOutOfCoinItem,
-    previewThemeItem,
-    setPreviewThemeItem,
     errorMessage,
     setErrorMessage,
     purchaseIntent,

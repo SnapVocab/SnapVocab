@@ -19,7 +19,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { BoosterActivateModal } from '@/components/shop/booster-activate-modal';
-import { FramePreviewModal, ThemePreviewModal } from '@/components/shop/item-preview-modal';
+import { FramePreviewModal } from '@/components/shop/item-preview-modal';
 import { ShopCategoryTabs } from '@/components/shop/shop-category-tabs';
 import { CardAction, ItemCard } from '@/components/shop/ShopItemCard';
 import { Snapy } from '@/components/Snapy';
@@ -31,18 +31,8 @@ import {
   useInventory,
   useUnequipMutation,
 } from './hooks/use-shop-queries';
-import { isThemeKnown, ShopSurface } from './theme/theme-context';
 import { isKnownItemType } from './types';
 import { formatRemainingTime, getRemainingBoosterMs } from './utils/booster-timer';
-
-/** Shop-area screen: it and its modals take the equipped theme's surfaces. */
-export default function InventoryScreen() {
-  return (
-    <ShopSurface>
-      <InventoryScreenContent />
-    </ShopSurface>
-  );
-}
 
 /**
  * Remaining ms of the cached activation on server time, re-rendering every second while it runs.
@@ -68,7 +58,7 @@ function useBoosterCountdown(active: ActiveBoosterDTO | null | undefined, server
   return remainingMs;
 }
 
-function InventoryScreenContent() {
+export default function InventoryScreen() {
   const s = useSurface();
   const { t } = useTranslation();
 
@@ -78,7 +68,6 @@ function InventoryScreenContent() {
   const catalogRef = useRef<ScrollView>(null);
   const [feedbackMessage, setFeedbackMessage] = useState<string | null>(null);
   const [previewFrameItem, setPreviewFrameItem] = useState<InventoryItemDTO | null>(null);
-  const [previewThemeItem, setPreviewThemeItem] = useState<InventoryItemDTO | null>(null);
   const [boosterItem, setBoosterItem] = useState<InventoryItemDTO | null>(null);
 
   // Queries & Mutations
@@ -153,13 +142,7 @@ function InventoryScreenContent() {
   const handleToggleEquip = (item: InventoryItemDTO) => {
     setFeedbackMessage(null);
 
-    if (item.type !== 'THEME' && item.type !== 'AVATAR_FRAME') {
-      return;
-    }
-
-    // Check unknown theme
-    if (item.type === 'THEME' && !isThemeKnown(item.config?.themeKey)) {
-      setFeedbackMessage(t('shopUi.themeUnavailable'));
+    if (item.type !== 'AVATAR_FRAME') {
       return;
     }
 
@@ -176,7 +159,6 @@ function InventoryScreenContent() {
     const isBooster = item.type === 'XP_BOOSTER';
     // Passive: it works on its own when a study day is missed (streak_freeze.md §7), so there is nothing to press.
     const isFreeze = item.type === 'STREAK_FREEZE';
-    const isUnknownTheme = item.type === 'THEME' && !isThemeKnown(item.config?.themeKey);
     const isActionPending =
       (equipMutation.isPending && equipMutation.variables?.itemId === item.itemId)
       || (unequipMutation.isPending && unequipMutation.variables?.slot === item.type);
@@ -184,9 +166,6 @@ function InventoryScreenContent() {
     const preview = () => {
       if (item.type === 'AVATAR_FRAME') {
         setPreviewFrameItem(item);
-      }
-      else if (item.type === 'THEME' && !isUnknownTheme) {
-        setPreviewThemeItem(item);
       }
     };
 
@@ -204,14 +183,12 @@ function InventoryScreenContent() {
           activeBooster
             ? <CardAction tone="disabled" label={activeBooster.itemId === item.itemId ? t('shopUi.actionActive') : t('shopUi.actionWaitBooster')} />
             : <CardAction tone="primary" label={t('shopUi.actionActivate')} onPress={() => setBoosterItem(item)} />
-        ) : isUnknownTheme || item.type === 'STREAK_FREEZE' ? (
-          <CardAction tone="disabled" label={t('shopUi.actionUnsupported')} />
         ) : item.equipped ? (
           <CardAction tone="secondary" label={t('shopUi.actionUnequip')} loading={isActionPending} onPress={() => handleToggleEquip(item)} />
         ) : (
           <CardAction
             tone="primary"
-            label={item.type === 'THEME' ? t('shopUi.actionApply') : t('shopUi.actionEquip')}
+            label={t('shopUi.actionEquip')}
             loading={isActionPending}
             onPress={() => handleToggleEquip(item)}
           />
@@ -220,7 +197,7 @@ function InventoryScreenContent() {
     );
   };
 
-  // Inventory items are owned by definition; previews then offer equip/apply or "Đang dùng".
+  // Inventory items are owned by definition; previews then offer equip or "Đang dùng".
   const toPreview = (item: InventoryItemDTO | null) => (item ? { ...item, owned: true } : null);
 
   return (
@@ -344,16 +321,6 @@ function InventoryScreenContent() {
             handleToggleEquip(previewFrameItem);
           }
           setPreviewFrameItem(null);
-        }}
-      />
-      <ThemePreviewModal
-        item={toPreview(previewThemeItem)}
-        onClose={() => setPreviewThemeItem(null)}
-        onAction={() => {
-          if (previewThemeItem) {
-            handleToggleEquip(previewThemeItem);
-          }
-          setPreviewThemeItem(null);
         }}
       />
       <BoosterActivateModal item={boosterItem} onClose={() => setBoosterItem(null)} />

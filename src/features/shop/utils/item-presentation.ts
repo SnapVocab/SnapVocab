@@ -8,8 +8,6 @@ export function shopItemTitle(item: Item, t: TFunction): string {
     return t('shopUi.xpMultiplier', { multiplier: item.config?.multiplier ?? 2 });
   if (item.type === 'STREAK_FREEZE')
     return t('shopUi.streakFreezeName');
-  if (item.type === 'THEME' && item.config?.themeKey)
-    return t(`shopUi.themeNames.${item.config.themeKey}`, { defaultValue: item.name });
   return item.name;
 }
 
@@ -23,7 +21,5 @@ export function shopItemDescription(item: Item & { description?: string | null }
       minutes: item.config?.durationMinutes ?? 30,
     });
   }
-  if (item.type === 'THEME' && item.config?.themeKey)
-    return t(`shopUi.themeDetails.${item.config.themeKey}`, { defaultValue: item.description ?? '' });
   return item.description ?? null;
 }

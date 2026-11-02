@@ -1,9 +1,9 @@
 /**
  * Canonical Shop types and DTOs according to docs/decisions/shop.md
- * Types: THEME, AVATAR_FRAME, XP_BOOSTER, STREAK_FREEZE (docs/decisions/streak_freeze.md).
+ * Types: AVATAR_FRAME, XP_BOOSTER, STREAK_FREEZE (docs/decisions/streak_freeze.md).
  */
 
-export const SHOP_ITEM_TYPES = ['THEME', 'AVATAR_FRAME', 'XP_BOOSTER', 'STREAK_FREEZE'] as const;
+export const SHOP_ITEM_TYPES = ['AVATAR_FRAME', 'XP_BOOSTER', 'STREAK_FREEZE'] as const;
 export type ShopItemType = (typeof SHOP_ITEM_TYPES)[number];
 
 /** Held in units up to `config.maxQuantity`; buying past it is MAX_QUANTITY_REACHED (shop.md S9). */
@@ -11,12 +11,10 @@ export function isStackable(type: ShopItemType): boolean {
   return type === 'XP_BOOSTER' || type === 'STREAK_FREEZE';
 }
 
-/** A type added server-side after this app version has no runtime here: hide it, like an unknown themeKey (shop.md §6.3). */
+/** A type added server-side after this app version has no runtime here: hide it (shop.md §6.3). */
 export function isKnownItemType(type: string): type is ShopItemType {
   return (SHOP_ITEM_TYPES as readonly string[]).includes(type);
 }
-
-export type ThemeKey = 'DEFAULT' | 'MIDNIGHT_NEON' | 'SUNSET_AMBER' | 'FOREST_MINT';
 
 export type ShopItemStatus = 'DRAFT' | 'PUBLISHED' | 'ARCHIVED';
 
@@ -26,10 +24,9 @@ export type BlockReason =
   | 'MAX_QUANTITY_REACHED'
   | 'INSUFFICIENT_COINS';
 
-export type EquipmentSlot = 'THEME' | 'AVATAR_FRAME';
+export type EquipmentSlot = 'AVATAR_FRAME';
 
 export type ItemConfig = {
-  themeKey?: ThemeKey | string | null;
   frameUrl?: string | null;
   multiplier?: number | null;
   durationMinutes?: number | null;

@@ -82,7 +82,6 @@ export function PurchaseSuccessModal({
     return null;
 
   const remainingCoins = Math.max(0, userCoins - item.price);
-  const isTheme = item.type === 'THEME';
   const isFrame = item.type === 'AVATAR_FRAME';
   const isBooster = item.type === 'XP_BOOSTER';
   const isFreeze = item.type === 'STREAK_FREEZE';
@@ -99,8 +98,8 @@ export function PurchaseSuccessModal({
     next();
   };
   const goInventory = closeThen(() => router.push('/profile/inventory' as any));
-  const primary = (isTheme || isFrame) && onEquipNow
-    ? { label: isTheme ? t('shopUi.actionApply') : t('shopUi.actionEquip'), onPress: closeThen(() => onEquipNow(item)) }
+  const primary = isFrame && onEquipNow
+    ? { label: t('shopUi.actionEquip'), onPress: closeThen(() => onEquipNow(item)) }
     : isBooster && !hasActiveBooster && onActivateNow && (result?.quantity ?? 0) > 0
       ? { label: t('shopUi.actionActivate'), onPress: closeThen(() => onActivateNow(item)) }
       : { label: t('shopUi.goToInventory'), onPress: goInventory };
@@ -223,11 +222,7 @@ export function PurchaseSuccessModal({
                     />
                   ) : (
                     <Image
-                      source={
-                        isTheme
-                          ? require('../../assets/images/shop/icon8_clean.png')
-                          : require('../../assets/images/shop/icon1_clean.png')
-                      }
+                      source={require('../../assets/images/shop/icon1_clean.png')}
                       style={{ width: 72, height: 72 }}
                       resizeMode="contain"
                     />
@@ -245,11 +240,6 @@ export function PurchaseSuccessModal({
                     {item.description}
                   </Text>
                 ) : null}
-                {isTheme && (
-                  <Text style={{ color: s.text }} className="mt-1.5 px-2 text-center font-inter text-[13px] font-semibold">
-                    {t('shopUi.themeScope')}
-                  </Text>
-                )}
                 {effect && (
                   <Text className="mt-1.5 px-2 text-center font-inter text-[13px] leading-relaxed font-semibold text-amber-700">
                     {effect}

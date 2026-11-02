@@ -19,7 +19,6 @@ import {
   useStreak,
   useXpOverview,
 } from '@/features/progress';
-import { ShopSurface } from '@/features/shop/theme/theme-context';
 import { invalidateStudy, useStudyToday } from '@/features/study/api';
 import { TodayBlock } from '@/features/study/today-block';
 import { translate } from '@/lib/i18n';
@@ -43,16 +42,7 @@ function greetingKey() {
   return hour < 18 ? 'home.good_afternoon' : 'home.good_evening';
 }
 
-/** Themed screen (shop.md §6.4): an equipped theme re-skins its surfaces; its header is wrapped in the tab layout. */
 export function HomeScreen() {
-  return (
-    <ShopSurface>
-      <HomeScreenContent />
-    </ShopSurface>
-  );
-}
-
-function HomeScreenContent() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const user = useAuthStore(s => s.user);

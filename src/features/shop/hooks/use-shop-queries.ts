@@ -25,7 +25,6 @@ import {
   purchaseShopItem,
   unequipItem,
 } from '../api';
-import { useShopTheme } from '../theme/theme-context';
 import { calculateServerOffset } from '../utils/booster-timer';
 
 export const shopKeys = {
@@ -67,25 +66,11 @@ export function useShopCatalog(type?: ShopItemType) {
  * The receive time travels with the cached data, so every observer derives the same server offset.
  */
 export function useInventory() {
-  const { setEquippedTheme } = useShopTheme();
-
   const query = useQuery<InventoryDTO & { receivedAt: number }, AxiosError>({
     queryKey: shopKeys.inventory(),
     refetchOnWindowFocus: true,
     queryFn: async () => {
       const data = await getInventory();
-
-      // Auto-sync equipped theme with ThemeProvider
-      const equippedTheme = data.items.find(
-        item => item.type === 'THEME' && item.equipped,
-      );
-      if (equippedTheme?.config?.themeKey) {
-        setEquippedTheme(equippedTheme.config.themeKey as string);
-      }
-      else {
-        setEquippedTheme('DEFAULT');
-      }
-
       return { ...data, receivedAt: Date.now() };
     },
   });
@@ -181,11 +166,10 @@ export function usePurchaseMutation() {
 }
 
 /**
- * Equip Item Mutation (THEME or AVATAR_FRAME)
+ * Equip Item Mutation (AVATAR_FRAME)
  */
 export function useEquipMutation() {
   const queryClient = useQueryClient();
-  const { setEquippedTheme } = useShopTheme();
   const { t } = useTranslation();
 
   return useMutation<
@@ -194,12 +178,8 @@ export function useEquipMutation() {
     { slot: EquipmentSlot; itemId: number }
   >({
     mutationFn: ({ slot, itemId }) => equipItem(slot, itemId),
-    onSuccess: (data) => {
-      if (data.slot === 'THEME') {
-        const themeKey = data.item?.config?.themeKey as string;
-        setEquippedTheme(themeKey || 'DEFAULT');
-      }
-      showSuccessMessage(data.slot === 'THEME' ? t('shopUi.toastThemeEquipped') : t('shopUi.toastFrameEquipped'));
+    onSuccess: () => {
+      showSuccessMessage(t('shopUi.toastFrameEquipped'));
       invalidateOwnedState(queryClient);
     },
     onError: error => onItemActionError(queryClient, error, t),
@@ -207,11 +187,10 @@ export function useEquipMutation() {
 }
 
 /**
- * Unequip Item Mutation (THEME or AVATAR_FRAME)
+ * Unequip Item Mutation (AVATAR_FRAME)
  */
 export function useUnequipMutation() {
   const queryClient = useQueryClient();
-  const { setEquippedTheme } = useShopTheme();
   const { t } = useTranslation();
 
   return useMutation<
@@ -220,11 +199,8 @@ export function useUnequipMutation() {
     { slot: EquipmentSlot }
   >({
     mutationFn: ({ slot }) => unequipItem(slot),
-    onSuccess: (data) => {
-      if (data.slot === 'THEME') {
-        setEquippedTheme('DEFAULT');
-      }
-      showSuccessMessage(data.slot === 'THEME' ? t('shopUi.toastThemeReset') : t('shopUi.toastFrameRemoved'));
+    onSuccess: () => {
+      showSuccessMessage(t('shopUi.toastFrameRemoved'));
       invalidateOwnedState(queryClient);
     },
     onError: error => onItemActionError(queryClient, error, t),

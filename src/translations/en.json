@@ -1060,8 +1060,6 @@
     "actions": {
       "activate": "Activate",
       "activate_booster": "Activate booster",
-      "apply": "Apply",
-      "apply_theme": "Apply theme",
       "buy": "Buy",
       "buy_for": "Buy · {{price}} Coin",
       "equip": "Equip",
@@ -1122,7 +1120,6 @@
       "loading": "Loading your Inventory...",
       "running": "Running",
       "title": "Inventory",
-      "unsupported": "Not supported",
       "update_required": "Update the app to use this theme",
       "wait_booster": "Wait for the booster to end"
     },
@@ -1140,8 +1137,7 @@
     "preview": {
       "frame_title": "Try on frame",
       "sample_effect": "Double XP for 30 minutes",
-      "sample_item": "×2 XP Card",
-      "theme_title": "Theme preview"
+      "sample_item": "×2 XP Card"
     },
     "purchase": {
       "balance_after": "Balance after:",
@@ -1165,21 +1161,15 @@
     },
     "retry": "Retry",
     "subtitle": "Make your learning journey your own.",
-    "theme": {
-      "scope": "Applies to Home, Profile, the Shop, Inventory and Coin Wallet."
-    },
     "title": "Shop",
     "toast": {
       "frame_equipped": "Avatar frame equipped",
-      "frame_removed": "Avatar frame removed",
-      "theme_applied": "Theme applied",
-      "theme_reset": "Back to the default theme"
+      "frame_removed": "Avatar frame removed"
     },
     "types": {
       "all": "All",
       "avatar_frame": "Avatar frame",
       "streak_freeze": "Streak Freeze",
-      "theme": "Color theme",
       "xp_booster": "Booster"
     },
     "wallet": {
@@ -1210,13 +1200,11 @@
   "shopUi": {
     "actionActivate": "Activate",
     "actionActive": "Active",
-    "actionApply": "Apply",
     "actionBuy": "Buy ·",
     "actionEquip": "Equip",
     "actionEquipped": "Equipped",
     "actionMaxed": "Limit reached",
     "actionUnequip": "Unequip",
-    "actionUnsupported": "Unavailable",
     "actionWaitBooster": "Wait for booster",
     "balanceAfterPurchase": "Balance after purchase",
     "boosterActivatedBody": "Active until {{time}} · {{count}} cards left. Start a quiz now to earn {{multiplier}}× XP.",
@@ -1241,8 +1229,7 @@
       "all": "All",
       "boosters": "Boosters",
       "frames": "Avatar frames",
-      "streakFreezes": "Streak freezes",
-      "themes": "Shop themes"
+      "streakFreezes": "Streak freezes"
     },
     "close": "Close",
     "confirmPurchase": "Confirm purchase",
@@ -1290,11 +1277,7 @@
     "outOfCoinsNeedUnknown": "You don’t have enough Coins to buy {{name}}.",
     "outOfCoinsTitle": "Not enough Coins yet",
     "ownedQuantity": "In your inventory: {{count}}",
-    "previewBoosterDescription": "Double XP for 30 minutes",
-    "previewBoosterItem": "Double XP Card",
     "previewFrame": "Try avatar frame",
-    "previewMissionReward": "Mission reward",
-    "previewTheme": "Preview shop theme",
     "purchaseOutcomeUnknown": "The last purchase is still being confirmed. Tap Buy to check again; you won’t be charged twice.",
     "purchaseReplayLead": "Your earlier purchase was recorded:",
     "purchaseReplayTail": "is already in your inventory.",
@@ -1314,24 +1297,8 @@
     "sourceWeeklyChest": "Weekly chest",
     "startQuiz": "Start a quiz",
     "streakFreezeName": "Streak freeze",
-    "themeDetails": {
-      "DEFAULT": "The classic SnapVocab palette for your Shop, inventory and wallet.",
-      "FOREST_MINT": "Fresh mint accents for your Shop, inventory and wallet.",
-      "MIDNIGHT_NEON": "A midnight palette with violet accents for your Shop, inventory and wallet.",
-      "SUNSET_AMBER": "Warm amber accents for your Shop, inventory and wallet."
-    },
-    "themeNames": {
-      "DEFAULT": "Classic",
-      "FOREST_MINT": "Forest Mint",
-      "MIDNIGHT_NEON": "Midnight Neon",
-      "SUNSET_AMBER": "Sunset Amber"
-    },
-    "themeScope": "Applies to Shop, Inventory, and Coin Wallet.",
-    "themeUnavailable": "Update the app to use this theme.",
     "toastFrameEquipped": "Avatar frame equipped",
     "toastFrameRemoved": "Avatar frame removed",
-    "toastThemeEquipped": "Shop theme applied",
-    "toastThemeReset": "Restored the default shop theme",
     "transactionHistory": "Transaction history",
     "walletBalance": "Coin wallet: {{count}} Coins",
     "walletEmptyBody": "Complete lessons and missions to earn Coins.",

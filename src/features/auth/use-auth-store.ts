@@ -19,7 +19,7 @@ export type User = {
   email: string;
   bio: string;
   /** Shop state from GET /api/users/me (shop.md §10.1); absent on the login response. */
-  equipped?: { themeKey: string | null; avatarFrameUrl: string | null };
+  equipped?: { avatarFrameUrl: string | null };
   activeBooster?: ActiveBoosterDTO | null;
 };
 
