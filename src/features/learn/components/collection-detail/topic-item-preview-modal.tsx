@@ -7,12 +7,13 @@ import {
   BottomSheetScrollView,
 } from '@gorhom/bottom-sheet';
 import * as React from 'react';
-import { TouchableOpacity, View } from 'react-native';
+import { TouchableOpacity, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button } from '@/components/ui/button';
 import { ChevronLeftIcon, ChevronRightIcon, CloseIcon, RotateCwIcon } from '@/components/ui/icons';
 import { Text } from '@/components/ui/text';
 import { DynamicCardRenderer } from '@/features/card-renderer';
+import { useEquippedCardFrame } from '@/features/card-renderer/card-frame';
 import { translate } from '@/lib/i18n/utils';
 
 type Props = {
@@ -43,6 +44,10 @@ export function TopicItemPreviewModal({
   const insets = useSafeAreaInsets();
   const [currentSide, setCurrentSide] = React.useState<'FRONT' | 'BACK'>('FRONT');
   const snapPoints = React.useMemo(() => ['88%'], []);
+  // The learner's own card, so it wears the equipped card frame like in study (card_frame_plan.md PD-CF-01).
+  const { frameUrl, onFrameError } = useEquippedCardFrame();
+  // A framed card is 3:4: cap its height so the header and the flip/next controls stay on screen.
+  const framedMaxHeight = Math.round(useWindowDimensions().height * 0.55);
 
   const handlePrev = () => {
     setCurrentSide('FRONT');
@@ -148,6 +153,9 @@ export function TopicItemPreviewModal({
               onFlip={setCurrentSide}
               isInteractive={false}
               minHeight={380}
+              frameUrl={frameUrl}
+              maxHeight={framedMaxHeight}
+              onFrameError={onFrameError}
             />
           ) : (
             <View className="items-center justify-center py-12">
