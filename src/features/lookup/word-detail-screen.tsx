@@ -3,10 +3,9 @@ import * as React from 'react';
 import {
   ActivityIndicator,
   ScrollView,
-  TouchableOpacity,
   View,
 } from 'react-native';
-import { BackButton, FocusAwareStatusBar, SafeAreaView, Text } from '@/components/ui';
+import { BackButton, Button, FocusAwareStatusBar, SafeAreaView, Text } from '@/components/ui';
 import { translate } from '@/lib/i18n/utils';
 import { useWordById, useWordLookup } from './api';
 import {
@@ -68,13 +67,7 @@ export function WordDetailScreen() {
           <Text className="font-inter text-sm font-medium text-neutral-400 dark:text-neutral-400">
             {translate('word_detail.not_found')}
           </Text>
-          <TouchableOpacity
-            onPress={() => refetch()}
-            activeOpacity={0.7}
-            className="mt-4 rounded-2xl bg-lime-500 px-5 py-2.5 active:bg-lime-600"
-          >
-            <Text className="font-inter text-sm font-bold text-white" tx="word_detail.retry" />
-          </TouchableOpacity>
+          <Button tx="word_detail.retry" size="sm" fullWidth={false} onPress={() => refetch()} className="mt-4 px-6" />
         </View>
       ) : (
         <ScrollView
@@ -87,6 +80,14 @@ export function WordDetailScreen() {
             word={displayWord}
             pronunciations={wordData.pronunciations}
           />
+
+          {/* A word can exist with no meaning at all (an incomplete dictionary entry): say so, not a blank page. */}
+          {!wordData.meanings?.length && !wordData.relations?.length && (
+            <View className="mt-6 items-center rounded-2xl border border-line bg-surface px-5 py-8">
+              <Text className="text-center font-nunito text-base font-extrabold text-mascot-navy dark:text-white" tx="word_detail.no_meanings_title" />
+              <Text className="mt-1.5 text-center font-inter text-sm text-neutral-500 dark:text-neutral-400" tx="word_detail.no_meanings_body" />
+            </View>
+          )}
 
           {/* Meanings by Part of Speech */}
           <WordMeanings meanings={wordData.meanings} />

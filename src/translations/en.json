@@ -1492,6 +1492,8 @@
     "examples": "Examples",
     "links": "Resources & links",
     "meanings": "Meanings",
+    "no_meanings_body": "The dictionary has no meaning for this word yet. Try a related word or another form of it.",
+    "no_meanings_title": "No meanings for this word yet",
     "not_found": "Word details not found",
     "pronounce": "Pronounce",
     "related_words": "Related words",

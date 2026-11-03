@@ -400,7 +400,12 @@ export function QuizSetupScreen() {
                     : 'border-line bg-surface active:translate-y-[2px] active:border-b-2 active:bg-pressed',
                 )}
               >
-                <Text className="mb-1.5 text-[20px]">🇬🇧 ➔ 🇻🇳</Text>
+                {/* One Text per flag: some fonts drop a flag that follows an arrow glyph in the same run. */}
+                <View className="mb-1.5 flex-row items-center gap-1.5">
+                  <Text className="text-[20px]">🇬🇧</Text>
+                  <ArrowRightIcon size={16} className="text-neutral-500 dark:text-neutral-300" />
+                  <Text className="text-[20px]">🇻🇳</Text>
+                </View>
                 <Text
                   className={cn(
                     'mb-0.5 text-center font-nunito text-[14px] font-extrabold',
@@ -429,7 +434,11 @@ export function QuizSetupScreen() {
                     : 'border-line bg-surface active:translate-y-[2px] active:border-b-2 active:bg-pressed',
                 )}
               >
-                <Text className="mb-1.5 text-[20px]">🇻🇳 ➔ 🇬🇧</Text>
+                <View className="mb-1.5 flex-row items-center gap-1.5">
+                  <Text className="text-[20px]">🇻🇳</Text>
+                  <ArrowRightIcon size={16} className="text-neutral-500 dark:text-neutral-300" />
+                  <Text className="text-[20px]">🇬🇧</Text>
+                </View>
                 <Text
                   className={cn(
                     'mb-0.5 text-center font-nunito text-[14px] font-extrabold',
@@ -482,10 +491,11 @@ export function QuizSetupScreen() {
                       <Icon size={22} className={isSelected ? 'text-on-brand' : 'text-neutral-500 dark:text-neutral-300'} />
                     </View>
                     <View className="flex-1">
-                      <View className="mb-0.5 flex-row items-center gap-2">
+                      {/* Wraps the badge under a long mode name (English) instead of pushing it off the card. */}
+                      <View className="mb-0.5 flex-row flex-wrap items-center gap-x-2 gap-y-1">
                         <Text
                           className={cn(
-                            'font-nunito text-[15px] font-extrabold',
+                            'shrink font-nunito text-[15px] font-extrabold',
                             isSelected ? 'text-primary-800 dark:text-primary-200' : 'text-mascot-navy dark:text-white',
                           )}
                         >
