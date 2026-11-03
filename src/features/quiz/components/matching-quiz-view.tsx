@@ -324,7 +324,7 @@ export function MatchingQuizView({ quiz, onExit, onResync }: MatchingQuizViewPro
   const progressPercent = totalPairsOverall > 0 ? (matchedOverall / totalPairsOverall) * 100 : 0;
 
   return (
-    <SafeAreaView className="flex-1 bg-background" edges={['top', 'bottom']}>
+    <SafeAreaView style={{ flex: 1 }} className="flex-1 bg-background" edges={['top', 'bottom']}>
 
       {/* 1. TOP PROGRESS BAR */}
       <View className="z-10 flex-row items-center justify-between border-b border-line bg-background px-4 py-3">
@@ -367,6 +367,7 @@ export function MatchingQuizView({ quiz, onExit, onResync }: MatchingQuizViewPro
 
       {/* 2. BODY CONTENT */}
       <ScrollView
+        style={{ flex: 1 }}
         className="flex-1"
         contentContainerStyle={{ flexGrow: 1, paddingHorizontal: 16, paddingTop: 10, paddingBottom: 24 }}
         showsVerticalScrollIndicator={false}

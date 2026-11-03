@@ -244,7 +244,7 @@ export function MultipleChoiceQuizView({ quiz, onExit, onResync }: MultipleChoic
   });
 
   return (
-    <SafeAreaView className="flex-1 bg-background" edges={['top', 'bottom']}>
+    <SafeAreaView style={{ flex: 1 }} className="flex-1 bg-background" edges={['top', 'bottom']}>
 
       {/* 1. TOP PROGRESS BAR & LIVE STOPWATCH */}
       <RNAnimated.View style={{ opacity: contentOpacity }}>
@@ -293,6 +293,7 @@ export function MultipleChoiceQuizView({ quiz, onExit, onResync }: MultipleChoic
 
       {/* 2. QUESTION & OPTIONS AREA */}
       <ScrollView
+        style={{ flex: 1 }}
         className="flex-1"
         contentContainerStyle={{ flexGrow: 1, paddingHorizontal: 20, paddingTop: 8, paddingBottom: 24 }}
         showsVerticalScrollIndicator={false}
