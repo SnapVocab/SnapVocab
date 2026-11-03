@@ -218,7 +218,7 @@ export function FillBlankQuizView({ quiz, onExit, onResync }: FillBlankQuizViewP
   });
 
   return (
-    <SafeAreaView className="flex-1 bg-background" edges={['top', 'bottom']}>
+    <SafeAreaView style={{ flex: 1 }} className="flex-1 bg-background" edges={['top', 'bottom']}>
 
       {/* 1. TOP BAR */}
       <View className="z-10 flex-row items-center justify-between border-b border-line bg-background px-4 py-3">
@@ -265,6 +265,7 @@ export function FillBlankQuizView({ quiz, onExit, onResync }: FillBlankQuizViewP
 
       {/* 2. BODY CONTENT */}
       <ScrollView
+        style={{ flex: 1 }}
         className="flex-1"
         contentContainerStyle={{ flexGrow: 1, paddingHorizontal: 20, paddingTop: 10, paddingBottom: 24 }}
         showsVerticalScrollIndicator={false}
