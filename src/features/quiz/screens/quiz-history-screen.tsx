@@ -4,7 +4,7 @@ import type { HistoryFilterMode } from '../utils';
 import type { TxKeyPath } from '@/lib/i18n';
 import { useRouter } from 'expo-router';
 import * as React from 'react';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   FlatList,
@@ -28,7 +28,6 @@ import { Snapy } from '@/components/ui/snapy';
 import { translate } from '@/lib/i18n';
 import { useInfiniteQuizHistory } from '../api/quiz-api';
 import {
-  filterQuizHistoryItems,
   formatQuizAccuracy,
   formatQuizSubmittedDate,
   quizHistoryAction,
@@ -54,27 +53,13 @@ export function QuizHistoryScreen() {
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
-  } = useInfiniteQuizHistory(20);
+  } = useInfiniteQuizHistory(20, selectedFilter === 'ALL' ? undefined : selectedFilter);
 
   const allItems = useMemo<QuizHistorySummaryResponse[]>(() => {
     if (!data?.pages)
       return [];
     return data.pages.flatMap(page => page.data || []);
   }, [data]);
-
-  const filteredItems = useMemo(() => {
-    return filterQuizHistoryItems(allItems, selectedFilter);
-  }, [allItems, selectedFilter]);
-
-  // The filter runs on loaded pages only: an empty list has nothing to scroll, so onEndReached never
-  // fires. Keep loading until a match shows up or the server has no more pages.
-  // ponytail: may page through the whole history for a rare mode; add a `mode` param to
-  // GET /api/me/quizzes if histories get long.
-  const searchingMore = filteredItems.length === 0 && !!hasNextPage;
-  useEffect(() => {
-    if (searchingMore && !isFetchingNextPage)
-      void fetchNextPage();
-  }, [searchingMore, isFetchingNextPage, fetchNextPage]);
 
   const handleCardPress = (item: QuizHistorySummaryResponse) => {
     const action = quizHistoryAction(item.status);
@@ -356,7 +341,7 @@ export function QuizHistoryScreen() {
             )
           : (
               <FlatList
-                data={filteredItems}
+                data={allItems}
                 keyExtractor={item => String(item.quizId)}
                 renderItem={renderHistoryCard}
                 contentContainerStyle={{ padding: 16, paddingBottom: 60 }}
@@ -383,33 +368,27 @@ export function QuizHistoryScreen() {
                       )
                     : null
                 }
-                ListEmptyComponent={searchingMore
-                  ? (
-                      <View className="items-center py-16">
-                        <ActivityIndicator size="small" color="#0EA5E9" />
-                      </View>
-                    )
-                  : (
-                      <View className="items-center justify-center py-16">
-                        <Snapy pose="suy_nghi" animation="idle" style={{ width: 110, height: 110 }} />
-                        <Text className="mt-4 font-nunito text-[18px] font-extrabold text-mascot-navy dark:text-white">
-                          {selectedFilter === 'ALL'
-                            ? translate('quiz.history_empty_title')
-                            : translate('quiz.history_empty_filtered', { mode: translate(FILTER_TABS.find(t => t.key === selectedFilter)?.label ?? 'quiz.title') })}
-                        </Text>
-                        <Text className="mt-1 px-6 text-center font-inter text-[14px] text-neutral-400">
-                          {translate('quiz.history_empty_body')}
-                        </Text>
-                        <TouchableOpacity
-                          onPress={() => router.push('/(app)/study/quiz-setup' as any)}
-                          className="mt-6 rounded-2xl bg-brand px-6 py-3.5"
-                        >
-                          <Text className="font-nunito text-[15px] font-extrabold text-on-brand uppercase">
-                            {translate('quiz.start_quiz_now')}
-                          </Text>
-                        </TouchableOpacity>
-                      </View>
-                    )}
+                ListEmptyComponent={(
+                  <View className="items-center justify-center py-16">
+                    <Snapy pose="suy_nghi" animation="idle" style={{ width: 110, height: 110 }} />
+                    <Text className="mt-4 font-nunito text-[18px] font-extrabold text-mascot-navy dark:text-white">
+                      {selectedFilter === 'ALL'
+                        ? translate('quiz.history_empty_title')
+                        : translate('quiz.history_empty_filtered', { mode: translate(FILTER_TABS.find(t => t.key === selectedFilter)?.label ?? 'quiz.title') })}
+                    </Text>
+                    <Text className="mt-1 px-6 text-center font-inter text-[14px] text-neutral-400">
+                      {translate('quiz.history_empty_body')}
+                    </Text>
+                    <TouchableOpacity
+                      onPress={() => router.push('/(app)/study/quiz-setup' as any)}
+                      className="mt-6 rounded-2xl bg-brand px-6 py-3.5"
+                    >
+                      <Text className="font-nunito text-[15px] font-extrabold text-on-brand uppercase">
+                        {translate('quiz.start_quiz_now')}
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                )}
               />
             )}
     </SafeAreaView>

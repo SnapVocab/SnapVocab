@@ -12,7 +12,6 @@ const mockUpdateUser = jest.fn();
 jest.mock('@/lib/api', () => ({ client: jest.fn() }));
 jest.mock('@/features/auth/use-auth-store', () => ({ useAuthStore: { getState: () => ({ updateUser: mockUpdateUser }) } }));
 jest.mock('@/components/ui', () => ({ showErrorMessage: jest.fn(), showSuccessMessage: jest.fn() }));
-jest.mock('../theme/theme-context', () => ({ useShopTheme: () => ({ setEquippedTheme: jest.fn() }) }));
 let mockKeySeq = 0;
 jest.mock('@/features/quiz/utils/idempotency', () => ({ generateIdempotencyKey: () => `key-${++mockKeySeq}` }));
 const request = client as unknown as jest.Mock;

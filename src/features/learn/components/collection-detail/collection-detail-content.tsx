@@ -1,8 +1,11 @@
+import type { Href } from 'expo-router';
 import type { TopicDTO, TopicItemData } from '../../types';
 import type { useCollectionDetail } from '../../use-collection-detail';
 import { FlashList } from '@shopify/flash-list';
+import { useRouter } from 'expo-router';
 import * as React from 'react';
 import { ActivityIndicator, RefreshControl, View } from 'react-native';
+import { useStudyLibrary } from '@/features/study/api';
 import { CollectionErrorState } from '../collections';
 import CollectionDetailListHeader from './collection-detail-list-header';
 import CollectionWordsEmpty from './collection-words-empty';
@@ -42,6 +45,16 @@ export function CollectionDetailContent({ detail }: Props) {
     isFetchingNextItems,
   } = detail;
 
+  // Library row → here → one button for the whole collection (learn_ui.md §9.1, I7).
+  const router = useRouter();
+  const collectionDueCount = useStudyLibrary().data?.find(c => c.id === Number(detail.id))?.dueCount ?? 0;
+  const handleStudyCollection = React.useCallback(() => {
+    router.push({
+      pathname: '/(app)/study/session',
+      params: { collectionId: String(detail.id), collectionName: detail.collectionTitle },
+    } as Href);
+  }, [router, detail.id, detail.collectionTitle]);
+
   const ListHeader = React.useMemo(
     () => (
       <CollectionDetailListHeader
@@ -52,6 +65,8 @@ export function CollectionDetailContent({ detail }: Props) {
         totalCount={isInsideTopic ? totalItemsCount : totalTopicsCount}
         onSelectTopic={handleTopicPress}
         onStudyTopic={handleStudyTopic}
+        onStudyCollection={handleStudyCollection}
+        collectionDueCount={collectionDueCount}
       />
     ),
     [
@@ -63,6 +78,8 @@ export function CollectionDetailContent({ detail }: Props) {
       totalTopicsCount,
       handleTopicPress,
       handleStudyTopic,
+      handleStudyCollection,
+      collectionDueCount,
     ],
   );
 

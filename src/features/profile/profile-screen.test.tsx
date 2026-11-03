@@ -19,6 +19,7 @@ jest.mock('@/features/progress/api', () => ({ useStreak: () => ({ data: { curren
 jest.mock('@/features/shop/hooks/use-shop-queries', () => ({
   useInventory: () => ({ data: { items: [], activeBooster: mockBooster }, serverOffset: 0, isError: mockInventoryError, refetch: mockInventoryRetry }),
 }));
+jest.mock('@/features/badges', () => ({ ProfileBadgeStrip: () => null, useBadges: () => ({ data: undefined }) }));
 jest.mock('@/components/snapvocab', () => ({ Coin3D: () => null, AvatarFrame: () => null }));
 jest.mock('@/components/ui/icons', () => new Proxy({}, { get: () => () => null }));
 jest.mock('@/components/ui', () => {
@@ -58,7 +59,6 @@ it('keeps total XP unchanged and labels the actual active booster separately', (
   expect(screen.getByText('120')).toBeTruthy();
   expect(screen.getByText('XP boost ×3 is active')).toBeTruthy();
   expect(screen.queryByText('120 ×2')).toBeNull();
-  expect(screen.queryByText('Achievements')).toBeNull();
 });
 
 it('keeps saved identity visible and retries only failed sources', async () => {

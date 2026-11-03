@@ -1,10 +1,13 @@
 import axios from 'axios';
 import Env from 'env';
 import { store } from '@/features/auth/use-auth-store';
+import { RENDERED_TRIGGERS } from '@/features/missions/types';
 
 export const client = axios.create({
   baseURL: Env.EXPO_PUBLIC_API_URL,
   timeout: 15000,
+  // Any request can assign today's missions (the first action of the day), so every request says what it can show.
+  headers: { 'X-Mission-Triggers': RENDERED_TRIGGERS.join(',') },
 });
 
 client.interceptors.request.use((config) => {

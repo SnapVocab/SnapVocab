@@ -11,9 +11,10 @@ import {
   QuickOverviewRow,
   StreakStatsCard,
 } from '../components';
-import { SRS_ENABLED } from '../utils';
 
 jest.mock('../api', () => ({ useProgressHistory: jest.fn() }));
+// The fallback for builds with SRS switched off; progress-srs.test.tsx covers the shipped (on) state.
+jest.mock('../utils', () => ({ ...jest.requireActual('../utils'), SRS_ENABLED: false }));
 jest.mock('expo-router', () => ({
   useRouter: () => ({ push: jest.fn(), back: jest.fn() }),
 }));
@@ -76,12 +77,8 @@ function mockHistory(buckets: { periodStart: string; eventCount: number; activeD
   } as ReturnType<typeof useProgressHistory>);
 }
 
-describe('progress UX while the backend has no SRS lifecycle', () => {
+describe('progress UX with SRS metrics switched off', () => {
   afterEach(cleanup);
-
-  it('ships with SRS metrics switched off (no FsrsRecord writer on the backend)', () => {
-    expect(SRS_ENABLED).toBe(false);
-  });
 
   describe('srs-dependent metrics are not presented as real data', () => {
     it('vocabulary card shows an honest unavailable note and no repeated total or state split', () => {
@@ -130,7 +127,7 @@ describe('progress UX while the backend has no SRS lifecycle', () => {
       render(<MascotAdviceCard summary={summaryOf({ totalWords: 3, dueCount: 5 })} streak={streakOf()} />);
       expect(screen.queryByText(/cần ôn/)).toBeNull();
       expect(screen.getByText('Bạn đã lưu 3 từ!')).toBeTruthy();
-      expect(screen.getByText('Hoàn thành quiz hoặc ôn một thẻ hôm nay để duy trì chuỗi ngày học.')).toBeTruthy();
+      expect(screen.getByText('Làm quiz, ôn thẻ hoặc lưu từ đã quét hôm nay để bắt đầu chuỗi ngày học.')).toBeTruthy();
     });
 
     it('mascot generic tip uses real copy, not a raw i18n key', () => {
@@ -157,13 +154,13 @@ describe('progress UX while the backend has no SRS lifecycle', () => {
     it('baseline 1 without study history still prompts the learner to study', () => {
       render(<StreakStatsCard streak={streakOf({ currentStreak: 1 })} />);
       expect(screen.getByText('Chuỗi ngày học')).toBeTruthy();
-      expect(screen.getByText('Hoàn thành quiz hoặc ôn một thẻ hôm nay để duy trì chuỗi học tập.')).toBeTruthy();
+      expect(screen.getByText('Làm quiz, ôn thẻ hoặc lưu từ đã quét hôm nay để duy trì chuỗi học tập.')).toBeTruthy();
     });
 
     it('current 0 with a past record is an interrupted streak, not "not started"', () => {
       render(<StreakStatsCard streak={streakOf({ longestStreak: 12, lastStudiedDate: '2026-09-20' })} />);
       expect(screen.getByText('Chuỗi hiện tại đã gián đoạn')).toBeTruthy();
-      expect(screen.getByText('Kỷ lục: 12 ngày · Hoàn thành quiz hoặc ôn một thẻ để bắt đầu lại.')).toBeTruthy();
+      expect(screen.getByText('Kỷ lục: 12 ngày · Làm quiz, ôn thẻ hoặc lưu từ đã quét để bắt đầu lại.')).toBeTruthy();
       expect(screen.queryByText(/Chưa bắt đầu/)).toBeNull();
     });
 
@@ -172,6 +169,19 @@ describe('progress UX while the backend has no SRS lifecycle', () => {
       expect(screen.queryByText('3 ngày học liên tiếp')).toBeNull();
       expect(screen.getByText('Kỷ lục: 9 ngày')).toBeTruthy();
       expect(screen.getByText('Học gần nhất: 06/10/2026')).toBeTruthy();
+    });
+
+    // streak_freeze.md PD-SF-07: units held, and a use in the last week, are said on the card.
+    it('shows Streak Freeze units held and a recent use', () => {
+      const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+      render(<StreakStatsCard streak={streakOf({ currentStreak: 3, longestStreak: 9, lastStudiedDate: yesterday, freezeCount: 1, lastFrozenDate: yesterday })} />);
+      expect(screen.getByText('Đóng băng chuỗi: còn 1, tự dùng khi bạn lỡ một ngày')).toBeTruthy();
+      expect(screen.getByText(`Đóng băng chuỗi đã giữ chuỗi ngày ${yesterday.split('-').reverse().join('/')}`)).toBeTruthy();
+    });
+
+    it('says nothing about Streak Freeze without units or a recent use', () => {
+      render(<StreakStatsCard streak={streakOf({ currentStreak: 3, longestStreak: 9, lastStudiedDate: '2026-10-06', freezeCount: 0, lastFrozenDate: '2026-09-01' })} />);
+      expect(screen.queryByText(/Đóng băng chuỗi/)).toBeNull();
     });
   });
 
@@ -201,7 +211,7 @@ describe('progress UX while the backend has no SRS lifecycle', () => {
     it('level=null shows XP only and never invents a level', () => {
       render(<LevelOverviewCard xpOverview={{ totalXp: 45, level: null, recentEvents: [] }} />);
       expect(screen.getByText('45 XP')).toBeTruthy();
-      expect(screen.getByText('Tích lũy XP khi hoàn thành bài quiz.')).toBeTruthy();
+      expect(screen.getByText('Tích lũy XP khi làm quiz và ôn thẻ.')).toBeTruthy();
       expect(screen.queryByText(/Cấp \d/)).toBeNull();
       expect(screen.queryByText(/Tập sự/)).toBeNull();
     });

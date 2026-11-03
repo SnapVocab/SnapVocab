@@ -6,20 +6,22 @@ import { useRouter } from 'expo-router';
 import * as React from 'react';
 import { AppState, Pressable, RefreshControl, ScrollView, View } from 'react-native';
 import { Button, FocusAwareStatusBar, SafeAreaView, ScreenHeader, Text } from '@/components/ui';
-import { BookIcon, CheckCircleIcon, ChevronRightIcon, FlameIcon, ShoppingBagIcon, TargetIcon } from '@/components/ui/icons';
+import { BookIcon, CameraIcon, CheckCircleIcon, ChevronRightIcon, FlameIcon, ShoppingBagIcon, SRSReviewIcon, TargetIcon } from '@/components/ui/icons';
 import { RewardIcon } from '@/components/ui/rewards';
 import { useColorMode } from '@/components/ui/surface';
 import { translate } from '@/lib/i18n';
 import { missionErrorCode, useClaimMission, useDailyMissions } from './api';
 
-const actions: Record<MissionTriggerEvent, { href: Href; tx: TxKeyPath }> = {
-  // Add-word needs a topicId; Collections (Mine) → a collection → its add-word FAB supplies it.
-  TOPIC_ITEM_CREATED: { href: '/collections', tx: 'missions.action.add_word' },
+// Partial: a trigger added on the server after this build gets no CTA instead of crashing the screen.
+export const actions: Partial<Record<MissionTriggerEvent, { href: Href; tx: TxKeyPath }>> = {
+  // Add-word needs a topicId; the Learn tab's library → a collection → its add-word FAB supplies it.
+  TOPIC_ITEM_CREATED: { href: '/learn', tx: 'missions.action.add_word' },
   QUIZ_COMPLETED: { href: '/study/quiz-setup', tx: 'missions.action.quiz' },
-  LEARNING_ACTIVITY_RECORDED: { href: '/study/quiz-setup', tx: 'missions.action.study' },
+  // A card review is a learning activity (PD-DM-10): straight into today's session (learn_ui.md UI-LEARN-08).
+  LEARNING_ACTIVITY_RECORDED: { href: '/study/session', tx: 'missions.action.study' },
   SHOP_ITEM_PURCHASED: { href: '/shop', tx: 'missions.action.shop' },
   BOOSTER_USED: { href: '/profile/inventory', tx: 'missions.action.booster' },
-  SRS_REVIEW_COMPLETED: { href: '/study/select', tx: 'missions.action.srs_review' },
+  SRS_REVIEW_COMPLETED: { href: '/study/session', tx: 'missions.action.srs_review' },
   SCAN_WORD_SAVED: { href: '/camera', tx: 'missions.action.scan' },
 };
 
@@ -34,7 +36,9 @@ const missionCopy: Record<string, { name: TxKeyPath; description: TxKeyPath }> =
 };
 
 const categoryTiles: Partial<Record<MissionCategory, { Icon: typeof BookIcon; tile: string; color: string }>> = {
+  SCAN: { Icon: CameraIcon, tile: 'bg-success-100 dark:bg-neutral-800', color: '#2F6E00' },
   VOCABULARY: { Icon: BookIcon, tile: 'bg-info-100 dark:bg-neutral-800', color: '#0B8FCE' },
+  SRS: { Icon: SRSReviewIcon, tile: 'bg-info-100 dark:bg-neutral-800', color: '#0B8FCE' },
   QUIZ: { Icon: TargetIcon, tile: 'bg-purple-100 dark:bg-neutral-800', color: '#8253EC' },
   RETENTION: { Icon: FlameIcon, tile: 'bg-mascot-100 dark:bg-neutral-800', color: '#E57C00' },
   SHOP: { Icon: ShoppingBagIcon, tile: 'bg-reward-100 dark:bg-neutral-800', color: '#B37F00' },
@@ -93,7 +97,7 @@ export function MissionsScreen() {
           missionId: mission.id,
           coin: reward.coin + reward.fallbackCoin,
           xp: reward.xp,
-          item: reward.itemQuantity > 0 ? reward.itemCode : null,
+          item: reward.itemQuantity > 0 ? reward.itemName ?? reward.itemCode : null,
           fallback: reward.fallbackCoin > 0,
         });
       }
@@ -208,14 +212,19 @@ export function MissionsScreen() {
               </View>
 
               <View className="flex-row items-center gap-3">
-                <View className="flex-row items-center gap-1">
-                  <RewardIcon type="coin" size={18} />
-                  <Text className="font-nunito text-sm font-extrabold">{mission.reward.coin}</Text>
-                </View>
-                <View className="flex-row items-center gap-1">
-                  <RewardIcon type="xp" size={18} />
-                  <Text className="font-nunito text-sm font-extrabold">{`${mission.reward.xp} XP`}</Text>
-                </View>
+                {/* An item-only reward pays no Coin (expansion_plan.md §7): never show a "0". */}
+                {mission.reward.coin > 0 && (
+                  <View className="flex-row items-center gap-1">
+                    <RewardIcon type="coin" size={18} />
+                    <Text className="font-nunito text-sm font-extrabold">{mission.reward.coin}</Text>
+                  </View>
+                )}
+                {mission.reward.xp > 0 && (
+                  <View className="flex-row items-center gap-1">
+                    <RewardIcon type="xp" size={18} />
+                    <Text className="font-nunito text-sm font-extrabold">{`${mission.reward.xp} XP`}</Text>
+                  </View>
+                )}
                 <View className="flex-1" />
                 {claimed && <Text tx="missions.claimed" className="font-nunito text-sm font-extrabold text-primary-800 dark:text-primary-300" />}
                 {mission.status === 'IN_PROGRESS' && !ended && action && (
@@ -225,8 +234,8 @@ export function MissionsScreen() {
                   </Pressable>
                 )}
               </View>
-              {/* Own row: item codes may be long and must not push the CTA off the card. */}
-              {mission.reward.itemCode && <Text className="text-sm text-neutral-500 dark:text-neutral-300">{translate('missions.item', { item: mission.reward.itemCode })}</Text>}
+              {/* Own row: item names may be long and must not push the CTA off the card. */}
+              {mission.reward.itemCode && <Text className="text-sm text-neutral-500 dark:text-neutral-300">{translate('missions.item', { item: mission.reward.itemName ?? mission.reward.itemCode })}</Text>}
 
               {claimable && (
                 <>
@@ -242,8 +251,13 @@ export function MissionsScreen() {
                   <CheckCircleIcon width={18} height={18} color="#58CC02" />
                   <Text className="font-nunito text-sm font-extrabold text-primary-800 dark:text-primary-300">
                     {[
-                      translate('missions.granted', { coin: granted.coin, xp: granted.xp }),
-                      granted.item && translate('missions.item', { item: granted.item }),
+                      translate('missions.granted', {
+                        rewards: [
+                          granted.coin > 0 && translate('missions.granted_coin', { coin: granted.coin }),
+                          granted.xp > 0 && translate('missions.granted_xp', { xp: granted.xp }),
+                          granted.item,
+                        ].filter(Boolean).join(', '),
+                      }),
                       granted.fallback && translate('missions.fallback_coin'),
                     ].filter(Boolean).join(' · ')}
                   </Text>

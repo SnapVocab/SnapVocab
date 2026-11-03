@@ -10,6 +10,29 @@ export type StreakStatsCardProps = {
   isLoading?: boolean;
 };
 
+/** Within the last week: the learner sees that a Streak Freeze was used, not just that a unit is gone (PD-SF-07). */
+function usedRecently(date?: string | null) {
+  return !!date && Date.now() - Date.parse(date) < 8 * 24 * 60 * 60 * 1000;
+}
+
+function FreezeLines({ streak }: { streak: StreakDTO }) {
+  const { t } = useTranslation();
+  return (
+    <>
+      {!!streak.freezeCount && (
+        <Text className="font-inter text-xs text-sky-700 dark:text-sky-300">
+          {t('progressUx.freezeHeld', { count: streak.freezeCount })}
+        </Text>
+      )}
+      {usedRecently(streak.lastFrozenDate) && (
+        <Text className="font-inter text-xs text-sky-700 dark:text-sky-300">
+          {t('progressUx.freezeUsed', { date: formatDate(streak.lastFrozenDate!) })}
+        </Text>
+      )}
+    </>
+  );
+}
+
 export function StreakStatsCard({ streak, isLoading }: StreakStatsCardProps) {
   const { t } = useTranslation();
 
@@ -36,6 +59,7 @@ export function StreakStatsCard({ streak, isLoading }: StreakStatsCardProps) {
               ? t('progressUx.streakBrokenSubtitle', { count: streak.longestStreak })
               : t('progressUx.streakZeroSubtitle')}
           </Text>
+          <FreezeLines streak={streak} />
         </View>
       </View>
     );
@@ -54,6 +78,7 @@ export function StreakStatsCard({ streak, isLoading }: StreakStatsCardProps) {
             {t('progressUx.lastStudy', { date: formatDate(streak.lastStudiedDate) })}
           </Text>
         )}
+        <FreezeLines streak={streak} />
       </View>
     </View>
   );

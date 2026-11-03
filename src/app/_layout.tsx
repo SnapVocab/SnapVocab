@@ -11,7 +11,7 @@ import { KeyboardProvider } from 'react-native-keyboard-controller';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useThemeConfig } from '@/components/ui/use-theme-config';
 
-import { ShopThemeProvider } from '@/features/shop';
+import { PushHost } from '@/features/notifications/push-host';
 import { APIProvider } from '@/lib/api';
 import { loadSelectedTheme } from '@/lib/hooks/use-selected-theme';
 import '../global.css';
@@ -41,6 +41,7 @@ export default function RootLayout() {
 
   return (
     <Providers>
+      <PushHost />
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="(app)" />
         <Stack.Screen name="(auth)" />
@@ -60,22 +61,20 @@ function Providers({ children }: { children: React.ReactNode }) {
       className={theme.dark ? 'dark' : undefined}
     >
       <KeyboardProvider>
-        <ShopThemeProvider>
-          <NavigationTheme>
-            <APIProvider>
-              <BottomSheetModalProvider>
-                {children}
-                <FlashMessage position="top" statusBarHeight={insets.top} />
-              </BottomSheetModalProvider>
-            </APIProvider>
-          </NavigationTheme>
-        </ShopThemeProvider>
+        <NavigationTheme>
+          <APIProvider>
+            <BottomSheetModalProvider>
+              {children}
+              <FlashMessage position="top" statusBarHeight={insets.top} />
+            </BottomSheetModalProvider>
+          </APIProvider>
+        </NavigationTheme>
       </KeyboardProvider>
     </GestureHandlerRootView>
   );
 }
 
-/** Navigator surfaces follow the user's light/dark mode only; Shop themes are scoped to the Shop area (ShopSurface). */
+/** Navigator surfaces follow the user's light/dark mode. */
 function NavigationTheme({ children }: { children: React.ReactNode }) {
   return <ThemeProvider value={useThemeConfig()}>{children}</ThemeProvider>;
 }

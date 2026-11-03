@@ -2,7 +2,9 @@ import type { PurchaseResultDTO, ShopItemDTO } from '../types';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { generateIdempotencyKey } from '@/features/quiz/utils/idempotency';
+import { translate } from '@/lib/i18n';
 import { isOutcomeUnknown, parseShopError } from '../api';
+import { isEquippable, isStackable } from '../types';
 import {
   useEquipMutation,
   usePurchaseMutation,
@@ -33,7 +35,6 @@ export function useShopActions({
 }: UseShopActionsProps) {
   const { t } = useTranslation();
   const [outOfCoinItem, setOutOfCoinItem] = useState<ShopItemDTO | null>(null);
-  const [previewThemeItem, setPreviewThemeItem] = useState<ShopItemDTO | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [boosterItem, setBoosterItem] = useState<ShopItemDTO | null>(null);
 
@@ -67,7 +68,7 @@ export function useShopActions({
       return;
     }
 
-    if ((item.type === 'THEME' || item.type === 'AVATAR_FRAME') && item.owned) {
+    if (isEquippable(item.type) && item.owned) {
       equipMutation.mutate({
         slot: item.type,
         itemId: item.itemId,
@@ -75,7 +76,7 @@ export function useShopActions({
       return;
     }
 
-    if (item.type === 'XP_BOOSTER' && item.blockReason === 'MAX_QUANTITY_REACHED') {
+    if (isStackable(item.type) && item.blockReason === 'MAX_QUANTITY_REACHED') {
       return;
     }
 
@@ -162,7 +163,7 @@ export function useShopActions({
   };
 
   const handleEquipNow = (item: ShopItemDTO) => {
-    if (item.type === 'THEME' || item.type === 'AVATAR_FRAME') {
+    if (isEquippable(item.type)) {
       equipMutation.mutate({
         slot: item.type,
         itemId: item.itemId,
@@ -180,8 +181,6 @@ export function useShopActions({
   return {
     outOfCoinItem,
     setOutOfCoinItem,
-    previewThemeItem,
-    setPreviewThemeItem,
     errorMessage,
     setErrorMessage,
     purchaseIntent,

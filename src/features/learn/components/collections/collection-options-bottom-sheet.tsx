@@ -1,5 +1,5 @@
 import type { BottomSheetBackdropProps } from '@gorhom/bottom-sheet';
-import type { Collection } from '../../types';
+import type { Collection, CollectionRef } from '../../types';
 import { BottomSheetBackdrop, BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet';
 import * as React from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -12,12 +12,12 @@ import { CollectionMenuView } from './collection-menu-view';
 
 type Props = {
   bottomSheetRef: React.RefObject<BottomSheetModal | null>;
-  collection: Collection | null;
+  collection: CollectionRef | null;
   mode?: 'OPTIONS' | 'CREATE';
   onCreated?: (collection: Collection) => void;
   onSaveEdit?: (collection: Collection) => void;
-  onDelete?: (collection: Collection) => void;
-  onStudy?: (collection: Collection) => void;
+  onDelete?: (collection: CollectionRef) => void;
+  onStudy?: (collection: CollectionRef) => void;
 };
 
 export function CollectionOptionsBottomSheet({

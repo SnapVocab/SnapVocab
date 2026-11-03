@@ -21,17 +21,21 @@ import {
   buildAddWordPayload,
   MultipleGroupSection,
   SingleGroupSection,
+  targetWordField,
   useAddWordForm,
   validateAddWordForm,
 } from './components/add-word';
 
 export function AddWordScreen() {
   const router = useRouter();
-  const { topicId, topicName = '', itemId } = useLocalSearchParams<{
+  const { topicId, topicName = '', itemId, word, scanRequestId } = useLocalSearchParams<{
     topicId?: string;
     topicName?: string;
     collectionId?: string;
     itemId?: string;
+    /** From a scan result: prefilled and looked up once the schema loads. */
+    word?: string;
+    scanRequestId?: string;
   }>();
 
   const numTopicId = topicId ? Number(topicId) : undefined;
@@ -69,6 +73,17 @@ export function AddWordScreen() {
     handleRemoveInstance,
     handleQuickLookup,
   } = useAddWordForm(topicSchema, topicItem?.groups, numItemId);
+
+  const prefilled = React.useRef(false);
+  React.useEffect(() => {
+    if (!word || prefilled.current || !topicSchema?.groups)
+      return;
+    prefilled.current = true;
+    const field = targetWordField(topicSchema);
+    if (field)
+      handleSingleFieldChange(field.group, field.attribute, word);
+    void handleQuickLookup(word);
+  }, [word, topicSchema, handleSingleFieldChange, handleQuickLookup]);
 
   const handleSubmit = () => {
     if (!numTopicId) {
@@ -113,7 +128,7 @@ export function AddWordScreen() {
       updateTopicItem({ topicId: numTopicId, itemId: numItemId, data: payload }, mutationCallbacks);
     }
     else {
-      addTopicItem({ topicId: numTopicId, data: payload }, mutationCallbacks);
+      addTopicItem({ topicId: numTopicId, data: payload, scanRequestId }, mutationCallbacks);
     }
   };
 

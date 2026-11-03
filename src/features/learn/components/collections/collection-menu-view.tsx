@@ -1,4 +1,4 @@
-import type { Collection } from '../../types';
+import type { CollectionRef } from '../../types';
 import * as React from 'react';
 import { Pressable, View } from 'react-native';
 import { Text } from '@/components/ui';
@@ -6,7 +6,7 @@ import { CloseIcon, EditIcon, FolderIcon } from '@/components/ui/icons';
 import { translate } from '@/lib/i18n';
 
 type Props = {
-  collection: Collection;
+  collection: CollectionRef;
   onOpenEdit: () => void;
   onOpenDelete: () => void;
   onStudy?: () => void;

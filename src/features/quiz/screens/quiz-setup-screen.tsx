@@ -224,9 +224,13 @@ export function QuizSetupScreen() {
     setIsCheckingUnfinished(true);
     let unfinished: QuizHistorySummaryResponse | undefined;
     try {
-      // ponytail: first history page only — a match buried under 20 newer quizzes just falls
-      // through to create. Add a status filter to GET /api/me/quizzes if that ever shows up.
-      const history = await getQuizHistory({ page: 0, size: 20 });
+      // Only resumable sessions of this mode: D18 keeps at most one per context, and TTL caps the rest.
+      const history = await getQuizHistory({
+        page: 0,
+        size: 20,
+        mode: request.mode,
+        status: 'IN_PROGRESS',
+      });
       unfinished = findResumableQuiz(history?.data ?? [], request);
     }
     catch {

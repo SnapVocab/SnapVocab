@@ -2,7 +2,6 @@ import type { CoinSourceType, WalletTransactionDTO } from './types';
 import { router } from 'expo-router';
 import {
   CoinsIcon,
-  GiftIcon,
   RefreshCwIcon,
   ShieldAlertIcon,
   ShoppingCartIcon,
@@ -25,7 +24,6 @@ import { Snapy } from '@/components/Snapy';
 import { ScreenHeader, useSurface } from '@/components/ui';
 import { cn } from '@/lib/utils';
 import { useCoinBalance, useInfiniteWallet } from './hooks/use-shop-queries';
-import { ShopSurface } from './theme/theme-context';
 
 function getSourceInfo(sourceType: CoinSourceType, t: (key: string) => string) {
   switch (sourceType) {
@@ -38,16 +36,6 @@ function getSourceInfo(sourceType: CoinSourceType, t: (key: string) => string) {
       return {
         label: t('shopUi.sourceMission'),
         icon: <TargetIcon size={20} color="#EAB308" />,
-      };
-    case 'DAILY_CHEST':
-      return {
-        label: t('shopUi.sourceDailyChest'),
-        icon: <GiftIcon size={20} color="#F59E0B" />,
-      };
-    case 'WEEKLY_CHEST':
-      return {
-        label: t('shopUi.sourceWeeklyChest'),
-        icon: <GiftIcon size={20} color="#8B5CF6" />,
       };
     case 'ADMIN_ADJUSTMENT':
       return {
@@ -97,16 +85,7 @@ function formatRelativeDate(isoString: string, t: (key: string, options?: Record
   }
 }
 
-/** Shop-area screen: it and its modals take the equipped theme's surfaces. */
 export default function WalletScreen() {
-  return (
-    <ShopSurface>
-      <WalletScreenContent />
-    </ShopSurface>
-  );
-}
-
-function WalletScreenContent() {
   const s = useSurface();
   const { t, i18n } = useTranslation();
 

@@ -4,6 +4,7 @@ import { cleanup, render, screen } from '@testing-library/react-native';
 import * as React from 'react';
 import { ProfileScreen } from '@/features/profile/profile-screen';
 import { useHomeWidget, useStreak, useXpOverview } from '@/features/progress/api';
+import { useStudyToday } from '@/features/study/api';
 import { HomeHeader } from '../components';
 import { HomeScreen } from '../home-screen';
 
@@ -18,6 +19,9 @@ jest.mock('@/features/progress/api', () => ({
   useProgressHistory: jest.fn(),
   invalidateProgress: jest.fn(),
 }));
+jest.mock('@/features/study/api', () => ({ useStudyToday: jest.fn(), invalidateStudy: jest.fn() }));
+// Its states are covered by study/__tests__/today-state.test.ts.
+jest.mock('@/features/study/today-block', () => ({ TodayBlock: () => null }));
 jest.mock('@/features/auth/use-auth-store', () => ({
   useAuthStore: (select: (s: unknown) => unknown) => select({ user: mockUser }),
   // lib/api/provider subscribes at import time (reached through ProfileScreen -> shop api).
@@ -26,11 +30,17 @@ jest.mock('@/features/auth/use-auth-store', () => ({
 jest.mock('@/features/profile/api', () => ({
   useMe: () => ({ data: mockUser, isLoading: false, refetch: jest.fn(), isRefetching: false }),
 }));
+jest.mock('@/features/badges', () => ({ useBadges: () => ({ data: undefined }), ProfileBadgeStrip: () => null }));
 jest.mock('@/features/profile/use-icon-colors', () => ({
   useIconColors: () => new Proxy({}, { get: () => new Proxy({}, { get: () => '#000' }) }),
 }));
 jest.mock('expo-router', () => ({
   useRouter: () => ({ push: jest.fn(), back: jest.fn() }),
+  useFocusEffect: jest.fn(),
+}));
+jest.mock('@/features/notifications/api', () => ({
+  notificationKeys: { unreadCount: ['notifications', 'unread-count'] },
+  useUnreadCount: () => ({ data: undefined }),
 }));
 jest.mock('react-native-safe-area-context', () => ({
   useSafeAreaInsets: () => ({ top: 0, bottom: 0, left: 0, right: 0 }),
@@ -105,20 +115,18 @@ describe('home and profile show only what the backend supports', () => {
     mockQuery(useHomeWidget, { data: widget });
     mockQuery(useXpOverview, { data: xp });
     mockQuery(useStreak, { data: liveStreak });
+    mockQuery(useStudyToday, { data: { dueCount: 4 } });
   });
   afterEach(cleanup);
 
-  it('loaded: saved total, real level, no SRS hero/CTA/copy', () => {
+  it('loaded: saved total with its learning-state split, real level, greeting from the study-today numbers', () => {
     renderWithClient(<HomeScreen />);
     expect(screen.getByText('8')).toBeTruthy();
-    expect(screen.getByText('từ trong kho')).toBeTruthy();
+    expect(screen.getByText('từ trong kho (0 đã học · 0 thuần thục)')).toBeTruthy();
     expect(screen.getByText('Cấp 2 · Học viên')).toBeTruthy();
-    // dueCount=3 from the backend is structurally meaningless without SRS.
-    expect(screen.queryByText(/cần ôn/i)).toBeNull();
-    // A due count, not the study card's general "due cards" pitch.
-    expect(screen.queryByText(/\d+ thẻ đến hạn/)).toBeNull();
-    expect(screen.queryByText(/đã được ôn tập/)).toBeNull();
-    expect(screen.queryByText('Flashcard')).toBeNull();
+    // One source for "hôm nay" (learn_ui.md principle 8): /api/study/today (4), never the widget's dueCount (3).
+    expect(screen.getByText('Hôm nay bạn có 4 từ cần ôn tập!')).toBeTruthy();
+    expect(screen.queryByText(/có 3 từ/)).toBeNull();
     expect(screen.getByText('Nhiệm vụ hàng ngày')).toBeTruthy();
   });
 

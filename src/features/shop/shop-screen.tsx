@@ -14,7 +14,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { BoosterActivateModal } from '@/components/shop/booster-activate-modal';
-import { FramePreviewModal, ThemePreviewModal } from '@/components/shop/item-preview-modal';
+import { FramePreviewModal } from '@/components/shop/item-preview-modal';
 import { OutOfCoinModal } from '@/components/shop/OutOfCoinModal';
 import { PurchaseSuccessModal } from '@/components/shop/PurchaseSuccessModal';
 import { ShopCategoryTabs } from '@/components/shop/shop-category-tabs';
@@ -30,22 +30,13 @@ import {
   useInventory,
   useShopCatalog,
 } from './hooks/use-shop-queries';
-import { isThemeKnown, ShopSurface } from './theme/theme-context';
+import { isEquippable, isKnownItemType } from './types';
 import { isBoosterLive } from './utils/booster-timer';
 import { shopItemTitle } from './utils/item-presentation';
 
-const ITEM_ORDER = { XP_BOOSTER: 0, STREAK_FREEZE: 1, AVATAR_FRAME: 2, THEME: 3 };
+const ITEM_ORDER = { XP_BOOSTER: 0, STREAK_FREEZE: 1, AVATAR_FRAME: 2, CARD_FRAME: 3 };
 
-/** Shop-area screen: it and its modals take the equipped theme's surfaces. */
 export default function ShopScreen() {
-  return (
-    <ShopSurface>
-      <ShopScreenContent />
-    </ShopSurface>
-  );
-}
-
-function ShopScreenContent() {
   const s = useSurface();
   const isShopTab = (useSegments() as string[]).includes('(tabs)');
   const { t, i18n } = useTranslation();
@@ -70,13 +61,13 @@ function ShopScreenContent() {
 
   const hasActiveBooster = isBoosterLive(inventoryData?.activeBooster, serverOffset);
 
-  // Filter catalog items according to spec (hide themes with unknown themeKey)
+  // Filter catalog items according to spec (hide item types this app version does not know)
   const filteredItems = useMemo(() => {
     if (!catalogItems) {
       return [];
     }
     const visible = catalogItems.filter((item) => {
-      if (item.type === 'THEME' && !isThemeKnown(item.config?.themeKey)) {
+      if (!isKnownItemType(item.type)) {
         return false;
       }
       return true;
@@ -91,8 +82,6 @@ function ShopScreenContent() {
   const {
     outOfCoinItem,
     setOutOfCoinItem,
-    previewThemeItem,
-    setPreviewThemeItem,
     errorMessage,
     setErrorMessage,
     purchaseIntent,
@@ -261,11 +250,8 @@ function ShopScreenContent() {
                 purchaseDisabled={purchaseDisabled}
                 onPress={handleItemPress}
                 onPreview={(i) => {
-                  if (i.type === 'AVATAR_FRAME') {
+                  if (isEquippable(i.type)) {
                     setPreviewFrameItem(i);
-                  }
-                  else if (i.type === 'THEME') {
-                    setPreviewThemeItem(i);
                   }
                   else {
                     setDetailItem(i);
@@ -315,18 +301,6 @@ function ShopScreenContent() {
         onAction={() => {
           const item = previewFrameItem;
           setPreviewFrameItem(null);
-          if (item) {
-            handleItemPress(item);
-          }
-        }}
-      />
-
-      <ThemePreviewModal
-        item={previewThemeItem}
-        onClose={() => setPreviewThemeItem(null)}
-        onAction={() => {
-          const item = previewThemeItem;
-          setPreviewThemeItem(null);
           if (item) {
             handleItemPress(item);
           }

@@ -1,7 +1,7 @@
 import type { Href } from 'expo-router';
 import type { HomeWidgetDTO, XpOverviewDTO } from '@/features/progress/types';
 import { useQueryClient } from '@tanstack/react-query';
-import { useRouter } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
 import * as React from 'react';
 import { Pressable, RefreshControl, ScrollView, View } from 'react-native';
 import { XPOrb3D } from '@/components/snapvocab';
@@ -10,6 +10,7 @@ import { FocusAwareStatusBar, SafeAreaView, Text } from '@/components/ui';
 import { ChevronRightIcon, TargetIcon } from '@/components/ui/icons';
 import { useColorMode } from '@/components/ui/surface';
 import { useAuthStore } from '@/features/auth/use-auth-store';
+import { notificationKeys } from '@/features/notifications/api';
 import {
   invalidateProgress,
   SectionError,
@@ -18,8 +19,10 @@ import {
   useStreak,
   useXpOverview,
 } from '@/features/progress';
+import { invalidateStudy, useStudyToday } from '@/features/study/api';
+import { TodayBlock } from '@/features/study/today-block';
 import { translate } from '@/lib/i18n';
-import { HomeSearchBar, StudyTodayCard } from './components';
+import { HomeSearchBar } from './components';
 
 // Same chunky 3D surface as HomeSearchBar.
 const CARD_3D = 'mb-3 rounded-2xl border-2 border-b-4 border-line border-b-edge bg-surface';
@@ -47,19 +50,26 @@ export function HomeScreen() {
   // Same query as HomeHeader's flame, so the greeting and the header never disagree.
   const streakQuery = useStreak();
   const xp = useXpOverview();
+  // Same query as the "Hôm nay" block below and on Learn, so Home never states a second number.
+  const today = useStudyToday();
   const [isRefreshing, setIsRefreshing] = React.useState(false);
   const isDark = useColorMode() === 'dark';
 
+  // notification.md §3.7: coming back to Home refreshes the bell once its count is past its 60 s staleTime.
+  useFocusEffect(React.useCallback(() => {
+    void queryClient.refetchQueries({ queryKey: notificationKeys.unreadCount, stale: true });
+  }, [queryClient]));
+
   const onRefresh = React.useCallback(async () => {
     setIsRefreshing(true);
-    await invalidateProgress(queryClient);
+    await Promise.all([invalidateProgress(queryClient), invalidateStudy(queryClient)]);
     setIsRefreshing(false);
   }, [queryClient]);
 
   const displayName = user?.firstName || user?.email?.split('@')[0] || translate('home.default_name');
   // Undefined while loading or on error: the greeting then stays neutral instead of claiming a 0.
   const streak = streakQuery.data?.currentStreak;
-  const dueCount = SRS_ENABLED ? widget.data?.dueCount : undefined;
+  const dueCount = today.data?.dueCount;
 
   return (
     <SafeAreaView edges={['bottom', 'left', 'right']} style={{ flex: 1 }} className="flex-1 bg-background">
@@ -96,7 +106,7 @@ export function HomeScreen() {
         </View>
 
         <HomeSearchBar />
-        <StudyTodayCard />
+        <TodayBlock compact />
 
         <HomeProgressRow
           vocabulary={widget.data}

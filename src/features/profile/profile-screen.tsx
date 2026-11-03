@@ -26,9 +26,11 @@ import {
   FlameIcon,
   SettingsIcon,
   StarIcon,
+  TrophyIcon,
   WalletIcon,
 } from '@/components/ui/icons';
 import { useAuthStore } from '@/features/auth/use-auth-store';
+import { ProfileBadgeStrip, useBadges } from '@/features/badges';
 import { useStreak } from '@/features/progress/api';
 import { useInventory } from '@/features/shop/hooks/use-shop-queries';
 import { isBoosterLive } from '@/features/shop/utils/booster-timer';
@@ -52,6 +54,9 @@ export function ProfileScreen() {
   const user = data ?? stored;
   // Equipped frame and running booster come from the inventory (shop.md §11.3); no extra API.
   const inventory = useInventory();
+  const badges = useBadges().data;
+  const openAchievements = (badgeId?: number) =>
+    router.push((badgeId ? `/profile/achievements?open=${badgeId}` : '/profile/achievements') as Href);
   const [, tick] = useState(0);
   const frame = inventory.data?.items.find(i => i.type === 'AVATAR_FRAME' && i.equipped);
   const boosterLive = isBoosterLive(inventory.data?.activeBooster, inventory.serverOffset);
@@ -127,7 +132,9 @@ export function ProfileScreen() {
             <Button size="sm" variant="secondary" tx="profile.retry" onPress={retryFailed} loading={isRefetching || streak.isRefetching || inventory.isRefetching} />
           </View>
         )}
-        <IdentityCard user={user} frame={frame} onEdit={() => router.push('/edit-profile')} locale={i18n.language} />
+        <IdentityCard user={user} frame={frame} onEdit={() => router.push('/edit-profile')} locale={i18n.language}>
+          <ProfileBadgeStrip view={badges} onPress={openAchievements} />
+        </IdentityCard>
 
         <View className="mt-4 flex-row gap-3">
           <StatTile
@@ -165,6 +172,16 @@ export function ProfileScreen() {
         )}
 
         <View className="mt-5 overflow-hidden rounded-2xl border-2 border-b-4 border-line border-b-edge bg-surface">
+          <ProfileMenuRow
+            icon={<TrophyIcon color={iconColor.stat.trophy} width={20} height={20} />}
+            tint="bg-reward-50 border-reward-100 dark:bg-reward-500/15 dark:border-reward-500/30"
+            tx="profile.menu.achievements"
+            hintTx="profile.menu_hints.achievements"
+            hint={badges ? translate('badges.profile.count', { earned: badges.earnedCount, total: badges.totalCount }) : undefined}
+            dot={(badges?.unseenCount ?? 0) > 0}
+            chevron={iconColor.muted}
+            onPress={() => openAchievements()}
+          />
           <ProfileMenuRow
             icon={<Coin3D size="sm" />}
             tint="bg-reward-50 border-reward-100 dark:bg-reward-500/15 dark:border-reward-500/30"
@@ -213,7 +230,7 @@ function HeaderButton({
   );
 }
 
-function IdentityCard({ user, frame, onEdit, locale }: { user: User; frame?: InventoryItemDTO; onEdit: () => void; locale: string }) {
+function IdentityCard({ user, frame, onEdit, locale, children }: { user: User; frame?: InventoryItemDTO; onEdit: () => void; locale: string; children?: ReactNode }) {
   const name = fullName(user);
   const joined = formatDate(user.createdAt, locale);
 
@@ -260,6 +277,7 @@ function IdentityCard({ user, frame, onEdit, locale }: { user: User; frame?: Inv
       {!!user.bio && (
         <Text className="text-center text-sm text-neutral-600 dark:text-neutral-300">{user.bio}</Text>
       )}
+      {children}
       <Button size="sm" variant="secondary" tx="profile.edit" testID="profile-edit-button" onPress={onEdit} icon={<EditIcon width={16} height={16} color="#757793" />} />
     </View>
   );
@@ -301,29 +319,38 @@ function ProfileMenuRow({
   chevron,
   last,
   onPress,
+  hint,
+  dot,
 }: {
   icon: ReactNode;
   tint: string;
-  tx: 'profile.menu.wallet' | 'profile.menu.inventory';
-  hintTx: 'profile.menu_hints.wallet' | 'profile.menu_hints.inventory';
+  tx: 'profile.menu.achievements' | 'profile.menu.wallet' | 'profile.menu.inventory';
+  hintTx: 'profile.menu_hints.achievements' | 'profile.menu_hints.wallet' | 'profile.menu_hints.inventory';
   chevron: string;
   last?: boolean;
   onPress: () => void;
+  /** Live summary replacing the static hint, e.g. "4/12 huy hiệu". */
+  hint?: string;
+  /** Unseen-badge dot on the icon tile (badges.md §2.3). */
+  dot?: boolean;
 }) {
   return (
     <Pressable
       accessibilityRole="button"
       accessibilityLabel={translate(tx)}
-      accessibilityHint={translate(hintTx)}
+      accessibilityHint={[hint ?? translate(hintTx), dot ? translate('badges.profile.has_new') : null].filter(Boolean).join(', ')}
       onPress={onPress}
       className={`flex-row items-center p-4 active:bg-pressed ${last ? '' : 'border-b border-neutral-100 dark:border-line'}`}
     >
       <View className={`mr-3.5 size-10 items-center justify-center rounded-xl border ${tint}`}>
         {icon}
+        {dot && <View className="absolute -top-1 -right-1 size-[11px] rounded-full border-2 border-white bg-danger-500 dark:border-neutral-900" />}
       </View>
       <View className="flex-1">
         <Text className="font-nunito text-[16px] font-black text-mascot-navy dark:text-white" tx={tx} />
-        <Text className="text-[13px] font-medium text-neutral-500 dark:text-neutral-300" tx={hintTx} />
+        {hint
+          ? <Text className="text-[13px] font-medium text-neutral-500 dark:text-neutral-300">{hint}</Text>
+          : <Text className="text-[13px] font-medium text-neutral-500 dark:text-neutral-300" tx={hintTx} />}
       </View>
       <ChevronRightIcon color={chevron} width={18} height={18} />
     </Pressable>

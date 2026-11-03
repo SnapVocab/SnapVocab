@@ -1,10 +1,11 @@
 import type { ThemePreference, UpdateUserSettings } from './types';
+import type { PushPermission } from '@/features/notifications/push';
 import type { ColorSchemeType } from '@/lib/hooks/use-selected-theme';
 import type { Language } from '@/lib/i18n/resources';
 import Env from 'env';
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
-import { Alert, ScrollView } from 'react-native';
+import { useEffect, useState } from 'react';
+import { Alert, AppState, Linking, ScrollView } from 'react-native';
 
 import {
   BackButton,
@@ -25,6 +26,7 @@ import {
   TargetIcon,
   ThemeModeIcon,
 } from '@/components/ui/icons';
+import { askPermission, pushToggle, readPermission, registerDevice } from '@/features/notifications/push';
 import { useSelectedTheme } from '@/lib/hooks/use-selected-theme';
 import { translate, useSelectedLanguage } from '@/lib/i18n';
 import { useLogout, useUpdateSettings, useUserSettings } from './api';
@@ -52,7 +54,7 @@ const ROW_ICON_SIZE = 22;
 
 type Sheet = 'language' | 'theme' | 'goal' | 'reminder' | null;
 
-/** MH-PROFILE-03. Biometric login and notification list are out of this round. */
+/** MH-PROFILE-03. Biometric login is out of this round; OS permission states wait for expo-notifications (DEP-NOTIF-02). */
 export function SettingsScreen() {
   const router = useRouter();
   const [sheet, setSheet] = useState<Sheet>(null);
@@ -78,6 +80,38 @@ export function SettingsScreen() {
         { text: translate('settings.logout'), style: 'destructive', onPress: () => logout.mutate() },
       ],
     );
+  };
+
+  // OS permission is per device, pushEnabled per account (§3.9): re-read when coming back from the OS settings.
+  const [permission, setPermission] = useState<PushPermission>('undetermined');
+  useEffect(() => {
+    const read = () => void readPermission().then(setPermission).catch(() => {});
+    read();
+    const subscription = AppState.addEventListener('change', state => state === 'active' && read());
+    return () => subscription.remove();
+  }, []);
+  const push = pushToggle(permission, settings?.pushEnabled ?? true);
+
+  /** Asks the OS only while undetermined; granted ⇒ register this device (A5). */
+  const allowPush = async () => {
+    const next = await askPermission().catch(() => permission);
+    setPermission(next);
+    if (next === 'granted')
+      void registerDevice().catch(() => {});
+    return next === 'granted';
+  };
+
+  const changePush = async (value: boolean) => {
+    if (push.blocked) {
+      void Linking.openSettings(); // the app cannot ask again once denied
+      return;
+    }
+    if (!value) {
+      save({ pushEnabled: false });
+      return;
+    }
+    if (await allowPush())
+      save({ pushEnabled: true });
   };
 
   const languageLabel = LANGUAGES.find(l => l.value === language)?.label;
@@ -111,16 +145,26 @@ export function SettingsScreen() {
           />
         </SettingsSection>
 
+        {/* Push has one kind (the review reminder), so its channel and its time sit together (notification_ui.md §H.5). */}
         <SettingsSection tx="settings.notifications">
           <SettingsRow
             icon={<BellIcon color={iconColor.row.notification} size={ROW_ICON_SIZE} />}
             tx="settings.push"
             toggle={{
-              value: settings?.pushEnabled ?? true,
-              onChange: value => save({ pushEnabled: value }),
+              value: push.on,
+              onChange: value => void changePush(value),
               disabled: !settings,
             }}
+            hint={push.blocked ? translate('settings.push_blocked') : undefined}
             testID="settings-push"
+          />
+          <SettingsRow
+            icon={<ClockRotateIcon color={iconColor.row.reminder} size={ROW_ICON_SIZE} />}
+            tx="settings.reminder"
+            value={reminder ?? translate('settings.reminder_off')}
+            hint={reminder && settings && !push.on ? translate('settings.reminder_inbox_only') : undefined}
+            onPress={() => setSheet('reminder')}
+            testID="settings-reminder"
             last
           />
         </SettingsSection>
@@ -132,13 +176,6 @@ export function SettingsScreen() {
             value={settings ? translate('settings.daily_goal_unit', { count: settings.dailyGoal }) : undefined}
             onPress={() => setSheet('goal')}
             testID="settings-daily-goal"
-          />
-          <SettingsRow
-            icon={<ClockRotateIcon color={iconColor.row.reminder} size={ROW_ICON_SIZE} />}
-            tx="settings.reminder"
-            value={reminder ?? translate('settings.reminder_off')}
-            onPress={() => setSheet('reminder')}
-            testID="settings-reminder"
             last
           />
         </SettingsSection>
@@ -227,11 +264,14 @@ export function SettingsScreen() {
       <OptionSheet
         visible={sheet === 'reminder'}
         titleTx="settings.select_reminder"
+        descriptionTx="settings.reminder_sheet_desc"
         options={reminderOptions().map(time => ({ value: time, label: time }))}
+        fallbackScrollValue="20:00"
         selected={reminder ?? ''}
         onSelect={(value) => {
           save({ srsReminderAt: value });
           setSheet(null);
+          void allowPush(); // contextual permission prompt (§3.9 b)
         }}
         clearTx="settings.turn_off"
         onClear={() => {

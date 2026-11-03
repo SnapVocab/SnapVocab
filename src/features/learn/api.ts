@@ -13,6 +13,7 @@ import type {
 } from './types';
 import type { CursorPaginationResponse, PaginateResponse } from '@/lib/api';
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { syncBadges } from '@/features/badges/api';
 import { invalidateProgress } from '@/features/progress/api';
 import { client } from '@/lib/api';
 
@@ -209,11 +210,12 @@ export function useAddTopicItem() {
   const queryClient = useQueryClient();
 
   return useMutation<TopicItemData, AxiosError<ApiResponse<unknown>>, AddTopicItemParams>({
-    mutationFn: async ({ topicId, data }) => {
+    mutationFn: async ({ topicId, data, scanRequestId }) => {
       const response = await client<ApiResponse<TopicItemData>>({
         url: `/api/topics/${topicId}/items`,
         method: 'POST',
         data,
+        params: scanRequestId ? { scanRequestId } : undefined,
       });
 
       return response.data.data;
@@ -228,6 +230,8 @@ export function useAddTopicItem() {
       queryClient.invalidateQueries({ queryKey: ['collections'] });
       queryClient.invalidateQueries({ queryKey: ['collection-topics'] });
       invalidateProgress(queryClient);
+      // A quiz-ready word may complete a word badge; a credited scan save is a study day (badges.md §9).
+      void syncBadges(queryClient);
     },
   });
 }

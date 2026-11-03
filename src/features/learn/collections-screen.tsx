@@ -1,5 +1,5 @@
 import type { BottomSheetModal } from '@gorhom/bottom-sheet';
-import type { Collection } from './types';
+import type { Collection, CollectionRef } from './types';
 import { useRouter } from 'expo-router';
 import { useCallback, useRef, useState } from 'react';
 import { ScrollView } from 'react-native';
@@ -34,7 +34,7 @@ export function CollectionsScreen() {
     refetch,
   } = useCollections({ type: viewType });
 
-  const handleCardPress = useCallback((collection: Collection) => {
+  const handleCardPress = useCallback((collection: CollectionRef) => {
     setItem('last_studied_collection_id', collection.id);
     router.push({
       pathname: '/(app)/collections/[id]',

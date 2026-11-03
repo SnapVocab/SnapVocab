@@ -6,6 +6,7 @@ import { Text, UserAvatar } from '@/components/ui';
 import { CoinIcon, FlameIcon, NotificationBell } from '@/components/ui/icons';
 import { useThemeConfig } from '@/components/ui/use-theme-config';
 import { useAuthStore } from '@/features/auth/use-auth-store';
+import { useUnreadCount } from '@/features/notifications/api';
 import { useStreak } from '@/features/progress/api';
 
 export type HomeHeaderProps = {
@@ -32,6 +33,8 @@ export function HomeHeader({
   // "–" while loading or on error: unknown is not 0.
   const streakDays = useStreak().data?.currentStreak ?? '–';
   const coins = user?.coin ?? 0;
+  // A dot, not a number (notification_ui.md UI-NOTIF-02); no dot while loading or on error without cache.
+  const unread = useUnreadCount().data?.count ?? 0;
 
   return (
     <View
@@ -82,10 +85,11 @@ export function HomeHeader({
           <Pressable
             onPress={onNotificationPress}
             accessibilityRole="button"
-            accessibilityLabel={t('home.notifications')}
+            accessibilityLabel={unread > 0 ? t('notifications.bell_unread_a11y', { count: unread }) : t('notifications.bell_a11y')}
+            testID="home-notifications"
             className="size-10 items-center justify-center rounded-2xl border-2 border-b-[3px] border-line border-b-edge bg-surface-raised active:translate-y-px active:border-b-2 active:bg-pressed"
           >
-            <NotificationBell color={theme.colors.text} />
+            <NotificationBell color={theme.colors.text} unread={unread > 0} />
           </Pressable>
         </View>
       </View>

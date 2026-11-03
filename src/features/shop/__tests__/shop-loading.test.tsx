@@ -35,7 +35,6 @@ jest.mock('@/components/ui', () => {
     ),
   };
 });
-jest.mock('../theme/theme-context', () => ({ ShopSurface: ({ children }: { children: React.ReactNode }) => children, isThemeKnown: () => true }));
 jest.mock('@/components/shop/ShopItemCard', () => ({
   ShopItemCard: ({ item }: { item: ShopItemDTO }) => {
     const Text = require('react-native').Text;
@@ -43,7 +42,7 @@ jest.mock('@/components/shop/ShopItemCard', () => ({
   },
 }));
 jest.mock('@/components/shop/booster-activate-modal', () => ({ BoosterActivateModal: () => null }));
-jest.mock('@/components/shop/item-preview-modal', () => ({ FramePreviewModal: () => null, ThemePreviewModal: () => null }));
+jest.mock('@/components/shop/item-preview-modal', () => ({ FramePreviewModal: () => null }));
 jest.mock('@/components/shop/shop-item-detail-modal', () => ({ ShopItemDetailModal: () => null }));
 jest.mock('@/components/shop/OutOfCoinModal', () => ({ OutOfCoinModal: () => null }));
 jest.mock('@/components/shop/PurchaseSuccessModal', () => ({ PurchaseSuccessModal: () => null }));

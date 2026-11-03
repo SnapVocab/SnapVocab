@@ -9,6 +9,7 @@ import { useSurface } from '@/components/ui';
 import { generateIdempotencyKey } from '@/features/quiz/utils/idempotency';
 import { isOutcomeUnknown, parseShopError } from '@/features/shop/api';
 import { useActivateBoosterMutation } from '@/features/shop/hooks/use-shop-queries';
+import { translate } from '@/lib/i18n';
 import { ShopButton as Button } from './shop-button';
 
 /** HH:mm, plus the date when expiry is not on the server's current day (a 180-minute booster can cross midnight). */

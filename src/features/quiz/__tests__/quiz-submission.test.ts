@@ -18,6 +18,8 @@ import {
   checkQuestion,
   completeQuiz,
   createQuiz,
+  fetchCollectionTopics,
+  getQuizHistory,
 } from '../api/quiz-api';
 import { generateIdempotencyKey } from '../utils/idempotency';
 
@@ -85,6 +87,28 @@ describe('quiz v2 authoritative backend API contracts', () => {
       });
       expect(result.quizId).toBe(1001);
       expect(result.status).toBe('IN_PROGRESS');
+    });
+  });
+
+  describe('history and topic paging', () => {
+    it('passes mode/status filters to GET /api/me/quizzes', async () => {
+      mockedClient.mockResolvedValueOnce({ data: { data: { data: [], meta: { page: 0, pages: 0 } } } });
+      await getQuizHistory({ mode: 'MCQ', status: 'IN_PROGRESS' });
+      expect(mockedClient).toHaveBeenCalledWith({
+        url: '/api/me/quizzes',
+        method: 'GET',
+        params: { page: 0, size: 20, mode: 'MCQ', status: 'IN_PROGRESS' },
+      });
+    });
+
+    it('pages through every topic of a collection', async () => {
+      const page = (ids: number[], pages: number) =>
+        ({ data: { data: { data: ids.map(id => ({ id })), meta: { pages } } } });
+      mockedClient.mockResolvedValueOnce(page([1, 2], 2)).mockResolvedValueOnce(page([3], 2));
+      const topics = await fetchCollectionTopics(9);
+      expect(topics.map(t => t.id)).toEqual([1, 2, 3]);
+      expect(mockedClient).toHaveBeenCalledTimes(2);
+      expect(mockedClient.mock.calls[1][0].params).toEqual({ page: 1, size: 100 });
     });
   });
 

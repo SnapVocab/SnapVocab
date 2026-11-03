@@ -12,6 +12,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { Coin3D } from '@/components/snapvocab';
 import { useSurface } from '@/components/ui';
+import { translate } from '@/lib/i18n';
 
 type OutOfCoinModalProps = {
   visible: boolean;
