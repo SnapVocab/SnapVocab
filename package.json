@@ -45,7 +45,8 @@
     "test:ci": "pnpm run test --coverage",
     "test:watch": "pnpm run test --watch",
     "install-maestro": "curl -Ls 'https://get.maestro.mobile.dev' | bash",
-    "e2e-test": "maestro test .maestro/ -e APP_ID=com.obytes.development"
+    "e2e-test": "maestro test .maestro/ -e APP_ID=com.obytes.development",
+    "build:apk:dev": "node scripts/build-development-apk.cjs"
   },
   "dependencies": {
     "@expo-google-fonts/inter": "^0.4.2",
