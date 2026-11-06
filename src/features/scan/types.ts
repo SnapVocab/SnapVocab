@@ -41,6 +41,8 @@ export type Translation = {
 };
 
 export type LookupResult = {
+  wordId: number;
+  inMyVocabulary: boolean;
   exists: boolean;
   word: string;
   langCode: string;

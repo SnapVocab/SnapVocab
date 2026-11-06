@@ -1,6 +1,7 @@
 import type { ScanItem } from '../types';
 import { Pressable } from 'react-native';
-import { Button, Text, View } from '@/components/ui';
+import { Text, View } from '@/components/ui';
+import { SaveWordButton } from '@/features/my-words/save-word-button';
 import { primaryIpa, RELIABILITY_COLORS, RELIABILITY_KEYS, translationFor } from '../display';
 
 type Props = {
@@ -9,10 +10,9 @@ type Props = {
   color: string;
   selected: boolean;
   onPress: () => void;
-  onSave: () => void;
 };
 
-export function DetectedItemCard({ item, color, selected, onPress, onSave }: Props) {
+export function DetectedItemCard({ item, color, selected, onPress }: Props) {
   const reliabilityColor = RELIABILITY_COLORS[item.reliability];
   const word = item.word;
   const ipa = primaryIpa(word);
@@ -65,8 +65,10 @@ export function DetectedItemCard({ item, color, selected, onPress, onSave }: Pro
             )
           : <Text className="mt-1 text-[13px] font-medium text-danger-500" tx="scan.result.not_in_dictionary" />}
 
-        {word && (
-          <Button tx="scan.result.save_word" onPress={onSave} fullWidth size="sm" className="mt-3" testID={`scan-save-${item.label}`} />
+        {word?.wordId && (
+          <View className="mt-3">
+            <SaveWordButton wordId={word.wordId} saved={word.inMyVocabulary} />
+          </View>
         )}
       </View>
     </Pressable>

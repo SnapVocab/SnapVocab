@@ -68,6 +68,12 @@ export function WordDetailScreen() {
             word={displayWord}
             pronunciations={wordData.pronunciations}
           />
+          {wordData.wordId && (
+            <View className="mt-5 gap-3">
+              <SaveWordButton wordId={wordData.wordId} saved={wordData.inMyVocabulary} />
+              <Button tx="my_words.open" variant="white" onPress={() => router.push('/my-words')} />
+            </View>
+          )}
 
           {/* A word can exist with no meaning at all (an incomplete dictionary entry): say so, not a blank page. */}
           {!wordData.meanings?.length && (

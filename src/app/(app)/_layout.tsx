@@ -16,6 +16,7 @@ export default function AppLayout() {
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="lookup" />
         <Stack.Screen name="word-detail" />
+        <Stack.Screen name="my-words" />
         <Stack.Screen name="collections" />
         <Stack.Screen name="collections/[id]" />
         <Stack.Screen name="collections/create-topic" />

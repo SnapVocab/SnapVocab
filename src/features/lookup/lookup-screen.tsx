@@ -10,7 +10,7 @@ import {
   View,
 } from 'react-native';
 import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
-import { BackButton, FocusAwareStatusBar, SafeAreaView, Text } from '@/components/ui';
+import { BackButton, Button, FocusAwareStatusBar, SafeAreaView, Text } from '@/components/ui';
 import {
   ChevronRightIcon,
   ClockIcon,
@@ -132,6 +132,7 @@ export function LookupScreen() {
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
+          <Button tx="my_words.title" variant="white" className="mb-4" onPress={() => router.push('/my-words')} />
           {/* Search Input Bar */}
           <View className="flex-row items-center rounded-2xl border-2 border-line bg-white px-4 py-2.5 shadow-sm dark:bg-neutral-800">
             {isSuggestionsLoading ? (

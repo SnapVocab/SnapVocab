@@ -1,78 +1,208 @@
-import type { Collection } from '@/features/learn/types';
-import { useLocalSearchParams, useRouter } from 'expo-router';
-import { ActivityIndicator, ScrollView } from 'react-native';
+import type { Collection, TopicDTO } from '@/features/learn/types';
+import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
+import { useCallback, useRef, useState } from 'react';
+import { ActivityIndicator, BackHandler, FlatList, ScrollView } from 'react-native';
 import { BackButton, Button, FocusAwareStatusBar, Pressable, SafeAreaView, Text, View } from '@/components/ui';
 import { ChevronRightIcon } from '@/components/ui/icons';
-import { useCollections, useCollectionTopics } from '@/features/learn/api';
+import { useCollections, useInfiniteCollectionTopics } from '@/features/learn/api';
+import { DestinationRow } from '@/features/my-words/components/destination-row';
 import { translate } from '@/lib/i18n';
 
-type Params = { word: string; scanRequestId: string };
+const screenStyle = { flex: 1 };
 
-/**
- * Step 2 of saving a scanned word: pick one of the learner's own topics, then the usual add-word form opens with the
- * word looked up. The scan id rides along so the Scan daily mission can credit it (daily_mission.md §6.1).
- */
+/** Browse destinations, select one, then review the schema-generated form. */
 export function SaveWordScreen() {
   const router = useRouter();
-  const { word, scanRequestId } = useLocalSearchParams<Params>();
+  const { word, wordId, scanRequestId } = useLocalSearchParams<{ word: string; wordId?: string; scanRequestId?: string }>();
+  const [collection, setCollection] = useState<Collection | null>(null);
+  const [parents, setParents] = useState<TopicDTO[]>([]);
+  const [selected, setSelected] = useState<TopicDTO | null>(null);
+  const breadcrumb = useRef<ScrollView>(null);
+  const parent = parents.at(-1);
   const collections = useCollections({ type: 'USER' });
-  const pick = (topicId: number, topicName: string) => router.replace({
-    pathname: '/collections/add-word',
-    params: { topicId: String(topicId), topicName, word, scanRequestId },
-  });
-
+  const topics = useInfiniteCollectionTopics(collection?.id ?? '', { parentId: parent?.id, size: 30 });
+  const items = topics.data?.pages.flatMap(page => page.data) ?? [];
+  const selectedPath = collection && selected
+    ? [collection.name, ...parents.map(topic => topic.name), ...(parent?.id === selected.id ? [] : [selected.name])].join(' / ')
+    : null;
+  const goUp = useCallback(() => {
+    setSelected(null);
+    if (parents.length)
+      setParents(value => value.slice(0, -1));
+    else if (collection)
+      setCollection(null);
+    else
+      router.back();
+  }, [parents.length, collection, router]);
+  useFocusEffect(useCallback(() => {
+    if (!collection)
+      return;
+    const subscription = BackHandler.addEventListener('hardwareBackPress', () => {
+      goUp();
+      return true;
+    });
+    return () => subscription.remove();
+  }, [collection, goUp]));
+  const confirm = () => {
+    if (!collection || !selected)
+      return;
+    router.replace({
+      pathname: '/collections/add-word',
+      params: {
+        topicId: String(selected.id),
+        topicName: selected.name,
+        collectionId: String(collection.id),
+        word,
+        ...(wordId ? { wordId } : {}),
+        ...(selected.activeTemplateId ? { activeTemplateId: String(selected.activeTemplateId) } : {}),
+        ...(scanRequestId ? { scanRequestId } : {}),
+      },
+    });
+  };
+  const pending = collection ? topics.isPending : collections.isPending;
+  const failed = collection ? topics.isError : collections.isError;
+  const retry = () => collection ? topics.refetch() : collections.refetch();
   return (
-    <SafeAreaView style={{ flex: 1 }} className="flex-1 bg-neutral-50 dark:bg-neutral-950">
+    <SafeAreaView style={screenStyle} className="flex-1 bg-background" edges={['top', 'bottom']}>
       <FocusAwareStatusBar />
-      <View className="flex-row items-center gap-2 px-4 pt-1 pb-3">
-        <BackButton onPress={() => router.back()} />
+      <View className="flex-row items-center gap-3 border-b border-line bg-surface px-4 py-3">
+        <BackButton onPress={goUp} />
         <View className="flex-1">
-          <Text className="font-nunito text-lg font-black text-mascot-navy dark:text-white" tx="scan.save.title" />
-          <Text numberOfLines={1} className="text-xs font-semibold text-neutral-500">{translate('scan.save.word', { word })}</Text>
+          <Text className="font-nunito text-xl font-black text-mascot-navy dark:text-white" tx={collection ? 'my_words.choose_topic' : 'my_words.choose_collection'} />
+          <Text className="mt-0.5 text-sm text-neutral-600 dark:text-neutral-300" tx="my_words.destination_hint" />
         </View>
       </View>
-
-      <ScrollView contentContainerStyle={{ padding: 16, gap: 16 }}>
-        {collections.isPending && <ActivityIndicator />}
-        {collections.isError && (
-          <View className="gap-2 rounded-2xl bg-white p-4 dark:bg-neutral-900">
-            <Text tx="scan.save.load_error" />
-            <Button tx="scan.result.retry" onPress={() => void collections.refetch()} />
-          </View>
-        )}
-        {collections.data?.length === 0 && (
-          <View className="gap-3 rounded-2xl bg-white p-4 dark:bg-neutral-900">
-            <Text tx="scan.save.empty" />
-            <Button tx="scan.save.go_learn" onPress={() => router.push('/learn')} />
-          </View>
-        )}
-        {collections.data?.map(c => <CollectionTopics key={c.id} collection={c} onPick={pick} />)}
-      </ScrollView>
+      <View className="gap-1 border-b border-line px-4 py-3">
+        <Text className="text-sm text-neutral-600 dark:text-neutral-300" tx="my_words.adding_word" />
+        <Text numberOfLines={2} className="font-nunito text-xl font-extrabold text-mascot-navy dark:text-white">{word}</Text>
+      </View>
+      {collection && (
+        <ScrollView ref={breadcrumb} horizontal className="max-h-14 grow-0 border-b border-line bg-surface px-3" showsHorizontalScrollIndicator={false} onContentSizeChange={() => breadcrumb.current?.scrollToEnd({ animated: false })}>
+          <Pressable
+            accessibilityRole="button"
+            onPress={() => {
+              setCollection(null);
+              setParents([]);
+              setSelected(null);
+            }}
+            className="min-h-12 justify-center px-2"
+          >
+            <Text className="text-sm font-bold text-primary-700 dark:text-primary-200" tx="my_words.collections_short" />
+          </Pressable>
+          <View className="justify-center"><ChevronRightIcon width={15} height={15} color="#73758F" /></View>
+          <Pressable
+            accessibilityRole="button"
+            onPress={() => {
+              setParents([]);
+              setSelected(null);
+            }}
+            className="min-h-12 justify-center px-2"
+          >
+            <Text className="text-sm font-bold text-mascot-navy dark:text-white">{collection.name}</Text>
+          </Pressable>
+          {parents.map((topic, index) => (
+            <View key={topic.id} className="flex-row items-center">
+              <ChevronRightIcon width={15} height={15} color="#73758F" />
+              <Pressable
+                accessibilityRole="button"
+                onPress={() => {
+                  setParents(value => value.slice(0, index + 1));
+                  setSelected(null);
+                }}
+                className="min-h-12 justify-center px-2"
+              >
+                <Text className="text-sm font-bold text-mascot-navy dark:text-white">{topic.name}</Text>
+              </Pressable>
+            </View>
+          ))}
+        </ScrollView>
+      )}
+      {pending && <View className="flex-1 items-center justify-center"><ActivityIndicator /></View>}
+      {failed && (
+        <View className="gap-3 p-6">
+          <Text className="text-center text-base" tx="scan.save.load_error" />
+          <Button tx="word_detail.retry" variant="white" onPress={() => void retry()} />
+        </View>
+      )}
+      {!collection && !pending && !failed && (
+        <FlatList
+          className="flex-1"
+          data={collections.data}
+          keyExtractor={item => String(item.id)}
+          contentContainerClassName="grow pb-4"
+          ListHeaderComponent={<Text className="p-4 font-nunito text-sm font-extrabold text-neutral-600 dark:text-neutral-300" tx="my_words.own_collections" />}
+          ListEmptyComponent={(
+            <View className="gap-4 p-6">
+              <Text className="text-center text-base" tx="scan.save.empty" />
+              <Button tx="scan.save.go_learn" onPress={() => router.push('/learn')} />
+            </View>
+          )}
+          renderItem={({ item }) => (
+            <DestinationRow
+              title={item.name}
+              description={item.translation}
+              folder
+              testID={`save-collection-${item.id}`}
+              onPress={() => {
+                setCollection(item);
+                setParents([]);
+                setSelected(null);
+              }}
+            />
+          )}
+        />
+      )}
+      {collection && !pending && (
+        <FlatList
+          className="flex-1"
+          key={`${collection.id}:${parent?.id ?? 'root'}`}
+          data={items}
+          keyExtractor={item => String(item.id)}
+          contentContainerClassName="grow pb-4"
+          ListHeaderComponent={(
+            <View>
+              {parent && <DestinationRow title={parent.name} description={translate('my_words.current_topic')} folder selected={selected?.id === parent.id} testID={`save-current-topic-${parent.id}`} onPress={() => setSelected(parent)} />}
+              <Text className="p-4 font-nunito text-sm font-extrabold text-neutral-600 dark:text-neutral-300" tx={parent ? 'my_words.subtopics' : 'my_words.topics'} />
+            </View>
+          )}
+          onEndReached={() => {
+            if (topics.hasNextPage && !topics.isFetching)
+              void topics.fetchNextPage();
+          }}
+          ListEmptyComponent={!failed
+            ? (
+                <View className="gap-4 p-6">
+                  <Text className="text-center text-base text-neutral-600 dark:text-neutral-300" tx={parent ? 'my_words.no_subtopics' : 'scan.save.no_topics'} />
+                  {!parent && <Button tx="scan.save.go_learn" variant="white" onPress={() => router.push('/learn')} />}
+                </View>
+              )
+            : null}
+          ListFooterComponent={topics.isFetchingNextPage ? <ActivityIndicator className="py-4" /> : null}
+          renderItem={({ item }) => (
+            <DestinationRow
+              title={item.name}
+              description={item.translation}
+              folder={item.hasChildren}
+              selected={selected?.id === item.id}
+              onPress={() => setSelected(item)}
+              testID={`scan-save-topic-${item.id}`}
+              browseTestID={`save-subtopics-${item.id}`}
+              onBrowse={item.hasChildren ? () => {
+                setParents(value => [...value, item]);
+                setSelected(null);
+              } : undefined}
+            />
+          )}
+        />
+      )}
+      {collection && (
+        <View className="gap-3 border-t border-line bg-surface px-4 pt-3 pb-4">
+          <Text className="text-sm text-neutral-600 dark:text-neutral-300">
+            {selectedPath ?? translate('my_words.select_destination_hint')}
+          </Text>
+          <Button tx="my_words.continue_to_form" testID="save-destination-confirm" disabled={!selected} className="h-auto min-h-14 py-3" textClassName="shrink" onPress={confirm} />
+        </View>
+      )}
     </SafeAreaView>
-  );
-}
-
-function CollectionTopics({ collection, onPick }: { collection: Collection; onPick: (id: number, name: string) => void }) {
-  // ponytail: root topics, first 50; a learner with deeper or longer trees picks from the Learn tab instead.
-  const topics = useCollectionTopics(collection.id, { size: 50 });
-  const items = topics.data?.data ?? [];
-  return (
-    <View className="gap-2">
-      <Text className="font-nunito text-sm font-extrabold text-neutral-500">{collection.name}</Text>
-      {topics.isPending && <ActivityIndicator />}
-      {!topics.isPending && items.length === 0 && <Text className="text-sm text-neutral-400" tx="scan.save.no_topics" />}
-      {items.map(topic => (
-        <Pressable
-          key={topic.id}
-          accessibilityRole="button"
-          testID={`scan-save-topic-${topic.id}`}
-          onPress={() => onPick(topic.id, topic.name)}
-          className="min-h-12 flex-row items-center rounded-2xl bg-white px-4 py-3 active:opacity-70 dark:bg-neutral-900"
-        >
-          <Text numberOfLines={1} className="flex-1 font-nunito text-base font-bold text-mascot-navy dark:text-white">{topic.name}</Text>
-          <ChevronRightIcon width={16} height={16} color="#9CA3AF" />
-        </Pressable>
-      ))}
-    </View>
   );
 }

@@ -173,7 +173,6 @@ export function ScanResultScreen() {
                   color={boxColor(index)}
                   selected={selectedIndex === index}
                   onPress={() => setSelectedIndex(index)}
-                  onSave={() => item.word && router.push({ pathname: '/scan-save', params: { word: item.word.word, scanRequestId: requestId } })}
                 />
               </View>
             ))}
@@ -186,14 +185,20 @@ export function ScanResultScreen() {
           style={{ paddingBottom: insets.bottom + 12 }}
           className="absolute inset-x-0 bottom-0 flex-row gap-3 border-t border-line bg-surface p-4"
         >
-          {/* Words are saved one by one (each needs a topic and a check of its translation): no "save all". */}
+          <Button
+            tx="my_words.open"
+            onPress={() => router.push({ pathname: '/my-words', params: { scanRequestId: requestId } })}
+            className="h-auto min-h-14 flex-1 py-3"
+            textClassName="shrink"
+          />
           <Button
             variant="white"
             icon={<CameraIcon color={isDark ? '#F3F4F6' : '#3D3F5E'} />}
-            tx="scan.result.retake"
+            accessibilityLabel={translate('scan.result.retake')}
             onPress={backToCamera}
             testID="scan-retake-button"
-            className="h-14 flex-1"
+            size="icon"
+            className="size-14"
           />
         </View>
       )}
