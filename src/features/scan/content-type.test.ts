@@ -25,6 +25,8 @@ describe('resolveContentType', () => {
 describe('dictionary display helpers', () => {
   const word = {
     exists: true,
+    wordId: 1,
+    inMyVocabulary: false,
     word: 'bottle',
     langCode: 'en',
     langName: 'English',

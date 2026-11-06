@@ -26,11 +26,8 @@ export function DynamicFormField({
   onLookup: _onLookup,
   isLookupLoading: _isLookupLoading,
 }: Props) {
-  const isMultiline
-    = attribute.name.includes('description')
-      || attribute.name.includes('example')
-      || attribute.name.includes('definition')
-      || attribute.name.includes('note');
+  const isMultiline = attribute.semanticRole === 'DEFINITION'
+    || attribute.semanticRole === 'EXAMPLE_SENTENCE';
 
   // Render based on data type
   switch (attribute.dataType) {

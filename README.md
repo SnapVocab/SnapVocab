@@ -33,6 +33,17 @@ To add a new variable:
 
 See `.env.example` for all available variables.
 
+## Local Android development APK
+
+To switch back from a production build, run `pnpm build:apk:dev`. It loads
+`.env.development`, prebuilds the development package, refreshes generated
+autolinking and builds `android/app/build/outputs/apk/debug/app-debug.apk`.
+Install that APK on your device, then run `pnpm start` and open **SnapVocab Dev**.
+The production APK cannot load JavaScript from Metro. On the Android emulator,
+the development API URL `http://10.0.2.2:8080` points to the backend on your PC.
+On a physical device, use your PC's LAN address or `adb reverse tcp:8080 tcp:8080`
+with `http://127.0.0.1:8080` in `.env.development` and restart Metro.
+
 ## Local production APK
 
 With dependencies, JDK 17, and Android SDK installed, fill in `.env.production`

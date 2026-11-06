@@ -1,19 +1,17 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import * as React from 'react';
 import {
   ActivityIndicator,
   ScrollView,
   View,
 } from 'react-native';
 import { BackButton, Button, FocusAwareStatusBar, SafeAreaView, Text } from '@/components/ui';
+import { SaveWordButton } from '@/features/my-words/save-word-button';
 import { translate } from '@/lib/i18n/utils';
 import { useWordById, useWordLookup } from './api';
 import {
   WordExamples,
   WordHeader,
-  WordLinks,
   WordMeanings,
-  WordRelations,
 } from './components';
 
 export function WordDetailScreen() {
@@ -31,16 +29,6 @@ export function WordDetailScreen() {
   const { data: wordData, isLoading, isError, refetch } = activeQuery;
 
   const displayWord = wordData?.word ?? paramWord ?? '';
-
-  const handleRelatedWordPress = React.useCallback(
-    (relWord: string) => {
-      router.push({
-        pathname: '/word-detail',
-        params: { word: relWord },
-      });
-    },
-    [router],
-  );
 
   return (
     <SafeAreaView edges={['top', 'bottom', 'left', 'right']} style={{ flex: 1 }} className="flex-1 bg-background">
@@ -80,9 +68,15 @@ export function WordDetailScreen() {
             word={displayWord}
             pronunciations={wordData.pronunciations}
           />
+          {wordData.wordId && (
+            <View className="mt-5 gap-3">
+              <SaveWordButton wordId={wordData.wordId} saved={wordData.inMyVocabulary} />
+              <Button tx="my_words.open" variant="white" onPress={() => router.push('/my-words')} />
+            </View>
+          )}
 
           {/* A word can exist with no meaning at all (an incomplete dictionary entry): say so, not a blank page. */}
-          {!wordData.meanings?.length && !wordData.relations?.length && (
+          {!wordData.meanings?.length && (
             <View className="mt-6 items-center rounded-2xl border border-line bg-surface px-5 py-8">
               <Text className="text-center font-nunito text-base font-extrabold text-mascot-navy dark:text-white" tx="word_detail.no_meanings_title" />
               <Text className="mt-1.5 text-center font-inter text-sm text-neutral-500 dark:text-neutral-400" tx="word_detail.no_meanings_body" />
@@ -95,14 +89,6 @@ export function WordDetailScreen() {
           {/* Example Sentences */}
           <WordExamples meanings={wordData.meanings} />
 
-          {/* Related Words (Synonyms, Antonyms, Word Family) */}
-          <WordRelations
-            relations={wordData.relations}
-            onSelectRelation={handleRelatedWordPress}
-          />
-
-          {/* External Links / References */}
-          <WordLinks meanings={wordData.meanings} />
         </ScrollView>
       )}
     </SafeAreaView>

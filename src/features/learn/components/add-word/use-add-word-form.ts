@@ -4,6 +4,7 @@ import { showErrorMessage, showSuccessMessage } from '@/components/ui';
 import { client } from '@/lib/api';
 import { translate } from '@/lib/i18n';
 import { initializeFormData } from './add-word-helpers';
+import { prefillLookup } from './lookup-prefill';
 
 type MultipleFieldChangeParams = {
   groupName: string;
@@ -127,14 +128,14 @@ export function useAddWordForm(
   }, []);
 
   const handleQuickLookup = React.useCallback(
-    async (wordText: string) => {
+    async (wordText: string, wordId?: number) => {
       if (!wordText?.trim() || !topicSchema?.groups)
         return;
 
       try {
         setIsLookingUp(true);
-        const res = await client.get('/api/words/lookup', {
-          params: { q: wordText.trim() },
+        const res = await client.get(wordId ? `/api/words/${wordId}` : '/api/words/lookup', {
+          params: wordId ? undefined : { q: wordText.trim() },
         });
 
         const data = res.data?.data;
@@ -143,87 +144,7 @@ export function useAddWordForm(
           return;
         }
 
-        const ipa = data.pronunciations?.[0]?.ipa || '';
-        const meaningsList = data.meanings || [];
-        const translationsList = data.translations || [];
-        const primaryTranslation = translationsList.find((t: { translation?: string }) => t.translation?.trim())?.translation?.trim() || '';
-        const primaryDefinition = meaningsList[0]?.definition || '';
-        const primaryExample = meaningsList[0]?.example || '';
-
-        setFormData((prev) => {
-          const updated: Record<string, any> = { ...prev };
-
-          for (const group of topicSchema.groups) {
-            if (!group.multiple) {
-              const currentGroup = { ...(updated[group.name] || {}) };
-              for (const attr of group.attributes || []) {
-                const attrName = attr.name.toLowerCase();
-                if ((attrName === 'phonetic' || attrName === 'ipa') && ipa && !currentGroup[attr.name]) {
-                  currentGroup[attr.name] = ipa;
-                }
-                else if (
-                  (attrName === 'translation' || attrName.includes('nghia') || attrName.includes('vietnamese'))
-                  && primaryTranslation
-                  && !currentGroup[attr.name]
-                ) {
-                  currentGroup[attr.name] = primaryTranslation;
-                }
-                else if (
-                  (attrName === 'definition' || attrName.includes('def'))
-                  && primaryDefinition
-                  && !currentGroup[attr.name]
-                ) {
-                  currentGroup[attr.name] = primaryDefinition;
-                }
-                else if (
-                  (attrName === 'example' || attrName.includes('sentence'))
-                  && primaryExample
-                  && !currentGroup[attr.name]
-                ) {
-                  currentGroup[attr.name] = primaryExample;
-                }
-              }
-              updated[group.name] = currentGroup;
-            }
-            else if (
-              group.name.includes('example')
-              || group.name.includes('meaning')
-              || group.name.includes('definition')
-            ) {
-              const newItems: Record<string, any>[] = [];
-
-              if (meaningsList.length > 0) {
-                for (const m of meaningsList.slice(0, 3)) {
-                  const item: Record<string, any> = {};
-                  for (const attr of group.attributes || []) {
-                    const attrName = attr.name.toLowerCase();
-                    if (attrName.includes('content') || attrName.includes('example') || attrName.includes('sentence')) {
-                      item[attr.name] = m.example || '';
-                    }
-                    else if (attrName.includes('def') || attrName.includes('meaning')) {
-                      item[attr.name] = m.definition || '';
-                    }
-                    else if (attrName.includes('pos') || attrName.includes('part')) {
-                      item[attr.name] = m.pos || '';
-                    }
-                    else {
-                      item[attr.name] = '';
-                    }
-                  }
-                  if (Object.values(item).some(Boolean)) {
-                    newItems.push(item);
-                  }
-                }
-              }
-
-              if (newItems.length > 0) {
-                updated[group.name] = newItems;
-              }
-            }
-          }
-
-          return updated;
-        });
+        setFormData(prev => prefillLookup(topicSchema, prev, data));
 
         showSuccessMessage(translate('learn.add_word.lookup_success'));
       }

@@ -19,6 +19,8 @@ export type DataType = 'TEXT' | 'AUDIO' | 'IMAGE' | 'NUMBER' | 'BOOLEAN' | 'DATE
 export type TemplateElementType = 'FIELD' | 'SECTION_BREAK' | 'COLUMN_BREAK';
 
 export type SchemaAttributeDTO = {
+  /** Resolved locally from the active template when editing vocabulary. */
+  semanticRole?: SemanticRole | null;
   attributeId: number;
   name: string;
   label: string;
