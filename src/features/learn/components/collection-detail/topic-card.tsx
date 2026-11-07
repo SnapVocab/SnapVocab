@@ -3,15 +3,17 @@ import { Pressable, View } from 'react-native';
 import { useUniwind } from 'uniwind';
 import { Text } from '@/components/ui';
 import { BookIcon, ChevronRightIcon, FolderIcon, PlayIcon } from '@/components/ui/icons';
+import { StudyCountLabels } from '@/features/study/study-count-labels';
 import { translate } from '@/lib/i18n';
 
 type Props = {
   item: TopicDTO;
   onPress?: () => void;
   onStudyPress?: () => void;
+  counts?: { newCount: number; dueCount: number };
 };
 
-export default function TopicCard({ item, onPress, onStudyPress }: Props) {
+export default function TopicCard({ item, onPress, onStudyPress, counts }: Props) {
   const isFolder = item.hasChildren;
   const { theme } = useUniwind();
   const cardSurfaceClasses = theme === 'dark'
@@ -62,6 +64,7 @@ export default function TopicCard({ item, onPress, onStudyPress }: Props) {
                 </Text>
               )
             : null}
+          <StudyCountLabels counts={counts} className="mt-2" />
         </View>
       </Pressable>
 
@@ -70,7 +73,7 @@ export default function TopicCard({ item, onPress, onStudyPress }: Props) {
           accessibilityRole="button"
           accessibilityLabel={translate('learn.topic.study_topic', { name: item.name })}
           onPress={onStudyPress}
-          className="h-10 flex-row items-center gap-1.5 rounded-xl border-2 border-b-[3px] border-emerald-200 border-b-emerald-300 bg-emerald-50 px-2.5 active:translate-y-px dark:border-emerald-800 dark:border-b-emerald-900 dark:bg-emerald-950/50"
+          className="min-h-12 flex-row items-center gap-1.5 rounded-xl border-2 border-b-[3px] border-emerald-200 border-b-emerald-300 bg-emerald-50 px-2.5 py-2 active:translate-y-px dark:border-emerald-800 dark:border-b-emerald-900 dark:bg-emerald-950/50"
         >
           <PlayIcon width={13} height={13} fill="#16A34A" />
           <Text className="font-nunito text-xs font-black text-emerald-700 dark:text-white">
@@ -81,7 +84,7 @@ export default function TopicCard({ item, onPress, onStudyPress }: Props) {
           accessibilityRole="button"
           accessibilityLabel={translate('learn.topic.open_topic')}
           onPress={onPress}
-          className="size-9 items-center justify-center rounded-xl border-2 border-b-[3px] border-line border-b-edge bg-surface-raised"
+          className="size-12 items-center justify-center rounded-xl border-2 border-b-[3px] border-line border-b-edge bg-surface-raised"
         >
           <ChevronRightIcon width={16} height={16} color="#71717A" />
         </Pressable>

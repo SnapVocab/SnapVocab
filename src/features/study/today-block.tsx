@@ -7,6 +7,7 @@ import { Button, Text } from '@/components/ui';
 import { Snapy } from '@/components/ui/snapy';
 import { translate } from '@/lib/i18n';
 import { useStudyToday } from './api';
+import { StudyCountLabels } from './study-count-labels';
 import { sessionMinutes, todayState } from './today-state';
 
 type Copy = {
@@ -106,6 +107,8 @@ export function TodayBlock({ compact = false }: { compact?: boolean }) {
 
   const state = todayState(today.data);
   const copy = copyFor(state);
+  const hasCards = today.data.dueCount + today.data.newCount > 0;
+  const cta = hasCards ? translate('learn.today.cta_start', { count: today.data.sessionCount }) : copy.cta;
   const onPress = state.kind === 'empty'
     ? () => router.push({ pathname: '/(app)/collections', params: { view: 'explore' } } as Href)
     : () => router.push('/(app)/study/session' as Href);
@@ -114,10 +117,11 @@ export function TodayBlock({ compact = false }: { compact?: boolean }) {
     return (
       <View className="mb-4 rounded-3xl border-2 border-b-[5px] border-emerald-300 border-b-emerald-500 bg-emerald-50 p-5 dark:border-emerald-800 dark:border-b-emerald-950 dark:bg-emerald-950/40">
         <Text className="font-nunito text-lg font-black text-mascot-navy dark:text-white">
-          {copy.title ?? `${copy.value} ${copy.label}`}
+          {hasCards ? translate('study_limits.today') : copy.title ?? `${copy.value} ${copy.label}`}
         </Text>
+        {hasCards && <StudyCountLabels counts={today.data} className="mt-2" />}
         {!!copy.desc && <Text className="mt-1 font-inter text-sm text-neutral-600 dark:text-neutral-300">{copy.desc}</Text>}
-        {!!copy.cta && <Button className="mt-4" label={copy.cta} variant="primary" onPress={onPress} />}
+        {!!cta && <Button className="mt-4" label={cta} variant="primary" onPress={onPress} />}
       </View>
     );
   }
@@ -125,7 +129,7 @@ export function TodayBlock({ compact = false }: { compact?: boolean }) {
   return (
     <View className="px-5 pt-2 pb-6">
       {!!copy.pose && <Snapy pose={copy.pose} animation="none" className="mb-3 size-20" />}
-      {copy.value !== undefined
+      {hasCards ? <StudyCountLabels counts={today.data} className="py-2" /> : copy.value !== undefined
         ? (
             <View accessible accessibilityLabel={`${copy.value} ${copy.label}`}>
               <Text className="font-nunito text-6xl font-black text-mascot-navy dark:text-white">{copy.value}</Text>
@@ -134,8 +138,8 @@ export function TodayBlock({ compact = false }: { compact?: boolean }) {
           )
         : <Text className="font-nunito text-2xl font-black text-mascot-navy dark:text-white">{copy.title}</Text>}
       {!!copy.desc && <Text className="mt-1 font-inter text-sm text-neutral-500 dark:text-neutral-400">{copy.desc}</Text>}
-      {!!copy.cta && <Button className="mt-5" label={copy.cta} variant="primary" onPress={onPress} testID="today-cta" />}
-      {!!copy.foot && <Text className="mt-2 text-center font-inter text-xs text-neutral-400">{copy.foot}</Text>}
+      {!!cta && <Button className="mt-5" label={cta} variant="primary" onPress={onPress} testID="today-cta" />}
+      {!!copy.foot && <Text className="mt-2 text-center font-inter text-xs text-neutral-400">{hasCards ? translate('learn.today.minutes', { count: sessionMinutes(today.data.sessionCount) }) : copy.foot}</Text>}
     </View>
   );
 }

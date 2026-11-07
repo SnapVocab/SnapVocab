@@ -1366,6 +1366,33 @@
     "yesterday": "Hôm qua",
     "youHave": "Bạn đang có"
   },
+  "study_limits": {
+    "collection_limits": "Giới hạn theo bộ sưu tập",
+    "counts_error": "Chưa tải được số thẻ hôm nay.",
+    "description": "Giới hạn này dành riêng cho bạn. Tất cả chủ đề và chủ đề con trong bộ sưu tập dùng chung số lượng thẻ mỗi ngày.",
+    "global_hint": "Đặt số thẻ mới và thẻ ôn trong từng bộ sưu tập.",
+    "hint": "Hai giới hạn độc lập. Đặt 0 để tạm dừng loại thẻ tương ứng. Mỗi ngày bắt đầu hạn mức mới; phần chưa học không cộng dồn.",
+    "learning_hint": "Lặp lại thẻ đang học trong cùng ngày không trừ thêm hạn mức.",
+    "load_error": "Chưa tải được giới hạn. Vui lòng thử lại.",
+    "maximum": "Nhập tối đa {{count}}.",
+    "new_count": "{{count}} thẻ mới",
+    "new_limit": "Thẻ mới mỗi ngày",
+    "quota_desc": "Bộ sưu tập đã hết hạn mức hôm nay cho loại thẻ này. Bạn có thể học các thẻ còn lại hoặc điều chỉnh giới hạn của bộ sưu tập.",
+    "quota_title": "Đã đạt giới hạn trong ngày",
+    "reset": "Dùng mặc định (20 mới / 200 ôn)",
+    "retry": "Thử lại",
+    "review_count": "{{count}} cần ôn",
+    "review_limit": "Thẻ ôn mỗi ngày",
+    "save": "Lưu giới hạn",
+    "save_error": "Chưa lưu được giới hạn. Vui lòng thử lại.",
+    "saved": "Đã lưu giới hạn học",
+    "settings_for": "Cài đặt học cho {{name}}",
+    "start": "Học hôm nay",
+    "summary": "Hôm nay: {{newCount}} thẻ mới và {{reviewCount}} thẻ cần ôn.",
+    "title": "Giới hạn học hằng ngày",
+    "today": "Hôm nay",
+    "whole_number": "Nhập số nguyên từ 0 trở lên."
+  },
   "template_builder": {
     "add_field": {
       "already_added": "Đã thêm",

@@ -11,13 +11,14 @@ import { storage } from '@/lib/storage';
 import { SettingsScreen } from './settings-screen';
 
 const mockMutate = jest.fn();
+const mockPush = jest.fn();
 jest.mock('env', () => ({ __esModule: true, default: { EXPO_PUBLIC_VERSION: '0.0.1' } }));
-jest.mock('expo-router', () => ({ useRouter: () => ({ back: jest.fn(), push: jest.fn() }) }));
+jest.mock('expo-router', () => ({ useRouter: () => ({ back: jest.fn(), push: mockPush }) }));
 jest.mock('uniwind', () => ({ Uniwind: { setTheme: jest.fn() } }));
 jest.mock('react-native-restart', () => ({ __esModule: true, default: { restart: jest.fn() } }));
 jest.mock('./api', () => ({
   useUserSettings: () => ({
-    data: { dailyGoal: 20, pushEnabled: true },
+    data: { pushEnabled: true },
   }),
   useUpdateSettings: () => ({ mutate: mockMutate }),
   useLogout: () => ({ mutate: jest.fn() }),
@@ -167,11 +168,11 @@ it('settings displays and edits local choices without sending them to the server
   expect(mockMutate).not.toHaveBeenCalled();
 });
 
-it('still saves the daily learning goal to the backend', () => {
+it('opens collection limits instead of changing a global daily goal', () => {
   render(<SettingsScreen />);
-  fireEvent.press(screen.getByTestId('settings-daily-goal'));
-  fireEvent.press(screen.getByTestId('settings.select_goal-30'));
-  expect(mockMutate).toHaveBeenCalledWith({ dailyGoal: 30 }, expect.anything());
+  fireEvent.press(screen.getByTestId('settings-collection-limits'));
+  expect(mockPush).toHaveBeenCalledWith('/collections');
+  expect(mockMutate).not.toHaveBeenCalled();
 });
 
 it('does not cache a translation across languages', async () => {

@@ -50,8 +50,66 @@ export type StudyCollection = {
   type: 'SYSTEM' | 'USER';
   wordCount: number;
   dueCount: number;
+  newCount: number;
   lastStudiedAt: string | null;
 };
+
+export type StudyCounts = {
+  collectionId: number;
+  topicId: number | null;
+  newCount: number;
+  reviewCount: number;
+  learningCount: number;
+  dueCount: number;
+};
+export type CollectionStudyOverview = { collection: StudyCounts; topics: StudyCounts[] };
+export type CollectionStudySettings = {
+  collectionId: number;
+  userId: number;
+  newCardsPerDay: number;
+  reviewCardsPerDay: number;
+  customized: boolean;
+};
+
+export function useCollectionStudyCounts(type?: 'USER' | 'SYSTEM') {
+  return useQuery<StudyCounts[], StudyError>({
+    queryKey: ['study', 'counts', type ?? 'all'],
+    queryFn: () => get(`/api/study/counts${type ? `?type=${type}` : ''}`),
+    refetchOnWindowFocus: true,
+  });
+}
+
+export function useCollectionStudyOverview(collectionId?: number | string) {
+  return useQuery<CollectionStudyOverview, StudyError>({
+    queryKey: ['study', 'overview', String(collectionId)],
+    queryFn: () => get(`/api/collections/${collectionId}/study/today`),
+    enabled: Number(collectionId) > 0,
+    refetchOnWindowFocus: true,
+  });
+}
+
+export function useCollectionStudySettings(collectionId: number) {
+  return useQuery<CollectionStudySettings, StudyError>({
+    queryKey: ['study', 'settings', collectionId],
+    queryFn: () => get(`/api/collections/${collectionId}/study/settings`),
+    enabled: collectionId > 0,
+  });
+}
+
+export function useSaveCollectionStudySettings(collectionId: number) {
+  const queryClient = useQueryClient();
+  return useMutation<CollectionStudySettings | void, StudyError, Pick<CollectionStudySettings, 'newCardsPerDay' | 'reviewCardsPerDay'> | null>({
+    mutationFn: async (settings) => {
+      const response = await client<ApiResponse<CollectionStudySettings>>({
+        url: `/api/collections/${collectionId}/study/settings`,
+        method: settings === null ? 'DELETE' : 'PUT',
+        ...(settings === null ? {} : { data: settings }),
+      });
+      return response.data?.data;
+    },
+    onSuccess: () => invalidateStudy(queryClient),
+  });
+}
 /** Neither id = the Learn tab's session across the learner's whole library. */
 export type StudyScope = { collectionId?: number; topicId?: number };
 
@@ -77,6 +135,7 @@ export function useStudyToday() {
   return useQuery<StudyToday, StudyError>({
     queryKey: studyKeys.today,
     queryFn: () => get<StudyToday>('/api/study/today'),
+    refetchOnWindowFocus: true,
   });
 }
 
@@ -84,6 +143,7 @@ export function useStudyLibrary() {
   return useQuery<StudyCollection[], StudyError>({
     queryKey: studyKeys.library,
     queryFn: () => get<StudyCollection[]>('/api/study/collections'),
+    refetchOnWindowFocus: true,
   });
 }
 
@@ -118,6 +178,6 @@ export function useSubmitStudyRating() {
         })
       ).data.data,
     // A rating moves streak, XP and missions (master 2026-10-31).
-    onSuccess: () => invalidateProgress(queryClient),
+    onSuccess: () => Promise.all([invalidateProgress(queryClient), invalidateStudy(queryClient)]),
   });
 }
