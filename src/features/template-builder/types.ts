@@ -11,6 +11,7 @@ export type SemanticRole
     | 'DEFINITION' // Giải nghĩa
     | 'NATIVE_TRANSLATION' // Bản dịch / Nghĩa
     | 'EXAMPLE_SENTENCE' // Câu ví dụ
+    | 'PHONETIC' // Phiên âm
     | 'AUDIO' // Âm thanh
     | 'IMAGE'; // Hình ảnh
 
@@ -172,6 +173,7 @@ export const DEFAULT_SEMANTIC_ROLES: { role: SemanticRole; label: string }[] = [
   { role: 'DEFINITION', label: 'Giải nghĩa' },
   { role: 'NATIVE_TRANSLATION', label: 'Bản dịch / Nghĩa' },
   { role: 'EXAMPLE_SENTENCE', label: 'Câu ví dụ' },
+  { role: 'PHONETIC', label: 'Phiên âm' },
   { role: 'AUDIO', label: 'Âm thanh' },
   { role: 'IMAGE', label: 'Hình ảnh' },
 ];

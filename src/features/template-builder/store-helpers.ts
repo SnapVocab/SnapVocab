@@ -12,6 +12,8 @@ export function generateClientId(prefix = 'id'): string {
 
 export function inferSemanticRole(name: string, dataType: string): SemanticRole {
   const lower = name.toLowerCase();
+  if (dataType === 'TEXT' && (lower.includes('phonetic') || lower === 'ipa' || lower.includes('pronunciation')))
+    return 'PHONETIC';
   if (lower === 'word' || lower.includes('target') || lower.includes('title'))
     return 'TARGET_WORD';
   if (lower === 'meaning' || lower.includes('def') || lower.includes('definition'))
@@ -20,7 +22,7 @@ export function inferSemanticRole(name: string, dataType: string): SemanticRole 
     return 'NATIVE_TRANSLATION';
   if (lower === 'example' || lower.includes('sentence') || lower.includes('content'))
     return 'EXAMPLE_SENTENCE';
-  if (dataType === 'AUDIO' || lower === 'audio' || lower === 'sound' || lower === 'phonetic')
+  if (dataType === 'AUDIO' || lower === 'audio' || lower === 'sound')
     return 'AUDIO';
   if (dataType === 'IMAGE' || lower === 'image' || lower === 'photo' || lower === 'picture')
     return 'IMAGE';

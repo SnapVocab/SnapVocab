@@ -1466,6 +1466,7 @@
       "IMAGE": "Image",
       "NATIVE_TRANSLATION": "Native Translation",
       "NOTE": "Note / Grammar",
+      "PHONETIC": "Phonetic",
       "TARGET_WORD": "Target Word"
     },
     "save_config": "Save card configuration",

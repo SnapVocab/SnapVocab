@@ -31,14 +31,13 @@ export function RoleSelector({
             }`}
           >
             <Text
+              tx={`template_builder.roles.${r.role}`}
               className={`font-inter text-xs font-semibold ${
                 role === r.role
                   ? 'font-bold text-emerald-600 dark:text-emerald-400'
                   : 'text-neutral-700 dark:text-neutral-300'
               }`}
-            >
-              {r.label}
-            </Text>
+            />
           </TouchableOpacity>
         ))}
       </View>
