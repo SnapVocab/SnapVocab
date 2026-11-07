@@ -121,9 +121,10 @@ export function useAddWordForm(
     setErrors((prev) => {
       if (!prev[groupName])
         return prev;
-      const groupErrors = { ...prev[groupName] };
-      delete groupErrors[index];
-      return { ...prev, [groupName]: groupErrors };
+      // Removing a row shifts every following index; validate them again on save.
+      const next = { ...prev };
+      delete next[groupName];
+      return next;
     });
   }, []);
 

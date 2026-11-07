@@ -1,6 +1,9 @@
 import type { LookupResultDTO } from '@/features/lookup/types';
 import type { TemplateDTO, TopicSchemaDTO } from '@/features/template-builder/types';
+import { buildAddWordPayload, validateAddWordForm } from '../add-word-helpers';
 import { prefillLookup, withTemplateRoles } from '../lookup-prefill';
+
+jest.mock('@/lib/i18n', () => ({ translate: (key: string) => key }));
 
 const schema: TopicSchemaDTO = {
   topicId: 42,
@@ -64,7 +67,48 @@ it('preserves user edits and never fills an unbound field by its name', () => {
 it('does not guess mapping when no template roles are available', () => {
   const result = prefillLookup(withTemplateRoles(schema), {}, word);
   expect(result.custom).toEqual({});
-  expect(result.arbitrary).toEqual([{ a: '', b: '' }]);
+  expect(result.arbitrary).toEqual([]);
+});
+
+const scanSchema: TopicSchemaDTO = {
+  topicId: 226,
+  groups: [
+    { groupId: 1, name: 'main', label: 'Main', multiple: false, position: 0, attributes: [
+      { attributeId: 1, name: 'word', label: 'Word', dataType: 'TEXT', required: true, position: 0, semanticRole: 'TARGET_WORD' },
+      { attributeId: 2, name: 'phonetic', label: 'IPA', dataType: 'TEXT', required: false, position: 1, semanticRole: 'PHONETIC' },
+      { attributeId: 3, name: 'translation', label: 'Translation', dataType: 'TEXT', required: false, position: 2, semanticRole: 'NATIVE_TRANSLATION' },
+    ] },
+    { groupId: 2, name: 'examples', label: 'Examples', multiple: true, position: 1, attributes: [
+      { attributeId: 4, name: 'content', label: 'Sentence', dataType: 'TEXT', required: true, position: 0, semanticRole: 'EXAMPLE_SENTENCE' },
+    ] },
+  ],
+};
+
+it('prefills a scanned dictionary word without generating empty examples', () => {
+  const result = prefillLookup(scanSchema, { examples: [] }, {
+    ...word,
+    word: 'apple',
+    translations: [],
+    pronunciations: [{ ipa: ' ' }, { ipa: '/apple/' }],
+    meanings: Array.from({ length: 10 }, () => ({ definition: 'a fruit', definitionLang: 'vi' })),
+  });
+  expect(result).toEqual({ main: { word: 'apple', phonetic: '/apple/', translation: 'a fruit' }, examples: [] });
+  expect(validateAddWordForm(scanSchema, result).hasError).toBe(false);
+  expect(buildAddWordPayload(scanSchema, result)).toEqual({ main: result.main });
+});
+
+it('uses only actual examples and preserves existing edits when lookup runs again', () => {
+  const result = prefillLookup(scanSchema, { main: { phonetic: 'my IPA' }, examples: [{ content: 'my sentence' }] }, {
+    ...word,
+    meanings: [{ definition: 'one' }, { example: '  a real sentence  ' }, { example: ' ' }, { example: 'another sentence' }],
+  });
+  expect(result.main.phonetic).toBe('my IPA');
+  expect(result.examples).toEqual([{ content: 'my sentence' }, { content: 'another sentence' }]);
+});
+
+it('does not use a definition in another language as a native translation', () => {
+  const result = prefillLookup(scanSchema, {}, { ...word, translations: [], meanings: [{ definition: 'a fruit', definitionLang: 'en' }] });
+  expect(result.main.translation).toBeUndefined();
 });
 
 it('an unbound duplicate field on the other card side does not erase a role', () => {
