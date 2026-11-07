@@ -3,7 +3,6 @@
 export type ThemePreference = 'LIGHT' | 'DARK' | 'SYSTEM';
 
 export type UserSettings = {
-  dailyGoal: number;
   /** "HH:mm:ss" local time of the review reminder; null when off. */
   srsReminderAt: string | null;
   pushEnabled: boolean;
@@ -14,7 +13,6 @@ export type UserSettings = {
  * switched off with `srsReminderCleared` rather than a null time.
  */
 export type UpdateUserSettings = {
-  dailyGoal?: number;
   srsReminderAt?: string;
   srsReminderCleared?: boolean;
   pushEnabled?: boolean;
