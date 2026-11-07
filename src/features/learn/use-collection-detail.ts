@@ -133,7 +133,7 @@ export function useCollectionDetail() {
     setSearchQuery('');
   }, []);
 
-  const handleStudyTopic = React.useCallback((topic: TopicDTO) => {
+  const handleStudyTopic = React.useCallback((topic: Pick<TopicDTO, 'id' | 'name'>) => {
     router.push({
       pathname: '/(app)/study/session',
       params: {

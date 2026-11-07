@@ -19,9 +19,16 @@ function valueFor(attribute: SchemaAttributeDTO, data: LookupResultDTO, index = 
     return '';
   switch (attribute.semanticRole) {
     case 'TARGET_WORD': return data.word ?? '';
-    case 'NATIVE_TRANSLATION': return data.translations?.find(item => item.translation?.trim())?.translation?.trim() ?? '';
-    case 'DEFINITION': return data.meanings?.[index]?.definition ?? '';
-    case 'EXAMPLE_SENTENCE': return data.meanings?.[index]?.example ?? '';
+    case 'NATIVE_TRANSLATION': {
+      const translation = data.translations?.find(item => item.translation?.trim()
+        && (!item.langCode || item.langCode === data.langCode))?.translation?.trim();
+      const nativeDefinition = data.meanings?.find(item =>
+        item.definitionLang === data.langCode && item.definition?.trim())?.definition?.trim();
+      return translation ?? nativeDefinition ?? '';
+    }
+    case 'PHONETIC': return data.pronunciations?.find(item => item.ipa?.trim())?.ipa?.trim() ?? '';
+    case 'DEFINITION': return data.meanings?.[index]?.definition?.trim() ?? '';
+    case 'EXAMPLE_SENTENCE': return data.meanings?.[index]?.example?.trim() ?? '';
     default: return '';
   }
 }
@@ -43,13 +50,20 @@ export function prefillLookup(schema: TopicSchemaDTO, previous: Record<string, a
       continue;
     }
     const rows: Record<string, any>[] = Array.isArray(previous[group.name]) ? previous[group.name] : [];
-    const hasMeaningRoles = group.attributes.some(attr => attr.semanticRole === 'DEFINITION' || attr.semanticRole === 'EXAMPLE_SENTENCE');
-    const count = Math.max(rows.length, hasMeaningRoles ? data.meanings?.length ?? 1 : 1);
+    // Only create rows that have data for this group's bound fields. A word can
+    // have many definitions and no examples at all.
+    const hasDefinition = group.attributes.some(attr => attr.semanticRole === 'DEFINITION');
+    const hasExample = group.attributes.some(attr => attr.semanticRole === 'EXAMPLE_SENTENCE');
+    const candidates = hasDefinition || hasExample
+      ? (data.meanings ?? []).map((_, index) => index).filter(index =>
+          group.attributes.some(attribute => !!valueFor(attribute, data, index)))
+      : group.attributes.some(attribute => !!valueFor(attribute, data)) ? [0] : [];
+    const count = Math.max(rows.length, candidates.length);
     next[group.name] = Array.from({ length: count }, (_, index) => {
       const row = { ...rows[index] };
       for (const attribute of group.attributes) {
         if (row[attribute.name] === undefined || row[attribute.name] === null || row[attribute.name] === '') {
-          const value = valueFor(attribute, data, index);
+          const value = candidates[index] === undefined ? '' : valueFor(attribute, data, candidates[index]);
           row[attribute.name] = value || (attribute.dataType === 'BOOLEAN' ? false : '');
         }
       }

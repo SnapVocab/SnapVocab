@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import type { StudyCollection } from '@/features/study/api';
 import { Pressable, Text, View } from '@/components/ui';
 import { ChevronRightIcon, MoreVerticalIcon } from '@/components/ui/icons';
+import { StudyCountLabels } from '@/features/study/study-count-labels';
 import { translate } from '@/lib/i18n';
 
 /** One container, flat rows with dividers: the Settings grammar, not a card per collection (learn_ui.md §8.3). */
@@ -19,7 +20,7 @@ type RowProps = {
   onOptionsPress?: () => void;
 };
 
-/** Name on the left; on the right what the learner acts on: due cards, else size. */
+/** Daily counts stay together beneath the name; the total size remains secondary. */
 export function LibraryRow({ collection, onPress, onOptionsPress }: RowProps) {
   const { name, translation, wordCount, dueCount } = collection;
   return (
@@ -33,21 +34,11 @@ export function LibraryRow({ collection, onPress, onOptionsPress }: RowProps) {
         {!!translation && (
           <Text className="mt-0.5 font-inter text-xs text-neutral-500 dark:text-neutral-400" numberOfLines={1}>{translation}</Text>
         )}
+        <StudyCountLabels counts={{ newCount: collection.newCount ?? 0, dueCount }} className="mt-2" />
       </View>
-      {dueCount > 0
-        ? (
-            // design.md §9.2 "Đến hạn" chip: warning-500 @ 12%, #92400E.
-            <View className="rounded-full bg-amber-500/10 px-2.5 py-1">
-              <Text className="font-inter text-xs font-bold text-warning-800 dark:text-amber-300">
-                {translate('learn.library.due', { count: dueCount > 99 ? '99+' : dueCount })}
-              </Text>
-            </View>
-          )
-        : (
-            <Text className="font-inter text-xs font-semibold text-neutral-400">
-              {wordCount ? translate('learn.library.words', { count: wordCount }) : translate('learn.library.no_words')}
-            </Text>
-          )}
+      <Text className="font-inter text-xs font-semibold text-neutral-500 dark:text-neutral-400">
+        {wordCount ? translate('learn.library.words', { count: wordCount }) : translate('learn.library.no_words')}
+      </Text>
       {onOptionsPress
         ? (
             <Pressable

@@ -115,7 +115,7 @@ describe('home and profile show only what the backend supports', () => {
     mockQuery(useHomeWidget, { data: widget });
     mockQuery(useXpOverview, { data: xp });
     mockQuery(useStreak, { data: liveStreak });
-    mockQuery(useStudyToday, { data: { dueCount: 4 } });
+    mockQuery(useStudyToday, { data: { newCount: 7, dueCount: 4 } });
   });
   afterEach(cleanup);
 
@@ -125,7 +125,7 @@ describe('home and profile show only what the backend supports', () => {
     expect(screen.getByText('từ trong kho (0 đã học · 0 thuần thục)')).toBeTruthy();
     expect(screen.getByText('Cấp 2 · Học viên')).toBeTruthy();
     // One source for "hôm nay" (learn_ui.md principle 8): /api/study/today (4), never the widget's dueCount (3).
-    expect(screen.getByText('Hôm nay bạn có 4 từ cần ôn tập!')).toBeTruthy();
+    expect(screen.getByText('Hôm nay: 7 thẻ mới và 4 thẻ cần ôn.')).toBeTruthy();
     expect(screen.queryByText(/có 3 từ/)).toBeNull();
     expect(screen.getByText('Nhiệm vụ hàng ngày')).toBeTruthy();
   });

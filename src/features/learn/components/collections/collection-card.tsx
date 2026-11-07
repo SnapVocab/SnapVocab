@@ -1,7 +1,9 @@
 import { Pressable, View } from 'react-native';
 import { useUniwind } from 'uniwind';
 import { Text } from '@/components/ui';
-import { ChevronRightIcon, FolderIcon, MoreVerticalIcon } from '@/components/ui/icons';
+import { ChevronRightIcon, FolderIcon, MoreVerticalIcon, SettingsIcon } from '@/components/ui/icons';
+import { StudyCountLabels } from '@/features/study/study-count-labels';
+import { translate } from '@/lib/i18n';
 
 type Props = {
   isSystemCollection?: boolean;
@@ -10,6 +12,8 @@ type Props = {
   onOptionsPress?: () => void;
   showOption?: boolean;
   translation: string;
+  counts?: { newCount: number; dueCount: number };
+  onSettingsPress?: () => void;
 };
 
 export default function CollectionCard({
@@ -19,6 +23,8 @@ export default function CollectionCard({
   translation,
   isSystemCollection,
   showOption = true,
+  counts,
+  onSettingsPress,
 }: Props) {
   const canShowOption = showOption && !isSystemCollection;
   const { theme } = useUniwind();
@@ -62,8 +68,23 @@ export default function CollectionCard({
           >
             {translation}
           </Text>
+          <StudyCountLabels counts={counts} className="mt-2" />
         </View>
       </View>
+
+      {onSettingsPress && (
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={translate('study_limits.settings_for', { name })}
+          onPress={(event) => {
+            event.stopPropagation();
+            onSettingsPress();
+          }}
+          className="mr-2 size-12 items-center justify-center rounded-xl bg-surface-raised"
+        >
+          <SettingsIcon width={20} height={20} color={theme === 'dark' ? '#E5E7EB' : '#1C274C'} />
+        </Pressable>
+      )}
 
       {/* Right section: 3-dots action button or Chevron */}
       {canShowOption

@@ -47,12 +47,10 @@ const THEMES: { value: ThemePreference; label: string; scheme: ColorSchemeType }
   { value: 'SYSTEM', label: translate('settings.theme_system'), scheme: 'system' },
 ];
 
-const DAILY_GOALS = [5, 10, 20, 30, 50];
-
 /** The row icons follow the muted grey of the design. */
 const ROW_ICON_SIZE = 22;
 
-type Sheet = 'language' | 'theme' | 'goal' | 'reminder' | null;
+type Sheet = 'language' | 'theme' | 'reminder' | null;
 
 /** MH-PROFILE-03. Biometric login is out of this round; OS permission states wait for expo-notifications (DEP-NOTIF-02). */
 export function SettingsScreen() {
@@ -172,10 +170,10 @@ export function SettingsScreen() {
         <SettingsSection tx="settings.learning">
           <SettingsRow
             icon={<TargetIcon color={iconColor.row.goal} size={ROW_ICON_SIZE} />}
-            tx="settings.daily_goal"
-            value={settings ? translate('settings.daily_goal_unit', { count: settings.dailyGoal }) : undefined}
-            onPress={() => setSheet('goal')}
-            testID="settings-daily-goal"
+            tx="study_limits.collection_limits"
+            hint={translate('study_limits.global_hint')}
+            onPress={() => router.push('/collections')}
+            testID="settings-collection-limits"
             last
           />
         </SettingsSection>
@@ -241,21 +239,6 @@ export function SettingsScreen() {
         selected={localTheme.value}
         onSelect={(value) => {
           setSelectedTheme(THEMES.find(t => t.value === value)!.scheme);
-          setSheet(null);
-        }}
-        onClose={() => setSheet(null)}
-      />
-
-      <OptionSheet
-        visible={sheet === 'goal'}
-        titleTx="settings.select_goal"
-        options={DAILY_GOALS.map(goal => ({
-          value: goal,
-          label: translate('settings.daily_goal_unit', { count: goal }),
-        }))}
-        selected={settings?.dailyGoal ?? 20}
-        onSelect={(value) => {
-          save({ dailyGoal: value });
           setSheet(null);
         }}
         onClose={() => setSheet(null)}

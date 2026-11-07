@@ -58,6 +58,7 @@ export function HomeScreen() {
   // notification.md §3.7: coming back to Home refreshes the bell once its count is past its 60 s staleTime.
   useFocusEffect(React.useCallback(() => {
     void queryClient.refetchQueries({ queryKey: notificationKeys.unreadCount, stale: true });
+    void invalidateStudy(queryClient);
   }, [queryClient]));
 
   const onRefresh = React.useCallback(async () => {
@@ -70,6 +71,7 @@ export function HomeScreen() {
   // Undefined while loading or on error: the greeting then stays neutral instead of claiming a 0.
   const streak = streakQuery.data?.currentStreak;
   const dueCount = today.data?.dueCount;
+  const newCount = today.data?.newCount ?? 0;
 
   return (
     <SafeAreaView edges={['bottom', 'left', 'right']} style={{ flex: 1 }} className="flex-1 bg-background">
@@ -91,8 +93,8 @@ export function HomeScreen() {
               {displayName}
             </Text>
             <Text className="mt-1 font-inter text-xs text-neutral-500 dark:text-neutral-400">
-              {dueCount
-                ? translate('home.due_message', { count: dueCount })
+              {(dueCount ?? 0) + newCount > 0
+                ? translate('study_limits.summary', { newCount, reviewCount: dueCount ?? 0 })
                 : streak
                   ? translate('home.streak_message', { count: streak })
                   : translate('home.encouragement')}

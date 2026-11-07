@@ -77,7 +77,7 @@ export function AddWordScreen() {
   const { speak } = useTts();
   const isResolvingPrefill = !!rawTopicSchema?.schemaId && schemaQuery.isPending;
   const canPrefill = !!topicSchema?.groups.some(group => group.attributes.some(attribute =>
-    attribute.dataType === 'TEXT' && ['TARGET_WORD', 'DEFINITION', 'NATIVE_TRANSLATION', 'EXAMPLE_SENTENCE'].includes(attribute.semanticRole ?? '')));
+    attribute.dataType === 'TEXT' && ['TARGET_WORD', 'PHONETIC', 'DEFINITION', 'NATIVE_TRANSLATION', 'EXAMPLE_SENTENCE'].includes(attribute.semanticRole ?? '')));
 
   const {
     formData,

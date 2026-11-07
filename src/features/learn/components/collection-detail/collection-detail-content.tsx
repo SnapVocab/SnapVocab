@@ -2,10 +2,10 @@ import type { Href } from 'expo-router';
 import type { TopicDTO, TopicItemData } from '../../types';
 import type { useCollectionDetail } from '../../use-collection-detail';
 import { FlashList } from '@shopify/flash-list';
-import { useRouter } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
 import * as React from 'react';
 import { ActivityIndicator, RefreshControl, View } from 'react-native';
-import { useStudyLibrary } from '@/features/study/api';
+import { useCollectionStudyOverview } from '@/features/study/api';
 import { CollectionErrorState } from '../collections';
 import CollectionDetailListHeader from './collection-detail-list-header';
 import CollectionWordsEmpty from './collection-words-empty';
@@ -20,6 +20,10 @@ type Props = {
 
 export function CollectionDetailContent({ detail }: Props) {
   const {
+    id,
+    collectionTitle,
+    currentParent,
+    currentParentId,
     isInsideTopic,
     topics,
     filteredTopics,
@@ -47,13 +51,24 @@ export function CollectionDetailContent({ detail }: Props) {
 
   // Library row → here → one button for the whole collection (learn_ui.md §9.1, I7).
   const router = useRouter();
-  const collectionDueCount = useStudyLibrary().data?.find(c => c.id === Number(detail.id))?.dueCount ?? 0;
+  const overview = useCollectionStudyOverview(id);
+  const refreshCounts = overview.refetch;
+  useFocusEffect(React.useCallback(() => {
+    void refreshCounts();
+  }, [refreshCounts]));
+  const currentCounts = isInsideTopic
+    ? overview.data?.topics.find(count => count.topicId === currentParentId)
+    : overview.data?.collection;
   const handleStudyCollection = React.useCallback(() => {
+    if (currentParent) {
+      handleStudyTopic(currentParent);
+      return;
+    }
     router.push({
       pathname: '/(app)/study/session',
-      params: { collectionId: String(detail.id), collectionName: detail.collectionTitle },
+      params: { collectionId: String(id), collectionName: collectionTitle },
     } as Href);
-  }, [router, detail.id, detail.collectionTitle]);
+  }, [router, id, collectionTitle, currentParent, handleStudyTopic]);
 
   const ListHeader = React.useMemo(
     () => (
@@ -66,7 +81,10 @@ export function CollectionDetailContent({ detail }: Props) {
         onSelectTopic={handleTopicPress}
         onStudyTopic={handleStudyTopic}
         onStudyCollection={handleStudyCollection}
-        collectionDueCount={collectionDueCount}
+        counts={currentCounts}
+        topicCounts={overview.data?.topics}
+        countsError={overview.isError}
+        onRetryCounts={() => void refreshCounts()}
       />
     ),
     [
@@ -79,7 +97,10 @@ export function CollectionDetailContent({ detail }: Props) {
       handleTopicPress,
       handleStudyTopic,
       handleStudyCollection,
-      collectionDueCount,
+      currentCounts,
+      overview.data?.topics,
+      overview.isError,
+      refreshCounts,
     ],
   );
 
@@ -176,6 +197,7 @@ export function CollectionDetailContent({ detail }: Props) {
               item={item}
               onPress={() => handleTopicPress(item)}
               onStudyPress={() => handleStudyTopic(item)}
+              counts={overview.data?.topics.find(count => count.topicId === item.id)}
             />
           )}
           ItemSeparatorComponent={() => <View className="h-2.5" />}

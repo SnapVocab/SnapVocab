@@ -52,7 +52,7 @@ export function MultipleGroupSection({
       <View className="gap-3">
         {instances.map((instanceValues, index) => {
           const itemErrors = errors[index] || {};
-          const canDelete = instances.length > 1;
+          const canDelete = instances.length > 0;
 
           return (
             <View

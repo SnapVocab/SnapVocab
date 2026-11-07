@@ -132,8 +132,8 @@ export function StudySessionScreen() {
     }
     catch (error: any) {
       if (error?.response?.data?.error === 'DAILY_QUOTA_REACHED') {
-        // Today's new words were used up elsewhere (another device or tab): skip, never block reviews.
-        Alert.alert(translate('learn.session.new_limit_title'), translate('learn.session.new_limit_desc'));
+        // A collection's allowance may have changed on another topic or device.
+        Alert.alert(translate('study_limits.quota_title'), translate('study_limits.quota_desc'));
         dropCard(topicItemId);
       }
       else {
