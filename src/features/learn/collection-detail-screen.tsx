@@ -1,4 +1,3 @@
-import { useRouter } from 'expo-router';
 import * as React from 'react';
 import { View } from 'react-native';
 import { FocusAwareStatusBar, SafeAreaView } from '@/components/ui';
@@ -15,7 +14,6 @@ import { useCollectionDetail } from './use-collection-detail';
 
 export function CollectionDetailScreen() {
   const detail = useCollectionDetail();
-  const router = useRouter();
 
   return (
     <SafeAreaView style={{ flex: 1 }} className="flex-1 bg-background">
@@ -28,8 +26,7 @@ export function CollectionDetailScreen() {
           subtitle={detail.headerSubtitle}
           onBackPress={detail.handleBack}
           onOptionsPress={detail.handleOptionsPress}
-          showOptions={detail.isUserCollection}
-          onStudySettingsPress={() => router.push({ pathname: '/collections/study-settings', params: { collectionId: String(detail.id), name: detail.collectionTitle } })}
+          showOptions={!!detail.collectionData}
         />
 
         {/* Breadcrumbs for deep topic hierarchy */}

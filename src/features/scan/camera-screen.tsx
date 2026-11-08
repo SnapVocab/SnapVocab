@@ -139,7 +139,7 @@ export function CameraScreen() {
   if (!permission.granted) {
     return (
       <>
-        <FocusAwareStatusBar style="light" />
+        <FocusAwareStatusBar />
         <CameraPermissionGate
           onRequestPermission={requestPermission}
           onPickFromLibrary={pickFromLibrary}

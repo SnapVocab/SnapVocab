@@ -18,6 +18,7 @@ jest.mock('@/components/ui', () => ({
   Text: require('react-native').Text,
   FocusAwareStatusBar: () => null,
   useSurface: () => ({ background: '#F7F8FA', headerBg: '#FFFFFF' }),
+  useColorMode: () => 'light',
 }));
 jest.mock('@/lib/i18n', () => ({
   translate: (key: string) => key.split('.').reduce<any>((copy, part) => copy[part], require('@/translations/en.json')),

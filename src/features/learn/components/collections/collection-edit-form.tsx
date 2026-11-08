@@ -101,7 +101,8 @@ export function CollectionEditForm({ collection, onSuccess, onCancel }: Props) {
           label={translate('learn.collections.cancel')}
           disabled={isLoading}
           onPress={onCancel}
-          className="flex-1"
+          fullWidth={false}
+          className="h-auto min-h-14 flex-1 py-3"
         />
         <Button
           variant="primary"
@@ -109,7 +110,8 @@ export function CollectionEditForm({ collection, onSuccess, onCancel }: Props) {
           disabled={!isValid || isLoading}
           loading={isLoading}
           onPress={handleSubmit(onSubmit)}
-          className="flex-1"
+          fullWidth={false}
+          className="h-auto min-h-14 flex-1 py-3"
         />
       </View>
     </View>

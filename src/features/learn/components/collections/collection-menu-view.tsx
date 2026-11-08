@@ -1,8 +1,8 @@
 import type { CollectionRef } from '../../types';
 import * as React from 'react';
 import { Pressable, View } from 'react-native';
-import { Text } from '@/components/ui';
-import { CloseIcon, EditIcon, FolderIcon } from '@/components/ui/icons';
+import { Text, useSurface } from '@/components/ui';
+import { CloseIcon, EditIcon, FolderIcon, SettingsIcon } from '@/components/ui/icons';
 import { translate } from '@/lib/i18n';
 
 type Props = {
@@ -10,9 +10,11 @@ type Props = {
   onOpenEdit: () => void;
   onOpenDelete: () => void;
   onStudy?: () => void;
+  onStudySettings: () => void;
 };
 
-export function CollectionMenuView({ collection, onOpenEdit, onOpenDelete, onStudy }: Props) {
+export function CollectionMenuView({ collection, onOpenEdit, onOpenDelete, onStudy, onStudySettings }: Props) {
+  const surface = useSurface();
   const isUserCollection = collection.type === 'USER';
 
   return (
@@ -40,6 +42,16 @@ export function CollectionMenuView({ collection, onOpenEdit, onOpenDelete, onStu
 
       {/* Actions List */}
       <View className="gap-2">
+        <Pressable
+          accessibilityRole="button"
+          onPress={onStudySettings}
+          className="min-h-14 flex-row items-center rounded-2xl bg-surface-raised p-3.5 active:bg-pressed"
+        >
+          <View className="mr-3 size-10 items-center justify-center rounded-xl bg-background">
+            <SettingsIcon width={20} height={20} color={surface.textMuted} />
+          </View>
+          <Text className="shrink font-nunito text-[15px] font-bold text-mascot-navy dark:text-white" tx="study_limits.title" />
+        </Pressable>
         {/* Action: Study / View */}
         {onStudy && (
           <Pressable
