@@ -1,4 +1,8 @@
+import type { Href } from 'expo-router';
 import type { StudyToday } from './api';
+
+/** Where a learner with an empty library starts: the ready-made sets. */
+export const EXPLORE_HREF = { pathname: '/(app)/collections', params: { view: 'explore' } } as Href;
 
 /** learn_ui.md §10.1: what the "Hôm nay" block says, in priority order. */
 export type TodayState =

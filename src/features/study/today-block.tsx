@@ -8,7 +8,7 @@ import { Snapy } from '@/components/ui/snapy';
 import { translate } from '@/lib/i18n';
 import { useStudyToday } from './api';
 import { StudyCountLabels } from './study-count-labels';
-import { sessionMinutes, todayState } from './today-state';
+import { EXPLORE_HREF, sessionMinutes, todayState } from './today-state';
 
 type Copy = {
   /** Big numeral + label, or a title when a number would only add pressure (backlog, break, done). */
@@ -110,7 +110,7 @@ export function TodayBlock({ compact = false }: { compact?: boolean }) {
   const hasCards = today.data.dueCount + today.data.newCount > 0;
   const cta = hasCards ? translate('learn.today.cta_start', { count: today.data.sessionCount }) : copy.cta;
   const onPress = state.kind === 'empty'
-    ? () => router.push({ pathname: '/(app)/collections', params: { view: 'explore' } } as Href)
+    ? () => router.push(EXPLORE_HREF)
     : () => router.push('/(app)/study/session' as Href);
 
   if (compact) {
