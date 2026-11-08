@@ -1,6 +1,6 @@
 import type { HomeWidgetDTO, StreakDTO, XpOverviewDTO } from '@/features/progress/types';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { cleanup, render, screen } from '@testing-library/react-native';
+import { cleanup, fireEvent, render, screen } from '@testing-library/react-native';
 import * as React from 'react';
 import { ProfileScreen } from '@/features/profile/profile-screen';
 import { useHomeWidget, useStreak, useXpOverview } from '@/features/progress/api';
@@ -48,7 +48,7 @@ jest.mock('react-native-safe-area-context', () => ({
 jest.mock('@/components/ui', () => {
   const RN = require('react-native');
   const Text = ({ tx, children, ...props }: { tx?: string; children?: React.ReactNode }) =>
-    <RN.Text {...props}>{tx ?? children}</RN.Text>;
+    <RN.Text {...props}>{tx ? tx.split('.').reduce<any>((node, part) => node?.[part], require('@/translations/vi.json')) ?? tx : children}</RN.Text>;
   return {
     Text,
     View: RN.View,
@@ -68,6 +68,7 @@ jest.mock('@/components/Snapy', () => ({ Snapy: () => null }));
 jest.mock('../components/home-search-bar', () => ({ HomeSearchBar: () => null }));
 // Resolve real Vietnamese copy, so the suite asserts on what the learner reads.
 jest.mock('@/lib/i18n', () => ({
+  getLanguage: () => 'vi',
   translate: (key: string, args: Record<string, unknown> = {}) => {
     const copy = key.split('.').reduce<any>((node, part) => node?.[part], require('@/translations/vi.json'));
     return typeof copy === 'string'
@@ -81,7 +82,7 @@ jest.mock('react-i18next', () => ({
   useTranslation: () => ({
     i18n: { language: 'vi' },
     t: (key: string, args: Record<string, unknown> = {}) => {
-      const copy = require('@/translations/vi.json').progressUx[key.split('.').at(-1)!];
+      const copy = key.split('.').reduce<any>((node, part) => node?.[part], require('@/translations/vi.json'));
       return copy ? copy.replace(/\{\{(\w+)\}\}/g, (_: string, n: string) => String(args[n] ?? '')) : key;
     },
   }),
@@ -119,10 +120,10 @@ describe('home and profile show only what the backend supports', () => {
   });
   afterEach(cleanup);
 
-  it('loaded: saved total with its learning-state split, real level, greeting from the study-today numbers', () => {
+  it('loaded: separates created cards from all-collection study progress and shows the real level', () => {
     renderWithClient(<HomeScreen />);
-    expect(screen.getByText('8')).toBeTruthy();
-    expect(screen.getByText('từ trong kho (0 đã học · 0 thuần thục)')).toBeTruthy();
+    expect(screen.getByText('0')).toBeTruthy();
+    expect(screen.getByText('0 thuần thục')).toBeTruthy();
     expect(screen.getByText('Cấp 2 · Học viên')).toBeTruthy();
     // One source for "hôm nay" (learn_ui.md principle 8): /api/study/today (4), never the widget's dueCount (3).
     expect(screen.getByText('Hôm nay: 7 thẻ mới và 4 thẻ cần ôn.')).toBeTruthy();
@@ -175,5 +176,32 @@ describe('home and profile show only what the backend supports', () => {
     renderWithClient(<HomeHeader />);
     expect(screen.getByText('–')).toBeTruthy();
     expect(screen.queryByText('0')).toBeNull();
+  });
+  it('does not present studied system cards as a subset of cards created by the user', () => {
+    mockQuery(useHomeWidget, { data: { ...widget, totalWords: 0, learnedCount: 60, masteredCount: 12 } });
+    renderWithClient(<HomeScreen />);
+    expect(screen.getByText('60')).toBeTruthy();
+    expect(screen.getByText('Đã học')).toBeTruthy();
+    expect(screen.getByText('12 thuần thục')).toBeTruthy();
+    expect(screen.queryByText(/từ trong kho/)).toBeNull();
+  });
+
+  it('announces unavailable progress as busy and disables its action while loading', () => {
+    mockQuery(useHomeWidget, { isLoading: true });
+    renderWithClient(<HomeScreen />);
+    expect(screen.getByRole('button', { name: 'Đang tải tiến độ học' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Đang tải tiến độ học' }).props.accessibilityState.busy).toBe(true);
+  });
+
+  it('gives avatar, wallet and unavailable streak actions a meaningful accessible name', () => {
+    const openProfile = jest.fn();
+    const openWallet = jest.fn();
+    mockQuery(useStreak, { isLoading: true });
+    renderWithClient(<HomeHeader onAvatarPress={openProfile} onCoinPress={openWallet} />);
+    fireEvent.press(screen.getByRole('button', { name: 'Mở hồ sơ của bạn' }));
+    fireEvent.press(screen.getByRole('button', { name: 'Mở ví. Số xu hiện có: 30' }));
+    expect(openProfile).toHaveBeenCalledTimes(1);
+    expect(openWallet).toHaveBeenCalledTimes(1);
+    expect(screen.getByRole('button', { name: /Chưa có dữ liệu chuỗi học/ })).toBeTruthy();
   });
 });

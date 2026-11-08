@@ -23,6 +23,8 @@ export function PushHost() {
   const registered = React.useRef(false);
   const handled = React.useRef(new Set<string>());
   const coldStartChecked = React.useRef(false);
+  const navigationReady = !!useRootNavigationState()?.key;
+  const pendingResponse = React.useRef<Notifications.NotificationResponse | null>(null);
 
   React.useEffect(() => {
     silenceForeground();
@@ -79,6 +81,11 @@ export function PushHost() {
   }, [status, queryClient]);
 
   const open = React.useCallback((response: Notifications.NotificationResponse) => {
+    // Native notification callbacks can arrive before the root navigator mounts.
+    if (!navigationReady || status === 'idle') {
+      pendingResponse.current = response;
+      return;
+    }
     const id = response.notification.request.identifier;
     if (handled.current.has(id))
       return;
@@ -95,7 +102,15 @@ export function PushHost() {
       router.push(action.route as Href); // pushed over Home, so Back returns there
       void queryClient.invalidateQueries({ queryKey: notificationKeys.all });
     }
-  }, [router, queryClient]);
+  }, [navigationReady, status, router, queryClient]);
+
+  React.useEffect(() => {
+    if (!pendingResponse.current || !navigationReady || status === 'idle')
+      return;
+    const response = pendingResponse.current;
+    pendingResponse.current = null;
+    open(response);
+  }, [navigationReady, status, open]);
 
   React.useEffect(() => {
     const subscription = Notifications.addNotificationResponseReceivedListener(open);
@@ -104,7 +119,6 @@ export function PushHost() {
 
   // Killed app opened from a push: decide once the persisted session is known, then forget it so a later sign-in
   // never replays the deep link.
-  const navigationReady = !!useRootNavigationState()?.key;
   React.useEffect(() => {
     if (status === 'idle' || !navigationReady || coldStartChecked.current)
       return;

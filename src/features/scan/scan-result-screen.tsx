@@ -141,15 +141,15 @@ export function ScanResultScreen() {
           <View className="items-center px-4 py-8">
             <Mascot pose="sad" className="mb-4 size-28" />
             <Text className="mb-2 text-center font-nunito text-xl font-extrabold text-mascot-navy dark:text-white" tx="scan.result.empty_title" />
-            <Text className="mb-6 text-center text-sm text-neutral-500" tx="scan.result.empty_subtitle" />
+            <Text className="mb-6 text-center text-sm/6 text-neutral-600 dark:text-neutral-300" tx="scan.result.empty_subtitle" />
             <Button tx="scan.result.try_other" onPress={backToCamera} className="px-6" />
           </View>
         )}
 
         {allLow && (
-          <View className="mt-4 items-center rounded-2xl border border-reward-200 bg-reward-50 p-4">
-            <Text className="mb-1 text-center font-nunito text-base font-extrabold text-mascot-navy" tx="scan.result.all_low_title" />
-            <Text className="text-center text-[13px] text-neutral-500" tx="scan.result.all_low_subtitle" />
+          <View className="mt-4 items-center rounded-2xl border border-reward-200 bg-reward-50 p-4 dark:border-amber-800 dark:bg-amber-950/40">
+            <Text className="mb-1 text-center font-nunito text-base font-extrabold text-amber-900 dark:text-amber-200" tx="scan.result.all_low_title" />
+            <Text className="text-center text-[13px]/5 text-amber-800 dark:text-amber-100" tx="scan.result.all_low_subtitle" />
           </View>
         )}
 

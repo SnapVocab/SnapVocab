@@ -38,7 +38,6 @@ export function LoginForm() {
     login(value, {
       onSuccess: (data) => {
         setAuth(data);
-        router.replace('/');
       },
       onError: (error) => {
         const body = error.response?.data as any;

@@ -1,4 +1,3 @@
-import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { View } from 'react-native';
 import { showMessage } from 'react-native-flash-message';
@@ -13,7 +12,6 @@ type Props = {
 };
 
 export function VerifyForm({ email }: Props) {
-  const router = useRouter();
   const [code, setCode] = useState('');
   const [cooldown, setCooldown] = useState(0);
   const setAuth = useAuthStore(s => s.login);
@@ -37,7 +35,6 @@ export function VerifyForm({ email }: Props) {
       {
         onSuccess: (data) => {
           setAuth(data);
-          router.replace('/');
         },
         onError: () => {
           showErrorMessage(translate('verify.error'));

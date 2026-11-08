@@ -186,7 +186,8 @@
   --color-brand: #58CC02;
   --color-brand-edge: #3C8C00;
   --color-brand-pressed: #4CAD02;
-  --color-on-brand: #ffffff;
+  --color-on-brand: #1B2416;
+  --color-action: #326F09;
 }
 
 /* Theme-aware semantic and neutral colors. The dark palette uses soft slate surfaces. */
@@ -213,6 +214,7 @@
       --color-brand-edge: #557044;
       --color-brand-pressed: #83AA60;
       --color-on-brand: #1B2416;
+      --color-action: #B5D894;
 
       --color-neutral-50: #F3F4F6;
       --color-neutral-100: #E5E7EB;
@@ -246,7 +248,8 @@
       --color-brand: #58CC02;
       --color-brand-edge: #3C8C00;
       --color-brand-pressed: #4CAD02;
-      --color-on-brand: #ffffff;
+      --color-on-brand: #1B2416;
+      --color-action: #326F09;
 
       --color-neutral-50: #EEEFF3;
       --color-neutral-100: #D4D5DF;

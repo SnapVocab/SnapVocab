@@ -61,7 +61,7 @@ const primary: VariantStyle = {
   // brand / brand-edge / on-brand are global.css tokens that already soften in dark mode.
   container: `${PRESS} bg-brand border-brand-edge active:bg-brand-pressed`,
   text: `${LABEL} text-on-brand`,
-  indicator: { light: '#ffffff', dark: '#1B2416' },
+  indicator: { light: '#1B2416', dark: '#1B2416' },
 };
 const purple: VariantStyle = {
   container: `${PRESS} bg-purple-500 border-purple-700 active:bg-purple-600 dark:bg-[#A48BE6] dark:border-b-[#5D4A8E] dark:active:bg-[#977DDA]`,

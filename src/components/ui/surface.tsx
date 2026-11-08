@@ -9,6 +9,8 @@ export type SurfaceTokens = {
   headerBg: string;
   text: string;
   textMuted: string;
+  action: string;
+  onBrand: string;
 };
 
 /** Light/dark are the user's choice and always respected: every palette defines both. */
@@ -23,6 +25,8 @@ export const DEFAULT_SURFACE: SurfacePalette = {
     headerBg: '#FFFFFF',
     text: '#1E2A44',
     textMuted: '#565879',
+    action: '#326F09',
+    onBrand: '#1B2416',
   },
   dark: {
     background: '#181A1F',
@@ -32,6 +36,8 @@ export const DEFAULT_SURFACE: SurfacePalette = {
     headerBg: '#22252B',
     text: '#F3F4F6',
     textMuted: '#B5BBC5',
+    action: '#B5D894',
+    onBrand: '#1B2416',
   },
 };
 

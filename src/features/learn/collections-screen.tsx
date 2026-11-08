@@ -1,6 +1,6 @@
 import type { BottomSheetModal } from '@gorhom/bottom-sheet';
 import type { Collection, CollectionRef } from './types';
-import { useFocusEffect, useRouter } from 'expo-router';
+import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useRef, useState } from 'react';
 import { ScrollView } from 'react-native';
 import Animated, { FadeIn } from 'react-native-reanimated';
@@ -20,9 +20,15 @@ import {
 } from './components';
 
 export function CollectionsScreen() {
+  const { view } = useLocalSearchParams<{ view?: string }>();
+  const initialView = view === 'explore' ? 'SYSTEM' : 'USER';
+  return <CollectionsContent key={initialView} initialView={initialView} />;
+}
+
+function CollectionsContent({ initialView }: { initialView: 'USER' | 'SYSTEM' }) {
   const surface = useSurface();
   const router = useRouter();
-  const [viewType, setViewType] = useState<'USER' | 'SYSTEM'>('USER');
+  const [viewType, setViewType] = useState<'USER' | 'SYSTEM'>(initialView);
   const studyCounts = useCollectionStudyCounts(viewType);
   const refreshCounts = studyCounts.refetch;
   useFocusEffect(useCallback(() => {
@@ -112,13 +118,14 @@ export function CollectionsScreen() {
                   onPress={() => handleCardPress(item)}
                   onOptionsPress={() => handleOptionsPress(item)}
                   counts={studyCounts.data?.find(count => count.collectionId === item.id)}
-                  onSettingsPress={() => router.push({ pathname: '/collections/study-settings', params: { collectionId: String(item.id), name: item.name } })}
                 />
               ))}
             </Animated.View>
           )}
         </ScrollView>
 
+      </View>
+      <View className="border-t border-line bg-surface px-4 pt-3 pb-4">
         <Button
           label={`${translate('learn.collections.create_new_collection')}`}
           onPress={handleCreatePress}

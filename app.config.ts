@@ -9,8 +9,8 @@ import 'tsx/cjs';
 // eslint-disable-next-line perfectionist/sort-imports
 import Env from './env';
 
-const EXPO_ACCOUNT_OWNER = 'snapvocab';
-const EAS_PROJECT_ID = 'c3e1075b-6fe7-4686-aa49-35b46a229044';
+const EXPO_ACCOUNT_OWNER = 'thanhthbms-team';
+const EAS_PROJECT_ID = '9197f5cf-9075-4cd3-badb-840838f21df2';
 
 const appIconBadgeConfig: AppIconBadgeConfig = {
   enabled: Env.EXPO_PUBLIC_APP_ENV !== 'production',

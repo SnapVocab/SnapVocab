@@ -1,15 +1,8 @@
-import { Redirect, Stack } from 'expo-router';
+import { Stack } from 'expo-router';
 
-import { useAuthStore } from '@/features/auth/use-auth-store';
 import { BadgeUnlockHost } from '@/features/badges';
 
 export default function AppLayout() {
-  const status = useAuthStore(s => s.status);
-
-  if (status !== 'signIn') {
-    return <Redirect href="/welcome" />;
-  }
-
   return (
     <>
       <Stack screenOptions={{ headerShown: false }}>

@@ -6,11 +6,13 @@ import { useUniwind } from 'uniwind';
 
 import colors from '@/components/ui/colors';
 import { CameraIcon } from '@/components/ui/icons';
+import { useSurface } from '@/components/ui/surface';
 
 export function CameraTabButton({ onPress, accessibilityState }: BottomTabBarButtonProps) {
   const { t } = useTranslation();
   const { theme } = useUniwind();
   const isDark = theme === 'dark';
+  const surface = useSurface();
   const focused = accessibilityState?.selected;
 
   return (
@@ -20,6 +22,7 @@ export function CameraTabButton({ onPress, accessibilityState }: BottomTabBarBut
         style={styles.pressable}
         accessibilityRole="button"
         accessibilityLabel={t('home.scan_camera')}
+        accessibilityState={accessibilityState}
       >
         <View
           style={[
@@ -36,7 +39,7 @@ export function CameraTabButton({ onPress, accessibilityState }: BottomTabBarBut
               : (isDark ? ['#91B86C', '#779F56'] : [colors.primary[500], colors.primary[600]])}
             style={styles.gradient}
           >
-            <CameraIcon color="#FFFFFF" width={30} height={30} />
+            <CameraIcon color={surface.onBrand} width={30} height={30} />
           </LinearGradient>
         </View>
       </Pressable>

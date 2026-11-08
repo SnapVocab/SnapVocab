@@ -1,7 +1,7 @@
 import { Pressable, View } from 'react-native';
 import { useUniwind } from 'uniwind';
 import { Text } from '@/components/ui';
-import { ChevronRightIcon, FolderIcon, MoreVerticalIcon, SettingsIcon } from '@/components/ui/icons';
+import { ChevronRightIcon, FolderIcon, MoreVerticalIcon } from '@/components/ui/icons';
 import { StudyCountLabels } from '@/features/study/study-count-labels';
 import { translate } from '@/lib/i18n';
 
@@ -13,7 +13,6 @@ type Props = {
   showOption?: boolean;
   translation: string;
   counts?: { newCount: number; dueCount: number };
-  onSettingsPress?: () => void;
 };
 
 export default function CollectionCard({
@@ -24,9 +23,8 @@ export default function CollectionCard({
   isSystemCollection,
   showOption = true,
   counts,
-  onSettingsPress,
 }: Props) {
-  const canShowOption = showOption && !isSystemCollection;
+  const canShowOption = showOption && !!onOptionsPress;
   const { theme } = useUniwind();
   const cardSurfaceClasses = theme === 'dark'
     ? 'border-line border-b-edge bg-surface'
@@ -72,36 +70,24 @@ export default function CollectionCard({
         </View>
       </View>
 
-      {onSettingsPress && (
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel={translate('study_limits.settings_for', { name })}
-          onPress={(event) => {
-            event.stopPropagation();
-            onSettingsPress();
-          }}
-          className="mr-2 size-12 items-center justify-center rounded-xl bg-surface-raised"
-        >
-          <SettingsIcon width={20} height={20} color={theme === 'dark' ? '#E5E7EB' : '#1C274C'} />
-        </Pressable>
-      )}
-
       {/* Right section: 3-dots action button or Chevron */}
       {canShowOption
         ? (
             <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={translate('learn.library.options', { name })}
               onPress={(e) => {
                 e.stopPropagation();
                 onOptionsPress?.();
               }}
               hitSlop={12}
-              className="size-10 items-center justify-center rounded-xl border-2 border-b-[3px] border-line border-b-edge bg-surface-raised active:translate-y-px active:border-b-2"
+              className="size-12 items-center justify-center rounded-xl border-2 border-b-[3px] border-line border-b-edge bg-surface-raised active:translate-y-px active:border-b-2"
             >
               <MoreVerticalIcon width={20} height={20} color="#71717A" />
             </Pressable>
           )
         : (
-            <View className="size-10 items-center justify-center rounded-xl border-2 border-b-[3px] border-line border-b-edge bg-surface-raised">
+            <View className="size-12 items-center justify-center rounded-xl border-2 border-b-[3px] border-line border-b-edge bg-surface-raised">
               <ChevronRightIcon width={16} height={16} color="#71717A" />
             </View>
           )}
