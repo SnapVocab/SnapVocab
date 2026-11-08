@@ -1,6 +1,5 @@
 {
   "badges": {
-    "collection": "Bộ sưu tập",
     "collection_a11y": "Đã đạt {{earned}} trên {{total}} huy hiệu",
     "cta": {
       "quiz": "Làm một bài quiz ›",
@@ -8,16 +7,20 @@
     },
     "eligible": "Đủ điều kiện",
     "empty_catalog": "Huy hiệu đang được chuẩn bị. Quay lại sau nhé.",
+    "empty_filter": {
+      "locked": "Tuyệt vời, bạn đã mở toàn bộ huy hiệu!",
+      "title": "Chưa có huy hiệu nào",
+      "unlocked": "Hãy bắt đầu học hoặc quét ảnh để mở khóa huy hiệu đầu tiên!"
+    },
     "error_body": "Kiểm tra mạng rồi thử lại nhé.",
     "error_title": "Không tải được huy hiệu",
+    "filter": {
+      "all": "Tất cả ({{count}})",
+      "locked": "Đang cày ({{count}})",
+      "unlocked": "Đã mở ({{count}})"
+    },
     "hero": {
-      "complete": "Bạn đã hoàn thành cả bộ sưu tập.",
-      "empty_title": "Huy hiệu đầu tiên đang chờ bạn",
-      "new_hint": "Chạm vào từng huy chương bên dưới để xem",
-      "new_label": "Vừa đạt",
-      "new_many": "{{count}} huy hiệu mới",
-      "position": "Mốc {{index}}/{{count}} · {{series}}",
-      "target": "{{name}} · còn {{remaining}} {{unit}}"
+      "position": "Mốc {{index}}/{{count}} · {{series}}"
     },
     "metric": {
       "other": {
@@ -51,6 +54,7 @@
       "more": "+{{count}} huy hiệu khác",
       "pill": "Huy hiệu mới",
       "pill_final": "Hoàn thành chuỗi",
+      "reward": "Bạn nhận: {{rewards}}",
       "view": "Xem bộ sưu tập"
     },
     "new_pill": "Mới",
@@ -60,6 +64,7 @@
       "see_all": "Xem tất cả ›",
       "strip_a11y": "Huy hiệu gần đây, xem tất cả"
     },
+    "progress": "Tiến độ",
     "quiz_row": {
       "hint": "Chạm để xem",
       "many": "{{count}} huy hiệu mới",
@@ -69,13 +74,26 @@
     "recording": "Đang ghi nhận…",
     "recording_banner": "Đang ghi nhận huy hiệu mới…",
     "retry": "Thử lại",
-    "series_done": "Hoàn thành",
-    "series_progress": "{{earned}}/{{total}} đã đạt",
+    "reward": {
+      "a11y": "Phần thưởng: {{rewards}}",
+      "already_owned": "Bạn đã có vật phẩm này từ trước.",
+      "coin": "+{{count}} Coin",
+      "frame_avatar": "Khung avatar",
+      "frame_card": "Khung thẻ",
+      "frame_other": "Vật phẩm",
+      "in_inventory": "Đã thêm vào kho đồ, trang bị trong Cửa hàng.",
+      "legacy": "Bạn nhận huy hiệu này trước khi có phần thưởng.",
+      "title_earned": "Phần thưởng đã nhận",
+      "title_locked": "Phần thưởng khi đạt",
+      "xp": "+{{count}} XP"
+    },
     "sheet": {
       "close": "Đóng",
+      "earned_date": "Ngày nhận huy hiệu",
       "earned_on": "Đạt ngày {{date}}",
       "eligible": "Đã đủ điều kiện",
       "not_started": "Chưa bắt đầu",
+      "progress": "Tiến độ chinh phục",
       "remaining": "Còn {{remaining}} {{unit}}"
     },
     "slot": {
@@ -84,6 +102,15 @@
       "recording": "{{name}}. Đang ghi nhận. Mốc {{index}} trên {{count}} của {{series}}"
     },
     "stale_banner": "Đang hiển thị dữ liệu đã lưu.",
+    "status": {
+      "locked": "Đang khóa",
+      "unlocked": "Đã mở khóa"
+    },
+    "summary": {
+      "count": "Đã mở {{earned}} / {{total}} huy hiệu",
+      "rewards": "Thưởng đã tích lũy:",
+      "title": "Kho Tàng Vinh Danh"
+    },
     "title": "Thành tựu"
   },
   "cardRenderer": {

@@ -1,5 +1,6 @@
 import type { BadgesView } from '../types';
 import { QueryClient } from '@tanstack/react-query';
+import { useAuthStore } from '@/features/auth/use-auth-store';
 import { client } from '@/lib/api';
 import { badgesKey, markBadgesSeen, syncBadges } from '../api';
 import { useBadgeSessionStore } from '../use-badge-session-store';
@@ -44,6 +45,25 @@ describe('badge api', () => {
     expect(jest.mocked(client).mock.calls.at(-1)?.[0]).toMatchObject({ url: '/api/me/badges/seen', data: { badgeIds: [1] } });
     expect(useBadgeSessionStore.getState().pendingSeenIds).toEqual([]);
     expect(queryClient.getQueryData<BadgesView>(badgesKey)?.badges[0].seen).toBe(true);
+  });
+
+  it('a sync that paid rewards writes the new balance like a mission claim; an unchanged one touches nothing', async () => {
+    const queryClient = new QueryClient({ defaultOptions: { queries: { gcTime: Infinity } } });
+    const updateUser = jest.fn();
+    useAuthStore.setState({ user: { coin: 100, exp: 400 } as never, updateUser } as never);
+    queryClient.setQueryData(['me'], { coin: 100, exp: 400, name: 'A' });
+
+    jest.mocked(client).mockImplementation(() => ok({ ...view, coin: 120, exp: 450 }) as never);
+    await syncBadges(queryClient);
+    expect(updateUser).toHaveBeenCalledWith({ coin: 120, exp: 450 });
+    expect(queryClient.getQueryData(['me'])).toEqual({ coin: 120, exp: 450, name: 'A' });
+
+    updateUser.mockClear();
+    useAuthStore.setState({ user: { coin: 120, exp: 450 } as never } as never);
+    await syncBadges(queryClient);
+    jest.mocked(client).mockImplementation(() => ok(view) as never); // a server older than PD-BDG-14
+    await syncBadges(queryClient);
+    expect(updateUser).not.toHaveBeenCalled();
   });
 
   it('sends /seen in chunks of at most 50 ids', async () => {

@@ -23,9 +23,9 @@ jest.mock('expo-router', () => {
 jest.mock('@tanstack/react-query', () => ({ useQueryClient: () => ({}) }));
 jest.mock('../api', () => ({ useBadges: jest.fn(), syncBadges: jest.fn(), markBadgesSeen: jest.fn() }));
 jest.mock('@/lib/i18n', () => ({ translate: (key: string, opts?: Record<string, unknown>) => (opts ? `${key} ${JSON.stringify(opts)}` : key) }));
-jest.mock('@/components/snapvocab', () => ({ AchievementArtifact: () => null, AchievementGlow: () => null }));
+jest.mock('@/components/snapvocab', () => ({ AchievementArtifact: () => null, AchievementGlow: () => null, AchievementTrophy3D: () => null, Coin3D: () => null, XPOrb3D: () => null }));
 jest.mock('@/components/ui/snapy', () => ({ Snapy: () => null }));
-jest.mock('@/components/ui/icons', () => ({ CheckIcon: () => null, CheckCircleIcon: () => null, CloseIcon: () => null }));
+jest.mock('@/components/ui/icons', () => ({ CheckCircleIcon: () => null, CloseIcon: () => null, LockIcon: () => null, SparklesIcon: () => null }));
 jest.mock('../components/achievement-detail-sheet', () => ({ AchievementDetailSheet: () => null }));
 jest.mock('@/components/ui', () => {
   const RN = require('react-native');
@@ -56,26 +56,25 @@ describe('achievements screen', () => {
     jest.mocked(syncBadges).mockResolvedValue(null);
   });
 
-  it('normal state has no recognition block and no call to action', async () => {
+  it('normal state shows the summary, progress per locked badge and no new pill', async () => {
     mockData(view([item(1, { earned: true, currentValue: 12, seen: true, earnedAt: '2026-10-01T00:00:00Z' }), item(10, { currentValue: 12, earned: true, seen: true, earnedAt: '2026-10-02T00:00:00Z' }), item(50, { currentValue: 12 })]));
     render(<AchievementsScreen />);
-    expect(await screen.findByText(/12\/50/)).toBeTruthy();
-    expect(screen.queryByText(/badges.hero/)).toBeNull();
-    expect(screen.queryByText(/badges.cta/)).toBeNull();
+    expect(await screen.findByText('12 / 50')).toBeTruthy();
+    expect(screen.getByText(/badges.summary.count/)).toBeTruthy();
+    expect(screen.queryByText('badges.new_pill')).toBeNull();
   });
 
-  it('recording state replaces the empty-state invitation when a threshold is reached but not recorded', async () => {
+  it('recording state shows the banner when a threshold is reached but not recorded', async () => {
     mockData(view([item(1, { currentValue: 1 }), item(10, { currentValue: 1 })]));
     render(<AchievementsScreen />);
     expect(await screen.findByText('badges.recording_banner')).toBeTruthy();
-    expect(screen.queryByText('badges.hero.empty_title')).toBeNull();
   });
 
   it('introduces unseen badges in place and marks exactly the rendered snapshot as seen on blur (UI-BDG-03)', async () => {
     const unseen = [item(1, { earned: true, seen: false, currentValue: 12, earnedAt: '2026-10-07T00:00:00Z' }), item(10, { earned: true, seen: false, currentValue: 12, earnedAt: '2026-10-07T00:00:00Z' })];
     mockData(view([...unseen, item(50, { currentValue: 12 })]));
     const { rerender } = render(<AchievementsScreen />);
-    expect(await screen.findByText(/badges.hero.new_many/)).toBeTruthy();
+    expect(await screen.findAllByText('badges.new_pill')).toHaveLength(2);
     expect(useBadgeSessionStore.getState().shownIds).toEqual([1, 10]);
 
     // A badge synced after the screen lost focus must not be marked seen.
@@ -90,9 +89,29 @@ describe('achievements screen', () => {
     mockParams = { highlight: '10' };
     mockData(view([item(1, { earned: true, seen: true, currentValue: 12, earnedAt: '2026-10-01T00:00:00Z' }), item(10, { earned: true, seen: true, currentValue: 12, earnedAt: '2026-10-07T00:00:00Z' })]));
     render(<AchievementsScreen />);
-    expect(await screen.findByText('badges.hero.new_label')).toBeTruthy();
+    expect(await screen.findAllByText('badges.new_pill')).toHaveLength(1);
     act(() => focus.cleanup?.());
     expect(markBadgesSeen).not.toHaveBeenCalled();
+  });
+
+  it('shows each badge reward and the rewards earned so far (PD-BDG-14)', async () => {
+    const frame = { code: 'F', name: 'Khung Lửa', type: 'AVATAR_FRAME', previewUrl: null, granted: null };
+    mockData({
+      ...view([
+        item(1, { earned: true, seen: true, currentValue: 12, earnedAt: '2026-10-01T00:00:00Z', reward: { coin: 20, xp: 50, item: null } }),
+        item(50, { currentValue: 12, reward: { coin: 0, xp: 300, item: frame } }),
+        item(60, { earned: true, seen: true, currentValue: 60, earnedAt: '2026-09-01T00:00:00Z', reward: null }),
+      ]),
+      rewardTotals: { coin: 20, xp: 50 },
+    });
+    render(<AchievementsScreen />);
+    expect(await screen.findByText('+20')).toBeTruthy();
+    expect(screen.getByText('+50')).toBeTruthy();
+    expect(screen.getByText('+300')).toBeTruthy();
+    expect(screen.getByText('badges.reward.frame_avatar')).toBeTruthy();
+    expect(screen.getByText('badges.summary.rewards')).toBeTruthy();
+    expect(screen.getByText('badges.reward.coin {"count":20}')).toBeTruthy();
+    expect(screen.getByText('badges.reward.xp {"count":50}')).toBeTruthy();
   });
 
   it('shows a retry card when nothing is cached and the request fails', async () => {

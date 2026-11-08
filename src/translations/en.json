@@ -1,6 +1,5 @@
 {
   "badges": {
-    "collection": "Collection",
     "collection_a11y": "{{earned}} of {{total}} badges earned",
     "cta": {
       "quiz": "Take a quiz ›",
@@ -8,16 +7,20 @@
     },
     "eligible": "Eligible",
     "empty_catalog": "Badges are being prepared. Check back later.",
+    "empty_filter": {
+      "locked": "Amazing, you've unlocked every badge!",
+      "title": "No badges here yet",
+      "unlocked": "Study or scan a photo to unlock your first badge!"
+    },
     "error_body": "Check your connection and try again.",
     "error_title": "Couldn't load badges",
+    "filter": {
+      "all": "All ({{count}})",
+      "locked": "In progress ({{count}})",
+      "unlocked": "Unlocked ({{count}})"
+    },
     "hero": {
-      "complete": "You've completed the whole collection.",
-      "empty_title": "Your first badge is waiting",
-      "new_hint": "Tap a medal below to see it",
-      "new_label": "Just earned",
-      "new_many": "{{count}} new badges",
-      "position": "Milestone {{index}}/{{count}} · {{series}}",
-      "target": "{{name}} · {{remaining}} {{unit}} to go"
+      "position": "Milestone {{index}}/{{count}} · {{series}}"
     },
     "metric": {
       "other": {
@@ -51,6 +54,7 @@
       "more": "+{{count}} more badges",
       "pill": "New badge",
       "pill_final": "Series complete",
+      "reward": "You got: {{rewards}}",
       "view": "View collection"
     },
     "new_pill": "New",
@@ -60,6 +64,7 @@
       "see_all": "See all ›",
       "strip_a11y": "Recent badges, see all"
     },
+    "progress": "Progress",
     "quiz_row": {
       "hint": "Tap to view",
       "many": "{{count}} new badges",
@@ -69,13 +74,26 @@
     "recording": "Recording…",
     "recording_banner": "Recording your new badges…",
     "retry": "Try again",
-    "series_done": "Completed",
-    "series_progress": "{{earned}}/{{total}} earned",
+    "reward": {
+      "a11y": "Reward: {{rewards}}",
+      "already_owned": "You already had this item.",
+      "coin": "+{{count}} Coin",
+      "frame_avatar": "Avatar frame",
+      "frame_card": "Card frame",
+      "frame_other": "Item",
+      "in_inventory": "Added to your inventory; equip it in the Shop.",
+      "legacy": "You earned this badge before rewards existed.",
+      "title_earned": "Rewards received",
+      "title_locked": "Reward for earning it",
+      "xp": "+{{count}} XP"
+    },
     "sheet": {
       "close": "Close",
+      "earned_date": "Date earned",
       "earned_on": "Earned on {{date}}",
       "eligible": "Requirement met",
       "not_started": "Not started yet",
+      "progress": "Progress",
       "remaining": "{{remaining}} {{unit}} to go"
     },
     "slot": {
@@ -84,6 +102,15 @@
       "recording": "{{name}}. Recording. Milestone {{index}} of {{count}} in {{series}}"
     },
     "stale_banner": "Showing saved data.",
+    "status": {
+      "locked": "Locked",
+      "unlocked": "Unlocked"
+    },
+    "summary": {
+      "count": "Unlocked {{earned}} / {{total}} badges",
+      "rewards": "Rewards earned:",
+      "title": "Hall of Fame"
+    },
     "title": "Achievements"
   },
   "cardRenderer": {

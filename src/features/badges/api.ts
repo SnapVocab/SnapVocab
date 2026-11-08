@@ -2,6 +2,7 @@ import type { QueryClient } from '@tanstack/react-query';
 import type { BadgesView, SeenResult } from './types';
 import type { ApiResponse } from '@/features/auth/api';
 import { useQuery } from '@tanstack/react-query';
+import { useAuthStore } from '@/features/auth/use-auth-store';
 import { client } from '@/lib/api';
 import { useBadgeSessionStore } from './use-badge-session-store';
 
@@ -39,6 +40,7 @@ export function syncBadges(queryClient: QueryClient): Promise<BadgesView | null>
   inFlight ??= postSync()
     .then((view) => {
       queryClient.setQueryData(badgesKey, view);
+      applyRewardBalance(queryClient, view);
       const pending = useBadgeSessionStore.getState().pendingSeenIds;
       if (pending.length > 0)
         void markBadgesSeen(queryClient, pending);
@@ -49,6 +51,22 @@ export function syncBadges(queryClient: QueryClient): Promise<BadgesView | null>
       inFlight = null;
     });
   return inFlight;
+}
+
+/**
+ * A sync that granted badges also paid their Coin, XP and frame (PD-BDG-14): mirror the server balance like a mission
+ * claim does, and refresh what shows it. Nothing to do when the balance did not move.
+ */
+function applyRewardBalance(queryClient: QueryClient, view: BadgesView) {
+  const user = useAuthStore.getState().user;
+  if (view.coin === undefined || view.exp === undefined || !user || (user.coin === view.coin && user.exp === view.exp))
+    return;
+  const balance = { coin: view.coin, exp: view.exp };
+  useAuthStore.getState().updateUser(balance);
+  queryClient.setQueryData<{ coin?: number; exp?: number }>(['me'], old => old && { ...old, ...balance });
+  void queryClient.invalidateQueries({ queryKey: ['me'] });
+  void queryClient.invalidateQueries({ queryKey: ['shop'] });
+  void queryClient.invalidateQueries({ queryKey: ['gamification', 'xp'] });
 }
 
 /**

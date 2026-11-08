@@ -34,6 +34,17 @@ function show(item: typeof first, intensity: 'normal' | 'reduced') {
 describe('badge unlock modal P2 (achievements_ui.md §10, §11)', () => {
   beforeEach(() => jest.clearAllMocks());
 
+  it('says what the sync paid, summed over every badge shown, frame only when granted (PD-BDG-14)', () => {
+    const frame = { code: 'F', name: 'Khung Chiến Binh', type: 'AVATAR_FRAME', previewUrl: null, granted: true };
+    render(<BadgeUnlockModal items={[{ ...first, reward: { coin: 60, xp: 150, item: null } }, { ...final, reward: { coin: 0, xp: 300, item: frame } }]} seriesList={seriesList} intensity="normal" onClose={jest.fn()} onViewCollection={jest.fn()} />);
+    expect(screen.getByText(/\+60 Coin · \+450 XP · Khung Chiến Binh/)).toBeTruthy();
+  });
+
+  it('has no reward line for badges without a reward', () => {
+    show(first, 'normal');
+    expect(screen.queryByText(/Bạn nhận|You got/)).toBeNull();
+  });
+
   it('celebrates a series-final badge with confetti and one haptic tap', () => {
     show(final, 'normal');
     expect(screen.getByTestId('badge-confetti')).toBeTruthy();
