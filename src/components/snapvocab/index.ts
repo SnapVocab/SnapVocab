@@ -9,7 +9,6 @@ export * from './core/SnapVocabVisualSize';
 export * from './core/visualTokens';
 // Branded Avatar Frames
 export * from './frames/AvatarFrame';
-export * from './frames/avatarFrameCatalog';
 // Home Feature 3D Branded Icons
 export * from './home/HomeFeatureIcons';
 export * from './missions/MissionIcon3D';

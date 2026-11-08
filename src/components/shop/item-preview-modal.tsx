@@ -4,7 +4,7 @@ import { XIcon } from 'lucide-react-native';
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Modal, Pressable, ScrollView, Text, View } from 'react-native';
-import { AvatarFrame, getAvatarFrame } from '@/components/snapvocab';
+import { AvatarFrame } from '@/components/snapvocab';
 import { useSurface } from '@/components/ui';
 import { useAuthStore } from '@/features/auth/use-auth-store';
 import { FlipCardContainer } from '@/features/card-renderer/components/flip-card-container';
@@ -100,18 +100,14 @@ export function FramePreviewModal({ item, ...props }: PreviewModalProps) {
       </PreviewSheet>
     );
   }
-  const description = item.description || getAvatarFrame(item.code)?.description;
   return (
-    <PreviewSheet item={{ ...item, description }} {...props}>
+    <PreviewSheet item={item} {...props}>
       <View style={{ backgroundColor: s.background }} className="items-center rounded-3xl py-6">
         <AvatarFrame
-          frameId={item.code}
           frameUrl={item.config?.frameUrl}
           avatarUri={avatarUrl}
           avatarSource={require('../../assets/images/snapy-happy.png')}
           size="hero"
-          animated
-          showGlow
         />
       </View>
     </PreviewSheet>

@@ -2,10 +2,12 @@ import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, View } from 'react-native';
 import { withUniwind } from 'uniwind';
+import { AvatarFrame } from '@/components/snapvocab';
 import { SafeAreaView, Text, UserAvatar } from '@/components/ui';
 import { CoinIcon, FlameIcon, NotificationBell } from '@/components/ui/icons';
 import { useThemeConfig } from '@/components/ui/use-theme-config';
 import { useAuthStore } from '@/features/auth/use-auth-store';
+import { useEquippedAvatarFrame } from '@/features/card-renderer/card-frame';
 import { useUnreadCount } from '@/features/notifications/api';
 import { useStreak } from '@/features/progress/api';
 import { formatCount } from '@/lib/format-count';
@@ -30,6 +32,7 @@ export function HomeHeader({
   const theme = useThemeConfig();
   const { t, i18n } = useTranslation();
   const user = useAuthStore(s => s.user);
+  const avatarFrame = useEquippedAvatarFrame();
 
   // Same source as Home/Stats: the live streak (0 after a missed day), not users.streak_days.
   // "–" while loading or on error: unknown is not 0.
@@ -49,14 +52,27 @@ export function HomeHeader({
           onPress={onAvatarPress}
           accessibilityRole="button"
           accessibilityLabel={t('home.open_profile')}
-          className="size-12 items-center justify-center rounded-full active:opacity-80"
+          className="min-h-12 min-w-12 items-center justify-center rounded-full active:opacity-80"
         >
-          <UserAvatar
-            url={user?.avatarUrl}
-            name={user?.firstName ?? user?.email}
-            size="md"
-            bordered
-          />
+          {/* Same renderer as Profile and the Shop preview; 56 px so the 58% aperture still shows a face. */}
+          {avatarFrame.frameUrl
+            ? (
+                <AvatarFrame
+                  frameUrl={avatarFrame.frameUrl}
+                  onFrameError={avatarFrame.onFrameError}
+                  avatarUri={user?.avatarUrl}
+                  initials={(user?.firstName ?? user?.email ?? 'U')[0].toUpperCase()}
+                  size={56}
+                />
+              )
+            : (
+                <UserAvatar
+                  url={user?.avatarUrl}
+                  name={user?.firstName ?? user?.email}
+                  size="md"
+                  bordered
+                />
+              )}
         </Pressable>
 
         {/* Gamified Status Counters + Notification */}

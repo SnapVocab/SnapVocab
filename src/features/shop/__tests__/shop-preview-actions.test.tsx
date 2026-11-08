@@ -30,7 +30,6 @@ jest.mock('lucide-react-native', () => ({ CheckIcon: () => null, XIcon: () => nu
 jest.mock('@/components/snapvocab', () => ({
   AvatarFrame: require('react-native').View,
   Coin3D: () => null,
-  getAvatarFrame: () => undefined,
 }));
 jest.mock('@/components/ui', () => {
   const RN = require('react-native');

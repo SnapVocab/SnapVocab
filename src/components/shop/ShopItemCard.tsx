@@ -36,13 +36,10 @@ export function ItemArtwork({ item, size = 76, onFrameError }: { item: Omit<Card
   if (item.type === 'AVATAR_FRAME') {
     return (
       <AvatarFrame
-        frameId={item.code}
         frameUrl={item.config?.frameUrl}
         avatarUri={avatarUrl}
         avatarSource={require('../../assets/images/snapy-happy.png')}
         size={size + 12}
-        animated
-        showGlow={false}
         onFrameError={onFrameError}
       />
     );
