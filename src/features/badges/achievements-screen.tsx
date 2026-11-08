@@ -191,22 +191,22 @@ function Summary({ earned, total, rewards }: SummaryProps) {
           <Text className="font-nunito text-[18px] leading-tight font-extrabold text-mascot-navy dark:text-white">{translate('badges.summary.title')}</Text>
           <View className="mt-1 mb-2 flex-row items-center justify-between">
             <Text className="font-inter text-[13px] font-bold text-neutral-500 dark:text-neutral-300">{translate('badges.summary.count', { earned, total })}</Text>
-            <Text className="font-nunito text-[14px] font-extrabold text-primary-600">{`${percent}%`}</Text>
+            <Text className="font-nunito text-[14px] font-extrabold text-primary-600 dark:text-primary-500">{`${percent}%`}</Text>
           </View>
           <ProgressBar percent={percent} className="h-3" />
         </View>
       </View>
       {rewards && (
-        <View className="mt-4 flex-row items-center justify-between border-t border-neutral-100 pt-3.5 dark:border-neutral-800">
+        <View className="mt-4 flex-row flex-wrap items-center justify-between gap-2 border-t border-neutral-100 pt-3.5 dark:border-neutral-800">
           <Text className="font-inter text-[12px] font-bold text-neutral-400">{translate('badges.summary.rewards')}</Text>
-          <View className="flex-row items-center gap-3">
-            <View className="flex-row items-center rounded-xl border border-reward-200 bg-reward-50 px-2.5 py-1">
+          <View className="flex-row flex-wrap items-center gap-2">
+            <View className="flex-row items-center rounded-xl border border-reward-200 bg-reward-50 px-2.5 py-1 dark:border-reward-500/40 dark:bg-reward-500/15">
               <Coin3D size="xs" style={{ marginRight: 4 }} />
-              <Text className="font-nunito text-[12px] font-extrabold text-reward-700">{translate('badges.reward.coin', { count: rewards.coin })}</Text>
+              <Text className="font-nunito text-[12px] font-extrabold text-reward-700 dark:text-reward-300">{translate('badges.reward.coin', { count: rewards.coin })}</Text>
             </View>
-            <View className="flex-row items-center rounded-xl border border-info-200 bg-info-50 px-2.5 py-1">
+            <View className="flex-row items-center rounded-xl border border-info-200 bg-info-50 px-2.5 py-1 dark:border-info-500/40 dark:bg-info-500/15">
               <XPOrb3D size="xs" style={{ marginRight: 4 }} />
-              <Text className="font-nunito text-[12px] font-extrabold text-info-700">{translate('badges.reward.xp', { count: rewards.xp })}</Text>
+              <Text className="font-nunito text-[12px] font-extrabold text-info-700 dark:text-info-300">{translate('badges.reward.xp', { count: rewards.xp })}</Text>
             </View>
           </View>
         </View>
@@ -252,7 +252,7 @@ function BadgeCard({ item, seriesList, isNew, stale, onPress }: CardProps) {
       <View className="mb-1 h-5 w-full flex-row items-center justify-end">
         {isNew && (
           <View className="rounded-full border-[1.5px] border-[#E5A500] bg-[#FFF1C2] px-[7px]">
-            <Text className="font-nunito text-[11px] font-extrabold text-[#8A5A00]">{translate('badges.new_pill')}</Text>
+            <Text className="font-nunito text-[11px] font-extrabold text-[#8A5A00] dark:text-[#8A5A00]">{translate('badges.new_pill')}</Text>
           </View>
         )}
       </View>
@@ -278,14 +278,14 @@ function BadgeCard({ item, seriesList, isNew, stale, onPress }: CardProps) {
         ? (
             <View className="w-full flex-row items-center justify-center gap-1 rounded-xl border border-success-200 bg-success-50 py-1">
               <CheckCircleIcon width={13} height={13} color="#3C8C00" />
-              <Text className="font-nunito text-[11px] font-extrabold tracking-wide text-success-700 uppercase">{translate('badges.status.unlocked')}</Text>
+              <Text className="font-nunito text-[11px] font-extrabold tracking-wide text-success-700 uppercase dark:text-success-700">{translate('badges.status.unlocked')}</Text>
             </View>
           )
         : isRecording(item)
           ? (
               <View className="w-full flex-row items-center justify-center gap-1 rounded-xl border border-reward-200 bg-reward-50 py-1">
                 {!stale && <ActivityIndicator size="small" color="#A87400" />}
-                <Text className="font-nunito text-[11px] font-extrabold text-[#8A5A00]">{translate(stale ? 'badges.eligible' : 'badges.recording')}</Text>
+                <Text className="font-nunito text-[11px] font-extrabold text-[#8A5A00] dark:text-[#8A5A00]">{translate(stale ? 'badges.eligible' : 'badges.recording')}</Text>
               </View>
             )
           : (

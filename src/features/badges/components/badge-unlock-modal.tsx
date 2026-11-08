@@ -76,7 +76,7 @@ export function BadgeUnlockModal({ items, seriesList, intensity, onClose, onView
             </View>
           )}
           <View className="rounded-full border border-[#FFE7A3] bg-[#FFF6DB] px-3 py-1.5">
-            <Text className="font-inter text-[14px] font-bold text-[#8A5A00]">{translate(final ? 'badges.modal.pill_final' : 'badges.modal.pill')}</Text>
+            <Text className="font-inter text-[14px] font-bold text-[#8A5A00] dark:text-[#8A5A00]">{translate(final ? 'badges.modal.pill_final' : 'badges.modal.pill')}</Text>
           </View>
 
           {single
@@ -140,8 +140,8 @@ export function BadgeUnlockModal({ items, seriesList, intensity, onClose, onView
               )}
 
           {paid && (
-            <View className="mt-3 rounded-xl border border-reward-200 bg-reward-50 px-3 py-1.5">
-              <Text className="text-center font-nunito text-[14px] font-extrabold text-reward-700">{translate('badges.modal.reward', { rewards: paid })}</Text>
+            <View className="mt-3 rounded-xl border border-reward-200 bg-reward-50 px-3 py-1.5 dark:border-reward-500/40 dark:bg-reward-500/15">
+              <Text className="text-center font-nunito text-[14px] font-extrabold text-reward-700 dark:text-reward-300">{translate('badges.modal.reward', { rewards: paid })}</Text>
             </View>
           )}
 

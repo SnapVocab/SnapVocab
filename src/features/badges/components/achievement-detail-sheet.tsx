@@ -64,7 +64,7 @@ function RewardBox({ item }: { item: BadgeItem }) {
   const frame = reward.item;
   return (
     <View className="mb-4 w-full rounded-2xl border border-neutral-200/80 bg-neutral-50 p-3.5 dark:border-neutral-700 dark:bg-neutral-800">
-      <View className="flex-row items-center justify-between gap-2">
+      <View className="flex-row flex-wrap items-center justify-between gap-2">
         <Text className="font-nunito text-[13px] font-extrabold text-neutral-600 dark:text-neutral-300">
           {translate(item.earned ? 'badges.reward.title_earned' : 'badges.reward.title_locked')}
         </Text>
@@ -117,7 +117,7 @@ function SheetBody({ item, stale, onClose, onNavigate }: Omit<Props, 'item' | 'o
       <View className="mt-1 mb-3 flex-row items-center gap-2">
         <View className={`flex-row items-center gap-1 rounded-full border px-3 py-1 ${item.earned ? 'border-success-200 bg-success-50' : 'border-neutral-200 bg-neutral-100 dark:border-neutral-700 dark:bg-neutral-800'}`}>
           {item.earned ? <CheckCircleIcon width={13} height={13} color="#3C8C00" /> : <LockIcon width={13} height={13} color="#64748B" />}
-          <Text className={`font-nunito text-[11px] font-extrabold tracking-wider uppercase ${item.earned ? 'text-success-700' : 'text-neutral-600 dark:text-neutral-300'}`}>
+          <Text className={`font-nunito text-[11px] font-extrabold tracking-wider uppercase ${item.earned ? 'text-success-700 dark:text-success-700' : 'text-neutral-600 dark:text-neutral-300'}`}>
             {translate(item.earned ? 'badges.status.unlocked' : 'badges.status.locked')}
           </Text>
         </View>
@@ -137,7 +137,7 @@ function SheetBody({ item, stale, onClose, onNavigate }: Omit<Props, 'item' | 'o
 
       {recording && (
         <View className="mb-4 w-full items-center rounded-2xl border-2 border-b-4 border-reward-200 bg-reward-50 p-4">
-          <Text className="font-inter text-[15px] font-semibold text-[#8A5A00]">{translate('badges.sheet.eligible')}</Text>
+          <Text className="font-inter text-[15px] font-semibold text-[#8A5A00] dark:text-[#8A5A00]">{translate('badges.sheet.eligible')}</Text>
           {!stale && (
             <View className="mt-1 flex-row items-center gap-1.5">
               <ActivityIndicator size="small" color="#A87400" />
