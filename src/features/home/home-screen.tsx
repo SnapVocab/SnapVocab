@@ -3,36 +3,37 @@ import type { HomeWidgetDTO, XpOverviewDTO } from '@/features/progress/types';
 import { useQueryClient } from '@tanstack/react-query';
 import { useFocusEffect, useRouter } from 'expo-router';
 import * as React from 'react';
-import { Pressable, RefreshControl, ScrollView, View } from 'react-native';
+import { Pressable, RefreshControl, ScrollView, useWindowDimensions, View } from 'react-native';
+import { withUniwind } from 'uniwind';
 import { XPOrb3D } from '@/components/snapvocab';
 import { Snapy } from '@/components/Snapy';
 import { FocusAwareStatusBar, SafeAreaView, Text } from '@/components/ui';
 import { ChevronRightIcon, TargetIcon } from '@/components/ui/icons';
-import { useColorMode } from '@/components/ui/surface';
+import { useSurface } from '@/components/ui/surface';
 import { useAuthStore } from '@/features/auth/use-auth-store';
 import { notificationKeys } from '@/features/notifications/api';
 import {
   invalidateProgress,
-  SectionError,
-  SRS_ENABLED,
   useHomeWidget,
   useStreak,
   useXpOverview,
 } from '@/features/progress';
 import { invalidateStudy, useStudyToday } from '@/features/study/api';
 import { TodayBlock } from '@/features/study/today-block';
-import { translate } from '@/lib/i18n';
+import { formatCount } from '@/lib/format-count';
+import { getLanguage, translate } from '@/lib/i18n';
 import { HomeSearchBar } from './components';
 
 // Same chunky 3D surface as HomeSearchBar.
 const CARD_3D = 'mb-3 rounded-2xl border-2 border-b-4 border-line border-b-edge bg-surface';
 const PRESSABLE_3D = 'active:translate-y-[2px] active:border-b-2 active:bg-pressed';
+const SafeArea = withUniwind(SafeAreaView);
 
 // The two progress cards share one row structure, so label, value and caption line up across them.
-const STAT_HEADER = 'h-6 flex-row items-center gap-1.5';
-const STAT_LABEL = 'font-nunito text-[11px] font-black tracking-wide text-neutral-500 uppercase dark:text-neutral-300';
+const STAT_HEADER = 'min-h-6 flex-row items-center gap-1.5';
+const STAT_LABEL = 'shrink font-nunito text-sm font-black text-neutral-500 dark:text-neutral-300';
 const STAT_VALUE = 'mt-2 font-nunito text-2xl font-black text-mascot-navy dark:text-white';
-const STAT_CAPTION = 'mt-0.5 font-inter text-[11px]/4 text-neutral-500 dark:text-neutral-300';
+const STAT_CAPTION = 'mt-1 font-inter text-sm/5 text-neutral-500 dark:text-neutral-300';
 const STAT_RETRY = 'mt-0.5 font-nunito text-[12px] font-extrabold text-primary-700 dark:text-[#B5D894]';
 
 function greetingKey() {
@@ -53,7 +54,10 @@ export function HomeScreen() {
   // Same query as the "Hôm nay" block below and on Learn, so Home never states a second number.
   const today = useStudyToday();
   const [isRefreshing, setIsRefreshing] = React.useState(false);
-  const isDark = useColorMode() === 'dark';
+  const surface = useSurface();
+  const { width, fontScale } = useWindowDimensions();
+  const expanded = width >= 840;
+  const stackProgress = expanded || width < 360 || fontScale > 1.2;
 
   // notification.md §3.7: coming back to Home refreshes the bell once its count is past its 60 s staleTime.
   useFocusEffect(React.useCallback(() => {
@@ -63,8 +67,12 @@ export function HomeScreen() {
 
   const onRefresh = React.useCallback(async () => {
     setIsRefreshing(true);
-    await Promise.all([invalidateProgress(queryClient), invalidateStudy(queryClient)]);
-    setIsRefreshing(false);
+    try {
+      await Promise.all([invalidateProgress(queryClient), invalidateStudy(queryClient)]);
+    }
+    finally {
+      setIsRefreshing(false);
+    }
   }, [queryClient]);
 
   const displayName = user?.firstName || user?.email?.split('@')[0] || translate('home.default_name');
@@ -74,73 +82,89 @@ export function HomeScreen() {
   const newCount = today.data?.newCount ?? 0;
 
   return (
-    <SafeAreaView edges={['bottom', 'left', 'right']} style={{ flex: 1 }} className="flex-1 bg-background">
+    <SafeArea edges={['bottom', 'left', 'right']} className="flex-1 bg-background">
       <FocusAwareStatusBar />
       <ScrollView
         className="flex-1 px-4 pt-3"
         showsVerticalScrollIndicator={false}
         contentContainerClassName="pb-10"
-        refreshControl={<RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} tintColor="#58CC02" />}
+        refreshControl={<RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} tintColor={surface.action} colors={[surface.action]} />}
       >
-        {/* Greeting & mascot */}
-        <View className={`${CARD_3D} flex-row items-center justify-between p-3`}>
-          <View className="flex-1 pr-2">
-            <Text className="font-inter text-xs font-semibold text-neutral-400">
-              {translate(greetingKey())}
-              ,
-            </Text>
-            <Text className="font-nunito text-lg font-black text-mascot-navy dark:text-white" numberOfLines={1}>
-              {displayName}
-            </Text>
-            <Text className="mt-1 font-inter text-xs text-neutral-500 dark:text-neutral-400">
-              {(dueCount ?? 0) + newCount > 0
-                ? translate('study_limits.summary', { newCount, reviewCount: dueCount ?? 0 })
-                : streak
-                  ? translate('home.streak_message', { count: streak })
-                  : translate('home.encouragement')}
-            </Text>
+        <View className="w-full max-w-6xl self-center">
+          {/* Greeting & mascot */}
+          <View className={`${CARD_3D} flex-row items-center justify-between p-3`}>
+            <View className="flex-1 pr-2">
+              <Text className="font-inter text-sm font-semibold text-neutral-500 dark:text-neutral-300">
+                {translate(greetingKey())}
+                ,
+              </Text>
+              <Text className="font-nunito text-lg font-black text-mascot-navy dark:text-white" numberOfLines={1}>
+                {displayName}
+              </Text>
+              <Text className="mt-1 font-inter text-xs text-neutral-500 dark:text-neutral-400">
+                {(dueCount ?? 0) + newCount > 0
+                  ? translate('study_limits.summary', { newCount, reviewCount: dueCount ?? 0 })
+                  : streak
+                    ? translate('home.streak_message', { count: streak })
+                    : translate('home.encouragement')}
+              </Text>
+            </View>
+            <Snapy
+              pose={dueCount ? 'thinking' : streak ? 'happy' : 'welcome'}
+              animation="none"
+              className="size-14"
+            />
           </View>
-          <Snapy
-            pose={dueCount ? 'thinking' : streak ? 'happy' : 'welcome'}
-            animation="bounce"
-            className="size-14"
-          />
+
+          <HomeSearchBar />
+          <View className={expanded ? 'flex-row items-start gap-6' : ''}>
+            <View className={expanded ? 'flex-1' : ''}>
+              <TodayBlock compact />
+              {expanded && <DailyMissionCard />}
+            </View>
+            <View className={expanded ? 'flex-1' : ''}>
+              <HomeProgressRow
+                stacked={stackProgress}
+                vocabulary={widget.data}
+                isVocabularyLoading={widget.isLoading}
+                onVocabularyPress={() => router.push('/stats')}
+                onVocabularyRetry={() => void widget.refetch()}
+                xp={xp.data}
+                isXpLoading={xp.isLoading}
+                onXpPress={() => router.push('/level-progress')}
+                onXpRetry={() => void xp.refetch()}
+              />
+            </View>
+          </View>
+          {!expanded && <DailyMissionCard />}
         </View>
-
-        <HomeSearchBar />
-        <TodayBlock compact />
-
-        <HomeProgressRow
-          vocabulary={widget.data}
-          isVocabularyLoading={widget.isLoading}
-          onVocabularyPress={() => router.push('/stats')}
-          onVocabularyRetry={() => void widget.refetch()}
-          xp={xp.data}
-          isXpLoading={xp.isLoading}
-          onXpPress={() => router.push('/level-progress')}
-          onXpRetry={() => void xp.refetch()}
-        />
-
-        {/* Daily missions entry */}
-        <Pressable
-          onPress={() => router.push('/missions' as Href)}
-          accessibilityRole="button"
-          className={`${CARD_3D} ${PRESSABLE_3D} mt-1 flex-row items-center gap-3 p-4`}
-        >
-          <View className="size-11 items-center justify-center rounded-xl border-b-[3px] border-brand-edge bg-brand">
-            <TargetIcon color={isDark ? '#1B2416' : '#FFFFFF'} size={22} />
-          </View>
-          <Text className="flex-1 font-nunito text-[16px] font-black text-mascot-navy dark:text-white">
-            {translate('home.daily_mission')}
-          </Text>
-          <ChevronRightIcon color={isDark ? '#9BCB72' : '#58CC02'} />
-        </Pressable>
       </ScrollView>
-    </SafeAreaView>
+    </SafeArea>
+  );
+}
+
+function DailyMissionCard() {
+  const router = useRouter();
+  const surface = useSurface();
+  return (
+    <Pressable
+      onPress={() => router.push('/missions' as Href)}
+      accessibilityRole="button"
+      className={`${CARD_3D} ${PRESSABLE_3D} mt-1 flex-row items-center gap-3 p-4`}
+    >
+      <View className="size-11 items-center justify-center rounded-xl border-b-[3px] border-brand-edge bg-brand">
+        <TargetIcon color={surface.onBrand} size={22} />
+      </View>
+      <Text className="flex-1 font-nunito text-[16px] font-black text-mascot-navy dark:text-white">
+        {translate('home.daily_mission')}
+      </Text>
+      <ChevronRightIcon color={surface.action} />
+    </Pressable>
   );
 }
 
 function HomeProgressRow({
+  stacked,
   vocabulary,
   isVocabularyLoading,
   onVocabularyPress,
@@ -150,6 +174,7 @@ function HomeProgressRow({
   onXpPress,
   onXpRetry,
 }: {
+  stacked: boolean;
   vocabulary?: HomeWidgetDTO;
   isVocabularyLoading: boolean;
   onVocabularyPress: () => void;
@@ -159,31 +184,44 @@ function HomeProgressRow({
   onXpPress: () => void;
   onXpRetry: () => void;
 }) {
-  const numberFormat = new Intl.NumberFormat();
+  const numberFormat = new Intl.NumberFormat(getLanguage());
+  const progressLabel = isVocabularyLoading ? translate('home.progress_loading')
+    : vocabulary ? translate('home.learning_progress_a11y', {
+      learned: numberFormat.format(vocabulary.learnedCount),
+      mastered: numberFormat.format(vocabulary.masteredCount),
+      created: numberFormat.format(vocabulary.totalWords),
+    }) : translate('home.progress_retry');
+  const xpLabel = isXpLoading ? translate('home.xp_loading')
+    : xp ? translate('home.xp_progress_a11y', { amount: numberFormat.format(xp.totalXp) }) : translate('home.xp_retry');
   return (
-    <View className="mb-1 flex-row gap-3">
+    <View className={stacked ? 'mb-1 gap-3' : 'mb-1 flex-row gap-3'}>
       <Pressable
         onPress={isVocabularyLoading ? undefined : vocabulary ? onVocabularyPress : onVocabularyRetry}
         accessibilityRole="button"
-        className={`${CARD_3D} ${PRESSABLE_3D} min-h-[112px] flex-1 p-3`}
+        accessibilityLabel={progressLabel}
+        disabled={isVocabularyLoading}
+        accessibilityState={{ disabled: isVocabularyLoading, busy: isVocabularyLoading }}
+        className={`${CARD_3D} ${PRESSABLE_3D} min-h-[112px] p-4 ${stacked ? '' : 'flex-1'}`}
       >
         <View className={STAT_HEADER}>
-          <Text className={STAT_LABEL} numberOfLines={1}>
-            {translate('home.vocabulary_title')}
+          <Text className={STAT_LABEL}>
+            {translate('home.learning_progress_title')}
           </Text>
         </View>
-        <Text className={STAT_VALUE} numberOfLines={1}>
-          {isVocabularyLoading ? '…' : vocabulary ? numberFormat.format(vocabulary.totalWords) : '↻'}
+        <Text className={STAT_VALUE}>
+          {isVocabularyLoading ? '…' : vocabulary ? formatCount(vocabulary.learnedCount, getLanguage()) : '↻'}
         </Text>
         {/* No caption while loading, and "Retry" on error: never success copy without data. */}
         {vocabulary
           ? (
-              <Text className={STAT_CAPTION} numberOfLines={2}>
-                {translate(SRS_ENABLED ? 'home.words_in_storage_progress' : 'home.words_in_storage', {
-                  learned: vocabulary.learnedCount,
-                  mastered: vocabulary.masteredCount,
-                })}
-              </Text>
+              <>
+                <Text className={STAT_CAPTION} tx="home.cards_learned_label" />
+                <Text className={STAT_CAPTION}>
+                  {translate('home.card_progress_details', {
+                    mastered: numberFormat.format(vocabulary.masteredCount),
+                  })}
+                </Text>
+              </>
             )
           : !isVocabularyLoading && <Text className={STAT_RETRY}>{translate('progressUx.retry')}</Text>}
       </Pressable>
@@ -191,18 +229,21 @@ function HomeProgressRow({
       <Pressable
         onPress={isXpLoading ? undefined : xp ? onXpPress : onXpRetry}
         accessibilityRole="button"
-        className={`${CARD_3D} ${PRESSABLE_3D} min-h-[112px] flex-1 p-3`}
+        accessibilityLabel={xpLabel}
+        disabled={isXpLoading}
+        accessibilityState={{ disabled: isXpLoading, busy: isXpLoading }}
+        className={`${CARD_3D} ${PRESSABLE_3D} min-h-[112px] p-4 ${stacked ? '' : 'flex-1'}`}
       >
         <View className={STAT_HEADER}>
           <XPOrb3D size={24} animation="none" />
-          <Text className={STAT_LABEL} numberOfLines={1}>XP</Text>
+          <Text className={STAT_LABEL}>XP</Text>
         </View>
-        <Text className={STAT_VALUE} numberOfLines={1}>
-          {isXpLoading ? '…' : xp ? `${numberFormat.format(xp.totalXp)} XP` : '↻'}
+        <Text className={STAT_VALUE}>
+          {isXpLoading ? '…' : xp ? `${formatCount(xp.totalXp, getLanguage())} XP` : '↻'}
         </Text>
         {xp
           ? (
-              <Text className={STAT_CAPTION} numberOfLines={2}>
+              <Text className={STAT_CAPTION}>
                 {xp.level
                   ? translate('progressUx.level', { count: xp.level.levelNumber, title: xp.level.title })
                   : translate('progressUx.noLevelCompact')}

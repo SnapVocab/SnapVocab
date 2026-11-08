@@ -115,13 +115,13 @@ export function TodayBlock({ compact = false }: { compact?: boolean }) {
 
   if (compact) {
     return (
-      <View className="mb-4 rounded-3xl border-2 border-b-[5px] border-emerald-300 border-b-emerald-500 bg-emerald-50 p-5 dark:border-emerald-800 dark:border-b-emerald-950 dark:bg-emerald-950/40">
+      <View className="mb-4 rounded-3xl border-2 border-b-[5px] border-emerald-300 border-b-emerald-500 bg-emerald-50 p-5 dark:border-emerald-800 dark:border-b-emerald-700 dark:bg-emerald-950/40">
         <Text className="font-nunito text-lg font-black text-mascot-navy dark:text-white">
           {hasCards ? translate('study_limits.today') : copy.title ?? `${copy.value} ${copy.label}`}
         </Text>
         {hasCards && <StudyCountLabels counts={today.data} className="mt-2" />}
         {!!copy.desc && <Text className="mt-1 font-inter text-sm text-neutral-600 dark:text-neutral-300">{copy.desc}</Text>}
-        {!!cta && <Button className="mt-4" label={cta} variant="primary" onPress={onPress} />}
+        {!!cta && <Button className="mt-4 h-auto min-h-14 py-3" textClassName="flex-1" label={cta} variant="primary" onPress={onPress} />}
       </View>
     );
   }
