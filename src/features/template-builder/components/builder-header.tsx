@@ -22,7 +22,7 @@ export function BuilderHeader({
   const displayName = templateName ?? translate('template_builder.default_template_name');
 
   return (
-    <View className="flex-row items-center justify-between border-b border-neutral-200 bg-white px-4 py-3 dark:border-neutral-800 dark:bg-neutral-900">
+    <View className="flex-row items-center justify-between border-b border-line bg-surface px-4 py-3">
       <View className="flex-row items-center">
         <BackButton onPress={() => router.back()} />
 

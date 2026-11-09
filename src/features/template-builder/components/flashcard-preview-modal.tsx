@@ -61,7 +61,7 @@ export function FlashcardPreviewModal({
     >
       <View className="flex-1 bg-slate-50 dark:bg-neutral-950">
         {/* Header */}
-        <View className="flex-row items-center justify-between border-b border-neutral-200/80 px-5 pb-3 dark:border-neutral-800">
+        <View className="flex-row items-center justify-between border-b border-line px-5 pb-3">
           <View>
             <Text
               tx="template_builder.preview_modal.title"
@@ -110,7 +110,7 @@ export function FlashcardPreviewModal({
         {/* Frozen Flip Button at Bottom */}
         <View
           style={{ paddingBottom: Math.max(insets.bottom + 12, 28) }}
-          className="border-t border-neutral-200/80 bg-white px-5 pt-3.5 dark:border-neutral-800 dark:bg-neutral-900"
+          className="border-t border-line bg-surface px-5 pt-3.5"
         >
           <Button
             label={

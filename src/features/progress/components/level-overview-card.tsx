@@ -19,7 +19,7 @@ export function LevelOverviewCard({ xpOverview, isLoading }: LevelOverviewCardPr
 
   if (isLoading || !xpOverview) {
     return (
-      <View className="mb-3 h-28 rounded-2xl border-2 border-b-4 border-neutral-200 border-b-neutral-300 bg-neutral-100 dark:border-[#46505C] dark:border-b-[#667382] dark:bg-[#22252B]" />
+      <View className="mb-3 h-28 rounded-2xl border-2 border-b-4 border-line border-b-edge bg-neutral-100 dark:bg-surface" />
     );
   }
 
@@ -32,7 +32,7 @@ export function LevelOverviewCard({ xpOverview, isLoading }: LevelOverviewCardPr
         accessibilityRole="button"
         accessibilityLabel={t('progressUx.xpHistory')}
         onPress={() => router.push('/level-progress')}
-        className="mb-3 flex-row items-center gap-3 rounded-2xl border-2 border-b-4 border-neutral-200 border-b-neutral-300 bg-white p-3 active:bg-neutral-50 dark:border-[#46505C] dark:border-b-[#667382] dark:bg-[#22252B]"
+        className="mb-3 flex-row items-center gap-3 rounded-2xl border-2 border-b-4 border-line border-b-edge bg-surface p-3 active:bg-pressed"
       >
         <XPOrb3D size={40} animation="none" />
         <View className="flex-1">
@@ -56,7 +56,7 @@ export function LevelOverviewCard({ xpOverview, isLoading }: LevelOverviewCardPr
       accessibilityRole="button"
       accessibilityLabel={t('progressUx.levelDetails')}
       onPress={() => router.push('/level-progress')}
-      className="mb-3 gap-2.5 rounded-2xl border-2 border-b-4 border-neutral-200 border-b-neutral-300 bg-white p-4 active:bg-neutral-50 dark:border-[#46505C] dark:border-b-[#667382] dark:bg-[#22252B]"
+      className="mb-3 gap-2.5 rounded-2xl border-2 border-b-4 border-line border-b-edge bg-surface p-4 active:bg-pressed"
     >
       <View className="flex-row items-center justify-between">
         <View className="mr-2 flex-1 flex-row items-center gap-3.5">

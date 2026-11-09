@@ -1,9 +1,13 @@
 import { renderHook } from '@testing-library/react-native';
 import { Alert } from 'react-native';
+import i18n from '@/lib/i18n';
 import { useCompleteQuiz } from '../api/quiz-api';
 import { useFinishQuiz } from '../hooks/use-finish-quiz';
 
 const mockReplace = jest.fn();
+beforeAll(async () => {
+  await i18n.changeLanguage('vi');
+});
 jest.mock('expo-router', () => ({ useRouter: () => ({ replace: mockReplace }) }));
 jest.mock('../api/quiz-api', () => ({ useCompleteQuiz: jest.fn() }));
 jest.mock('../hooks/use-expired-session-handler', () => ({ useExpiredSessionHandler: () => () => false }));

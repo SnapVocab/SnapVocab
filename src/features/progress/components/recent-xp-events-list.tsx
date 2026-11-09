@@ -2,7 +2,7 @@ import type { XpEvent, XpSourceType } from '../types';
 import * as React from 'react';
 import { View } from 'react-native';
 import { Text } from '@/components/ui';
-import { BookIcon, BoxIcon, StarIcon, TrophyIcon, ZapIcon } from '@/components/ui/icons';
+import { BookIcon, StarIcon, TrophyIcon, ZapIcon } from '@/components/ui/icons';
 import { translate } from '@/lib/i18n';
 
 export type RecentXpEventsListProps = {
@@ -44,14 +44,6 @@ function getSourceInfo(sourceType: XpSourceType): {
         bgColor: 'bg-amber-50 dark:bg-amber-950/40',
         iconColor: '#F59E0B',
       };
-    case 'DAILY_CHEST':
-    case 'WEEKLY_CHEST':
-      return {
-        title: translate(sourceType === 'DAILY_CHEST' ? 'progressUx.xpSourceDailyChest' : 'progressUx.xpSourceWeeklyChest'),
-        icon: color => <BoxIcon color={color} width={16} height={16} />,
-        bgColor: 'bg-orange-50 dark:bg-orange-950/40',
-        iconColor: '#F97316',
-      };
     case 'ADMIN_ADJUSTMENT':
       return {
         title: translate('progressUx.xpSourceAdjustment'),
@@ -64,7 +56,7 @@ function getSourceInfo(sourceType: XpSourceType): {
       return {
         title: translate('progressUx.xpSourceGeneric'),
         icon: color => <ZapIcon color={color} width={16} height={16} />,
-        bgColor: 'bg-primary-50 dark:bg-primary-950/40',
+        bgColor: 'bg-primary-50 dark:bg-primary-500/15',
         iconColor: '#58CC02',
       };
   }
@@ -90,7 +82,7 @@ function formatRelativeTime(dateStr: string): string {
 export function RecentXpEventsList({ events }: RecentXpEventsListProps) {
   if (!events || events.length === 0) {
     return (
-      <View className="mb-4 rounded-3xl border border-neutral-100 bg-white p-5 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
+      <View className="mb-4 rounded-3xl border border-line bg-surface p-5 shadow-sm">
         <Text className="font-nunito text-xs font-black tracking-wider text-neutral-500 uppercase dark:text-neutral-400">
           {translate('progressUx.recentXpTitle')}
         </Text>
@@ -104,12 +96,12 @@ export function RecentXpEventsList({ events }: RecentXpEventsListProps) {
   }
 
   return (
-    <View className="mb-4 rounded-3xl border border-neutral-100 bg-white p-5 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
+    <View className="mb-4 rounded-3xl border border-line bg-surface p-5 shadow-sm">
       <Text className="font-nunito text-xs font-black tracking-wider text-neutral-500 uppercase dark:text-neutral-400">
         {translate('progressUx.recentXpTitle')}
       </Text>
 
-      <View className="mt-3 divide-y divide-neutral-100 dark:divide-neutral-800">
+      <View className="mt-3 divide-y divide-line">
         {events.map((evt, idx) => {
           const info = getSourceInfo(evt.sourceType);
 

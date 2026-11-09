@@ -16,12 +16,14 @@ export function initials(name: string): string {
 }
 
 /** "dd/MM/yyyy" in local time; empty string when the date is missing or invalid. */
-export function formatDate(iso?: string | null): string {
+export function formatDate(iso?: string | null, locale?: string): string {
   if (!iso)
     return '';
   const date = new Date(iso);
   if (Number.isNaN(date.getTime()))
     return '';
+  if (locale)
+    return new Intl.DateTimeFormat(locale, { day: 'numeric', month: 'short', year: 'numeric' }).format(date);
   const pad = (n: number) => String(n).padStart(2, '0');
   return `${pad(date.getDate())}/${pad(date.getMonth() + 1)}/${date.getFullYear()}`;
 }

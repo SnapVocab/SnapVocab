@@ -27,6 +27,7 @@ jest.mock('react-native-reanimated', () => {
     withRepeat: jest.fn(value => value),
     withSequence: jest.fn((...values) => values[0]),
     cancelAnimation: jest.fn(),
+    useReducedMotion: jest.fn(() => false),
     Easing: {
       linear: jest.fn(),
       ease: jest.fn(),
@@ -52,12 +53,12 @@ jest.mock('react-native-reanimated', () => {
   };
 });
 
-// Mock expo-localization
+// Mock expo-localization. Vietnamese, the app's primary audience: suites assert on Vietnamese copy.
 jest.mock('expo-localization', () => ({
   getLocales: jest.fn(() => [
     {
-      languageTag: 'en-US',
-      languageCode: 'en',
+      languageTag: 'vi-VN',
+      languageCode: 'vi',
       textDirection: 'ltr',
       digitGroupingSeparator: ',',
       decimalSeparator: '.',

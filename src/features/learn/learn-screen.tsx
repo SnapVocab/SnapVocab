@@ -1,155 +1,54 @@
-import type { BottomSheetModal } from '@gorhom/bottom-sheet';
-import type { Collection } from './types';
 import { useRouter } from 'expo-router';
-import { useCallback, useRef, useState } from 'react';
-import { RefreshControl, ScrollView } from 'react-native';
-import Animated, { FadeIn } from 'react-native-reanimated';
-import { Button, FocusAwareStatusBar, SafeAreaView, Text, View } from '@/components/ui';
+import { ArrowRightIcon } from 'lucide-react-native';
+import { Image, Pressable, ScrollView } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { FocusAwareStatusBar, Text, useColorMode, useSurface, View } from '@/components/ui';
 import { translate } from '@/lib/i18n';
-import { setItem } from '@/lib/storage';
-import { useCollections } from './api';
-import {
-  CollectionCard,
-  CollectionEmptyState,
-  CollectionErrorState,
-  CollectionOptionsBottomSheet,
-  CollectionSwitcher,
-  SkeletonCollectionList,
-} from './components';
 
 export function LearnScreen() {
+  const surface = useSurface();
+  const colorMode = useColorMode();
+  const insets = useSafeAreaInsets();
   const router = useRouter();
-  const [viewType, setViewType] = useState<'USER' | 'SYSTEM'>('USER');
-  const [selectedCollection, setSelectedCollection] = useState<Collection | null>(null);
-  const [sheetMode, setSheetMode] = useState<'OPTIONS' | 'CREATE'>('OPTIONS');
-  const bottomSheetRef = useRef<BottomSheetModal>(null);
-
-  const {
-    data: collections,
-    isError,
-    isLoading,
-    isRefetching,
-    refetch,
-  } = useCollections({ type: viewType });
-
-  const handleCardPress = useCallback(
-    (collection: Collection) => {
-      setItem('last_studied_collection_id', collection.id);
-      router.push({
-        pathname: '/(app)/collections/[id]',
-        params: {
-          id: String(collection.id),
-          name: collection.name,
-          translation: collection.translation,
-          type: collection.type,
-        },
-      });
-    },
-    [router],
-  );
-
-  const handleOptionsPress = useCallback((collection: Collection) => {
-    setSelectedCollection(collection);
-    setSheetMode('OPTIONS');
-    bottomSheetRef.current?.present();
-  }, []);
-
-  const handleCreatePress = useCallback(() => {
-    setSelectedCollection(null);
-    setSheetMode('CREATE');
-    bottomSheetRef.current?.present();
-  }, []);
-
-  const handleCreated = useCallback(
-    (newCollection: Collection) => {
-      refetch();
-      handleCardPress(newCollection);
-    },
-    [refetch, handleCardPress],
-  );
+  const options = [
+    { id: 'collections', title: translate('home.collections'), description: translate('learn.collections.subtitle'), action: translate('learn.open_collections'), art: require('../../assets/images/snapy-reading.png'), route: '/collections', tone: 'bg-primary-50 dark:bg-primary-400/10', button: 'bg-brand', buttonText: 'text-[#17330B] dark:text-[#17330B]' },
+    { id: 'quiz', title: translate('home.quiz'), description: translate('learn.quiz_subtitle'), action: translate('learn.play_quiz'), art: require('../../assets/images/mascot/actions/snapy-nhay-len.png'), route: '/study/quiz-setup', tone: 'bg-violet-50 dark:bg-violet-400/10', button: 'bg-purple-500 dark:bg-[#A48BE6]', buttonText: 'text-white dark:text-[#1C1430]' },
+  ] as const;
 
   return (
-    <SafeAreaView style={{ flex: 1 }} className="flex-1 bg-background">
+    <View style={{ flex: 1, backgroundColor: surface.background }}>
       <FocusAwareStatusBar />
-
-      {/* Screen Header */}
-      <View className="border-b border-neutral-100 bg-white px-5 py-4 dark:border-neutral-800 dark:bg-neutral-900">
+      <View style={{ paddingTop: insets.top + 16, backgroundColor: surface.headerBg }} className="px-5 pb-3">
         <Text className="font-nunito text-2xl font-black text-mascot-navy dark:text-white">
-          {translate('learn.collections.title')}
+          {translate('learn.tab_label')}
         </Text>
         <Text className="mt-0.5 font-inter text-[13px] font-medium text-neutral-500 dark:text-neutral-400">
-          {translate('learn.collections.subtitle')}
+          {translate('learn.choose_activity')}
         </Text>
       </View>
-
-      <View className="flex-1 px-4 pt-3">
-        {/* Switcher Tab: Mine / System */}
-        <View className="mb-3">
-          <CollectionSwitcher viewType={viewType} onChange={setViewType} />
-        </View>
-
-        {/* Scrollable Collection Cards List */}
-        <ScrollView
-          className="flex-1"
-          showsVerticalScrollIndicator={false}
-          contentContainerClassName="pt-1 pb-24"
-          refreshControl={
-            <RefreshControl refreshing={isRefetching} onRefresh={refetch} />
-          }
-        >
-          {/* Loading State */}
-          {isLoading && !collections && <SkeletonCollectionList count={4} />}
-
-          {/* Error State */}
-          {isError && !collections && (
-            <CollectionErrorState isRetrying={isRefetching} onRetry={() => refetch()} />
-          )}
-
-          {/* Empty State */}
-          {!isLoading && !isError && collections && collections.length === 0 && (
-            <CollectionEmptyState />
-          )}
-
-          {/* Data List State */}
-          {collections && collections.length > 0 && (
-            <Animated.View key={viewType} entering={FadeIn.duration(200)} className="gap-3">
-              {collections.map(item => (
-                <CollectionCard
-                  key={item.id}
-                  name={item.name}
-                  translation={item.translation}
-                  isSystemCollection={item.type === 'SYSTEM'}
-                  onPress={() => handleCardPress(item)}
-                  onOptionsPress={() => handleOptionsPress(item)}
-                />
-              ))}
-            </Animated.View>
-          )}
-        </ScrollView>
-
-        {/* Floating / Bottom Action Button */}
-        {viewType === 'USER' && (
-          <View className="absolute inset-x-4 bottom-4">
-            <Button
-              variant="primary"
-              label={translate('learn.collections.create_new_collection')}
-              onPress={handleCreatePress}
-            />
-          </View>
-        )}
-      </View>
-
-      {/* Collection Options / Create Bottom Sheet */}
-      <CollectionOptionsBottomSheet
-        bottomSheetRef={bottomSheetRef}
-        collection={selectedCollection}
-        mode={sheetMode}
-        onCreated={handleCreated}
-        onSaveEdit={() => refetch()}
-        onDelete={() => refetch()}
-        onStudy={handleCardPress}
-      />
-    </SafeAreaView>
+      <ScrollView style={{ flex: 1 }} contentContainerClassName="gap-4 px-4 pt-5 pb-8">
+        {options.map(({ id, title, description, action, art, route, tone, button, buttonText }) => (
+          <Pressable
+            key={id}
+            accessibilityRole="button"
+            accessibilityLabel={title}
+            accessibilityHint={description}
+            onPress={() => router.push(route)}
+            className={`min-h-44 flex-row items-center gap-2 overflow-hidden rounded-2xl border-2 border-b-4 border-line border-b-edge p-5 active:translate-y-[2px] active:border-b-2 ${tone}`}
+          >
+            <View className="flex-1 items-start gap-2">
+              <Text className="font-nunito text-[22px] font-black text-mascot-navy dark:text-white">{title}</Text>
+              <Text className="font-inter text-sm/5 text-neutral-600 dark:text-neutral-300">{description}</Text>
+              <View className={`mt-2 min-h-12 flex-row items-center gap-2 rounded-xl border-b-4 px-4 py-2 ${id === 'quiz' ? 'border-purple-700 dark:border-b-[#5D4A8E]' : 'border-brand-edge'} ${button}`}>
+                <Text className={`shrink font-nunito text-[13px] font-black ${buttonText}`}>{action}</Text>
+                <ArrowRightIcon size={16} color={id === 'quiz' ? (colorMode === 'dark' ? '#1C1430' : '#FFFFFF') : '#17330B'} />
+              </View>
+            </View>
+            <Image accessible={false} source={art} className="size-28" resizeMode="contain" />
+          </Pressable>
+        ))}
+      </ScrollView>
+    </View>
   );
 }
 

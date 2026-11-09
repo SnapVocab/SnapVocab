@@ -4,10 +4,9 @@ import * as ImagePicker from 'expo-image-picker';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useRef, useState } from 'react';
 import { Pressable, StyleSheet } from 'react-native';
-import { SystemBars } from 'react-native-edge-to-edge';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { showErrorMessage, View } from '@/components/ui';
+import { FocusAwareStatusBar, showErrorMessage, View } from '@/components/ui';
 import { CloseIcon, FlashIcon, FlashOffIcon, ImagesIcon } from '@/components/ui/icons';
 import { translate } from '@/lib/i18n';
 import { useScanQuota, useStartScan } from './api';
@@ -16,6 +15,7 @@ import { CameraViewfinder } from './components/camera-viewfinder';
 import { PhotoPreview } from './components/photo-preview';
 import { QuotaBadge } from './components/quota-badge';
 import { QuotaExhaustedCard } from './components/quota-exhausted-card';
+import { pickScanPictureSize } from './picture-size';
 import { scanFailureMessageKey, toScanFailure } from './scan-errors';
 
 export function CameraScreen() {
@@ -25,6 +25,7 @@ export function CameraScreen() {
   const [permission, requestPermission] = useCameraPermissions();
   const [isFocused, setIsFocused] = useState(false);
   const [flashOn, setFlashOn] = useState(false);
+  const [pictureSize, setPictureSize] = useState<string>();
   // The shot being reviewed; nothing is uploaded until the user presses Send.
   const [photo, setPhoto] = useState<StartScanRequest | null>(null);
 
@@ -69,6 +70,17 @@ export function CameraScreen() {
     });
   };
 
+  const choosePictureSize = async () => {
+    if (pictureSize || !cameraRef.current)
+      return;
+    try {
+      setPictureSize(pickScanPictureSize(await cameraRef.current.getAvailablePictureSizesAsync()));
+    }
+    catch {
+      // keep the camera's default size
+    }
+  };
+
   const capture = async () => {
     if (!cameraRef.current || exhausted)
       return;
@@ -101,16 +113,21 @@ export function CameraScreen() {
     }
   };
 
-  if (photo) {
+  const preview = photo && (
+    <PhotoPreview
+      uri={photo.uri}
+      sending={startScan.isPending}
+      onRetake={() => setPhoto(null)}
+      onSend={send}
+    />
+  );
+
+  // No camera to keep alive (a library pick without camera permission): show the preview alone.
+  if (preview && !permission?.granted) {
     return (
       <>
-        <SystemBars style="light" />
-        <PhotoPreview
-          uri={photo.uri}
-          sending={startScan.isPending}
-          onRetake={() => setPhoto(null)}
-          onSend={send}
-        />
+        <FocusAwareStatusBar style="light" />
+        {preview}
       </>
     );
   }
@@ -122,7 +139,7 @@ export function CameraScreen() {
   if (!permission.granted) {
     return (
       <>
-        <SystemBars style="light" />
+        <FocusAwareStatusBar />
         <CameraPermissionGate
           onRequestPermission={requestPermission}
           onPickFromLibrary={pickFromLibrary}
@@ -134,17 +151,22 @@ export function CameraScreen() {
 
   return (
     <View style={{ flex: 1 }} className="flex-1 bg-black">
-      <SystemBars style="light" />
+      <FocusAwareStatusBar style="light" />
 
       <View style={StyleSheet.absoluteFill}>
         {isFocused && (
           // `flash` only fires at capture time; `enableTorch` lights the scene while framing.
+          // The preview is drawn over a paused camera instead of replacing it: remounting
+          // CameraView on Retake left the Android preview sized to half the screen.
           <CameraView
             ref={cameraRef}
             style={StyleSheet.absoluteFill}
             facing="back"
+            active={!photo}
+            pictureSize={pictureSize}
+            onCameraReady={choosePictureSize}
             flash={flashOn ? 'on' : 'off'}
-            enableTorch={flashOn}
+            enableTorch={flashOn && !photo}
           />
         )}
       </View>
@@ -210,6 +232,8 @@ export function CameraScreen() {
           </>
         )}
       </View>
+
+      {preview && <View style={StyleSheet.absoluteFill}>{preview}</View>}
     </View>
   );
 }

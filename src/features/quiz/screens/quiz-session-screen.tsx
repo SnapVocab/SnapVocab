@@ -20,27 +20,27 @@ function SessionNotice({ title, message, primary, onBack }: {
   onBack: () => void;
 }) {
   return (
-    <SafeAreaView className="flex-1 items-center justify-center bg-[#F7F8FA] p-6">
+    <SafeAreaView className="flex-1 items-center justify-center bg-background p-6">
       <Snapy pose="bat_ngo" animation="shake" style={{ width: 120, height: 120 }} className="mb-6" />
-      <Text className="text-center font-nunito text-[20px] font-extrabold text-mascot-navy">{title}</Text>
-      <Text className="mt-2 mb-6 px-6 text-center font-inter text-[14px] leading-relaxed text-neutral-500">{message}</Text>
+      <Text className="text-center font-nunito text-[20px] font-extrabold text-mascot-navy dark:text-neutral-50">{title}</Text>
+      <Text className="mt-2 mb-6 px-6 text-center font-inter text-[14px] leading-relaxed text-neutral-500 dark:text-neutral-400">{message}</Text>
 
       <View className="w-full max-w-xs gap-3">
         <Pressable
           onPress={primary.onPress}
           disabled={primary.busy}
-          className="h-12 w-full items-center justify-center rounded-xl border-b-2 border-primary-700 bg-primary-500 active:bg-primary-600"
+          className="h-12 w-full items-center justify-center rounded-xl border-b-2 border-brand-edge bg-brand active:bg-brand-pressed"
         >
           {primary.busy
             ? <ActivityIndicator size="small" color="#FFFFFF" />
-            : <Text className="font-nunito text-[15px] font-extrabold text-white">{primary.label}</Text>}
+            : <Text className="font-nunito text-[15px] font-extrabold text-on-brand">{primary.label}</Text>}
         </Pressable>
 
         <Pressable
           onPress={onBack}
-          className="h-12 w-full items-center justify-center rounded-xl bg-neutral-200 active:bg-neutral-300"
+          className="h-12 w-full items-center justify-center rounded-xl bg-muted active:bg-pressed"
         >
-          <Text className="font-nunito text-[15px] font-extrabold text-neutral-700">{translate('quiz.btn_back')}</Text>
+          <Text className="font-nunito text-[15px] font-extrabold text-neutral-700 dark:text-neutral-200">{translate('quiz.btn_back')}</Text>
         </Pressable>
       </View>
     </SafeAreaView>
@@ -84,7 +84,7 @@ export function QuizSessionScreen() {
   // 1. LOADING STATE — cached Play data may be stale (answers made since), so wait for a fresh fetch.
   if (quizId !== null && !isFetchedAfterMount && !isError) {
     return (
-      <SafeAreaView className="flex-1 items-center justify-center bg-[#F7F8FA] p-6 dark:bg-neutral-900">
+      <SafeAreaView className="flex-1 items-center justify-center bg-background p-6">
         <Snapy pose="tap_trung" animation="idle" style={{ width: 120, height: 120 }} className="mb-6" />
         <ActivityIndicator size="large" color="#3B82F6" className="mb-4" />
         <Text className="text-center font-nunito text-[18px] font-black text-mascot-navy dark:text-white">
@@ -100,7 +100,7 @@ export function QuizSessionScreen() {
   // 2. ERROR / NOT FOUND STATE — retrying an expired session can never succeed, so offer a new quiz (D17).
   if (isError || !quiz) {
     return (
-      <SafeAreaView className="flex-1 items-center justify-center bg-[#F7F8FA] p-6 dark:bg-neutral-900">
+      <SafeAreaView className="flex-1 items-center justify-center bg-background p-6">
         <Snapy pose="bat_ngo" animation="shake" style={{ width: 120, height: 120 }} className="mb-6" />
         <Text className="text-center font-nunito text-[20px] font-black text-mascot-navy dark:text-white">
           {expired ? translate('quiz.error_expired_title') : translate('quiz.error_generic_title')}
@@ -115,16 +115,16 @@ export function QuizSessionScreen() {
             onPress={() => (expired
               ? router.replace('/(app)/study/quiz-setup' as any)
               : refetch())}
-            className="h-13 w-full items-center justify-center rounded-2xl border-b-4 border-primary-700 bg-primary-500 active:translate-y-[2px] active:border-b-2"
+            className="h-13 w-full items-center justify-center rounded-2xl border-b-4 border-brand-edge bg-brand active:translate-y-[2px] active:border-b-2"
           >
-            <Text className="font-nunito text-[15px] font-black tracking-wider text-white uppercase">
+            <Text className="font-nunito text-[15px] font-black tracking-wider text-on-brand uppercase">
               {expired ? translate('quiz.btn_new_quiz') : translate('quiz.retry')}
             </Text>
           </Pressable>
 
           <Pressable
             onPress={navigateBackSafely}
-            className="h-13 w-full items-center justify-center rounded-2xl border-2 border-b-4 border-neutral-200 border-b-neutral-300 bg-white active:translate-y-[2px] active:border-b-2 dark:border-neutral-700 dark:border-b-neutral-800 dark:bg-neutral-800"
+            className="h-13 w-full items-center justify-center rounded-2xl border-2 border-b-4 border-line border-b-edge bg-white active:translate-y-[2px] active:border-b-2 dark:bg-neutral-800"
           >
             <Text className="font-nunito text-[15px] font-black tracking-wider text-neutral-700 uppercase dark:text-neutral-200">
               {translate('quiz.btn_back')}

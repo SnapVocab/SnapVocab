@@ -28,7 +28,7 @@ export default function SkeletonTopicList({ count = 5 }: { count?: number }) {
       {Array.from({ length: count }, (_, i) => `skeleton-topic-${i}`).map(key => (
         <View
           key={key}
-          className="flex-row items-center justify-between rounded-2xl border border-neutral-200/80 bg-white p-3.5 dark:border-neutral-800 dark:bg-neutral-900"
+          className="flex-row items-center justify-between rounded-2xl border border-line bg-surface p-3.5"
         >
           <View className="mr-3 flex-1 flex-row items-center gap-3.5">
             <View className="size-12 rounded-2xl bg-neutral-200/90 dark:bg-neutral-800" />

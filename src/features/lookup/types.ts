@@ -34,6 +34,8 @@ export type RelationLookup = {
 };
 
 export type LookupResultDTO = {
+  wordId: number;
+  inMyVocabulary: boolean;
   exists: boolean;
   word: string;
   langCode: string;

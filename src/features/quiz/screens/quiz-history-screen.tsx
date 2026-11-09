@@ -4,7 +4,7 @@ import type { HistoryFilterMode } from '../utils';
 import type { TxKeyPath } from '@/lib/i18n';
 import { useRouter } from 'expo-router';
 import * as React from 'react';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   FlatList,
@@ -28,7 +28,6 @@ import { Snapy } from '@/components/ui/snapy';
 import { translate } from '@/lib/i18n';
 import { useInfiniteQuizHistory } from '../api/quiz-api';
 import {
-  filterQuizHistoryItems,
   formatQuizAccuracy,
   formatQuizSubmittedDate,
   quizHistoryAction,
@@ -54,27 +53,13 @@ export function QuizHistoryScreen() {
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
-  } = useInfiniteQuizHistory(20);
+  } = useInfiniteQuizHistory(20, selectedFilter === 'ALL' ? undefined : selectedFilter);
 
   const allItems = useMemo<QuizHistorySummaryResponse[]>(() => {
     if (!data?.pages)
       return [];
     return data.pages.flatMap(page => page.data || []);
   }, [data]);
-
-  const filteredItems = useMemo(() => {
-    return filterQuizHistoryItems(allItems, selectedFilter);
-  }, [allItems, selectedFilter]);
-
-  // The filter runs on loaded pages only: an empty list has nothing to scroll, so onEndReached never
-  // fires. Keep loading until a match shows up or the server has no more pages.
-  // ponytail: may page through the whole history for a rare mode; add a `mode` param to
-  // GET /api/me/quizzes if histories get long.
-  const searchingMore = filteredItems.length === 0 && !!hasNextPage;
-  useEffect(() => {
-    if (searchingMore && !isFetchingNextPage)
-      void fetchNextPage();
-  }, [searchingMore, isFetchingNextPage, fetchNextPage]);
 
   const handleCardPress = (item: QuizHistorySummaryResponse) => {
     const action = quizHistoryAction(item.status);
@@ -120,7 +105,7 @@ export function QuizHistoryScreen() {
           Icon: LayoutGridIcon,
           bgClass: 'bg-neutral-100 dark:bg-neutral-800',
           textClass: 'text-neutral-700 dark:text-neutral-300',
-          borderClass: 'border-neutral-200 dark:border-neutral-700',
+          borderClass: 'border-line',
         };
     }
   };
@@ -138,7 +123,7 @@ export function QuizHistoryScreen() {
     return (
       <Pressable
         onPress={() => handleCardPress(item)}
-        className="dark:active:bg-neutral-750 mb-3.5 rounded-[20px] border border-[#D3D7E2] bg-white p-4 shadow-sm active:bg-neutral-50 dark:border-neutral-700 dark:bg-neutral-800"
+        className="mb-3.5 rounded-[20px] border border-line bg-surface p-4 shadow-sm active:bg-pressed"
       >
         {/* 1. Top Badges: Max 1-2 badges (Mode, Review, Status if IN_PROGRESS) */}
         <View className="mb-3 flex-row items-center gap-2">
@@ -188,7 +173,7 @@ export function QuizHistoryScreen() {
           >
             {item.topicName || translate('quiz.default_topic')}
           </Text>
-          <Text className="mt-1 font-inter text-[12px] font-medium text-neutral-400 dark:text-neutral-500">
+          <Text className="mt-1 font-inter text-[12px] font-medium text-neutral-400 dark:text-neutral-400">
             {dateFormatted}
           </Text>
         </View>
@@ -269,7 +254,7 @@ export function QuizHistoryScreen() {
           {/* Action indicator with clear touch target — an expired session offers no action */}
           {action === 'NONE' ? (
             <View className="min-h-10 flex-row items-center px-1">
-              <Text className="font-inter text-[12px] font-bold text-neutral-400 dark:text-neutral-500">
+              <Text className="font-inter text-[12px] font-bold text-neutral-400 dark:text-neutral-400">
                 {translate('quiz.cannot_continue')}
               </Text>
             </View>
@@ -287,9 +272,9 @@ export function QuizHistoryScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-[#F7F8FA] dark:bg-neutral-900" edges={['top', 'bottom']}>
+    <SafeAreaView className="flex-1 bg-background" edges={['top', 'bottom']}>
       {/* 1. HEADER */}
-      <View className="flex-row items-center justify-between border-b border-neutral-100 bg-white px-4 py-3 dark:border-neutral-800 dark:bg-neutral-900">
+      <View className="flex-row items-center justify-between border-b border-line bg-surface px-4 py-3">
         <BackButton onPress={() => router.back()} className="-ml-2" />
         <Text className="font-nunito text-[18px] font-extrabold text-mascot-navy dark:text-white">
           {translate('quiz.history_title')}
@@ -298,7 +283,7 @@ export function QuizHistoryScreen() {
       </View>
 
       {/* 2. FILTER TABS - HORIZONTAL SCROLL CHIPS */}
-      <View className="border-b border-neutral-100 bg-white py-3 dark:border-neutral-800 dark:bg-neutral-900">
+      <View className="border-b border-line bg-surface py-3">
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
@@ -311,8 +296,8 @@ export function QuizHistoryScreen() {
               className={twMerge(
                 'h-10 items-center justify-center rounded-full border px-4',
                 selectedFilter === tab.key
-                  ? 'dark:bg-primary-950/40 border-primary-500 bg-primary-50 dark:border-primary-600'
-                  : 'border-[#C7CBD8] bg-white dark:border-neutral-700 dark:bg-neutral-800',
+                  ? 'border-primary-500 bg-primary-50 dark:border-[#7FA35E] dark:bg-primary-500/15'
+                  : 'border-edge bg-surface',
               )}
             >
               <Text
@@ -320,10 +305,10 @@ export function QuizHistoryScreen() {
                   'font-nunito text-[13px] font-bold',
                   selectedFilter === tab.key
                     ? 'text-primary-700 dark:text-primary-300'
-                    : 'text-[#454B63] dark:text-neutral-300',
+                    : 'text-neutral-600 dark:text-neutral-300',
                 )}
               >
-                {tab.label}
+                {translate(tab.label)}
               </Text>
             </TouchableOpacity>
           ))}
@@ -348,15 +333,15 @@ export function QuizHistoryScreen() {
                 </Text>
                 <TouchableOpacity
                   onPress={() => refetch()}
-                  className="mt-4 rounded-xl bg-primary-500 px-5 py-2.5"
+                  className="mt-4 rounded-xl bg-brand px-5 py-2.5"
                 >
-                  <Text className="font-nunito text-[14px] font-bold text-white">{translate('quiz.retry')}</Text>
+                  <Text className="font-nunito text-[14px] font-bold text-on-brand">{translate('quiz.retry')}</Text>
                 </TouchableOpacity>
               </View>
             )
           : (
               <FlatList
-                data={filteredItems}
+                data={allItems}
                 keyExtractor={item => String(item.quizId)}
                 renderItem={renderHistoryCard}
                 contentContainerStyle={{ padding: 16, paddingBottom: 60 }}
@@ -383,33 +368,27 @@ export function QuizHistoryScreen() {
                       )
                     : null
                 }
-                ListEmptyComponent={searchingMore
-                  ? (
-                      <View className="items-center py-16">
-                        <ActivityIndicator size="small" color="#0EA5E9" />
-                      </View>
-                    )
-                  : (
-                      <View className="items-center justify-center py-16">
-                        <Snapy pose="suy_nghi" animation="idle" style={{ width: 110, height: 110 }} />
-                        <Text className="mt-4 font-nunito text-[18px] font-extrabold text-mascot-navy dark:text-white">
-                          {selectedFilter === 'ALL'
-                            ? translate('quiz.history_empty_title')
-                            : translate('quiz.history_empty_filtered', { mode: translate(FILTER_TABS.find(t => t.key === selectedFilter)?.label ?? 'quiz.title') })}
-                        </Text>
-                        <Text className="mt-1 px-6 text-center font-inter text-[14px] text-neutral-400">
-                          {translate('quiz.history_empty_body')}
-                        </Text>
-                        <TouchableOpacity
-                          onPress={() => router.push('/(app)/study/quiz-setup' as any)}
-                          className="mt-6 rounded-2xl bg-primary-500 px-6 py-3.5"
-                        >
-                          <Text className="font-nunito text-[15px] font-extrabold text-white uppercase">
-                            {translate('quiz.start_quiz_now')}
-                          </Text>
-                        </TouchableOpacity>
-                      </View>
-                    )}
+                ListEmptyComponent={(
+                  <View className="items-center justify-center py-16">
+                    <Snapy pose="suy_nghi" animation="idle" style={{ width: 110, height: 110 }} />
+                    <Text className="mt-4 font-nunito text-[18px] font-extrabold text-mascot-navy dark:text-white">
+                      {selectedFilter === 'ALL'
+                        ? translate('quiz.history_empty_title')
+                        : translate('quiz.history_empty_filtered', { mode: translate(FILTER_TABS.find(t => t.key === selectedFilter)?.label ?? 'quiz.title') })}
+                    </Text>
+                    <Text className="mt-1 px-6 text-center font-inter text-[14px] text-neutral-400">
+                      {translate('quiz.history_empty_body')}
+                    </Text>
+                    <TouchableOpacity
+                      onPress={() => router.push('/(app)/study/quiz-setup' as any)}
+                      className="mt-6 rounded-2xl bg-brand px-6 py-3.5"
+                    >
+                      <Text className="font-nunito text-[15px] font-extrabold text-on-brand uppercase">
+                        {translate('quiz.start_quiz_now')}
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                )}
               />
             )}
     </SafeAreaView>

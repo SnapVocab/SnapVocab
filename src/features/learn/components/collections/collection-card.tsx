@@ -2,6 +2,8 @@ import { Pressable, View } from 'react-native';
 import { useUniwind } from 'uniwind';
 import { Text } from '@/components/ui';
 import { ChevronRightIcon, FolderIcon, MoreVerticalIcon } from '@/components/ui/icons';
+import { StudyCountLabels } from '@/features/study/study-count-labels';
+import { translate } from '@/lib/i18n';
 
 type Props = {
   isSystemCollection?: boolean;
@@ -10,6 +12,7 @@ type Props = {
   onOptionsPress?: () => void;
   showOption?: boolean;
   translation: string;
+  counts?: { newCount: number; dueCount: number };
 };
 
 export default function CollectionCard({
@@ -19,11 +22,12 @@ export default function CollectionCard({
   translation,
   isSystemCollection,
   showOption = true,
+  counts,
 }: Props) {
-  const canShowOption = showOption && !isSystemCollection;
+  const canShowOption = showOption && !!onOptionsPress;
   const { theme } = useUniwind();
   const cardSurfaceClasses = theme === 'dark'
-    ? 'border-[#46505C] border-b-[#667382] bg-[#22252B]'
+    ? 'border-line border-b-edge bg-surface'
     : 'border-neutral-200/90 border-b-neutral-300 bg-white';
 
   return (
@@ -62,6 +66,7 @@ export default function CollectionCard({
           >
             {translation}
           </Text>
+          <StudyCountLabels counts={counts} className="mt-2" />
         </View>
       </View>
 
@@ -69,18 +74,20 @@ export default function CollectionCard({
       {canShowOption
         ? (
             <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={translate('learn.library.options', { name })}
               onPress={(e) => {
                 e.stopPropagation();
                 onOptionsPress?.();
               }}
               hitSlop={12}
-              className="size-10 items-center justify-center rounded-xl border-2 border-b-[3px] border-neutral-200/80 border-b-neutral-300 bg-neutral-100/80 active:translate-y-px active:border-b-2 dark:border-[#46505C] dark:border-b-[#667382] dark:bg-[#292E36]"
+              className="size-12 items-center justify-center rounded-xl border-2 border-b-[3px] border-line border-b-edge bg-surface-raised active:translate-y-px active:border-b-2"
             >
               <MoreVerticalIcon width={20} height={20} color="#71717A" />
             </Pressable>
           )
         : (
-            <View className="size-10 items-center justify-center rounded-xl border-2 border-b-[3px] border-neutral-200/60 border-b-neutral-300 bg-neutral-100/60 dark:border-[#46505C] dark:border-b-[#667382] dark:bg-[#292E36]">
+            <View className="size-12 items-center justify-center rounded-xl border-2 border-b-[3px] border-line border-b-edge bg-surface-raised">
               <ChevronRightIcon width={16} height={16} color="#71717A" />
             </View>
           )}

@@ -1,6 +1,5 @@
 import type { PaginationObject, QuizHistorySummaryResponse, QuizResultDTO } from '../types';
 import {
-  filterQuizHistoryItems,
   findResumableQuiz,
   formatQuizAccuracy,
   formatQuizDuration,
@@ -185,21 +184,6 @@ describe('quiz-history feature and helper functions', () => {
         completedAt: null,
       },
     ];
-
-    it('filters items using filterQuizHistoryItems helper correctly', () => {
-      expect(filterQuizHistoryItems(mockHistoryItems, 'ALL')).toHaveLength(3);
-      const mcqItems = filterQuizHistoryItems(mockHistoryItems, 'MCQ');
-      expect(mcqItems).toHaveLength(1);
-      expect(mcqItems[0].quizId).toBe(101);
-
-      const matchingItems = filterQuizHistoryItems(mockHistoryItems, 'MATCHING');
-      expect(matchingItems).toHaveLength(1);
-      expect(matchingItems[0].quizId).toBe(102);
-
-      const fillBlankItems = filterQuizHistoryItems(mockHistoryItems, 'FILL_BLANK');
-      expect(fillBlankItems).toHaveLength(1);
-      expect(fillBlankItems[0].quizId).toBe(103);
-    });
 
     // D18: Setup "Bắt đầu" must spot the unfinished session of the SAME context, and only that one.
     describe('findResumableQuiz', () => {

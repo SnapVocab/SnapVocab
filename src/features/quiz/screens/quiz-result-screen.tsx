@@ -22,6 +22,7 @@ import {
 } from '@/components/ui/icons';
 import { RewardIcon } from '@/components/ui/rewards/reward-icon';
 import { Snapy } from '@/components/ui/snapy';
+import { QuizResultBadgeRow } from '@/features/badges';
 import { translate } from '@/lib/i18n';
 import { useQuizResult } from '../api/quiz-api';
 import { formatQuizAccuracy, formatQuizDuration } from '../utils';
@@ -134,9 +135,9 @@ export function QuizResultScreen() {
 
   if (isLoading) {
     return (
-      <SafeAreaView className="flex-1 items-center justify-center bg-[#F7F8FA]">
+      <SafeAreaView className="flex-1 items-center justify-center bg-background">
         <ActivityIndicator size="large" color="#3B82F6" className="mb-4" />
-        <Text className="font-nunito text-[16px] font-extrabold text-mascot-navy">
+        <Text className="font-nunito text-[16px] font-extrabold text-mascot-navy dark:text-neutral-50">
           {translate('quiz.result_loading')}
         </Text>
       </SafeAreaView>
@@ -146,15 +147,15 @@ export function QuizResultScreen() {
   // No server result (e.g. QUIZ_NOT_FINISHED): never render a fake 0/0 completion.
   if (!result) {
     return (
-      <SafeAreaView className="flex-1 items-center justify-center gap-4 bg-[#F7F8FA] px-6">
-        <Text className="text-center font-nunito text-[16px] font-extrabold text-mascot-navy">
+      <SafeAreaView className="flex-1 items-center justify-center gap-4 bg-background px-6">
+        <Text className="text-center font-nunito text-[16px] font-extrabold text-mascot-navy dark:text-neutral-50">
           {translate('quiz.result_error')}
         </Text>
         <Pressable onPress={() => void refetch()} className="min-h-12 justify-center rounded-2xl bg-primary-800 px-6 active:opacity-80">
           <Text className="font-nunito text-[15px] font-extrabold text-white">{translate('quiz.retry')}</Text>
         </Pressable>
         <Pressable onPress={handleGoHome} className="min-h-12 justify-center px-6 active:opacity-60">
-          <Text className="font-nunito text-[15px] font-extrabold text-mascot-navy">{translate('quiz.home')}</Text>
+          <Text className="font-nunito text-[15px] font-extrabold text-mascot-navy dark:text-neutral-50">{translate('quiz.home')}</Text>
         </Pressable>
       </SafeAreaView>
     );
@@ -164,12 +165,12 @@ export function QuizResultScreen() {
   // expired session as a 0/0 completion.
   if (result.status !== 'COMPLETED' || !summary) {
     return (
-      <SafeAreaView className="flex-1 items-center justify-center gap-4 bg-[#F7F8FA] px-6">
+      <SafeAreaView className="flex-1 items-center justify-center gap-4 bg-background px-6">
         <Snapy pose="suy_nghi" animation="idle" style={{ width: 110, height: 110 }} />
-        <Text className="text-center font-nunito text-[20px] font-extrabold text-mascot-navy">
+        <Text className="text-center font-nunito text-[20px] font-extrabold text-mascot-navy dark:text-neutral-50">
           {result.status === 'CANCELLED' ? translate('quiz.cancelled_title') : translate('quiz.error_expired_title')}
         </Text>
-        <Text className="text-center font-inter text-[14px] leading-relaxed text-neutral-500">
+        <Text className="text-center font-inter text-[14px] leading-relaxed text-neutral-500 dark:text-neutral-400">
           {topicName}
           {' · '}
           {translate('quiz.not_graded')}
@@ -178,14 +179,14 @@ export function QuizResultScreen() {
           <Text className="font-nunito text-[15px] font-extrabold text-white">{translate('quiz.history_title')}</Text>
         </Pressable>
         <Pressable onPress={handleGoHome} className="min-h-12 justify-center px-6 active:opacity-60">
-          <Text className="font-nunito text-[15px] font-extrabold text-mascot-navy">{translate('quiz.home')}</Text>
+          <Text className="font-nunito text-[15px] font-extrabold text-mascot-navy dark:text-neutral-50">{translate('quiz.home')}</Text>
         </Pressable>
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-[#F7F8FA]" edges={['top']}>
+    <SafeAreaView className="flex-1 bg-background" edges={['top']}>
 
       {/* 1. CONFETTI (Background overlay) */}
       {renderConfetti()}
@@ -197,7 +198,7 @@ export function QuizResultScreen() {
         {/* 2. CELEBRATION HEADER */}
         <View className="items-center pt-6 pb-4">
           <View className="relative items-center justify-center">
-            <View className="absolute size-44 rounded-full bg-warning-200/50 blur-2xl" />
+            <View className="absolute size-44 rounded-full bg-warning-200/50 blur-2xl dark:bg-warning-500/15" />
             <Snapy
               pose={isPerfect ? 'tu_hao' : accuracy >= 80 ? 'an_mung' : 'suy_nghi'}
               animation={isPerfect ? 'celebrate' : 'bounce'}
@@ -205,10 +206,10 @@ export function QuizResultScreen() {
               className="z-10 mb-2"
             />
           </View>
-          <Text className="px-4 text-center font-nunito text-[28px] leading-tight font-extrabold text-mascot-navy">
+          <Text className="px-4 text-center font-nunito text-[28px] leading-tight font-extrabold text-mascot-navy dark:text-neutral-50">
             {isPerfect ? translate('quiz.perfect') : accuracy >= 70 ? translate('quiz.completed_well') : translate('quiz.completed')}
           </Text>
-          <Text className="mt-1 px-4 text-center font-inter text-[15px] font-bold text-neutral-500">
+          <Text className="mt-1 px-4 text-center font-inter text-[15px] font-bold text-neutral-500 dark:text-neutral-400">
             {isPerfect
               ? translate('quiz.perfect_body')
               : translate('quiz.completed_body')}
@@ -219,25 +220,25 @@ export function QuizResultScreen() {
         <View className="mb-5 items-center">
           {/* Topic & Direction Info Badge */}
           <View className="mb-3 flex-row items-center gap-2">
-            <View className="rounded-full border border-neutral-200 bg-white px-3 py-1 shadow-sm">
-              <Text className="font-nunito text-[12px] font-bold text-mascot-navy">
+            <View className="rounded-full border border-line bg-surface px-3 py-1 shadow-sm">
+              <Text className="font-nunito text-[12px] font-bold text-mascot-navy dark:text-neutral-50">
                 {topicName}
               </Text>
             </View>
-            <View className="rounded-full border border-primary-200 bg-primary-50 px-2.5 py-1">
-              <Text className="font-inter text-[11px] font-bold text-primary-700">
+            <View className="rounded-full border border-primary-200 bg-primary-50 px-2.5 py-1 dark:border-primary-500/40 dark:bg-primary-500/15">
+              <Text className="font-inter text-[11px] font-bold text-primary-700 dark:text-primary-300">
                 {direction === 'VI_EN' ? translate('quiz.direction_vi_en') : translate('quiz.direction_en_vi')}
               </Text>
             </View>
           </View>
 
-          <Text className="font-nunito text-[40px] leading-tight font-extrabold text-mascot-navy">
+          <Text className="font-nunito text-[40px] leading-tight font-extrabold text-mascot-navy dark:text-neutral-50">
             {score}
             {' '}
             /
             {total}
           </Text>
-          <Text className="font-inter text-[15px] font-bold text-neutral-500">
+          <Text className="font-inter text-[15px] font-bold text-neutral-500 dark:text-neutral-400">
             {translate('quiz.accuracy_label')}
             {' '}
             {accuracy}
@@ -248,7 +249,7 @@ export function QuizResultScreen() {
         {/* 4. REWARD CENTERPIECE (Honest: no fabricated rewards until M4) */}
         <Animated.View
           style={{ transform: [{ scale: scaleAnim }], opacity: scaleAnim }}
-          className="mx-6 mb-7 items-center rounded-[24px] border-2 border-b-[6px] border-neutral-100 bg-white p-6 shadow-sm shadow-black/5"
+          className="mx-6 mb-7 items-center rounded-[24px] border-2 border-b-[6px] border-line bg-surface p-6 shadow-sm shadow-black/5"
         >
           <Text className="mb-4 font-inter text-[12px] font-extrabold tracking-widest text-neutral-400 uppercase">
             {translate('quiz.rewards_heading')}
@@ -256,56 +257,57 @@ export function QuizResultScreen() {
 
           <View className="mb-6 w-full flex-row items-center justify-center gap-10">
             <View className="items-center">
-              <View className="mb-2 size-14 items-center justify-center rounded-2xl border border-neutral-200 bg-neutral-50">
+              <View className="mb-2 size-14 items-center justify-center rounded-2xl border border-line bg-surface-raised">
                 <RewardIcon type="xp" size={42} />
               </View>
-              <Text className={`font-nunito text-[16px] font-extrabold ${xpEarned > 0 ? 'text-primary-600' : 'text-neutral-400'}`}>
+              <Text className={`font-nunito text-[16px] font-extrabold ${xpEarned > 0 ? 'text-primary-600 dark:text-primary-300' : 'text-neutral-400'}`}>
                 +
                 {xpEarned}
                 {' '}
                 XP
               </Text>
               {xpBonus > 0 && (
-                <Text className="mt-0.5 font-inter text-[11px] font-bold text-reward-600">
+                <Text className="mt-0.5 font-inter text-[11px] font-bold text-reward-600 dark:text-reward-300">
                   {translate('quiz.xp_booster_bonus', { amount: xpBonus })}
                 </Text>
               )}
             </View>
           </View>
 
-          <View className="w-full flex-row items-center justify-center gap-2 rounded-2xl border border-amber-200 bg-amber-50 p-3.5">
-            <SparklesIcon size={18} className="text-amber-600" />
-            <Text className="text-center font-inter text-[13px] font-medium text-amber-800">
+          <View className="w-full flex-row items-center justify-center gap-2 rounded-2xl border border-amber-200 bg-amber-50 p-3.5 dark:border-amber-500/40 dark:bg-amber-500/15">
+            <SparklesIcon size={18} className="text-amber-600 dark:text-amber-300" />
+            <Text className="text-center font-inter text-[13px] font-medium text-amber-800 dark:text-amber-300">
               {translate('quiz.coins_from_missions')}
             </Text>
           </View>
+          <QuizResultBadgeRow />
         </Animated.View>
 
         <Animated.View style={{ opacity: fadeAnim }}>
-          <View className="mx-6 mb-7 rounded-3xl border-2 border-neutral-100 bg-white p-5 shadow-sm shadow-black/5">
+          <View className="mx-6 mb-7 rounded-3xl border-2 border-line bg-surface p-5 shadow-sm shadow-black/5">
             <View className="flex-row">
-              <View className="flex-1 items-center border-r border-b border-neutral-100 pr-2 pb-4">
-                <Text className="font-nunito text-[24px] font-extrabold text-success-600">{score}</Text>
-                <Text className="font-inter text-[13px] font-bold text-neutral-500">{translate('quiz.correct')}</Text>
+              <View className="flex-1 items-center border-r border-b border-line pr-2 pb-4">
+                <Text className="font-nunito text-[24px] font-extrabold text-success-600 dark:text-success-300">{score}</Text>
+                <Text className="font-inter text-[13px] font-bold text-neutral-500 dark:text-neutral-400">{translate('quiz.correct')}</Text>
               </View>
-              <View className="flex-1 items-center border-b border-neutral-100 pb-4 pl-2">
-                <Text className="font-nunito text-[24px] font-extrabold text-error-600">{total - score}</Text>
-                <Text className="font-inter text-[13px] font-bold text-neutral-500">{translate('quiz.incorrect')}</Text>
+              <View className="flex-1 items-center border-b border-line pb-4 pl-2">
+                <Text className="font-nunito text-[24px] font-extrabold text-error-600 dark:text-error-300">{total - score}</Text>
+                <Text className="font-inter text-[13px] font-bold text-neutral-500 dark:text-neutral-400">{translate('quiz.incorrect')}</Text>
               </View>
             </View>
             <View className="flex-row pt-4">
-              <View className="flex-1 items-center border-r border-neutral-100 pr-2">
-                <Text className="font-nunito text-[20px] font-extrabold text-mascot-navy">
+              <View className="flex-1 items-center border-r border-line pr-2">
+                <Text className="font-nunito text-[20px] font-extrabold text-mascot-navy dark:text-neutral-50">
                   {accuracy}
                   %
                 </Text>
-                <Text className="font-inter text-[13px] font-bold text-neutral-500">{translate('quiz.accuracy')}</Text>
+                <Text className="font-inter text-[13px] font-bold text-neutral-500 dark:text-neutral-400">{translate('quiz.accuracy')}</Text>
               </View>
               <View className="flex-1 items-center pl-2">
-                <Text className="font-nunito text-[20px] font-extrabold text-mascot-navy">
+                <Text className="font-nunito text-[20px] font-extrabold text-mascot-navy dark:text-neutral-50">
                   {formatQuizDuration(result?.durationSeconds)}
                 </Text>
-                <Text className="font-inter text-[13px] font-bold text-neutral-500">{translate('quiz.duration')}</Text>
+                <Text className="font-inter text-[13px] font-bold text-neutral-500 dark:text-neutral-400">{translate('quiz.duration')}</Text>
               </View>
             </View>
           </View>
@@ -313,8 +315,8 @@ export function QuizResultScreen() {
           {/* 5. WRONG ANSWERS SECTION */}
           {wrongAnswers.length > 0 ? (
             <View className="mb-8 px-6">
-              <Text className="mb-1 font-nunito text-[18px] font-extrabold text-mascot-navy">{translate('quiz.review_section')}</Text>
-              <Text className="mb-4 font-inter text-[13px] font-bold text-neutral-500">
+              <Text className="mb-1 font-nunito text-[18px] font-extrabold text-mascot-navy dark:text-neutral-50">{translate('quiz.review_section')}</Text>
+              <Text className="mb-4 font-inter text-[13px] font-bold text-neutral-500 dark:text-neutral-400">
                 {translate('quiz.review_count_prefix')}
                 {' '}
                 {wrongAnswers.length}
@@ -324,30 +326,30 @@ export function QuizResultScreen() {
 
               <View className="gap-3">
                 {wrongAnswers.map((wrong, idx) => (
-                  <View key={wrong.questionId || `w_${idx}`} className="rounded-2xl border-2 border-error-100 bg-white p-4 shadow-sm shadow-black/5">
-                    <Text className="mb-2.5 font-nunito text-[18px] font-extrabold text-mascot-navy">
+                  <View key={wrong.questionId || `w_${idx}`} className="rounded-2xl border-2 border-error-100 bg-surface p-4 shadow-sm shadow-black/5 dark:border-error-500/40">
+                    <Text className="mb-2.5 font-nunito text-[18px] font-extrabold text-mascot-navy dark:text-neutral-50">
                       {wrong.prompt}
                     </Text>
                     <View className="gap-2">
                       <View className="flex-row items-start gap-2.5">
-                        <View className="mt-0.5 size-5 items-center justify-center rounded-full border border-success-200 bg-success-100">
-                          <CheckCircleIcon size={14} className="text-success-600" />
+                        <View className="mt-0.5 size-5 items-center justify-center rounded-full border border-success-200 bg-success-100 dark:border-success-500/40 dark:bg-success-500/15">
+                          <CheckCircleIcon size={14} className="text-success-600 dark:text-success-300" />
                         </View>
-                        <Text className="flex-1 font-inter text-[14px] font-medium text-neutral-600">
+                        <Text className="flex-1 font-inter text-[14px] font-medium text-neutral-600 dark:text-neutral-300">
                           {translate('quiz.correct_answer')}
                           {' '}
-                          <Text className="font-bold text-success-700">{wrong.correctAnswer}</Text>
+                          <Text className="font-bold text-success-700 dark:text-success-300">{wrong.correctAnswer}</Text>
                         </Text>
                       </View>
                       {wrong.learnerAnswer && (
                         <View className="flex-row items-start gap-2.5">
-                          <View className="mt-0.5 size-5 items-center justify-center rounded-full border border-error-200 bg-error-100">
-                            <XCircleIcon size={14} className="text-error-600" />
+                          <View className="mt-0.5 size-5 items-center justify-center rounded-full border border-error-200 bg-error-100 dark:border-error-500/40 dark:bg-error-500/15">
+                            <XCircleIcon size={14} className="text-error-600 dark:text-error-300" />
                           </View>
-                          <Text className="flex-1 font-inter text-[14px] font-medium text-neutral-600">
+                          <Text className="flex-1 font-inter text-[14px] font-medium text-neutral-600 dark:text-neutral-300">
                             {translate('quiz.your_answer')}
                             {' '}
-                            <Text className="font-bold text-error-700">{wrong.learnerAnswer}</Text>
+                            <Text className="font-bold text-error-700 dark:text-error-300">{wrong.learnerAnswer}</Text>
                           </Text>
                         </View>
                       )}
@@ -357,14 +359,14 @@ export function QuizResultScreen() {
               </View>
             </View>
           ) : (
-            <View className="mx-6 mb-8 items-center rounded-3xl border-2 border-success-200 bg-success-50/90 p-6">
+            <View className="mx-6 mb-8 items-center rounded-3xl border-2 border-success-200 bg-success-50/90 p-6 dark:border-success-500/40 dark:bg-success-500/15">
               <View className="mb-3 size-12 items-center justify-center rounded-2xl bg-success-500 shadow-md shadow-success-500/20">
                 <SparklesIcon size={24} className="text-white" />
               </View>
-              <Text className="text-center font-nunito text-[19px] font-extrabold text-success-800">
+              <Text className="text-center font-nunito text-[19px] font-extrabold text-success-800 dark:text-success-300">
                 {translate('quiz.perfect_accuracy')}
               </Text>
-              <Text className="mt-1 text-center font-inter text-[13px] font-medium text-success-700">
+              <Text className="mt-1 text-center font-inter text-[13px] font-medium text-success-700 dark:text-success-300">
                 {translate('quiz.all_correct_body')}
               </Text>
             </View>
@@ -376,24 +378,24 @@ export function QuizResultScreen() {
       {/* 6. BOTTOM ACTIONS */}
       <View
         style={{ bottom: insets.bottom }}
-        className="absolute inset-x-0 flex-row gap-3 border-t border-neutral-100 bg-white p-4 shadow-lg shadow-black/5"
+        className="absolute inset-x-0 flex-row gap-3 border-t border-line bg-surface p-4 shadow-lg shadow-black/5"
       >
         <Pressable
           onPress={handleGoHome}
-          className="h-13 flex-1 flex-row items-center justify-center gap-2 rounded-2xl border-b-4 border-neutral-200 bg-neutral-100 active:translate-y-px active:border-b-2 active:bg-neutral-200"
+          className="h-13 flex-1 flex-row items-center justify-center gap-2 rounded-2xl border-b-4 border-line bg-muted active:translate-y-px active:border-b-2 active:bg-pressed"
         >
-          <HomeIcon size={20} className="text-neutral-700" />
-          <Text className="font-nunito text-[15px] font-extrabold text-neutral-700 uppercase">
+          <HomeIcon size={20} className="text-neutral-700 dark:text-neutral-200" />
+          <Text className="font-nunito text-[15px] font-extrabold text-neutral-700 uppercase dark:text-neutral-200">
             {translate('quiz.home')}
           </Text>
         </Pressable>
 
         <Pressable
           onPress={handleGoHistory}
-          className="h-13 flex-1 flex-row items-center justify-center gap-2 rounded-2xl border-b-4 border-primary-700 bg-primary-500 active:translate-y-px active:border-b-2 active:bg-primary-600"
+          className="h-13 flex-1 flex-row items-center justify-center gap-2 rounded-2xl border-b-4 border-brand-edge bg-brand active:translate-y-px active:border-b-2 active:bg-brand-pressed"
         >
-          <RotateCcwIcon size={20} className="text-white" />
-          <Text className="font-nunito text-[15px] font-extrabold text-white uppercase">
+          <RotateCcwIcon size={20} className="text-on-brand" />
+          <Text className="font-nunito text-[15px] font-extrabold text-on-brand uppercase">
             {translate('quiz.history_title')}
           </Text>
         </Pressable>

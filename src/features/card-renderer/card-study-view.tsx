@@ -100,7 +100,7 @@ export function CardStudyView({
           {/* Stats Grid */}
           <View className="mt-8 w-full flex-row items-center justify-between gap-3">
             {/* Accuracy */}
-            <View className="flex-1 items-center rounded-2xl border border-neutral-200/80 bg-white p-4 shadow-xs dark:border-neutral-800 dark:bg-neutral-900">
+            <View className="flex-1 items-center rounded-2xl border border-line bg-surface p-4 shadow-xs">
               <Text className="font-nunito text-2xl font-black text-primary-600 dark:text-primary-400">
                 {accuracy}
                 %
@@ -156,7 +156,7 @@ export function CardStudyView({
   return (
     <View className="flex-1 bg-slate-50 dark:bg-neutral-950">
       {/* Top Header & Progress */}
-      <View className="border-b border-neutral-200/70 bg-white px-5 pt-3 pb-4 dark:border-neutral-800 dark:bg-neutral-900">
+      <View className="border-b border-line bg-surface px-5 pt-3 pb-4">
         <View className="flex-row items-center justify-between">
           <BackButton onPress={handleBack} />
 
@@ -209,7 +209,7 @@ export function CardStudyView({
       </ScrollView>
 
       {/* Bottom Action Toolbar */}
-      <View className="border-t border-neutral-200/70 bg-white px-4 pt-1 pb-6 dark:border-neutral-800 dark:bg-neutral-900">
+      <View className="border-t border-line bg-surface px-4 pt-1 pb-6">
         <CardActionToolbar
           onForgot={() => advanceCard(false)}
           onFlip={handleFlip}

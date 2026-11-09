@@ -27,7 +27,7 @@ export function CardPreviewView({
             android_ripple={{ color: 'transparent' }}
             className={`flex-1 items-center justify-center rounded-xl py-2 ${
               currentSide === 'FRONT'
-                ? 'bg-white shadow-xs dark:bg-neutral-900'
+                ? 'bg-surface shadow-xs'
                 : 'opacity-70'
             }`}
           >
@@ -47,7 +47,7 @@ export function CardPreviewView({
             android_ripple={{ color: 'transparent' }}
             className={`flex-1 items-center justify-center rounded-xl py-2 ${
               currentSide === 'BACK'
-                ? 'bg-white shadow-xs dark:bg-neutral-900'
+                ? 'bg-surface shadow-xs'
                 : 'opacity-70'
             }`}
           >

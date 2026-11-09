@@ -14,7 +14,7 @@ export function initializeFormData(
       const savedInstances = Array.isArray(existingGroups?.[group.name])
         ? existingGroups[group.name]
         : null;
-      const instances = savedInstances ?? [{}];
+      const instances = savedInstances ?? [];
       initial[group.name] = instances.map((savedInstance: Record<string, any>) => {
         const instance: Record<string, any> = {};
         for (const attr of group.attributes || []) {
@@ -73,6 +73,12 @@ export function validateAddWordForm(
       const groupErr: Record<number, Record<string, string>> = {};
 
       instances.forEach((inst: Record<string, any>, idx: number) => {
+        if (!group.attributes.some((attr) => {
+          const value = inst[attr.name];
+          return value !== undefined && value !== null && String(value).trim() !== '';
+        })) {
+          return;
+        }
         const itemErr: Record<string, string> = {};
         for (const attr of group.attributes || []) {
           if (attr.required) {
@@ -112,7 +118,8 @@ export function buildAddWordPayload(
     if (!group.multiple) {
       if (groupData && typeof groupData === 'object') {
         const cleanedSingle: Record<string, any> = {};
-        for (const [k, v] of Object.entries(groupData)) {
+        for (const { name: k } of group.attributes) {
+          const v = groupData[k];
           if (v !== undefined && v !== null && String(v).trim() !== '') {
             cleanedSingle[k] = v;
           }
@@ -125,8 +132,15 @@ export function buildAddWordPayload(
     else if (Array.isArray(groupData)) {
       const cleanedList: Record<string, any>[] = [];
       for (const item of groupData) {
+        if (!group.attributes.some((attr) => {
+          const value = item[attr.name];
+          return value !== undefined && value !== null && String(value).trim() !== '';
+        })) {
+          continue;
+        }
         const cleanedItem: Record<string, any> = {};
-        for (const [k, v] of Object.entries(item)) {
+        for (const { name: k } of group.attributes) {
+          const v = item[k];
           if (v !== undefined && v !== null && String(v).trim() !== '') {
             cleanedItem[k] = v;
           }

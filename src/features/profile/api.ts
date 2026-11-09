@@ -3,6 +3,7 @@ import type { ApiResponse, ResponseLoginDTO, User } from '../auth/api';
 import type { ChangePassword, UpdateProfile, UpdateUserSettings, UserSettings } from './types';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { store as authStore, useAuthStore } from '@/features/auth/use-auth-store';
+import { unregisterDevice } from '@/features/notifications/push';
 import { client } from '@/lib/api';
 import { putFileToStorage } from '@/lib/storage/upload';
 
@@ -136,6 +137,8 @@ export function useLogout() {
 
   return useMutation<void, AxiosError, void>({
     mutationFn: async () => {
+      // A6 while the access token still works (notification.md §3.9): this device stops getting the account's push.
+      await unregisterDevice();
       const refreshToken = authStore.getState().refreshToken;
       if (!refreshToken)
         return;

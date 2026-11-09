@@ -26,20 +26,23 @@ export function HomeSearchBar({ onPress }: HomeSearchBarProps) {
   return (
     <Pressable
       onPress={handlePress}
-      className="mb-3 flex-row items-center justify-between rounded-2xl border-2 border-b-4 border-neutral-200/90 border-b-neutral-300 bg-white px-3.5 py-2.5 active:translate-y-[2px] active:border-b-2 dark:border-[#46505C] dark:border-b-[#667382] dark:bg-[#22252B]"
+      accessibilityRole="button"
+      accessibilityLabel={translate('home.search_action')}
+      accessibilityHint={translate('home.search_action_hint')}
+      className="mb-3 flex-row items-center justify-between rounded-2xl border-2 border-b-4 border-line border-b-edge bg-surface px-3.5 py-2.5 active:translate-y-[2px] active:border-b-2 active:bg-pressed"
     >
       {/* Left: Guided hint / Heading */}
       <View className="flex-1 pr-3">
-        <Text className="font-nunito text-[15px] font-black text-mascot-navy dark:text-white" numberOfLines={1}>
-          {translate('home.search_hint')}
+        <Text className="font-nunito text-[15px] font-black text-mascot-navy dark:text-white">
+          {translate('home.search_action')}
         </Text>
-        <Text className="mt-0.5 font-inter text-[11px] font-medium text-neutral-500 dark:text-neutral-400" numberOfLines={1}>
-          {translate('home.search_placeholder')}
+        <Text className="mt-0.5 font-inter text-sm font-medium text-neutral-500 dark:text-neutral-300">
+          {translate('home.search_action_hint')}
         </Text>
       </View>
 
       {/* Right: 3D Chunky Search Action Button */}
-      <View className="size-10 items-center justify-center rounded-xl border-2 border-b-[3px] border-[#B9E6A2] border-b-[#9DCE7C] bg-[#EEF9E6] dark:border-[#46505C] dark:border-b-[#667382] dark:bg-[#292E36]">
+      <View className="size-10 items-center justify-center rounded-xl border-2 border-b-[3px] border-primary-200 border-b-primary-300 bg-primary-50 dark:border-line dark:border-b-edge dark:bg-surface-raised">
         <SearchIcon color={theme === 'dark' ? '#A3CF7C' : '#4E9B1C'} width={20} height={20} />
       </View>
     </Pressable>

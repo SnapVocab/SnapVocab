@@ -1,17 +1,20 @@
+import type { Href } from 'expo-router';
 import { Tabs, useRouter } from 'expo-router';
+import { useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useResolveClassNames } from 'uniwind';
 
-import { useColorMode, useSurface } from '@/components/ui';
+import { Text, useSurface } from '@/components/ui';
 import { CameraTabButton } from '@/components/ui/camera-tab-button';
-import colors from '@/components/ui/colors';
 import {
+  CameraIcon,
   Home as HomeIcon,
   LearnIcon,
   ProfileIcon,
   ShoppingBagIcon,
 } from '@/components/ui/icons';
 import { HomeHeader } from '@/features/home';
-import { useInventory } from '@/features/shop';
+import { useMe } from '@/features/profile/api';
 import { translate } from '@/lib/i18n';
 
 export default function TabLayout() {
@@ -19,29 +22,42 @@ export default function TabLayout() {
   // Edge-to-edge: the system gesture/nav bar draws over the app, so the tab bar
   // grows by the bottom inset instead of letting it cover the labels.
   const { bottom } = useSafeAreaInsets();
-  // Fetching inventory syncs the account's equipped theme into ShopThemeProvider on app start / login.
-  useInventory();
-  // App-wide chrome: default surfaces for the user's light/dark mode; Shop themes stay inside the Shop area.
+  const { width, fontScale } = useWindowDimensions();
+  const expanded = width >= 840;
+  // GET /api/users/me on app start / login: its equipped frame and booster land on the stored user,
+  // which Profile reads (shop.md §10.1).
+  useMe();
+  // App-wide chrome: default surfaces for the user's light/dark mode.
   const surface = useSurface();
-  const isDark = useColorMode() === 'dark';
+  const navigationSurface = useResolveClassNames(expanded
+    ? 'border-r border-line bg-surface'
+    : 'border-t-2 border-line bg-surface');
+  const itemStyle = useResolveClassNames(expanded ? 'my-1 min-h-20 rounded-2xl' : 'min-h-14');
+  // Navigator APIs require resolved styles; only safe-area and font-scale geometry is dynamic.
+  const navigationStyle = {
+    ...navigationSurface,
+    ...(expanded ? { width: fontScale > 1.2 ? 144 : 112 } : {
+      height: Math.ceil(48 + (fontScale > 1.6 ? 48 : 32) * fontScale) + bottom,
+      paddingBottom: 8 + bottom,
+      paddingTop: 8,
+    }),
+  };
 
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: isDark ? colors.darkTheme.accent : '#58CC02',
-        tabBarInactiveTintColor: isDark ? colors.darkTheme.mutedForeground : '#AFAFAF',
-        tabBarStyle: {
-          backgroundColor: surface.surface,
-          borderTopWidth: 2,
-          borderTopColor: surface.border,
-          height: 64 + bottom,
-          paddingBottom: 8 + bottom,
-          paddingTop: 8,
-        },
-        tabBarLabelStyle: {
-          fontSize: 12,
-          fontWeight: '700',
-        },
+        tabBarActiveTintColor: surface.action,
+        tabBarInactiveTintColor: surface.textMuted,
+        tabBarStyle: navigationStyle,
+        tabBarItemStyle: itemStyle,
+        tabBarPosition: expanded ? 'left' : 'bottom',
+        tabBarVariant: expanded ? 'material' : 'uikit',
+        tabBarLabelPosition: 'below-icon',
+        tabBarLabel: ({ focused, children }) => (
+          <Text className={`text-center font-nunito text-xs/4 font-bold ${focused ? 'text-action dark:text-action' : 'text-neutral-500 dark:text-neutral-300'}`}>
+            {children}
+          </Text>
+        ),
       }}
     >
       <Tabs.Screen
@@ -54,6 +70,7 @@ export default function TabLayout() {
               onStreakPress={() => router.push('/stats')}
               onCoinPress={() => router.push('/profile/wallet')}
               onAvatarPress={() => router.push('/profile')}
+              onNotificationPress={() => router.push('/notifications' as Href)}
             />
           ),
           tabBarIcon: ({ color }) => <HomeIcon color={color} />,
@@ -72,9 +89,10 @@ export default function TabLayout() {
       <Tabs.Screen
         name="camera"
         options={{
-          title: '',
+          title: expanded ? translate('home.scan_camera') : '',
           headerShown: false,
-          tabBarButton: props => <CameraTabButton {...props} />,
+          tabBarButton: expanded ? undefined : props => <CameraTabButton {...props} />,
+          tabBarIcon: ({ color }) => <CameraIcon color={color} />,
           tabBarButtonTestID: 'camera-tab',
           tabBarStyle: { display: 'none' },
           // Dark behind the system navigation bar, like the camera itself.

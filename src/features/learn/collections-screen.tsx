@@ -1,10 +1,11 @@
 import type { BottomSheetModal } from '@gorhom/bottom-sheet';
-import type { Collection } from './types';
-import { useRouter } from 'expo-router';
+import type { Collection, CollectionRef } from './types';
+import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useRef, useState } from 'react';
 import { ScrollView } from 'react-native';
 import Animated, { FadeIn } from 'react-native-reanimated';
-import { Button, FocusAwareStatusBar, SafeAreaView, View } from '@/components/ui';
+import { Button, FocusAwareStatusBar, SafeAreaView, Text, useSurface, View } from '@/components/ui';
+import { useCollectionStudyCounts } from '@/features/study/api';
 import { translate } from '@/lib/i18n';
 import { setItem } from '@/lib/storage';
 import { useCollections } from './api';
@@ -19,8 +20,20 @@ import {
 } from './components';
 
 export function CollectionsScreen() {
+  const { view } = useLocalSearchParams<{ view?: string }>();
+  const initialView = view === 'explore' ? 'SYSTEM' : 'USER';
+  return <CollectionsContent key={initialView} initialView={initialView} />;
+}
+
+function CollectionsContent({ initialView }: { initialView: 'USER' | 'SYSTEM' }) {
+  const surface = useSurface();
   const router = useRouter();
-  const [viewType, setViewType] = useState<'USER' | 'SYSTEM'>('USER');
+  const [viewType, setViewType] = useState<'USER' | 'SYSTEM'>(initialView);
+  const studyCounts = useCollectionStudyCounts(viewType);
+  const refreshCounts = studyCounts.refetch;
+  useFocusEffect(useCallback(() => {
+    void refreshCounts();
+  }, [refreshCounts]));
   const [selectedCollection, setSelectedCollection] = useState<Collection | null>(null);
   const [sheetMode, setSheetMode] = useState<'OPTIONS' | 'CREATE'>('OPTIONS');
   const bottomSheetRef = useRef<BottomSheetModal>(null);
@@ -33,7 +46,7 @@ export function CollectionsScreen() {
     refetch,
   } = useCollections({ type: viewType });
 
-  const handleCardPress = useCallback((collection: Collection) => {
+  const handleCardPress = useCallback((collection: CollectionRef) => {
     setItem('last_studied_collection_id', collection.id);
     router.push({
       pathname: '/(app)/collections/[id]',
@@ -59,13 +72,13 @@ export function CollectionsScreen() {
   }, []);
 
   return (
-    <SafeAreaView style={{ flex: 1 }} className="flex-1 bg-background">
+    <SafeAreaView style={{ flex: 1, backgroundColor: surface.headerBg }}>
       <FocusAwareStatusBar />
 
       {/* Header bar */}
       <CollectionHeader />
 
-      <View className="flex-1 px-3 pt-4">
+      <View className="flex-1 bg-background px-3 pt-4">
         {/* Switcher Tab: Mine / System */}
         <CollectionSwitcher viewType={viewType} onChange={setViewType} />
 
@@ -88,6 +101,12 @@ export function CollectionsScreen() {
           )}
 
           {/* Data State */}
+          {studyCounts.isError && (
+            <View className="mb-3 gap-2">
+              <Text className="text-sm text-danger-600 dark:text-danger-400" tx="study_limits.counts_error" />
+              <Button variant="white" tx="study_limits.retry" onPress={() => void refreshCounts()} />
+            </View>
+          )}
           {collections && collections.length > 0 && (
             <Animated.View key={viewType} entering={FadeIn.duration(200)} className="gap-2.5">
               {collections.map(item => (
@@ -98,12 +117,15 @@ export function CollectionsScreen() {
                   isSystemCollection={item.type === 'SYSTEM'}
                   onPress={() => handleCardPress(item)}
                   onOptionsPress={() => handleOptionsPress(item)}
+                  counts={studyCounts.data?.find(count => count.collectionId === item.id)}
                 />
               ))}
             </Animated.View>
           )}
         </ScrollView>
 
+      </View>
+      <View className="border-t border-line bg-surface px-4 pt-3 pb-4">
         <Button
           label={`${translate('learn.collections.create_new_collection')}`}
           onPress={handleCreatePress}

@@ -9,7 +9,7 @@ const envSchema = z.object({
   EXPO_PUBLIC_BUNDLE_ID: z.string().min(1),
   EXPO_PUBLIC_PACKAGE: z.string().min(1),
   EXPO_PUBLIC_API_URL: z.string().url(),
-  EXPO_PUBLIC_ASSOCIATED_DOMAIN: z.string().url().optional(),
+  EXPO_PUBLIC_ASSOCIATED_DOMAIN: z.preprocess(value => value === '' ? undefined : value, z.string().url().optional()),
 });
 
 // Check if strict validation is required (during prebuild)

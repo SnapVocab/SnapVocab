@@ -1,12 +1,18 @@
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Text, UserAvatar } from '@/components/ui';
+import { withUniwind } from 'uniwind';
+import { AvatarFrame } from '@/components/snapvocab';
+import { SafeAreaView, Text, UserAvatar } from '@/components/ui';
 import { CoinIcon, FlameIcon, NotificationBell } from '@/components/ui/icons';
 import { useThemeConfig } from '@/components/ui/use-theme-config';
 import { useAuthStore } from '@/features/auth/use-auth-store';
+import { useEquippedAvatarFrame } from '@/features/card-renderer/card-frame';
+import { useUnreadCount } from '@/features/notifications/api';
 import { useStreak } from '@/features/progress/api';
+import { formatCount } from '@/lib/format-count';
+
+const SafeArea = withUniwind(SafeAreaView);
 
 export type HomeHeaderProps = {
   onAvatarPress?: () => void;
@@ -23,33 +29,50 @@ export function HomeHeader({
   onSearchPress: _onSearchPress,
   onNotificationPress,
 }: HomeHeaderProps) {
-  const insets = useSafeAreaInsets();
   const theme = useThemeConfig();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const user = useAuthStore(s => s.user);
+  const avatarFrame = useEquippedAvatarFrame();
 
   // Same source as Home/Stats: the live streak (0 after a missed day), not users.streak_days.
   // "–" while loading or on error: unknown is not 0.
   const streakDays = useStreak().data?.currentStreak ?? '–';
   const coins = user?.coin ?? 0;
+  // A dot, not a number (notification_ui.md UI-NOTIF-02); no dot while loading or on error without cache.
+  const unread = useUnreadCount().data?.count ?? 0;
 
   return (
-    <View
-      style={{ paddingTop: insets.top }}
-      className="border-b border-neutral-100 bg-white px-4 pb-3 dark:border-neutral-800 dark:bg-neutral-900"
+    <SafeArea
+      edges={['top']}
+      className="border-b border-line bg-surface px-4 pb-3"
     >
-      <View className="flex-row items-center justify-between pt-1">
+      <View className="w-full max-w-6xl flex-row flex-wrap items-center justify-between gap-2 self-center pt-1">
         {/* User Avatar with tactile frame */}
         <Pressable
           onPress={onAvatarPress}
-          className="active:opacity-80"
+          accessibilityRole="button"
+          accessibilityLabel={t('home.open_profile')}
+          className="min-h-12 min-w-12 items-center justify-center rounded-full active:opacity-80"
         >
-          <UserAvatar
-            url={user?.avatarUrl}
-            name={user?.firstName ?? user?.email}
-            size="md"
-            bordered
-          />
+          {/* Same renderer as Profile and the Shop preview; 56 px so the 58% aperture still shows a face. */}
+          {avatarFrame.frameUrl
+            ? (
+                <AvatarFrame
+                  frameUrl={avatarFrame.frameUrl}
+                  onFrameError={avatarFrame.onFrameError}
+                  avatarUri={user?.avatarUrl}
+                  initials={(user?.firstName ?? user?.email ?? 'U')[0].toUpperCase()}
+                  size={56}
+                />
+              )
+            : (
+                <UserAvatar
+                  url={user?.avatarUrl}
+                  name={user?.firstName ?? user?.email}
+                  size="md"
+                  bordered
+                />
+              )}
         </Pressable>
 
         {/* Gamified Status Counters + Notification */}
@@ -58,23 +81,25 @@ export function HomeHeader({
           <Pressable
             onPress={onStreakPress}
             accessibilityRole="button"
-            accessibilityLabel={typeof streakDays === 'number' ? t('progressUx.streakA11y', { count: streakDays }) : undefined}
-            className="flex-row items-center gap-1.5 rounded-2xl border-2 border-b-[3px] border-orange-200 border-b-orange-400 bg-orange-50 px-2.5 py-1.5 active:translate-y-px active:border-b-2 dark:border-orange-800 dark:border-b-orange-900 dark:bg-orange-950/40"
+            accessibilityLabel={typeof streakDays === 'number' ? t('progressUx.streakA11y', { count: streakDays }) : t('home.streak_unavailable_a11y')}
+            className="min-h-12 min-w-12 flex-row items-center justify-center gap-1.5 rounded-2xl border-2 border-b-[3px] border-orange-200 border-b-orange-300 bg-orange-50 px-2.5 py-1.5 active:translate-y-px active:border-b-2 active:bg-orange-100 dark:border-orange-400/25 dark:border-b-orange-400/45 dark:bg-orange-400/10 dark:active:bg-orange-400/20"
           >
             <FlameIcon color="#F97316" width={18} height={18} />
-            <Text className="font-nunito text-xs font-black text-orange-600 dark:text-orange-400">
-              {streakDays}
+            <Text className="font-nunito text-xs font-black text-orange-700 dark:text-orange-300">
+              {typeof streakDays === 'number' ? formatCount(streakDays, i18n.language) : streakDays}
             </Text>
           </Pressable>
 
           {/* Coins 3D Badge */}
           <Pressable
             onPress={onCoinPress}
-            className="flex-row items-center gap-1.5 rounded-2xl border-2 border-b-[3px] border-amber-200 border-b-amber-400 bg-amber-50 px-2.5 py-1.5 active:translate-y-px active:border-b-2 dark:border-amber-800 dark:border-b-amber-900 dark:bg-amber-950/40"
+            accessibilityRole="button"
+            accessibilityLabel={t('home.wallet_a11y', { amount: coins })}
+            className="min-h-12 min-w-12 flex-row items-center justify-center gap-1.5 rounded-2xl border-2 border-b-[3px] border-amber-200 border-b-amber-300 bg-amber-50 px-2.5 py-1.5 active:translate-y-px active:border-b-2 active:bg-amber-100 dark:border-amber-400/25 dark:border-b-amber-400/45 dark:bg-amber-400/10 dark:active:bg-amber-400/20"
           >
             <CoinIcon size={18} />
             <Text className="font-nunito text-xs font-black text-amber-700 dark:text-amber-400">
-              {coins}
+              {formatCount(coins, i18n.language)}
             </Text>
           </Pressable>
 
@@ -82,14 +107,15 @@ export function HomeHeader({
           <Pressable
             onPress={onNotificationPress}
             accessibilityRole="button"
-            accessibilityLabel={t('home.notifications')}
-            className="size-10 items-center justify-center rounded-2xl border-2 border-b-[3px] border-neutral-300 border-b-neutral-400 bg-neutral-50 active:translate-y-px active:border-b-2 dark:border-[#46505C] dark:border-b-[#667382] dark:bg-[#292E36]"
+            accessibilityLabel={unread > 0 ? t('notifications.bell_unread_a11y', { count: unread }) : t('notifications.bell_a11y')}
+            testID="home-notifications"
+            className="size-12 items-center justify-center rounded-2xl border-2 border-b-[3px] border-line border-b-edge bg-surface-raised active:translate-y-px active:border-b-2 active:bg-pressed"
           >
-            <NotificationBell color={theme.colors.text} />
+            <NotificationBell color={theme.colors.text} unread={unread > 0} />
           </Pressable>
         </View>
       </View>
-    </View>
+    </SafeArea>
   );
 }
 

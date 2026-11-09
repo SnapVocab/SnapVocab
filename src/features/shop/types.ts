@@ -1,11 +1,20 @@
 /**
  * Canonical Shop types and DTOs according to docs/decisions/shop.md
- * ONLY 3 types: THEME, AVATAR_FRAME, XP_BOOSTER.
+ * Types: AVATAR_FRAME, CARD_FRAME (plan/shop-item/card_frame_plan.md), XP_BOOSTER, STREAK_FREEZE (docs/decisions/streak_freeze.md).
  */
 
-export type ShopItemType = 'THEME' | 'AVATAR_FRAME' | 'XP_BOOSTER';
+export const SHOP_ITEM_TYPES = ['AVATAR_FRAME', 'CARD_FRAME', 'XP_BOOSTER', 'STREAK_FREEZE'] as const;
+export type ShopItemType = (typeof SHOP_ITEM_TYPES)[number];
 
-export type ThemeKey = 'DEFAULT' | 'MIDNIGHT_NEON' | 'SUNSET_AMBER' | 'FOREST_MINT';
+/** Held in units up to `config.maxQuantity`; buying past it is MAX_QUANTITY_REACHED (shop.md S9). */
+export function isStackable(type: ShopItemType): boolean {
+  return type === 'XP_BOOSTER' || type === 'STREAK_FREEZE';
+}
+
+/** A type added server-side after this app version has no runtime here: hide it (shop.md §6.3). */
+export function isKnownItemType(type: string): type is ShopItemType {
+  return (SHOP_ITEM_TYPES as readonly string[]).includes(type);
+}
 
 export type ShopItemStatus = 'DRAFT' | 'PUBLISHED' | 'ARCHIVED';
 
@@ -15,10 +24,14 @@ export type BlockReason =
   | 'MAX_QUANTITY_REACHED'
   | 'INSUFFICIENT_COINS';
 
-export type EquipmentSlot = 'THEME' | 'AVATAR_FRAME';
+export type EquipmentSlot = 'AVATAR_FRAME' | 'CARD_FRAME';
+
+/** Cosmetics worn in a slot (one per slot); everything else is used up or passive. */
+export function isEquippable(type: ShopItemType): type is EquipmentSlot {
+  return type === 'AVATAR_FRAME' || type === 'CARD_FRAME';
+}
 
 export type ItemConfig = {
-  themeKey?: ThemeKey | string | null;
   frameUrl?: string | null;
   multiplier?: number | null;
   durationMinutes?: number | null;
@@ -99,8 +112,6 @@ export type ActivationResultDTO = {
 
 export type CoinSourceType =
   | 'MISSION_REWARD'
-  | 'DAILY_CHEST'
-  | 'WEEKLY_CHEST'
   | 'SHOP_PURCHASE'
   | 'ADMIN_ADJUSTMENT';
 

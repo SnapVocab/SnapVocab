@@ -23,10 +23,10 @@ export default function CollectionDetailHeader({
   const handleBack = onBackPress ?? (() => router.back());
 
   return (
-    <View className="flex-row items-center justify-between border-b border-neutral-100 px-3 py-4 dark:border-neutral-800">
+    <View className="flex-row items-center justify-between border-b border-line px-3 py-4">
       <BackButton onPress={handleBack} hitSlop={12} />
 
-      <View className="pointer-events-none absolute inset-x-14 items-center">
+      <View className="flex-1 items-center px-2">
         <Text
           className="font-nunito text-[18px] font-extrabold text-mascot-navy dark:text-white"
           numberOfLines={1}
@@ -43,20 +43,24 @@ export default function CollectionDetailHeader({
         )}
       </View>
 
-      {showOptions
-        ? (
-            <Pressable
-              onPress={onOptionsPress}
-              hitSlop={12}
-              android_ripple={{ color: 'transparent' }}
-              className="size-10 items-center justify-center rounded-xl border border-neutral-200/80 bg-neutral-100/60 active:opacity-60 dark:border-neutral-700 dark:bg-neutral-800"
-            >
-              <MoreVerticalIcon width={20} height={20} color="#71717A" />
-            </Pressable>
-          )
-        : (
-            <View className="size-10" />
-          )}
+      <View className="flex-row items-center gap-1">
+        {showOptions
+          ? (
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={translate('learn.library.options', { name: title ?? '' })}
+                onPress={onOptionsPress}
+                hitSlop={12}
+                android_ripple={{ color: 'transparent' }}
+                className="size-12 items-center justify-center rounded-xl border border-line bg-neutral-100/60 active:opacity-60 dark:bg-neutral-800"
+              >
+                <MoreVerticalIcon width={20} height={20} color="#71717A" />
+              </Pressable>
+            )
+          : (
+              <View className="size-12" />
+            )}
+      </View>
     </View>
   );
 }

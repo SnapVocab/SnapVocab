@@ -124,12 +124,3 @@ export function findResumableQuiz(
     && (item.direction ?? null) === (request.direction ?? null)
     && item.questionCount === request.requestedCount);
 }
-
-export function filterQuizHistoryItems(
-  items: QuizHistorySummaryResponse[],
-  filter: HistoryFilterMode,
-): QuizHistorySummaryResponse[] {
-  if (filter === 'ALL')
-    return items;
-  return items.filter(item => item.mode === filter);
-}

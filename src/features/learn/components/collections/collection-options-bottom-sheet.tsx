@@ -1,6 +1,7 @@
 import type { BottomSheetBackdropProps } from '@gorhom/bottom-sheet';
-import type { Collection } from '../../types';
-import { BottomSheetBackdrop, BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet';
+import type { Collection, CollectionRef } from '../../types';
+import { BottomSheetBackdrop, BottomSheetModal, BottomSheetScrollView } from '@gorhom/bottom-sheet';
+import { useRouter } from 'expo-router';
 import * as React from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useUniwind } from 'uniwind';
@@ -12,12 +13,12 @@ import { CollectionMenuView } from './collection-menu-view';
 
 type Props = {
   bottomSheetRef: React.RefObject<BottomSheetModal | null>;
-  collection: Collection | null;
+  collection: CollectionRef | null;
   mode?: 'OPTIONS' | 'CREATE';
   onCreated?: (collection: Collection) => void;
   onSaveEdit?: (collection: Collection) => void;
-  onDelete?: (collection: Collection) => void;
-  onStudy?: (collection: Collection) => void;
+  onDelete?: (collection: CollectionRef) => void;
+  onStudy?: (collection: CollectionRef) => void;
 };
 
 export function CollectionOptionsBottomSheet({
@@ -29,6 +30,7 @@ export function CollectionOptionsBottomSheet({
   onDelete,
   onStudy,
 }: Props) {
+  const router = useRouter();
   const insets = useSafeAreaInsets();
   const { theme } = useUniwind();
   const isDark = theme === 'dark';
@@ -76,10 +78,15 @@ export function CollectionOptionsBottomSheet({
   return (
     <BottomSheetModal
       ref={bottomSheetRef}
-      enableDynamicSizing
+      enableDynamicSizing={mode !== 'CREATE' && currentView !== 'EDIT'}
+      snapPoints={mode === 'CREATE' || currentView === 'EDIT' ? ['75%'] : undefined}
+      topInset={insets.top}
       keyboardBehavior="interactive"
       keyboardBlurBehavior="restore"
-      android_keyboardInputMode="adjustResize"
+      enableBlurKeyboardOnGesture
+      // Android edge-to-edge does not consistently resize the window for the IME.
+      // Let the sheet offset itself by the keyboard height instead.
+      android_keyboardInputMode="adjustPan"
       backdropComponent={renderBackdrop}
       onDismiss={handleDismiss}
       handleIndicatorStyle={{ backgroundColor: isDark ? colors.darkTheme.border : '#CBD5E1', width: 36, height: 4 }}
@@ -89,9 +96,9 @@ export function CollectionOptionsBottomSheet({
         borderTopRightRadius: 28,
       }}
     >
-      <BottomSheetView
-        style={{ paddingBottom: Math.max(insets.bottom, 24) }}
-        className="px-5 pt-2"
+      <BottomSheetScrollView
+        keyboardShouldPersistTaps="handled"
+        contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 8, paddingBottom: Math.max(insets.bottom, 24) }}
       >
         {/* CREATE MODE */}
         {mode === 'CREATE' && (
@@ -107,6 +114,10 @@ export function CollectionOptionsBottomSheet({
             {currentView === 'MENU' && (
               <CollectionMenuView
                 collection={collection}
+                onStudySettings={() => {
+                  handleClose();
+                  router.push({ pathname: '/collections/study-settings', params: { collectionId: String(collection.id), name: collection.name } });
+                }}
                 onOpenEdit={() => setCurrentView('EDIT')}
                 onOpenDelete={() => setCurrentView('DELETE')}
                 onStudy={
@@ -137,7 +148,7 @@ export function CollectionOptionsBottomSheet({
             )}
           </>
         )}
-      </BottomSheetView>
+      </BottomSheetScrollView>
     </BottomSheetModal>
   );
 }

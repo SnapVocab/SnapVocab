@@ -3,7 +3,8 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import * as React from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { KeyboardAvoidingView, Platform, Pressable, ScrollView, View } from 'react-native';
+import { KeyboardAvoidingView as NativeKeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
+import { withUniwind } from 'uniwind';
 import {
   BackButton,
   Button,
@@ -13,15 +14,18 @@ import {
   showErrorMessage,
   showSuccessMessage,
   Text,
+  useSurface,
 } from '@/components/ui';
-import colors from '@/components/ui/colors';
 import { LayoutGridIcon, SlidersIcon } from '@/components/ui/icons';
 import { translate } from '@/lib/i18n';
 import { useCreateTopic } from './api';
 import { createTopicSchema } from './components/topic/create-topic-validation';
 
+const KeyboardAvoidingView = withUniwind(NativeKeyboardAvoidingView);
+
 export function CreateTopicScreen() {
   const router = useRouter();
+  const surface = useSurface();
   const {
     collectionId,
     collectionName = '',
@@ -81,11 +85,11 @@ export function CreateTopicScreen() {
   const isLoading = isPending || isSubmitting;
 
   return (
-    <SafeAreaView style={{ flex: 1 }} className="flex-1 bg-white dark:bg-neutral-900">
+    <SafeAreaView style={{ flex: 1 }} className="flex-1 bg-background">
       <FocusAwareStatusBar />
 
       {/* Header */}
-      <View className="flex-row items-center justify-between border-b border-neutral-100 px-4 pt-1 pb-3 dark:border-neutral-800">
+      <View className="flex-row items-center justify-between border-b border-line px-4 pt-1 pb-3">
         <BackButton onPress={() => router.back()} />
 
         <View className="flex-1 items-center px-2">
@@ -186,7 +190,7 @@ export function CreateTopicScreen() {
               {translate('learn.create_topic.layout_section_title')}
             </Text>
 
-            <View className="rounded-2xl border-2 border-neutral-200 bg-white p-4 shadow-sm dark:border-neutral-700 dark:bg-neutral-800/80">
+            <View className="rounded-2xl border-2 border-line bg-white p-4 shadow-sm dark:bg-neutral-800/80">
               {/* Header row */}
               <View className="flex-row items-center justify-between">
                 <View className="mr-2 flex-1 flex-row items-center">
@@ -194,7 +198,7 @@ export function CreateTopicScreen() {
                     <LayoutGridIcon color="#16A34A" width={22} height={22} />
                   </View>
                   <View className="flex-1">
-                    <View className="flex-row items-center gap-1.5">
+                    <View className="flex-row flex-wrap items-center gap-1.5">
                       <Text className="font-nunito text-sm font-black text-mascot-navy dark:text-white">
                         {translate('learn.create_topic.layout_name')}
                       </Text>
@@ -210,19 +214,17 @@ export function CreateTopicScreen() {
                   </View>
                 </View>
 
-                {/* Nút Tùy chỉnh */}
-                <Pressable
-                  onPress={() => {
-                    router.push('/template-builder');
-                  }}
-                  className="flex-row items-center rounded-xl border border-neutral-200 bg-neutral-100 px-2.5 py-1.5 active:opacity-75 dark:border-neutral-600 dark:bg-neutral-700"
-                >
-                  <SlidersIcon color={colors.mascot.navy} width={15} height={15} />
-                  <Text className="ml-1.5 font-inter text-xs font-bold text-mascot-navy dark:text-white">
-                    {translate('learn.create_topic.layout_customize')}
-                  </Text>
-                </Pressable>
               </View>
+              {/* Nút Tùy chỉnh */}
+              <Button
+                variant="white"
+                fullWidth={false}
+                label={translate('learn.create_topic.layout_customize')}
+                icon={<SlidersIcon color={surface.textMuted} width={18} height={18} />}
+                onPress={() => router.push('/template-builder')}
+                className="mt-3 h-auto min-h-12 self-end px-4 py-3"
+                textClassName="shrink text-xs"
+              />
 
               {/* Divider */}
               <View className="my-3 h-px bg-neutral-100 dark:bg-neutral-700" />
@@ -252,7 +254,7 @@ export function CreateTopicScreen() {
         </ScrollView>
 
         {/* Bottom CTA Button */}
-        <View className="border-t border-neutral-100 bg-white px-4 pt-3 pb-4 dark:border-neutral-800 dark:bg-neutral-900">
+        <View className="border-t border-line bg-surface px-4 pt-3 pb-4">
           <Button
             label={translate('learn.create_topic.submit_button')}
             disabled={!isValid || isLoading}

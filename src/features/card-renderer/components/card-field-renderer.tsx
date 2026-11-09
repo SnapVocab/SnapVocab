@@ -1,6 +1,7 @@
 import type { BuilderField, TopicItemData } from '../types';
 import * as React from 'react';
 import { Pressable, View } from 'react-native';
+import { useUniwind } from 'uniwind';
 import { VolumeIcon } from '@/components/ui/icons';
 import { Image } from '@/components/ui/image';
 import { Text } from '@/components/ui/text';
@@ -20,6 +21,58 @@ type Props = {
  * Normalizes phonetic string by cleanly stripping any outer slashes,
  * brackets, backslashes, quotes, whitespace
  */
+type Rgb = [number, number, number];
+
+function parseHex(hex: string): Rgb | null {
+  const m = hex.trim().match(/^#([0-9a-f]{3}|[0-9a-f]{6})$/i);
+  if (!m)
+    return null;
+  const h = m[1].length === 3 ? m[1].replace(/./g, c => c + c) : m[1];
+  return [0, 2, 4].map(i => Number.parseInt(h.slice(i, i + 2), 16)) as Rgb;
+}
+
+/** WCAG relative luminance, 0 (black) to 1 (white). */
+function luminance([r, g, b]: Rgb): number {
+  const lin = (v: number) => {
+    const c = v / 255;
+    return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+  };
+  return 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b);
+}
+
+// Card faces: white in light mode, the #22252B surface in dark mode.
+const FACE_LUMINANCE = { light: 1, dark: 0.018 };
+const TOWARD = { light: [0, 0, 0] as Rgb, dark: [255, 255, 255] as Rgb };
+
+/**
+ * A template picks one text color per field, usually against a white card. Keep its hue but move it
+ * toward black (light) or white (dark) until it reaches 4.5:1 on the current card face, so a word
+ * never fades into its own background in the other mode.
+ */
+function readableFieldColor(color: string | undefined, mode: 'light' | 'dark'): string | undefined {
+  const rgb = color ? parseHex(color) : null;
+  if (!color || !rgb)
+    return color;
+  const face = FACE_LUMINANCE[mode];
+  const contrast = (c: Rgb) => {
+    const l = luminance(c);
+    return (Math.max(l, face) + 0.05) / (Math.min(l, face) + 0.05);
+  };
+  if (contrast(rgb) >= 4.5)
+    return color;
+  // A near-neutral ink (navy, slate) carries no hue worth keeping: the theme's own ink reads best.
+  const chroma = (Math.max(...rgb) - Math.min(...rgb)) / 255;
+  if (chroma < 0.25)
+    return undefined;
+  const target = TOWARD[mode];
+  for (let t = 0.1; t <= 1; t += 0.1) {
+    const mixed = rgb.map((v, i) => Math.round(v + (target[i] - v) * t)) as Rgb;
+    if (contrast(mixed) >= 4.5)
+      return `rgb(${mixed.join(', ')})`;
+  }
+  return undefined;
+}
+
 function cleanPhoneticString(raw?: string | null): string {
   if (!raw) {
     return '';
@@ -60,6 +113,7 @@ export function CardFieldRenderer({
   instanceIndex = 0,
   isRepeatableSection = false,
 }: Props) {
+  const colorMode = useUniwind().theme === 'dark' ? 'dark' : 'light';
   const { text, isEmpty, isImage, isAudio } = resolveFieldValue(
     field,
     data,
@@ -104,7 +158,7 @@ export function CardFieldRenderer({
 
   const fontSize = FONT_SIZE_MAP[field.fontSize] || 16;
   const textAlign = (field.alignment?.toLowerCase() || 'left') as 'left' | 'center' | 'right';
-  const color = field.color || undefined;
+  const color = readableFieldColor(field.color || undefined, colorMode);
 
   const horizontalAlignClass
     = textAlign === 'center'
@@ -129,12 +183,12 @@ export function CardFieldRenderer({
         {field.fieldLabel ? (
           <Text
             style={{ textAlign }}
-            className="mb-1.5 font-inter text-[10.5px] font-extrabold tracking-wider text-neutral-400 uppercase dark:text-neutral-500"
+            className="mb-1.5 font-inter text-[10.5px] font-extrabold tracking-wider text-neutral-400 uppercase dark:text-neutral-400"
           >
             {field.fieldLabel}
           </Text>
         ) : null}
-        <View className="h-48 w-full overflow-hidden rounded-[22px] border border-neutral-200 bg-neutral-100 p-1 dark:border-neutral-700 dark:bg-neutral-800">
+        <View className="h-48 w-full overflow-hidden rounded-[22px] border border-line bg-neutral-100 p-1 dark:bg-neutral-800">
           <Image
             source={{ uri: text }}
             className="size-full rounded-[18px]"
@@ -195,7 +249,7 @@ export function CardFieldRenderer({
       {field.fieldLabel ? (
         <Text
           style={{ textAlign }}
-          className={`mb-1 font-inter text-[10px] font-bold tracking-[1px] uppercase ${isTargetWord ? 'text-primary-700 dark:text-primary-300' : 'text-neutral-400 dark:text-neutral-500'}`}
+          className={`mb-1 font-inter text-[10px] font-bold tracking-[1px] uppercase ${isTargetWord ? 'text-primary-700 dark:text-primary-300' : 'text-neutral-400 dark:text-neutral-400'}`}
         >
           {field.fieldLabel}
         </Text>

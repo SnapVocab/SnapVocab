@@ -1,9 +1,10 @@
 import type { SchemaAttributeDTO } from '@/features/template-builder/types';
 import * as React from 'react';
-import { Switch, View } from 'react-native';
+import { View } from 'react-native';
 import { Image, Input, Pressable, Text } from '@/components/ui';
 import colors from '@/components/ui/colors';
 import { Volume2Icon } from '@/components/ui/icons';
+import { Switch } from '@/components/ui/switch';
 import { translate } from '@/lib/i18n';
 
 type Props = {
@@ -25,11 +26,8 @@ export function DynamicFormField({
   onLookup: _onLookup,
   isLookupLoading: _isLookupLoading,
 }: Props) {
-  const isMultiline
-    = attribute.name.includes('description')
-      || attribute.name.includes('example')
-      || attribute.name.includes('definition')
-      || attribute.name.includes('note');
+  const isMultiline = attribute.semanticRole === 'DEFINITION'
+    || attribute.semanticRole === 'EXAMPLE_SENTENCE';
 
   // Render based on data type
   switch (attribute.dataType) {
@@ -51,7 +49,7 @@ export function DynamicFormField({
       const boolValue = Boolean(value === true || value === 'true');
       return (
         <View className="mb-4">
-          <View className="flex-row items-center justify-between rounded-2xl border border-neutral-200 bg-neutral-50/50 p-4 dark:border-neutral-800 dark:bg-neutral-800/40">
+          <View className="flex-row items-center justify-between rounded-2xl border border-line bg-neutral-50/50 p-4 dark:bg-neutral-800/40">
             <View className="mr-3 flex-1">
               <Text className="font-nunito text-sm font-bold text-mascot-navy dark:text-white">
                 {attribute.label}
@@ -64,8 +62,6 @@ export function DynamicFormField({
             <Switch
               value={boolValue}
               onValueChange={onChange}
-              trackColor={{ false: '#E5E7EB', true: '#10B981' }}
-              thumbColor={boolValue ? '#FFFFFF' : '#F4F3F4'}
             />
           </View>
           {error && <Text className="mt-1 font-inter text-xs text-red-500">{error}</Text>}
@@ -109,7 +105,7 @@ export function DynamicFormField({
             error={error}
           />
           {value && typeof value === 'string' && value.startsWith('http') ? (
-            <View className="mt-2 overflow-hidden rounded-xl border border-neutral-200 bg-neutral-100 dark:border-neutral-800 dark:bg-neutral-800">
+            <View className="mt-2 overflow-hidden rounded-xl border border-line bg-neutral-100 dark:bg-neutral-800">
               <Image
                 source={{ uri: value }}
                 className="h-36 w-full"

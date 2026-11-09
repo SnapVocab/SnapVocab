@@ -13,7 +13,9 @@ import type {
 } from './types';
 import type { CursorPaginationResponse, PaginateResponse } from '@/lib/api';
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { syncBadges } from '@/features/badges/api';
 import { invalidateProgress } from '@/features/progress/api';
+import { invalidateStudy } from '@/features/study/api';
 import { client } from '@/lib/api';
 
 export type GetCollectionsParams = {
@@ -70,6 +72,7 @@ export function useUpdateCollection() {
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['collections'] });
+      void invalidateStudy(queryClient);
       queryClient.invalidateQueries({ queryKey: ['collection', variables.id] });
       queryClient.invalidateQueries({ queryKey: ['collection', String(variables.id)] });
     },
@@ -91,6 +94,7 @@ export function useCreateCollection() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['collections'] });
+      void invalidateStudy(queryClient);
     },
   });
 }
@@ -107,6 +111,7 @@ export function useDeleteCollection() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['collections'] });
+      void invalidateStudy(queryClient);
       // Its words leave the learner's vocabulary total.
       invalidateProgress(queryClient);
     },
@@ -201,6 +206,7 @@ export function useCreateTopic() {
       queryClient.invalidateQueries({ queryKey: ['collection-topics-infinite', variables.collectionId] });
       queryClient.invalidateQueries({ queryKey: ['collection-topics-infinite', String(variables.collectionId)] });
       queryClient.invalidateQueries({ queryKey: ['collections'] });
+      void invalidateStudy(queryClient);
     },
   });
 }
@@ -209,11 +215,12 @@ export function useAddTopicItem() {
   const queryClient = useQueryClient();
 
   return useMutation<TopicItemData, AxiosError<ApiResponse<unknown>>, AddTopicItemParams>({
-    mutationFn: async ({ topicId, data }) => {
+    mutationFn: async ({ topicId, data, scanRequestId }) => {
       const response = await client<ApiResponse<TopicItemData>>({
         url: `/api/topics/${topicId}/items`,
         method: 'POST',
         data,
+        params: scanRequestId ? { scanRequestId } : undefined,
       });
 
       return response.data.data;
@@ -226,8 +233,11 @@ export function useAddTopicItem() {
       queryClient.invalidateQueries({ queryKey: ['topic-items-infinite', variables.topicId] });
       queryClient.invalidateQueries({ queryKey: ['topic-items-infinite', String(variables.topicId)] });
       queryClient.invalidateQueries({ queryKey: ['collections'] });
+      void invalidateStudy(queryClient);
       queryClient.invalidateQueries({ queryKey: ['collection-topics'] });
       invalidateProgress(queryClient);
+      // A quiz-ready word may complete a word badge; a credited scan save is a study day (badges.md §9).
+      void syncBadges(queryClient);
     },
   });
 }
@@ -272,6 +282,7 @@ export function useUpdateTopicItem() {
       queryClient.invalidateQueries({ queryKey: ['topic-items-infinite', variables.topicId] });
       queryClient.invalidateQueries({ queryKey: ['topic-items-infinite', String(variables.topicId)] });
       queryClient.invalidateQueries({ queryKey: ['collections'] });
+      void invalidateStudy(queryClient);
       queryClient.invalidateQueries({ queryKey: ['collection-topics'] });
     },
   });
@@ -296,6 +307,7 @@ export function useDeleteTopicItem() {
       queryClient.invalidateQueries({ queryKey: ['topic-items-infinite', variables.topicId] });
       queryClient.invalidateQueries({ queryKey: ['topic-items-infinite', String(variables.topicId)] });
       queryClient.invalidateQueries({ queryKey: ['collections'] });
+      void invalidateStudy(queryClient);
       queryClient.invalidateQueries({ queryKey: ['collection-topics'] });
     },
   });

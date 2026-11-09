@@ -14,8 +14,12 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import { AvatarFrame, Coin3D } from '@/components/snapvocab';
-import { Button, useSurface } from '@/components/ui';
+import { useSurface } from '@/components/ui';
 import { useAuthStore } from '@/features/auth/use-auth-store';
+import { isEquippable } from '@/features/shop/types';
+import { translate } from '@/lib/i18n';
+import { CardFrameThumb } from './card-frame-thumb';
+import { ShopButton as Button } from './shop-button';
 import { SHOP_TYPE_LABEL } from './shop-category-tabs';
 
 type PurchaseSuccessModalProps = {
@@ -80,13 +84,15 @@ export function PurchaseSuccessModal({
     return null;
 
   const remainingCoins = Math.max(0, userCoins - item.price);
-  const isTheme = item.type === 'THEME';
-  const isFrame = item.type === 'AVATAR_FRAME';
+  const isFrame = isEquippable(item.type);
   const isBooster = item.type === 'XP_BOOSTER';
+  const isFreeze = item.type === 'STREAK_FREEZE';
 
   const effect = isBooster
     ? t('shopUi.boosterPurchaseEffect', { multiplier: item.config?.multiplier ?? 2, minutes: item.config?.durationMinutes ?? 30 })
-    : null;
+    : isFreeze
+      ? translate('shop.freeze.effect')
+      : null;
 
   // One primary next step (use the item), one quiet secondary.
   const closeThen = (next: () => void) => () => {
@@ -94,8 +100,8 @@ export function PurchaseSuccessModal({
     next();
   };
   const goInventory = closeThen(() => router.push('/profile/inventory' as any));
-  const primary = (isTheme || isFrame) && onEquipNow
-    ? { label: isTheme ? t('shopUi.actionApply') : t('shopUi.actionEquip'), onPress: closeThen(() => onEquipNow(item)) }
+  const primary = isFrame && onEquipNow
+    ? { label: t('shopUi.actionEquip'), onPress: closeThen(() => onEquipNow(item)) }
     : isBooster && !hasActiveBooster && onActivateNow && (result?.quantity ?? 0) > 0
       ? { label: t('shopUi.actionActivate'), onPress: closeThen(() => onActivateNow(item)) }
       : { label: t('shopUi.goToInventory'), onPress: goInventory };
@@ -165,6 +171,7 @@ export function PurchaseSuccessModal({
                 {' '}
                 {result?.replayed ? t('shopUi.purchaseReplayTail') : t('shopUi.purchaseSuccessTail')}
                 {isBooster && result ? ` ${t('shopUi.boosterQuantity', { count: result.quantity })}` : ''}
+                {isFreeze && result ? ` ${translate('shop.freeze.held', { quantity: result.quantity })}` : ''}
                 {result ? ` ${t('shopUi.walletBalance', { count: result.coinBalance })}.` : ''}
               </Text>
 
@@ -199,15 +206,14 @@ export function PurchaseSuccessModal({
                   }}
                   className="mb-2.5 items-center justify-center bg-amber-50 shadow-sm"
                 >
-                  {isFrame ? (
+                  {item.type === 'CARD_FRAME' ? (
+                    <CardFrameThumb frameUrl={item.config?.frameUrl} height={84} />
+                  ) : isFrame ? (
                     <AvatarFrame
-                      frameId={item.code}
                       frameUrl={item.config?.frameUrl}
                       avatarUri={currentUser?.avatarUrl}
                       avatarSource={require('../../assets/images/snapy-happy.png')}
                       size="sm"
-                      animated
-                      showGlow={false}
                     />
                   ) : item.iconUrl ? (
                     <Image
@@ -217,11 +223,7 @@ export function PurchaseSuccessModal({
                     />
                   ) : (
                     <Image
-                      source={
-                        isTheme
-                          ? require('../../assets/images/shop/icon8_clean.png')
-                          : require('../../assets/images/shop/icon1_clean.png')
-                      }
+                      source={require('../../assets/images/shop/icon1_clean.png')}
                       style={{ width: 72, height: 72 }}
                       resizeMode="contain"
                     />
@@ -239,11 +241,6 @@ export function PurchaseSuccessModal({
                     {item.description}
                   </Text>
                 ) : null}
-                {isTheme && (
-                  <Text style={{ color: s.text }} className="mt-1.5 px-2 text-center font-inter text-[13px] font-semibold">
-                    {t('shopUi.themeScope')}
-                  </Text>
-                )}
                 {effect && (
                   <Text className="mt-1.5 px-2 text-center font-inter text-[13px] leading-relaxed font-semibold text-amber-700">
                     {effect}

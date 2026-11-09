@@ -6,9 +6,9 @@ import type { TxKeyPath } from '@/lib/i18n';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import * as React from 'react';
 import { useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, Alert, Pressable, ScrollView, Text, View } from 'react-native';
+import { Alert, Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { ScreenHeader } from '@/components/ui';
+import { BouncingDots, ScreenHeader } from '@/components/ui';
 import {
   AlertTriangleIcon,
   ArrowRightIcon,
@@ -18,6 +18,7 @@ import {
   LayersIcon,
   LayoutGridIcon,
 } from '@/components/ui/icons';
+import { useColorMode } from '@/components/ui/surface';
 import { translate } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 import {
@@ -71,6 +72,7 @@ export const QUIZ_MODES = [
 export const PRESET_COUNTS: (5 | 10 | 20)[] = [5, 10, 20];
 
 export function QuizSetupScreen() {
+  const isDark = useColorMode() === 'dark';
   const router = useRouter();
   const params = useLocalSearchParams<{
     topicId?: string;
@@ -222,9 +224,13 @@ export function QuizSetupScreen() {
     setIsCheckingUnfinished(true);
     let unfinished: QuizHistorySummaryResponse | undefined;
     try {
-      // ponytail: first history page only — a match buried under 20 newer quizzes just falls
-      // through to create. Add a status filter to GET /api/me/quizzes if that ever shows up.
-      const history = await getQuizHistory({ page: 0, size: 20 });
+      // Only resumable sessions of this mode: D18 keeps at most one per context, and TTL caps the rest.
+      const history = await getQuizHistory({
+        page: 0,
+        size: 20,
+        mode: request.mode,
+        status: 'IN_PROGRESS',
+      });
       unfinished = findResumableQuiz(history?.data ?? [], request);
     }
     catch {
@@ -269,8 +275,12 @@ export function QuizSetupScreen() {
           else if (errorType === 'NOT_ENOUGH_DISTINCT_ANSWERS') {
             setErrorMessage(translate('quiz.distractors_missing'));
           }
+          else if (errorType === 'SEMANTIC_ROLE_NOT_BOUND' || errorType === 'SEMANTIC_ROLE_AMBIGUOUS') {
+            setErrorMessage(translate('quiz.template_invalid'));
+          }
           else {
-            setErrorMessage(translate('quiz.create_error'));
+            // Only a request that got no answer is a connection problem.
+            setErrorMessage(translate(err.response ? 'quiz.create_failed' : 'quiz.create_error'));
           }
         },
       },
@@ -282,7 +292,7 @@ export function QuizSetupScreen() {
   const activePercent = (selectedIdx / (PRESET_COUNTS.length - 1)) * 100;
 
   return (
-    <SafeAreaView style={{ flex: 1 }} className="flex-1 bg-[#F7F8FA] dark:bg-neutral-950" edges={['top', 'bottom']}>
+    <SafeAreaView style={{ flex: 1 }} className="flex-1 bg-background dark:bg-neutral-950" edges={['top', 'bottom']}>
 
       {/* 1. HEADER */}
       <ScreenHeader title={translate('quiz.setup_title')} onBack={navigateBackSafely} />
@@ -294,9 +304,9 @@ export function QuizSetupScreen() {
       >
         {/* ERROR BANNER */}
         {errorMessage && (
-          <View className="mb-6 flex-row items-center gap-3 rounded-2xl border border-red-200 bg-red-50 p-4">
-            <AlertTriangleIcon size={24} className="shrink-0 text-red-500" />
-            <Text className="flex-1 font-inter text-[13.5px] leading-snug font-semibold text-red-700">
+          <View className="mb-6 flex-row items-center gap-3 rounded-2xl border border-red-200 bg-red-50 p-4 dark:border-red-500/40 dark:bg-red-500/15">
+            <AlertTriangleIcon size={24} color={isDark ? '#FCA5A5' : '#EF4444'} className="shrink-0" />
+            <Text className="flex-1 font-inter text-[13.5px] leading-snug font-semibold text-red-700 dark:text-red-300">
               {errorMessage}
             </Text>
           </View>
@@ -310,12 +320,12 @@ export function QuizSetupScreen() {
           </Text>
 
           {isTopicsError && (
-            <View className="mb-3 flex-row items-center justify-between gap-3 rounded-2xl border border-red-200 bg-red-50 p-3.5">
-              <Text className="flex-1 font-inter text-[13px] font-semibold text-red-700">
+            <View className="mb-3 flex-row items-center justify-between gap-3 rounded-2xl border border-red-200 bg-red-50 p-3.5 dark:border-red-500/40 dark:bg-red-500/15">
+              <Text className="flex-1 font-inter text-[13px] font-semibold text-red-700 dark:text-red-300">
                 {translate('quiz.topics_load_error')}
               </Text>
               <Pressable onPress={() => void refetchTopics()} className="min-h-10 justify-center px-2 active:opacity-60">
-                <Text className="font-nunito text-[13px] font-extrabold text-red-700">{translate('quiz.retry')}</Text>
+                <Text className="font-nunito text-[13px] font-extrabold text-red-700 dark:text-red-300">{translate('quiz.retry')}</Text>
               </Pressable>
             </View>
           )}
@@ -323,10 +333,10 @@ export function QuizSetupScreen() {
           {selectedTopicId && selectedTopicName ? (
             <Pressable
               onPress={handleOpenTopicPicker}
-              className="dark:bg-primary-950/40 flex-row items-center justify-between rounded-2xl border-2 border-b-4 border-primary-500 bg-primary-50/80 p-3.5 active:translate-y-px dark:border-primary-700"
+              className="flex-row items-center justify-between rounded-2xl border-2 border-b-4 border-primary-500 bg-primary-50/80 p-3.5 active:translate-y-px dark:border-[#7FA35E] dark:bg-primary-500/15"
             >
               <View className="flex-1 flex-row items-center gap-3 pr-2">
-                <View className="size-11 items-center justify-center rounded-xl border border-primary-200 bg-white shadow-xs dark:border-primary-800 dark:bg-neutral-900">
+                <View className="size-11 items-center justify-center rounded-xl border border-primary-200 bg-surface shadow-xs dark:border-primary-800">
                   <Text className="text-[22px]">🎯</Text>
                 </View>
                 <View className="flex-1">
@@ -340,18 +350,18 @@ export function QuizSetupScreen() {
                   </Text>
                 </View>
               </View>
-              <View className="flex-row items-center gap-1 rounded-xl border border-primary-200 bg-white/90 px-2.5 py-1.5 shadow-xs dark:border-primary-800 dark:bg-neutral-900">
+              <View className="flex-row items-center gap-1 rounded-xl border border-primary-200 bg-surface/90 px-2.5 py-1.5 shadow-xs dark:border-primary-800">
                 <Text className="font-nunito text-[12px] font-extrabold text-primary-700 dark:text-primary-200">{translate('quiz.change')}</Text>
-                <ChevronRightIcon size={14} className="text-primary-600" />
+                <ChevronRightIcon size={14} className="text-primary-600 dark:text-primary-300" />
               </View>
             </Pressable>
           ) : (
             <Pressable
               onPress={handleOpenTopicPicker}
-              className="flex-row items-center justify-between rounded-2xl border-2 border-dashed border-neutral-300 bg-white p-4 active:bg-neutral-50 dark:border-neutral-700 dark:bg-neutral-900 dark:active:bg-neutral-800"
+              className="flex-row items-center justify-between rounded-2xl border-2 border-dashed border-edge bg-surface p-4 active:bg-pressed"
             >
               <View className="flex-1 flex-row items-center gap-3 pr-2">
-                <View className="size-11 items-center justify-center rounded-xl border border-dashed border-neutral-300 bg-neutral-50 dark:border-neutral-700 dark:bg-neutral-800">
+                <View className="size-11 items-center justify-center rounded-xl border border-dashed border-edge bg-neutral-50 dark:bg-neutral-800">
                   <Text className="text-[22px]">📚</Text>
                 </View>
                 <View className="flex-1">
@@ -365,7 +375,7 @@ export function QuizSetupScreen() {
               </View>
               <View className="flex-row items-center gap-1 rounded-xl bg-neutral-100 px-2.5 py-1.5 dark:bg-neutral-800">
                 <Text className="font-nunito text-[12px] font-bold text-neutral-600 dark:text-neutral-200">{translate('quiz.choose')}</Text>
-                <ChevronRightIcon size={14} className="text-neutral-500" />
+                <ChevronRightIcon size={14} className="text-neutral-500 dark:text-neutral-400" />
               </View>
             </Pressable>
           )}
@@ -386,11 +396,16 @@ export function QuizSetupScreen() {
                 className={cn(
                   'flex-1 items-center rounded-2xl border-2 border-b-4 p-3.5 transition-all',
                   direction === 'EN_VI'
-                    ? 'dark:bg-primary-950/30 border-primary-500 bg-primary-50/80 active:translate-y-px active:border-b-[3px] dark:border-primary-700'
-                    : 'border-neutral-100 bg-white active:translate-y-[2px] active:border-b-2 active:bg-neutral-50 dark:border-neutral-700 dark:bg-neutral-900 dark:active:bg-neutral-800',
+                    ? 'border-primary-500 bg-primary-50/80 active:translate-y-px active:border-b-[3px] dark:border-[#7FA35E] dark:bg-primary-500/15'
+                    : 'border-line bg-surface active:translate-y-[2px] active:border-b-2 active:bg-pressed',
                 )}
               >
-                <Text className="mb-1.5 text-[20px]">🇬🇧 ➔ 🇻🇳</Text>
+                {/* One Text per flag: some fonts drop a flag that follows an arrow glyph in the same run. */}
+                <View className="mb-1.5 flex-row items-center gap-1.5">
+                  <Text className="text-[20px]">🇬🇧</Text>
+                  <ArrowRightIcon size={16} className="text-neutral-500 dark:text-neutral-300" />
+                  <Text className="text-[20px]">🇻🇳</Text>
+                </View>
                 <Text
                   className={cn(
                     'mb-0.5 text-center font-nunito text-[14px] font-extrabold',
@@ -402,7 +417,7 @@ export function QuizSetupScreen() {
                 <Text
                   className={cn(
                     'text-center font-inter text-[11px] font-medium',
-                    direction === 'EN_VI' ? 'text-primary-700 dark:text-primary-300' : 'text-neutral-400 dark:text-neutral-500',
+                    direction === 'EN_VI' ? 'text-primary-700 dark:text-primary-300' : 'text-neutral-400 dark:text-neutral-400',
                   )}
                 >
                   {translate('quiz.word_to_meaning')}
@@ -415,11 +430,15 @@ export function QuizSetupScreen() {
                 className={cn(
                   'flex-1 items-center rounded-2xl border-2 border-b-4 p-3.5 transition-all',
                   direction === 'VI_EN'
-                    ? 'dark:bg-primary-950/30 border-primary-500 bg-primary-50/80 active:translate-y-px active:border-b-[3px] dark:border-primary-700'
-                    : 'border-neutral-100 bg-white active:translate-y-[2px] active:border-b-2 active:bg-neutral-50 dark:border-neutral-700 dark:bg-neutral-900 dark:active:bg-neutral-800',
+                    ? 'border-primary-500 bg-primary-50/80 active:translate-y-px active:border-b-[3px] dark:border-[#7FA35E] dark:bg-primary-500/15'
+                    : 'border-line bg-surface active:translate-y-[2px] active:border-b-2 active:bg-pressed',
                 )}
               >
-                <Text className="mb-1.5 text-[20px]">🇻🇳 ➔ 🇬🇧</Text>
+                <View className="mb-1.5 flex-row items-center gap-1.5">
+                  <Text className="text-[20px]">🇻🇳</Text>
+                  <ArrowRightIcon size={16} className="text-neutral-500 dark:text-neutral-300" />
+                  <Text className="text-[20px]">🇬🇧</Text>
+                </View>
                 <Text
                   className={cn(
                     'mb-0.5 text-center font-nunito text-[14px] font-extrabold',
@@ -431,7 +450,7 @@ export function QuizSetupScreen() {
                 <Text
                   className={cn(
                     'text-center font-inter text-[11px] font-medium',
-                    direction === 'VI_EN' ? 'text-primary-700 dark:text-primary-300' : 'text-neutral-400 dark:text-neutral-500',
+                    direction === 'VI_EN' ? 'text-primary-700 dark:text-primary-300' : 'text-neutral-400 dark:text-neutral-400',
                   )}
                 >
                   {translate('quiz.meaning_to_word')}
@@ -458,30 +477,31 @@ export function QuizSetupScreen() {
                   className={cn(
                     'flex-row items-center justify-between rounded-2xl border-2 border-b-4 p-4 transition-all',
                     isSelected
-                      ? 'dark:bg-primary-950/30 border-primary-500 bg-primary-50/80 active:translate-y-px active:border-b-[3px] dark:border-primary-700'
-                      : 'border-neutral-100 bg-white active:translate-y-[2px] active:border-b-2 active:bg-neutral-50 dark:border-neutral-700 dark:bg-neutral-900 dark:active:bg-neutral-800',
+                      ? 'border-primary-500 bg-primary-50/80 active:translate-y-px active:border-b-[3px] dark:border-[#7FA35E] dark:bg-primary-500/15'
+                      : 'border-line bg-surface active:translate-y-[2px] active:border-b-2 active:bg-pressed',
                   )}
                 >
                   <View className="flex-1 flex-row items-center gap-3.5 pr-2">
                     <View
                       className={cn(
                         'size-12 items-center justify-center rounded-xl border',
-                        isSelected ? 'border-primary-600 bg-primary-500' : 'border-neutral-200 bg-neutral-100 dark:border-neutral-700 dark:bg-neutral-800',
+                        isSelected ? 'border-brand-edge bg-brand' : 'border-line bg-surface-raised',
                       )}
                     >
-                      <Icon size={22} className={isSelected ? 'text-white' : 'text-neutral-500 dark:text-neutral-300'} />
+                      <Icon size={22} className={isSelected ? 'text-on-brand' : 'text-neutral-500 dark:text-neutral-300'} />
                     </View>
                     <View className="flex-1">
-                      <View className="mb-0.5 flex-row items-center gap-2">
+                      {/* Wraps the badge under a long mode name (English) instead of pushing it off the card. */}
+                      <View className="mb-0.5 flex-row flex-wrap items-center gap-x-2 gap-y-1">
                         <Text
                           className={cn(
-                            'font-nunito text-[15px] font-extrabold',
+                            'shrink font-nunito text-[15px] font-extrabold',
                             isSelected ? 'text-primary-800 dark:text-primary-200' : 'text-mascot-navy dark:text-white',
                           )}
                         >
                           {translate(mode.label)}
                         </Text>
-                        <View className="dark:bg-primary-950 rounded-sm border border-primary-200 bg-primary-100 px-1.5 py-0.5 text-[10px] dark:border-primary-800">
+                        <View className="rounded-sm border border-primary-200 bg-primary-100 px-1.5 py-0.5 text-[10px] dark:border-primary-800 dark:bg-primary-500/15">
                           <Text className="font-inter text-[10px] font-bold text-primary-700 dark:text-primary-200">
                             {translate(mode.badge)}
                           </Text>
@@ -490,7 +510,7 @@ export function QuizSetupScreen() {
                       <Text
                         className={cn(
                           'font-inter text-[12px] font-medium',
-                          isSelected ? 'text-primary-700 dark:text-primary-300' : 'text-neutral-400 dark:text-neutral-500',
+                          isSelected ? 'text-primary-700 dark:text-primary-300' : 'text-neutral-400 dark:text-neutral-400',
                         )}
                       >
                         {translate(mode.desc)}
@@ -501,10 +521,10 @@ export function QuizSetupScreen() {
                   <View
                     className={cn(
                       'size-6 shrink-0 items-center justify-center rounded-full border-2',
-                      isSelected ? 'border-primary-500 bg-primary-500' : 'border-neutral-200 dark:border-neutral-700',
+                      isSelected ? 'border-brand bg-brand' : 'border-edge',
                     )}
                   >
-                    {isSelected && <CheckCircleIcon size={14} className="text-white" />}
+                    {isSelected && <CheckCircleIcon size={14} className="text-on-brand" />}
                   </View>
                 </Pressable>
               );
@@ -516,7 +536,7 @@ export function QuizSetupScreen() {
         <View className="mb-4">
           <Text className="mb-4 font-nunito text-[18px] font-extrabold text-mascot-navy dark:text-white">{translate('quiz.question_count')}</Text>
 
-          <View className="items-center rounded-3xl border-2 border-neutral-100 bg-white p-6 shadow-sm shadow-black/5 dark:border-neutral-700 dark:bg-neutral-900">
+          <View className="items-center rounded-3xl border-2 border-line bg-surface p-6 shadow-sm shadow-black/5">
             <Text className="mb-6 text-center font-nunito text-[38px] font-extrabold text-mascot-navy dark:text-white">
               {questionCount}
               {' '}
@@ -551,7 +571,7 @@ export function QuizSetupScreen() {
                     <Text
                       className={cn(
                         'mt-3 font-inter text-[14px] font-bold',
-                        isSelected ? 'font-extrabold text-primary-600 dark:text-primary-300' : 'text-neutral-400 dark:text-neutral-500',
+                        isSelected ? 'font-extrabold text-primary-600 dark:text-primary-300' : 'text-neutral-400 dark:text-neutral-400',
                       )}
                     >
                       {preset}
@@ -567,32 +587,35 @@ export function QuizSetupScreen() {
 
       {/* STICKY BOTTOM CTA */}
       <View
-        className="border-t border-neutral-100 bg-white p-5 shadow-lg shadow-black/5 dark:border-neutral-800 dark:bg-neutral-900"
+        className="border-t border-line bg-surface p-5 shadow-lg shadow-black/5"
       >
         <Pressable
           onPress={handleStartQuiz}
           disabled={!selectedTopicId || isBusy}
+          accessibilityRole="button"
+          accessibilityLabel={selectedTopicId ? translate('quiz.start_counted', { count: questionCount }) : translate('quiz.select_topic_to_start')}
+          accessibilityState={{ disabled: !selectedTopicId || isBusy, busy: isBusy }}
           className={cn(
             'h-14 w-full flex-row items-center justify-center gap-2 rounded-2xl border-b-4 transition-all',
             !selectedTopicId
-              ? 'border-neutral-300 bg-neutral-200'
-              : 'border-primary-700 bg-primary-500 active:translate-y-[2px] active:border-b-2 active:bg-primary-600',
+              ? 'border-edge bg-muted'
+              : 'border-brand-edge bg-brand active:translate-y-[2px] active:border-b-2 active:bg-brand-pressed',
             isBusy && 'opacity-70',
           )}
         >
           {isBusy ? (
-            <ActivityIndicator size="small" color="#FFFFFF" />
+            <BouncingDots color={isDark ? '#1B2416' : '#FFFFFF'} />
           ) : (
             <>
               <Text
                 className={cn(
                   'font-nunito text-[16px] font-extrabold tracking-wider uppercase',
-                  !selectedTopicId ? 'text-neutral-400' : 'text-white',
+                  !selectedTopicId ? 'text-neutral-400' : 'text-on-brand',
                 )}
               >
                 {selectedTopicId ? translate('quiz.start_counted', { count: questionCount }) : translate('quiz.select_topic_to_start')}
               </Text>
-              {selectedTopicId && <ArrowRightIcon size={20} className="text-white" />}
+              {selectedTopicId && <ArrowRightIcon size={20} className="text-on-brand" />}
             </>
           )}
         </Pressable>

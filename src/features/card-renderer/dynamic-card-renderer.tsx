@@ -16,6 +16,9 @@ export function DynamicCardRenderer({
   isInteractive = true,
   className = '',
   minHeight = 420,
+  frameUrl,
+  maxHeight,
+  onFrameError,
 }: DynamicCardRendererProps) {
   // 1. Resolve Front & Back sections from template & schema or use passed sections
   const { frontSections, backSections } = React.useMemo(() => {
@@ -36,6 +39,9 @@ export function DynamicCardRenderer({
         onFlip={onFlip}
         isInteractive={isInteractive}
         minHeight={minHeight}
+        frameUrl={frameUrl}
+        maxHeight={maxHeight}
+        onFrameError={onFrameError}
         frontContent={(
           <CardFace
             side="FRONT"

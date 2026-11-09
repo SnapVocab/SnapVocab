@@ -9,6 +9,8 @@ import Animated, {
   useSharedValue,
   withTiming,
 } from 'react-native-reanimated';
+import { Image } from '@/components/ui/image';
+import { CARD_FRAME_WINDOW, CARD_FRAME_WINDOW_RADIUS, cardFrameSize } from '../card-frame';
 
 type Props = {
   side?: CardSide;
@@ -18,6 +20,11 @@ type Props = {
   backContent: React.ReactNode;
   minHeight?: number;
   className?: string;
+  /** Equipped card frame: the card becomes 3:4 with its content inside the frame window (card_frame_plan.md). */
+  frameUrl?: string | null;
+  /** Height the framed card may use; without it the card is as wide as its parent. */
+  maxHeight?: number;
+  onFrameError?: () => void;
 };
 
 export function FlipCardContainer({
@@ -28,6 +35,9 @@ export function FlipCardContainer({
   backContent,
   minHeight = 420,
   className = '',
+  frameUrl,
+  maxHeight,
+  onFrameError,
 }: Props) {
   const [internalSide, setInternalSide] = React.useState<CardSide>(
     controlledSide ?? 'FRONT',
@@ -87,6 +97,57 @@ export function FlipCardContainer({
     };
   });
 
+  // A frame that fails to load is dropped for that URL: the card stays learnable without it (AC-CF-06).
+  const [failedFrameUrl, setFailedFrameUrl] = React.useState<string | null>(null);
+  const [width, setWidth] = React.useState(0);
+  if (frameUrl && failedFrameUrl !== frameUrl) {
+    const size = cardFrameSize(width, maxHeight);
+    const contentWindow = {
+      position: 'absolute' as const,
+      left: size.width * CARD_FRAME_WINDOW.x,
+      top: size.height * CARD_FRAME_WINDOW.y,
+      width: size.width * CARD_FRAME_WINDOW.width,
+      height: size.height * CARD_FRAME_WINDOW.height,
+      borderRadius: size.width * CARD_FRAME_WINDOW_RADIUS,
+    };
+    // Each face carries its own frame, so the back reads the right way round after the flip.
+    const face = (faceStyle: typeof frontAnimatedStyle, faceSide: CardSide, content: React.ReactNode) => (
+      <Animated.View
+        style={[StyleSheet.absoluteFillObject, faceStyle]}
+        pointerEvents={currentSide === faceSide ? 'box-none' : 'none'}
+      >
+        <View style={contentWindow} className="overflow-hidden bg-surface">
+          {content}
+        </View>
+        <View pointerEvents="none" style={StyleSheet.absoluteFillObject} testID={`card-frame-${faceSide.toLowerCase()}`}>
+          {/* contentFit fill is exact: card and asset are both 3:4. */}
+          <Image
+            source={{ uri: frameUrl }}
+            style={StyleSheet.absoluteFillObject}
+            contentFit="fill"
+            placeholder={null}
+            onError={() => {
+              setFailedFrameUrl(frameUrl);
+              onFrameError?.();
+            }}
+          />
+        </View>
+      </Animated.View>
+    );
+    return (
+      <GestureDetector gesture={tapGesture}>
+        <View testID="card-frame" className={`w-full ${className}`} onLayout={e => setWidth(e.nativeEvent.layout.width)}>
+          {width > 0 && (
+            <View style={{ width: size.width, height: size.height, alignSelf: 'center' }}>
+              {face(frontAnimatedStyle, 'FRONT', frontContent)}
+              {face(backAnimatedStyle, 'BACK', backContent)}
+            </View>
+          )}
+        </View>
+      </GestureDetector>
+    );
+  }
+
   return (
     <GestureDetector gesture={tapGesture}>
       <View className={`w-full ${className}`}>
@@ -94,7 +155,7 @@ export function FlipCardContainer({
           {/* Front Face */}
           <Animated.View
             style={[StyleSheet.absoluteFillObject, frontAnimatedStyle]}
-            className="overflow-hidden rounded-[28px] border border-neutral-200 bg-white shadow-xl shadow-slate-900/10 dark:border-neutral-700 dark:bg-neutral-900 dark:shadow-black/30"
+            className="overflow-hidden rounded-[28px] border border-line bg-surface shadow-xl shadow-slate-900/10 dark:shadow-black/30"
             pointerEvents={currentSide === 'FRONT' ? 'auto' : 'none'}
           >
             {frontContent}
@@ -103,7 +164,7 @@ export function FlipCardContainer({
           {/* Back Face */}
           <Animated.View
             style={[StyleSheet.absoluteFillObject, backAnimatedStyle]}
-            className="overflow-hidden rounded-[28px] border border-neutral-200 bg-white shadow-xl shadow-slate-900/10 dark:border-neutral-700 dark:bg-neutral-900 dark:shadow-black/30"
+            className="overflow-hidden rounded-[28px] border border-line bg-surface shadow-xl shadow-slate-900/10 dark:shadow-black/30"
             pointerEvents={currentSide === 'BACK' ? 'auto' : 'none'}
           >
             {backContent}

@@ -1,20 +1,17 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import * as React from 'react';
 import {
   ActivityIndicator,
   ScrollView,
-  TouchableOpacity,
   View,
 } from 'react-native';
-import { BackButton, FocusAwareStatusBar, SafeAreaView, Text } from '@/components/ui';
+import { BackButton, Button, FocusAwareStatusBar, SafeAreaView, Text } from '@/components/ui';
+import { SaveWordButton } from '@/features/my-words/save-word-button';
 import { translate } from '@/lib/i18n/utils';
 import { useWordById, useWordLookup } from './api';
 import {
   WordExamples,
   WordHeader,
-  WordLinks,
   WordMeanings,
-  WordRelations,
 } from './components';
 
 export function WordDetailScreen() {
@@ -33,22 +30,12 @@ export function WordDetailScreen() {
 
   const displayWord = wordData?.word ?? paramWord ?? '';
 
-  const handleRelatedWordPress = React.useCallback(
-    (relWord: string) => {
-      router.push({
-        pathname: '/word-detail',
-        params: { word: relWord },
-      });
-    },
-    [router],
-  );
-
   return (
-    <SafeAreaView edges={['top', 'bottom', 'left', 'right']} style={{ flex: 1 }} className="flex-1 bg-white dark:bg-neutral-900">
+    <SafeAreaView edges={['top', 'bottom', 'left', 'right']} style={{ flex: 1 }} className="flex-1 bg-background">
       <FocusAwareStatusBar />
 
       {/* Screen Header */}
-      <View className="flex-row items-center justify-between border-b border-neutral-100 bg-white px-4 py-3 dark:border-neutral-800 dark:bg-neutral-900">
+      <View className="flex-row items-center justify-between border-b border-line bg-surface px-4 py-3">
         <BackButton onPress={() => router.back()} hitSlop={12} />
 
         <Text className="font-nunito text-lg font-black text-mascot-navy dark:text-white">
@@ -65,16 +52,10 @@ export function WordDetailScreen() {
         </View>
       ) : isError || !wordData ? (
         <View className="flex-1 items-center justify-center p-6">
-          <Text className="font-inter text-sm font-medium text-neutral-400 dark:text-neutral-500">
+          <Text className="font-inter text-sm font-medium text-neutral-400 dark:text-neutral-400">
             {translate('word_detail.not_found')}
           </Text>
-          <TouchableOpacity
-            onPress={() => refetch()}
-            activeOpacity={0.7}
-            className="mt-4 rounded-2xl bg-lime-500 px-5 py-2.5 active:bg-lime-600"
-          >
-            <Text className="font-inter text-sm font-bold text-white" tx="word_detail.retry" />
-          </TouchableOpacity>
+          <Button tx="word_detail.retry" size="sm" fullWidth={false} onPress={() => refetch()} className="mt-4 px-6" />
         </View>
       ) : (
         <ScrollView
@@ -87,6 +68,20 @@ export function WordDetailScreen() {
             word={displayWord}
             pronunciations={wordData.pronunciations}
           />
+          {wordData.wordId && (
+            <View className="mt-5 gap-3">
+              <SaveWordButton wordId={wordData.wordId} saved={wordData.inMyVocabulary} />
+              <Button tx="my_words.open" variant="white" onPress={() => router.push('/my-words')} />
+            </View>
+          )}
+
+          {/* A word can exist with no meaning at all (an incomplete dictionary entry): say so, not a blank page. */}
+          {!wordData.meanings?.length && (
+            <View className="mt-6 items-center rounded-2xl border border-line bg-surface px-5 py-8">
+              <Text className="text-center font-nunito text-base font-extrabold text-mascot-navy dark:text-white" tx="word_detail.no_meanings_title" />
+              <Text className="mt-1.5 text-center font-inter text-sm text-neutral-500 dark:text-neutral-400" tx="word_detail.no_meanings_body" />
+            </View>
+          )}
 
           {/* Meanings by Part of Speech */}
           <WordMeanings meanings={wordData.meanings} />
@@ -94,14 +89,6 @@ export function WordDetailScreen() {
           {/* Example Sentences */}
           <WordExamples meanings={wordData.meanings} />
 
-          {/* Related Words (Synonyms, Antonyms, Word Family) */}
-          <WordRelations
-            relations={wordData.relations}
-            onSelectRelation={handleRelatedWordPress}
-          />
-
-          {/* External Links / References */}
-          <WordLinks meanings={wordData.meanings} />
         </ScrollView>
       )}
     </SafeAreaView>

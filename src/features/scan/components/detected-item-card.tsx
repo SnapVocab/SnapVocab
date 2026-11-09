@@ -1,6 +1,7 @@
 import type { ScanItem } from '../types';
 import { Pressable } from 'react-native';
-import { Button, Text, View } from '@/components/ui';
+import { Text, View } from '@/components/ui';
+import { SaveWordButton } from '@/features/my-words/save-word-button';
 import { primaryIpa, RELIABILITY_COLORS, RELIABILITY_KEYS, translationFor } from '../display';
 
 type Props = {
@@ -24,7 +25,7 @@ export function DetectedItemCard({ item, color, selected, onPress }: Props) {
       testID={`scan-item-${item.label}`}
       // Only override when selected: an explicit `undefined` border colour renders black.
       style={selected ? { borderColor: color } : undefined}
-      className="flex-row overflow-hidden rounded-3xl border-2 border-b-4 border-neutral-100 bg-white dark:border-neutral-800 dark:bg-neutral-900"
+      className="flex-row overflow-hidden rounded-3xl border-2 border-b-4 border-line bg-surface"
     >
       {/* Same colour as the box on the photo. */}
       <View style={{ width: 6, backgroundColor: color }} />
@@ -64,9 +65,10 @@ export function DetectedItemCard({ item, color, selected, onPress }: Props) {
             )
           : <Text className="mt-1 text-[13px] font-medium text-danger-500" tx="scan.result.not_in_dictionary" />}
 
-        {word && (
-          // Saving to a Topic needs the Topic API, which is not built yet.
-          <Button tx="scan.result.save_word" disabled fullWidth size="sm" className="mt-3" />
+        {word?.wordId && (
+          <View className="mt-3">
+            <SaveWordButton wordId={word.wordId} saved={word.inMyVocabulary} />
+          </View>
         )}
       </View>
     </Pressable>

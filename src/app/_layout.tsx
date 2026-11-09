@@ -11,7 +11,8 @@ import { KeyboardProvider } from 'react-native-keyboard-controller';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useThemeConfig } from '@/components/ui/use-theme-config';
 
-import { ShopThemeProvider } from '@/features/shop';
+import { useAuthStore } from '@/features/auth/use-auth-store';
+import { PushHost } from '@/features/notifications/push-host';
 import { APIProvider } from '@/lib/api';
 import { loadSelectedTheme } from '@/lib/hooks/use-selected-theme';
 import '../global.css';
@@ -33,7 +34,7 @@ SplashScreen.setOptions({
 });
 
 export default function RootLayout() {
-  // const status = useAuthStore(s => s.status);
+  const status = useAuthStore(s => s.status);
 
   React.useEffect(() => {
     SplashScreen.hideAsync();
@@ -42,10 +43,15 @@ export default function RootLayout() {
   return (
     <Providers>
       <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="(app)" />
-        <Stack.Screen name="(auth)" />
-        <Stack.Screen name="welcome" />
+        <Stack.Protected guard={status === 'signIn'}>
+          <Stack.Screen name="(app)" />
+        </Stack.Protected>
+        <Stack.Protected guard={status !== 'signIn'}>
+          <Stack.Screen name="welcome" />
+          <Stack.Screen name="(auth)" />
+        </Stack.Protected>
       </Stack>
+      <PushHost />
     </Providers>
   );
 }
@@ -60,22 +66,20 @@ function Providers({ children }: { children: React.ReactNode }) {
       className={theme.dark ? 'dark' : undefined}
     >
       <KeyboardProvider>
-        <ShopThemeProvider>
-          <NavigationTheme>
-            <APIProvider>
-              <BottomSheetModalProvider>
-                {children}
-                <FlashMessage position="top" statusBarHeight={insets.top} />
-              </BottomSheetModalProvider>
-            </APIProvider>
-          </NavigationTheme>
-        </ShopThemeProvider>
+        <NavigationTheme>
+          <APIProvider>
+            <BottomSheetModalProvider>
+              {children}
+              <FlashMessage position="top" statusBarHeight={insets.top} />
+            </BottomSheetModalProvider>
+          </APIProvider>
+        </NavigationTheme>
       </KeyboardProvider>
     </GestureHandlerRootView>
   );
 }
 
-/** Navigator surfaces follow the user's light/dark mode only; Shop themes are scoped to the Shop area (ShopSurface). */
+/** Navigator surfaces follow the user's light/dark mode. */
 function NavigationTheme({ children }: { children: React.ReactNode }) {
   return <ThemeProvider value={useThemeConfig()}>{children}</ThemeProvider>;
 }

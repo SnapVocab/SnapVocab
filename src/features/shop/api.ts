@@ -137,7 +137,7 @@ export async function getInventory(): Promise<InventoryDTO> {
 
 /**
  * 4. PUT /api/me/equipment/{slot}
- * Equip a THEME or AVATAR_FRAME; replaces the item currently in the slot atomically.
+ * Equip an AVATAR_FRAME or CARD_FRAME; replaces the item currently in the slot atomically.
  */
 export async function equipItem(
   slot: EquipmentSlot,

@@ -21,6 +21,7 @@
     "prebuild:preview": "cross-env EXPO_PUBLIC_APP_ENV=preview STRICT_ENV_VALIDATION=1 pnpm run prebuild",
     "prebuild:development": "cross-env EXPO_PUBLIC_APP_ENV=development STRICT_ENV_VALIDATION=1 pnpm run prebuild",
     "android:preview": "cross-env EXPO_PUBLIC_APP_ENV=preview pnpm run android",
+    "android:development": "pnpm prebuild:development --platform android --no-install && cross-env EXPO_PUBLIC_APP_ENV=development expo run:android --port 3000",
     "ios:preview": "cross-env EXPO_PUBLIC_APP_ENV=preview pnpm run ios",
     "start:production": "cross-env EXPO_PUBLIC_APP_ENV=production pnpm run start",
     "prebuild:production": "cross-env EXPO_PUBLIC_APP_ENV=production STRICT_ENV_VALIDATION=1 pnpm run prebuild",
@@ -44,7 +45,8 @@
     "test:ci": "pnpm run test --coverage",
     "test:watch": "pnpm run test --watch",
     "install-maestro": "curl -Ls 'https://get.maestro.mobile.dev' | bash",
-    "e2e-test": "maestro test .maestro/ -e APP_ID=com.obytes.development"
+    "e2e-test": "maestro test .maestro/ -e APP_ID=com.obytes.development",
+    "build:apk:dev": "node scripts/build-development-apk.cjs"
   },
   "dependencies": {
     "@expo-google-fonts/inter": "^0.4.2",
@@ -57,18 +59,21 @@
     "app-icon-badge": "^0.1.2",
     "axios": "^1.13.2",
     "expo": "~54.0.37",
-    "expo-asset": "~12.0.13",
+    "expo-asset": "~12.0.14",
     "expo-audio": "~1.1.1",
     "expo-camera": "~17.0.10",
     "expo-constants": "~18.0.14",
     "expo-crypto": "^15.0.9",
     "expo-dev-client": "~6.0.21",
+    "expo-device": "~8.0.10",
     "expo-font": "~14.0.12",
+    "expo-haptics": "~15.0.8",
     "expo-image": "~3.0.11",
     "expo-image-picker": "^17.0.11",
     "expo-linear-gradient": "^15.0.8",
     "expo-linking": "~8.0.12",
     "expo-localization": "~17.0.9",
+    "expo-notifications": "~0.32.17",
     "expo-router": "~6.0.24",
     "expo-splash-screen": "~31.0.13",
     "expo-status-bar": "~3.0.9",
@@ -150,7 +155,8 @@
       "reactNativeDirectoryCheck": {
         "listUnknownPackages": false,
         "exclude": [
-          "react-native-restart"
+          "react-native-restart",
+          "react-native-edge-to-edge"
         ]
       }
     },

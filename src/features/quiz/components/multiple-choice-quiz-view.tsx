@@ -244,11 +244,11 @@ export function MultipleChoiceQuizView({ quiz, onExit, onResync }: MultipleChoic
   });
 
   return (
-    <SafeAreaView className="flex-1 bg-[#F7F8FA]" edges={['top', 'bottom']}>
+    <SafeAreaView style={{ flex: 1 }} className="flex-1 bg-background" edges={['top', 'bottom']}>
 
       {/* 1. TOP PROGRESS BAR & LIVE STOPWATCH */}
       <RNAnimated.View style={{ opacity: contentOpacity }}>
-        <View className="z-10 flex-row items-center justify-between border-b border-neutral-100 bg-[#F7F8FA] px-4 py-3">
+        <View className="z-10 flex-row items-center justify-between border-b border-line bg-background px-4 py-3">
           <TouchableOpacity
             onPress={() => setShowExitModal(true)}
             accessibilityRole="button"
@@ -257,11 +257,11 @@ export function MultipleChoiceQuizView({ quiz, onExit, onResync }: MultipleChoic
             activeOpacity={0.7}
             className="-ml-2 size-10 items-center justify-center rounded-full"
           >
-            <CloseIcon size={24} className="text-neutral-500" />
+            <CloseIcon size={24} className="text-neutral-500 dark:text-neutral-400" />
           </TouchableOpacity>
 
           <View className="mx-3 flex-1">
-            <View className="h-3 w-full overflow-hidden rounded-full bg-neutral-200">
+            <View className="h-3 w-full overflow-hidden rounded-full bg-line">
               <View
                 className="h-full rounded-full bg-primary-500"
                 style={{
@@ -276,14 +276,14 @@ export function MultipleChoiceQuizView({ quiz, onExit, onResync }: MultipleChoic
           </View>
 
           {/* Live Stopwatch Badge */}
-          <View className="mr-2 flex-row items-center gap-1.5 rounded-full border border-neutral-200 bg-white px-2.5 py-1 shadow-sm">
-            <ClockIcon size={13} className="text-primary-600" />
-            <Text className="font-inter text-[12px] font-bold text-neutral-600 tabular-nums">
+          <View className="mr-2 flex-row items-center gap-1.5 rounded-full border border-line bg-surface px-2.5 py-1 shadow-sm">
+            <ClockIcon size={13} className="text-primary-600 dark:text-primary-300" />
+            <Text className="font-inter text-[12px] font-bold text-neutral-600 tabular-nums dark:text-neutral-300">
               {formatTimer(elapsedSeconds)}
             </Text>
           </View>
 
-          <Text className="text-right font-nunito text-[15px] font-extrabold text-neutral-500 tabular-nums">
+          <Text className="text-right font-nunito text-[15px] font-extrabold text-neutral-500 tabular-nums dark:text-neutral-400">
             {currentIndex + 1}
             /
             {questions.length}
@@ -293,6 +293,7 @@ export function MultipleChoiceQuizView({ quiz, onExit, onResync }: MultipleChoic
 
       {/* 2. QUESTION & OPTIONS AREA */}
       <ScrollView
+        style={{ flex: 1 }}
         className="flex-1"
         contentContainerStyle={{ flexGrow: 1, paddingHorizontal: 20, paddingTop: 8, paddingBottom: 24 }}
         showsVerticalScrollIndicator={false}
@@ -324,16 +325,16 @@ export function MultipleChoiceQuizView({ quiz, onExit, onResync }: MultipleChoic
               <Text className="font-inter text-[13px] font-bold tracking-wide text-neutral-400 uppercase">
                 {quiz.direction === 'VI_EN' ? translate('quiz.choose_english_word') : translate('quiz.choose_vietnamese_meaning')}
               </Text>
-              <View className="rounded-md bg-neutral-100 px-2 py-0.5">
-                <Text className="font-inter text-[10px] font-bold text-neutral-500">
+              <View className="rounded-md bg-muted px-2 py-0.5">
+                <Text className="font-inter text-[10px] font-bold text-neutral-500 dark:text-neutral-400">
                   {quiz.direction === 'VI_EN' ? '🇻🇳 ➔ 🇬🇧' : '🇬🇧 ➔ 🇻🇳'}
                 </Text>
               </View>
             </View>
 
-            <View className="mb-1.5 flex-row items-center justify-between rounded-2xl border-2 border-neutral-100 bg-white p-4">
+            <View className="mb-1.5 flex-row items-center justify-between rounded-2xl border-2 border-line bg-surface p-4">
               <View className="flex-1 pr-2">
-                <Text className="font-nunito text-[28px] leading-tight font-extrabold text-mascot-navy">
+                <Text className="font-nunito text-[28px] leading-tight font-extrabold text-mascot-navy dark:text-neutral-50">
                   {currentQ?.prompt}
                 </Text>
               </View>
@@ -346,11 +347,11 @@ export function MultipleChoiceQuizView({ quiz, onExit, onResync }: MultipleChoic
                 className={cn(
                   'size-12 items-center justify-center rounded-2xl border',
                   isSpeaking
-                    ? 'scale-105 border-primary-300 bg-primary-100'
-                    : 'border-info-200 bg-info-50',
+                    ? 'scale-105 border-primary-300 bg-primary-100 dark:border-primary-500/40 dark:bg-primary-500/15'
+                    : 'border-info-200 bg-info-50 dark:border-info-500/40 dark:bg-info-500/15',
                 )}
               >
-                <VolumeIcon size={24} className={isSpeaking ? 'text-primary-600' : 'text-info-500'} />
+                <VolumeIcon size={24} className={isSpeaking ? 'text-primary-600 dark:text-primary-300' : 'text-info-500'} />
               </TouchableOpacity>
             </View>
           </RNAnimated.View>
@@ -362,27 +363,27 @@ export function MultipleChoiceQuizView({ quiz, onExit, onResync }: MultipleChoic
               const isSubmitted = checkState !== 'IDLE';
               const isCorrectOption = opt.key === correctOptionKey;
 
-              let containerStyle = 'bg-white border-neutral-200 border-b-[4px]';
-              let textStyle = 'text-mascot-navy';
+              let containerStyle = 'bg-surface border-line border-b-[4px]';
+              let textStyle = 'text-mascot-navy dark:text-neutral-50';
 
               if (isSubmitted) {
-                containerStyle = 'bg-white border-neutral-200 border-b-[3px] opacity-40';
+                containerStyle = 'bg-surface border-line border-b-[3px] opacity-40';
                 if (isSelected && checkState === 'CORRECT') {
-                  containerStyle = 'bg-success-50 border-success-500 border-b-[4px] opacity-100';
-                  textStyle = 'text-success-800';
+                  containerStyle = 'bg-success-50 dark:bg-success-500/15 border-success-500 border-b-[4px] opacity-100';
+                  textStyle = 'text-success-800 dark:text-success-300';
                 }
                 else if (isSelected && checkState === 'INCORRECT') {
-                  containerStyle = 'bg-error-50 border-error-500 border-b-[4px] opacity-100';
-                  textStyle = 'text-error-800';
+                  containerStyle = 'bg-error-50 dark:bg-error-500/15 border-error-500 border-b-[4px] opacity-100';
+                  textStyle = 'text-error-800 dark:text-error-300';
                 }
                 else if (isCorrectOption && checkState === 'INCORRECT') {
-                  containerStyle = 'bg-success-50 border-success-500 border-b-[4px] opacity-100';
-                  textStyle = 'text-success-800';
+                  containerStyle = 'bg-success-50 dark:bg-success-500/15 border-success-500 border-b-[4px] opacity-100';
+                  textStyle = 'text-success-800 dark:text-success-300';
                 }
               }
               else if (isSelected) {
-                containerStyle = 'bg-primary-50 border-primary-500 border-b-[4px]';
-                textStyle = 'text-primary-800';
+                containerStyle = 'bg-primary-50 dark:bg-primary-500/15 border-primary-500 border-b-[4px]';
+                textStyle = 'text-primary-800 dark:text-primary-300';
               }
 
               const animVal = optionsAnims[idx] || new RNAnimated.Value(1);
@@ -419,7 +420,7 @@ export function MultipleChoiceQuizView({ quiz, onExit, onResync }: MultipleChoic
                               ? 'border-error-500 bg-error-500'
                               : isSubmitted && isCorrectOption
                                 ? 'border-success-500 bg-success-500'
-                                : 'border-neutral-200 bg-neutral-50',
+                                : 'border-line bg-surface-raised',
                       )}
                     >
                       {isSelected && !isSubmitted && (
@@ -455,9 +456,9 @@ export function MultipleChoiceQuizView({ quiz, onExit, onResync }: MultipleChoic
 
       {/* 4. STATIC CHECK BUTTON (IDLE) */}
       {checkState === 'IDLE' && (
-        <View className="border-t border-neutral-100 bg-white p-4">
+        <View className="border-t border-line bg-surface p-4">
           {answerNotice && (
-            <Text accessibilityLiveRegion="polite" className="mb-3 text-center font-inter text-[13px] font-semibold text-neutral-600">
+            <Text accessibilityLiveRegion="polite" className="mb-3 text-center font-inter text-[13px] font-semibold text-neutral-600 dark:text-neutral-300">
               {answerNotice === 'UNCONFIRMED'
                 ? translate('quiz.answer_unconfirmed')
                 : translate('quiz.answer_send_error')}
@@ -469,8 +470,8 @@ export function MultipleChoiceQuizView({ quiz, onExit, onResync }: MultipleChoic
             className={cn(
               'h-13 w-full flex-row items-center justify-center gap-2 rounded-2xl border-b-4',
               selectedOptKey && !checkMutation.isPending
-                ? 'border-primary-700 bg-primary-500 active:translate-y-px active:border-b-2'
-                : 'border-neutral-200 bg-neutral-200',
+                ? 'border-brand-edge bg-brand active:translate-y-px active:border-b-2'
+                : 'border-edge bg-muted',
             )}
           >
             {checkMutation.isPending ? (
@@ -480,14 +481,14 @@ export function MultipleChoiceQuizView({ quiz, onExit, onResync }: MultipleChoic
                 <Text
                   className={cn(
                     'font-nunito text-[16px] font-extrabold uppercase',
-                    selectedOptKey ? 'text-white' : 'text-neutral-400',
+                    selectedOptKey ? 'text-on-brand' : 'text-neutral-400',
                   )}
                 >
                   {answerLocked ? translate('quiz.resend') : translate('quiz.check')}
                 </Text>
                 <ArrowRightIcon
                   size={18}
-                  className={selectedOptKey ? 'text-white' : 'text-neutral-400'}
+                  className={selectedOptKey ? 'text-on-brand' : 'text-neutral-400'}
                 />
               </>
             )}
@@ -501,7 +502,7 @@ export function MultipleChoiceQuizView({ quiz, onExit, onResync }: MultipleChoic
           style={{ transform: [{ translateY }] }}
           className={cn(
             'border-t-2 p-5',
-            checkState === 'CORRECT' ? 'border-success-500 bg-success-50' : 'border-error-500 bg-error-50',
+            checkState === 'CORRECT' ? 'border-success-500 bg-success-50 dark:bg-success-500/15' : 'border-error-500 bg-error-50 dark:bg-error-500/15',
           )}
         >
           <View className="mb-4 flex-row items-center gap-3">
@@ -522,17 +523,17 @@ export function MultipleChoiceQuizView({ quiz, onExit, onResync }: MultipleChoic
               <Text
                 className={cn(
                   'font-nunito text-[18px] font-extrabold',
-                  checkState === 'CORRECT' ? 'text-success-800' : 'text-error-800',
+                  checkState === 'CORRECT' ? 'text-success-800 dark:text-success-300' : 'text-error-800 dark:text-error-300',
                 )}
               >
                 {checkState === 'CORRECT' ? translate('quiz.correct_celebration') : translate('quiz.incorrect_encouragement')}
               </Text>
 
               {checkState === 'INCORRECT' && correctAnswerText && (
-                <Text className="mt-0.5 font-inter text-[13px] font-medium text-error-700">
+                <Text className="mt-0.5 font-inter text-[13px] font-medium text-error-700 dark:text-error-300">
                   {translate('quiz.correct_answer')}
                   {' '}
-                  <Text className="font-bold text-error-900">{correctAnswerText}</Text>
+                  <Text className="font-bold text-error-900 dark:text-error-300">{correctAnswerText}</Text>
                 </Text>
               )}
             </View>

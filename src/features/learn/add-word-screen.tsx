@@ -12,7 +12,7 @@ import {
   Text,
 } from '@/components/ui';
 import { AlertTriangleIcon } from '@/components/ui/icons';
-import { useTopicSchema } from '@/features/template-builder/api';
+import { useSchema, useTopicSchema } from '@/features/template-builder/api';
 import { useTts } from '@/lib/hooks/use-tts';
 import { translate } from '@/lib/i18n';
 import { useAddTopicItem, useTopicItem, useUpdateTopicItem } from './api';
@@ -24,14 +24,20 @@ import {
   useAddWordForm,
   validateAddWordForm,
 } from './components/add-word';
+import { withTemplateRoles } from './components/add-word/lookup-prefill';
 
 export function AddWordScreen() {
   const router = useRouter();
-  const { topicId, topicName = '', itemId } = useLocalSearchParams<{
+  const { topicId, topicName = '', itemId, word, wordId, activeTemplateId, scanRequestId } = useLocalSearchParams<{
     topicId?: string;
     topicName?: string;
     collectionId?: string;
     itemId?: string;
+    /** From a scan result: prefilled and looked up once the schema loads. */
+    word?: string;
+    wordId?: string;
+    activeTemplateId?: string;
+    scanRequestId?: string;
   }>();
 
   const numTopicId = topicId ? Number(topicId) : undefined;
@@ -39,11 +45,21 @@ export function AddWordScreen() {
   const isEditing = numItemId !== undefined;
 
   const {
-    data: topicSchema,
+    data: rawTopicSchema,
     isLoading: isSchemaLoading,
     isError: isSchemaError,
     refetch: refetchSchema,
   } = useTopicSchema(numTopicId);
+  const schemaQuery = useSchema(rawTopicSchema?.schemaId);
+  const topicSchema = React.useMemo(() => {
+    if (!rawTopicSchema)
+      return undefined;
+    const templates = schemaQuery.data?.templates ?? [];
+    const template = activeTemplateId
+      ? templates.find(item => item.id === Number(activeTemplateId))
+      : templates.find(item => item.isDefault);
+    return withTemplateRoles(rawTopicSchema, template);
+  }, [rawTopicSchema, schemaQuery.data, activeTemplateId]);
 
   const {
     data: topicItem,
@@ -54,9 +70,14 @@ export function AddWordScreen() {
   const { mutate: addTopicItem, isPending: isAdding } = useAddTopicItem();
   const { mutate: updateTopicItem, isPending: isUpdating } = useUpdateTopicItem();
   const isSubmitting = isAdding || isUpdating;
+  // Only the topic's schema determines whether the form can be used.
+  // Template metadata is optional enrichment for dictionary prefilling.
   const isFormLoading = isSchemaLoading || (isEditing && isItemLoading);
   const isFormError = isSchemaError || (isEditing && isItemError);
   const { speak } = useTts();
+  const isResolvingPrefill = !!rawTopicSchema?.schemaId && schemaQuery.isPending;
+  const canPrefill = !!topicSchema?.groups.some(group => group.attributes.some(attribute =>
+    attribute.dataType === 'TEXT' && ['TARGET_WORD', 'PHONETIC', 'DEFINITION', 'NATIVE_TRANSLATION', 'EXAMPLE_SENTENCE'].includes(attribute.semanticRole ?? '')));
 
   const {
     formData,
@@ -70,13 +91,21 @@ export function AddWordScreen() {
     handleQuickLookup,
   } = useAddWordForm(topicSchema, topicItem?.groups, numItemId);
 
+  const prefilled = React.useRef(false);
+  React.useEffect(() => {
+    if (!word || prefilled.current || !canPrefill || isResolvingPrefill)
+      return;
+    prefilled.current = true;
+    void handleQuickLookup(word, wordId ? Number(wordId) : undefined);
+  }, [word, wordId, canPrefill, isResolvingPrefill, handleQuickLookup]);
+
   const handleSubmit = () => {
     if (!numTopicId) {
       showErrorMessage(translate('learn.add_word.missing_topic_id'));
       return;
     }
 
-    if (!topicSchema?.groups) {
+    if (!topicSchema?.groups.length) {
       showErrorMessage(translate('learn.add_word.schema_not_ready'));
       return;
     }
@@ -113,7 +142,7 @@ export function AddWordScreen() {
       updateTopicItem({ topicId: numTopicId, itemId: numItemId, data: payload }, mutationCallbacks);
     }
     else {
-      addTopicItem({ topicId: numTopicId, data: payload }, mutationCallbacks);
+      addTopicItem({ topicId: numTopicId, data: payload, scanRequestId }, mutationCallbacks);
     }
   };
 
@@ -122,11 +151,11 @@ export function AddWordScreen() {
   }, [topicSchema?.groups]);
 
   return (
-    <SafeAreaView style={{ flex: 1 }} className="flex-1 bg-white dark:bg-neutral-900">
+    <SafeAreaView style={{ flex: 1 }} className="flex-1 bg-background">
       <FocusAwareStatusBar />
 
       {/* Header */}
-      <View className="flex-row items-center justify-between border-b border-neutral-100 px-4 pt-1 pb-3 dark:border-neutral-800">
+      <View className="flex-row items-center justify-between border-b border-line px-4 pt-1 pb-3">
         <BackButton onPress={() => router.back()} />
 
         <View className="flex-1 items-center px-2">
@@ -160,6 +189,7 @@ export function AddWordScreen() {
               refreshing={isFormLoading}
               onRefresh={() => {
                 refetchSchema();
+                void schemaQuery.refetch();
                 if (isEditing) {
                   refetchItem();
                 }
@@ -180,6 +210,7 @@ export function AddWordScreen() {
               <Pressable
                 onPress={() => {
                   refetchSchema();
+                  void schemaQuery.refetch();
                   if (isEditing) {
                     refetchItem();
                   }
@@ -195,6 +226,14 @@ export function AddWordScreen() {
 
           {!isFormLoading && !isFormError && (
             <View>
+              {word && (
+                <View className="mb-5 gap-3">
+                  <Text className="font-nunito text-2xl font-extrabold text-mascot-navy dark:text-white">{word}</Text>
+                  {!isResolvingPrefill && <Text className="text-sm text-neutral-600 dark:text-neutral-300" tx={canPrefill ? 'my_words.prefill_hint' : 'my_words.no_mapping'} />}
+                  {(canPrefill || isResolvingPrefill) && <Button tx="my_words.prefill_retry" variant="white" loading={isLookingUp || isResolvingPrefill} onPress={() => void handleQuickLookup(word, wordId ? Number(wordId) : undefined)} />}
+                </View>
+              )}
+              {sortedGroups.length === 0 && <Text className="py-6 text-center text-base text-neutral-600 dark:text-neutral-300" tx="my_words.no_schema" />}
               {sortedGroups.map((group) => {
                 if (!group.multiple) {
                   return (
@@ -235,13 +274,13 @@ export function AddWordScreen() {
         </ScrollView>
 
         {!isFormLoading && !isFormError && (
-          <View className="border-t border-neutral-100 bg-white px-4 pt-3 pb-4 dark:border-neutral-800 dark:bg-neutral-900">
+          <View className="border-t border-line bg-surface px-4 pt-3 pb-4">
             <Button
               label={translate(isEditing
                 ? 'learn.add_word.update_button'
                 : 'learn.add_word.submit_button')}
               loading={isSubmitting}
-              disabled={isSubmitting || isFormLoading}
+              disabled={isSubmitting || isFormLoading || isLookingUp || sortedGroups.length === 0}
               onPress={handleSubmit}
             />
           </View>

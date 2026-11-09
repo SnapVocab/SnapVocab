@@ -47,7 +47,7 @@ export function WelcomeScreen() {
     });
 
   return (
-    <SafeAreaView style={{ flex: 1 }} className="flex-1 bg-[#F4F6FC] dark:bg-neutral-900">
+    <SafeAreaView style={{ flex: 1 }} className="flex-1 bg-background">
       <FocusAwareStatusBar />
 
       <GestureDetector gesture={swipe}>
@@ -81,7 +81,7 @@ export function WelcomeScreen() {
             <View
               key={item.title}
               className={`h-2 rounded-full ${
-                i === index ? 'w-7 bg-primary-500' : 'w-2 bg-neutral-300 dark:bg-neutral-600'
+                i === index ? 'w-7 bg-brand' : 'w-2 bg-edge'
               }`}
             />
           ))}

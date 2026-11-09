@@ -22,7 +22,7 @@ export function LevelProgressScreen() {
   const remainingXp = nextXp ? Math.max(0, nextXp - totalXp) : 0;
 
   return (
-    <SafeAreaView edges={['top', 'left', 'right']} style={{ flex: 1 }} className="flex-1 bg-[#F7F8FA] dark:bg-neutral-950">
+    <SafeAreaView edges={['top', 'left', 'right']} style={{ flex: 1 }} className="flex-1 bg-background dark:bg-neutral-950">
       <FocusAwareStatusBar />
 
       <ScreenHeader title={translate('progressUx.levelExperienceTitle')} onBack={() => router.back()} />
@@ -65,7 +65,7 @@ export function LevelProgressScreen() {
                 <Text className="font-nunito text-3xl font-black text-info-600 dark:text-info-400">
                   {`${totalXp.toLocaleString()} XP`}
                 </Text>
-                <Text className="font-inter text-[13px] font-semibold text-neutral-500">
+                <Text className="font-inter text-[13px] font-semibold text-neutral-500 dark:text-neutral-300">
                   {translate('progressUx.totalXpEarned')}
                 </Text>
               </View>
@@ -76,7 +76,7 @@ export function LevelProgressScreen() {
                   <RatioBar progress={level?.progress ?? 0} label={translate('progressUx.levelProgressFor', { count: levelNumber })} />
 
                   <View className="mt-2 flex-row justify-between">
-                    <Text className="font-inter text-[13px] text-neutral-500">
+                    <Text className="font-inter text-[13px] text-neutral-500 dark:text-neutral-300">
                       {translate('progressUx.levelPercent', { percent: progressPercent, count: levelNumber })}
                     </Text>
                     <Text className="font-inter text-[13px] font-bold text-info-700 dark:text-info-400">
@@ -85,7 +85,7 @@ export function LevelProgressScreen() {
                   </View>
                 </View>
               ) : (
-                <Text className="mt-2 font-inter text-[13px] font-semibold text-emerald-600 dark:text-emerald-400">
+                <Text className="mt-2 text-center font-inter text-[13px] font-semibold text-emerald-600 dark:text-emerald-400">
                   {translate(level ? 'progressUx.maxLevel' : 'progressUx.levelsNotConfigured')}
                 </Text>
               )}

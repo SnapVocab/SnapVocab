@@ -1,6 +1,7 @@
 import type { ConfigContext, ExpoConfig } from '@expo/config';
 
 import type { AppIconBadgeConfig } from 'app-icon-badge/types';
+import { existsSync } from 'node:fs';
 
 import 'tsx/cjs';
 
@@ -8,8 +9,8 @@ import 'tsx/cjs';
 // eslint-disable-next-line perfectionist/sort-imports
 import Env from './env';
 
-const EXPO_ACCOUNT_OWNER = 'snapvocab';
-const EAS_PROJECT_ID = 'c3e1075b-6fe7-4686-aa49-35b46a229044';
+const EXPO_ACCOUNT_OWNER = 'thanhthbms-team';
+const EAS_PROJECT_ID = '9197f5cf-9075-4cd3-badb-840838f21df2';
 
 const appIconBadgeConfig: AppIconBadgeConfig = {
   enabled: Env.EXPO_PUBLIC_APP_ENV !== 'production',
@@ -70,7 +71,7 @@ const plugins: ExpoConfig['plugins'] = [
   [
     'expo-splash-screen',
     {
-      backgroundColor: '#FF6C00',
+      backgroundColor: '#2416ED',
       image: './assets/splash-icon.png',
       imageWidth: 150,
     },
@@ -88,6 +89,8 @@ const plugins: ExpoConfig['plugins'] = [
     },
   ],
   ['expo-camera', { cameraPermission: CAMERA_PERMISSION, recordAudioAndroid: false }],
+  // Review reminders (notification.md §3.9); FCM v1 and APNs keys live on EAS, not in the repo.
+  'expo-notifications',
 ];
 
 export default ({ config }: ConfigContext): ExpoConfig => ({
@@ -119,9 +122,15 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   android: {
     adaptiveIcon: {
       foregroundImage: './assets/adaptive-icon.png',
-      backgroundColor: '#FF6C00',
+      backgroundImage: './assets/adaptive-background.png',
+      monochromeImage: './assets/adaptive-monochrome.png',
+      backgroundColor: '#2416ED',
     },
     package: Env.EXPO_PUBLIC_PACKAGE,
+    // Firebase config for FCM push (notification.md §1.4 DEP-NOTIF-02): an EAS file env var on builds,
+    // or a local ./google-services.json (not committed). Without it the app builds, but gets no push token on Android.
+    googleServicesFile: process.env.GOOGLE_SERVICES_JSON
+      ?? (existsSync('./google-services.json') ? './google-services.json' : undefined),
     softwareKeyboardLayoutMode: 'resize',
     // expo-image-picker's requestCameraPermissionsAsync() checks this at runtime;
     // without it declared, the permission request silently always resolves denied.

@@ -1,17 +1,20 @@
 import type { TopicDTO } from '../../types';
+import type { StudyCounts } from '@/features/study/api';
 import * as React from 'react';
 import { Pressable, ScrollView, View } from 'react-native';
 import { Text } from '@/components/ui';
 import { ChevronRightIcon, FolderIcon, PlayIcon } from '@/components/ui/icons';
+import { StudyCountLabels } from '@/features/study/study-count-labels';
 import { translate } from '@/lib/i18n';
 
 type Props = {
   subtopics: TopicDTO[];
   onSelectTopic: (topic: TopicDTO) => void;
   onStudyTopic: (topic: TopicDTO) => void;
+  studyCounts?: StudyCounts[];
 };
 
-export function SubtopicSection({ subtopics, onSelectTopic, onStudyTopic }: Props) {
+export function SubtopicSection({ subtopics, onSelectTopic, onStudyTopic, studyCounts }: Props) {
   if (subtopics.length === 0) {
     return null;
   }
@@ -67,6 +70,7 @@ export function SubtopicSection({ subtopics, onSelectTopic, onStudyTopic }: Prop
               >
                 {topic.name}
               </Text>
+              <StudyCountLabels counts={studyCounts?.find(count => count.topicId === topic.id)} className="mt-2" />
 
               {topic.translation ? (
                 <Text
@@ -81,7 +85,8 @@ export function SubtopicSection({ subtopics, onSelectTopic, onStudyTopic }: Prop
             <View className="mt-3 flex-row gap-2">
               <Pressable
                 onPress={() => onSelectTopic(topic)}
-                className="flex-1 flex-row items-center justify-center gap-1 rounded-xl border-2 border-b-[3px] border-amber-200/90 border-b-amber-300 bg-white/90 p-2 dark:border-[#46505C] dark:border-b-[#667382] dark:bg-[#292E36]"
+                accessibilityRole="button"
+                className="min-h-12 flex-1 flex-row items-center justify-center gap-1 rounded-xl border-2 border-b-[3px] border-amber-200/90 border-b-amber-300 bg-white/90 p-2 dark:border-line dark:border-b-edge dark:bg-surface-raised"
               >
                 <Text className="font-nunito text-[11px] font-extrabold text-amber-800 dark:text-white">
                   {translate('learn.topic.open_topic')}
@@ -92,7 +97,7 @@ export function SubtopicSection({ subtopics, onSelectTopic, onStudyTopic }: Prop
                 accessibilityRole="button"
                 accessibilityLabel={translate('learn.topic.study_topic', { name: topic.name })}
                 onPress={() => onStudyTopic(topic)}
-                className="size-9 items-center justify-center rounded-xl border-2 border-b-[3px] border-emerald-200 border-b-emerald-300 bg-emerald-50 active:translate-y-px dark:border-emerald-800 dark:border-b-emerald-900 dark:bg-emerald-950/50"
+                className="size-12 items-center justify-center rounded-xl border-2 border-b-[3px] border-emerald-200 border-b-emerald-300 bg-emerald-50 active:translate-y-px dark:border-emerald-800 dark:border-b-emerald-900 dark:bg-emerald-950/50"
               >
                 <PlayIcon width={13} height={13} fill="#16A34A" />
               </Pressable>

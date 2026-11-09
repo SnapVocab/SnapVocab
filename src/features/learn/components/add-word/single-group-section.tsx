@@ -29,9 +29,9 @@ export function SingleGroupSection({
   }, [group.attributes]);
 
   return (
-    <View className="mb-6 rounded-3xl border-2 border-neutral-200/80 bg-white p-4 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
+    <View className="mb-6 rounded-3xl border-2 border-line bg-surface p-4 shadow-sm">
       {/* Section Header */}
-      <View className="mb-4 flex-row items-center border-b border-neutral-100 pb-3 dark:border-neutral-800">
+      <View className="mb-4 flex-row items-center border-b border-line pb-3">
         <View className="mr-2.5 size-8 items-center justify-center rounded-xl bg-primary-100 dark:bg-primary-900/60">
 
           <BookIcon width={16} height={16} color="#0284C7" />

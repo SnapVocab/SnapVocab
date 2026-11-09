@@ -14,6 +14,7 @@ import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tansta
 import { useTranslation } from 'react-i18next';
 import { showErrorMessage, showSuccessMessage } from '@/components/ui';
 import { useAuthStore } from '@/features/auth/use-auth-store';
+import { translate } from '@/lib/i18n';
 import {
   activateItem,
   equipItem,
@@ -24,7 +25,6 @@ import {
   purchaseShopItem,
   unequipItem,
 } from '../api';
-import { useShopTheme } from '../theme/theme-context';
 import { calculateServerOffset } from '../utils/booster-timer';
 
 export const shopKeys = {
@@ -66,25 +66,11 @@ export function useShopCatalog(type?: ShopItemType) {
  * The receive time travels with the cached data, so every observer derives the same server offset.
  */
 export function useInventory() {
-  const { setEquippedTheme } = useShopTheme();
-
   const query = useQuery<InventoryDTO & { receivedAt: number }, AxiosError>({
     queryKey: shopKeys.inventory(),
     refetchOnWindowFocus: true,
     queryFn: async () => {
       const data = await getInventory();
-
-      // Auto-sync equipped theme with ThemeProvider
-      const equippedTheme = data.items.find(
-        item => item.type === 'THEME' && item.equipped,
-      );
-      if (equippedTheme?.config?.themeKey) {
-        setEquippedTheme(equippedTheme.config.themeKey as string);
-      }
-      else {
-        setEquippedTheme('DEFAULT');
-      }
-
       return { ...data, receivedAt: Date.now() };
     },
   });
@@ -150,6 +136,7 @@ export function useCoinBalance() {
   return {
     balance: query.data?.balance ?? user?.coin ?? 0,
     isLoading: query.isLoading,
+    isError: query.isError,
     refetch: query.refetch,
   };
 }
@@ -179,11 +166,10 @@ export function usePurchaseMutation() {
 }
 
 /**
- * Equip Item Mutation (THEME or AVATAR_FRAME)
+ * Equip Item Mutation (AVATAR_FRAME or CARD_FRAME)
  */
 export function useEquipMutation() {
   const queryClient = useQueryClient();
-  const { setEquippedTheme } = useShopTheme();
   const { t } = useTranslation();
 
   return useMutation<
@@ -193,24 +179,18 @@ export function useEquipMutation() {
   >({
     mutationFn: ({ slot, itemId }) => equipItem(slot, itemId),
     onSuccess: (data) => {
-      if (data.slot === 'THEME') {
-        const themeKey = data.item?.config?.themeKey as string;
-        setEquippedTheme(themeKey || 'DEFAULT');
-      }
-      showSuccessMessage(data.slot === 'THEME' ? t('shopUi.toastThemeEquipped') : t('shopUi.toastFrameEquipped'));
-      queryClient.invalidateQueries({ queryKey: shopKeys.inventory() });
-      queryClient.invalidateQueries({ queryKey: shopKeys.catalogs() });
+      showSuccessMessage(t(data.slot === 'CARD_FRAME' ? 'shopUi.toastCardFrameEquipped' : 'shopUi.toastFrameEquipped'));
+      invalidateOwnedState(queryClient);
     },
     onError: error => onItemActionError(queryClient, error, t),
   });
 }
 
 /**
- * Unequip Item Mutation (THEME or AVATAR_FRAME)
+ * Unequip Item Mutation (AVATAR_FRAME or CARD_FRAME)
  */
 export function useUnequipMutation() {
   const queryClient = useQueryClient();
-  const { setEquippedTheme } = useShopTheme();
   const { t } = useTranslation();
 
   return useMutation<
@@ -220,12 +200,8 @@ export function useUnequipMutation() {
   >({
     mutationFn: ({ slot }) => unequipItem(slot),
     onSuccess: (data) => {
-      if (data.slot === 'THEME') {
-        setEquippedTheme('DEFAULT');
-      }
-      showSuccessMessage(data.slot === 'THEME' ? t('shopUi.toastThemeReset') : t('shopUi.toastFrameRemoved'));
-      queryClient.invalidateQueries({ queryKey: shopKeys.inventory() });
-      queryClient.invalidateQueries({ queryKey: shopKeys.catalogs() });
+      showSuccessMessage(t(data.slot === 'CARD_FRAME' ? 'shopUi.toastCardFrameRemoved' : 'shopUi.toastFrameRemoved'));
+      invalidateOwnedState(queryClient);
     },
     onError: error => onItemActionError(queryClient, error, t),
   });
@@ -247,12 +223,18 @@ export function useActivateBoosterMutation() {
       activateItem(itemId, idempotencyKey),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['daily-missions'] });
-      queryClient.invalidateQueries({ queryKey: shopKeys.inventory() });
       // Spending a card changes quantity, hence the Booster's max-quantity block in the catalog.
-      queryClient.invalidateQueries({ queryKey: shopKeys.catalogs() });
+      invalidateOwnedState(queryClient);
     },
     onError: error => onItemActionError(queryClient, error, t),
   });
+}
+
+/** Equipment/booster changed: inventory, catalog state and the me cache (Profile frame, ×2) are stale. */
+function invalidateOwnedState(queryClient: QueryClient) {
+  queryClient.invalidateQueries({ queryKey: shopKeys.inventory() });
+  queryClient.invalidateQueries({ queryKey: shopKeys.catalogs() });
+  queryClient.invalidateQueries({ queryKey: ['me'] });
 }
 
 /** Equip / unequip / activate rejected: tell the user why, then resync since local state was stale. */

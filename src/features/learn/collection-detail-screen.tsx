@@ -26,7 +26,7 @@ export function CollectionDetailScreen() {
           subtitle={detail.headerSubtitle}
           onBackPress={detail.handleBack}
           onOptionsPress={detail.handleOptionsPress}
-          showOptions={detail.isUserCollection}
+          showOptions={!!detail.collectionData}
         />
 
         {/* Breadcrumbs for deep topic hierarchy */}

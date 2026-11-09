@@ -27,18 +27,17 @@ export function RoleSelector({
             className={`rounded-xl border px-3 py-2 ${
               role === r.role
                 ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-950/40'
-                : 'border-neutral-200 bg-neutral-50 dark:border-neutral-700 dark:bg-neutral-800'
+                : 'border-line bg-neutral-50 dark:bg-neutral-800'
             }`}
           >
             <Text
+              tx={`template_builder.roles.${r.role}`}
               className={`font-inter text-xs font-semibold ${
                 role === r.role
                   ? 'font-bold text-emerald-600 dark:text-emerald-400'
                   : 'text-neutral-700 dark:text-neutral-300'
               }`}
-            >
-              {r.label}
-            </Text>
+            />
           </TouchableOpacity>
         ))}
       </View>
@@ -65,7 +64,7 @@ export function ColumnSelector({
           className={`flex-1 items-center rounded-xl border py-2.5 ${
             column === 1
               ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-950/40'
-              : 'border-neutral-200 bg-neutral-50 dark:border-neutral-700 dark:bg-neutral-800'
+              : 'border-line bg-neutral-50 dark:bg-neutral-800'
           }`}
         >
           <Text
@@ -80,7 +79,7 @@ export function ColumnSelector({
           className={`flex-1 items-center rounded-xl border py-2.5 ${
             column === 2
               ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-950/40'
-              : 'border-neutral-200 bg-neutral-50 dark:border-neutral-700 dark:bg-neutral-800'
+              : 'border-line bg-neutral-50 dark:bg-neutral-800'
           }`}
         >
           <Text
@@ -117,7 +116,7 @@ export function FontSizeSelector({
             className={`flex-1 items-center rounded-xl border py-2.5 ${
               fontSize === size
                 ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-950/40'
-                : 'border-neutral-200 bg-neutral-50 dark:border-neutral-700 dark:bg-neutral-800'
+                : 'border-line bg-neutral-50 dark:bg-neutral-800'
             }`}
           >
             <Text
@@ -160,7 +159,7 @@ export function AlignmentSelector({
             className={`flex-1 items-center rounded-xl border py-2.5 ${
               alignment === item.key
                 ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-950/40'
-                : 'border-neutral-200 bg-neutral-50 dark:border-neutral-700 dark:bg-neutral-800'
+                : 'border-line bg-neutral-50 dark:bg-neutral-800'
             }`}
           >
             <Text

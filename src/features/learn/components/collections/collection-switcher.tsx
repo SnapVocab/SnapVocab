@@ -60,7 +60,7 @@ export default function CollectionSwitcher({ viewType, onChange }: CollectionSwi
   return (
     <View
       onLayout={handleLayout}
-      className="relative flex-row rounded-2xl border border-neutral-200/80 bg-neutral-200/60 p-1 dark:border-neutral-700/60 dark:bg-neutral-800"
+      className="relative flex-row rounded-2xl border border-line bg-neutral-200/60 p-1 dark:bg-neutral-800"
     >
       {tabWidth > 0 && (
         <Animated.View
