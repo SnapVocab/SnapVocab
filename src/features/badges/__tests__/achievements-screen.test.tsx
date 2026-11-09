@@ -23,7 +23,7 @@ jest.mock('expo-router', () => {
 jest.mock('@tanstack/react-query', () => ({ useQueryClient: () => ({}) }));
 jest.mock('../api', () => ({ useBadges: jest.fn(), syncBadges: jest.fn(), markBadgesSeen: jest.fn() }));
 jest.mock('@/lib/i18n', () => ({ translate: (key: string, opts?: Record<string, unknown>) => (opts ? `${key} ${JSON.stringify(opts)}` : key) }));
-jest.mock('@/components/snapvocab', () => ({ AchievementArtifact: () => null, AchievementGlow: () => null, AchievementTrophy3D: () => null, Coin3D: () => null, XPOrb3D: () => null }));
+jest.mock('@/components/snapvocab', () => ({ AchievementGlow: () => null, AchievementTrophy3D: () => null, Coin3D: () => null, XPOrb3D: () => null }));
 jest.mock('@/components/ui/snapy', () => ({ Snapy: () => null }));
 jest.mock('@/components/ui/icons', () => ({ CheckCircleIcon: () => null, CloseIcon: () => null, LockIcon: () => null, SparklesIcon: () => null }));
 jest.mock('../components/achievement-detail-sheet', () => ({ AchievementDetailSheet: () => null }));
@@ -39,7 +39,7 @@ jest.mock('@/components/ui', () => {
 });
 
 function item(id: number, over: Partial<BadgeItem> = {}): BadgeItem {
-  return { id, code: `B${id}`, name: `Badge ${id}`, description: '', metric: 'QUIZ_COMPLETED', threshold: id, currentValue: 0, iconKey: 'clipboard-check', sortOrder: id, earned: false, earnedAt: null, seen: null, ...over };
+  return { id, code: `B${id}`, name: `Badge ${id}`, description: '', metric: 'QUIZ_COMPLETED', threshold: id, currentValue: 0, imageUrl: null, sortOrder: id, earned: false, earnedAt: null, seen: null, ...over };
 }
 function view(badges: BadgeItem[]): BadgesView {
   return { earnedCount: badges.filter(b => b.earned).length, totalCount: badges.length, unseenCount: badges.filter(b => b.seen === false).length, badges };

@@ -7,7 +7,7 @@ import { useBadgeSessionStore } from '../use-badge-session-store';
 
 jest.mock('@/lib/api', () => ({ client: jest.fn() }));
 
-const earned = { id: 1, code: 'QUIZ_1', name: 'Q', description: '', metric: 'QUIZ_COMPLETED', threshold: 1, currentValue: 1, iconKey: 'clipboard-check', sortOrder: 20, earned: true, earnedAt: '2026-10-07T03:00:00Z', seen: false };
+const earned = { id: 1, code: 'QUIZ_1', name: 'Q', description: '', metric: 'QUIZ_COMPLETED', threshold: 1, currentValue: 1, imageUrl: null, sortOrder: 20, earned: true, earnedAt: '2026-10-07T03:00:00Z', seen: false };
 const view: BadgesView = { earnedCount: 1, totalCount: 1, unseenCount: 1, badges: [earned] };
 const ok = (data: unknown) => Promise.resolve({ data: { statusCode: 200, data } });
 

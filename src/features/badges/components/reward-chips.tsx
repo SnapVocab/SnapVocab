@@ -27,9 +27,10 @@ export function rewardText(reward: BadgeReward | null | undefined): string | nul
   return parts.length > 0 ? parts.join(' · ') : null;
 }
 
+// Fixed height (icon 20px + padding) so the text-only frame chip lines up with the Coin/XP chips.
 const SIZES = {
-  sm: { chip: 'rounded-md px-1.5 py-0.5', text: 'text-[10px] font-bold', icon: 'xs' as const, gap: 'gap-1.5' },
-  md: { chip: 'rounded-xl px-2.5 py-1', text: 'text-[13px] font-extrabold', icon: 'xs' as const, gap: 'gap-2' },
+  sm: { chip: 'h-[26px] flex-row items-center rounded-md px-1.5', text: 'text-[10px] font-bold', icon: 'xs' as const, gap: 'gap-1.5' },
+  md: { chip: 'h-[30px] flex-row items-center rounded-xl px-2.5', text: 'text-[13px] font-extrabold', icon: 'xs' as const, gap: 'gap-2' },
 };
 
 /** The prototype's reward chips (Coin, XP, frame). Renders nothing without a reward. */

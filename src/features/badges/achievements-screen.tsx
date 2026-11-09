@@ -270,7 +270,8 @@ function BadgeCard({ item, seriesList, isNew, stale, onPress }: CardProps) {
         {item.name}
       </Text>
 
-      <View className="mb-2.5 min-h-5 justify-center">
+      {/* Full width: a wrapping chip row needs a definite width, or Yoga measures one line and the 2nd overlaps the progress. */}
+      <View className="mb-2.5 min-h-5 w-full justify-center">
         <RewardChips reward={item.reward} />
       </View>
 

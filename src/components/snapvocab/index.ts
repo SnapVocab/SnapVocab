@@ -1,4 +1,4 @@
-export * from './achievements/achievement-artifact';
+export * from './achievements/achievement-glow';
 export * from './achievements/AchievementBadge3D';
 export * from './achievements/AchievementTrophy3D';
 export * from './achievements/MasteredBadge3D';

@@ -22,7 +22,7 @@ function badge(over: Partial<BadgeItem>): BadgeItem {
     metric: 'QUIZ_COMPLETED',
     threshold: 1,
     currentValue: 0,
-    iconKey: 'clipboard-check',
+    imageUrl: null,
     sortOrder: 0,
     earned: false,
     earnedAt: null,

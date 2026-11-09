@@ -13,15 +13,15 @@ jest.mock('lottie-react-native', () => {
   const RN = require('react-native');
   return (props: { testID?: string }) => <RN.View testID={props.testID} />;
 });
-jest.mock('@/components/snapvocab', () => ({ AchievementArtifact: () => null, AchievementGlow: () => null }));
+jest.mock('@/components/snapvocab', () => ({ AchievementGlow: () => null }));
 
 const data: BadgesView = {
   earnedCount: 2,
   totalCount: 2,
   unseenCount: 1,
   badges: [
-    { id: 7, code: 'QUIZ_10', name: 'Quen Tay Quiz', description: '', metric: 'QUIZ_COMPLETED', threshold: 10, currentValue: 50, iconKey: 'clipboard-check', sortOrder: 21, earned: true, earnedAt: '2026-10-07T00:00:00Z', seen: true },
-    { id: 8, code: 'QUIZ_50', name: 'Chiến Binh Quiz', description: '', metric: 'QUIZ_COMPLETED', threshold: 50, currentValue: 50, iconKey: 'clipboard-check', sortOrder: 22, earned: true, earnedAt: '2026-10-22T00:00:00Z', seen: false },
+    { id: 7, code: 'QUIZ_10', name: 'Quen Tay Quiz', description: '', metric: 'QUIZ_COMPLETED', threshold: 10, currentValue: 50, imageUrl: null, sortOrder: 21, earned: true, earnedAt: '2026-10-07T00:00:00Z', seen: true },
+    { id: 8, code: 'QUIZ_50', name: 'Chiến Binh Quiz', description: '', metric: 'QUIZ_COMPLETED', threshold: 50, currentValue: 50, imageUrl: null, sortOrder: 22, earned: true, earnedAt: '2026-10-22T00:00:00Z', seen: false },
   ],
 };
 const seriesList = buildSeries(data);

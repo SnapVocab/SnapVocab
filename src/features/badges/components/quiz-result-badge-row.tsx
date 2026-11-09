@@ -1,11 +1,11 @@
 import * as React from 'react';
 import { Pressable, View } from 'react-native';
-import { AchievementArtifact } from '@/components/snapvocab';
 import { Text } from '@/components/ui';
 import { translate } from '@/lib/i18n';
 import { useBadges } from '../api';
 import { buildSeries, inDisplayOrder, unseenIds } from '../model';
 import { useBadgeSessionStore } from '../use-badge-session-store';
+import { BadgeImage } from './badge-image';
 
 /**
  * Continuation row on Quiz Result (UI-BDG-01): no modal over the result's own celebration. A tap opens the modal at
@@ -30,7 +30,7 @@ export function QuizResultBadgeRow() {
       onPress={() => requestUnlock(items.map(i => i.id), 'reduced')}
       className="mt-3 w-full flex-row items-center gap-2.5 rounded-2xl border-[1.5px] border-b-[3px] border-neutral-200 bg-white px-3 py-2.5 active:opacity-80"
     >
-      <AchievementArtifact metric={first.metric} iconKey={first.iconKey} state="earned" size={40} />
+      <BadgeImage item={first} size={40} />
       <View className="flex-1">
         <Text className="font-nunito text-[15px] font-extrabold text-mascot-navy">{title}</Text>
         <Text className="font-inter text-[14px] text-neutral-500">{translate('badges.quiz_row.hint')}</Text>

@@ -10,7 +10,8 @@ export type BadgeItem = {
   metric: BadgeMetric;
   threshold: number;
   currentValue: number;
-  iconKey: string;
+  /** Presigned MinIO URL of the badge art; null when the badge has none. */
+  imageUrl: string | null;
   sortOrder: number;
   earned: boolean;
   earnedAt: string | null;

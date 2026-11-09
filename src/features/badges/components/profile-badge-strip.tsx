@@ -1,10 +1,10 @@
 import type { BadgesView } from '../types';
 import * as React from 'react';
 import { Pressable, View } from 'react-native';
-import { AchievementArtifact } from '@/components/snapvocab';
 import { Text } from '@/components/ui';
 import { translate } from '@/lib/i18n';
 import { recentEarned } from '../model';
+import { BadgeImage } from './badge-image';
 
 /** Three latest badges inside the identity card (badges.md §2.4); hidden until the first badge. A medal opens its sheet, the rest opens the collection. */
 export function ProfileBadgeStrip({ view, onPress }: { view: BadgesView | undefined; onPress: (badgeId?: number) => void }) {
@@ -20,7 +20,7 @@ export function ProfileBadgeStrip({ view, onPress }: { view: BadgesView | undefi
     >
       {recent.map(item => (
         <Pressable key={item.id} accessibilityRole="button" accessibilityLabel={item.name} hitSlop={4} onPress={() => onPress(item.id)} className="active:opacity-70">
-          <AchievementArtifact metric={item.metric} iconKey={item.iconKey} state="earned" size={40} />
+          <BadgeImage item={item} size={40} />
         </Pressable>
       ))}
       <View className="flex-1" />
