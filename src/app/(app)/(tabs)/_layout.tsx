@@ -1,6 +1,6 @@
 import type { Href } from 'expo-router';
 import { Tabs, useRouter } from 'expo-router';
-import { useWindowDimensions } from 'react-native';
+import { Easing, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useResolveClassNames } from 'uniwind';
 
@@ -13,12 +13,16 @@ import {
   ProfileIcon,
   ShoppingBagIcon,
 } from '@/components/ui/icons';
+import { SlidingTabBar } from '@/components/ui/sliding-tab-bar';
+import { TAB_TRANSITION_DURATION } from '@/components/ui/tab-transition';
+import { useReduceMotion } from '@/features/badges/use-reduce-motion';
 import { HomeHeader } from '@/features/home';
 import { useMe } from '@/features/profile/api';
 import { translate } from '@/lib/i18n';
 
 export default function TabLayout() {
   const router = useRouter();
+  const reduceMotion = useReduceMotion();
   // Edge-to-edge: the system gesture/nav bar draws over the app, so the tab bar
   // grows by the bottom inset instead of letting it cover the labels.
   const { bottom } = useSafeAreaInsets();
@@ -45,7 +49,14 @@ export default function TabLayout() {
 
   return (
     <Tabs
+      tabBar={props => <SlidingTabBar {...props} reduceMotion={reduceMotion} />}
       screenOptions={{
+        animation: reduceMotion ? 'none' : 'shift',
+        transitionSpec: {
+          animation: 'timing',
+          config: { duration: reduceMotion ? 0 : TAB_TRANSITION_DURATION, easing: Easing.out(Easing.cubic) },
+        },
+        sceneStyle: { backgroundColor: surface.background },
         tabBarActiveTintColor: surface.action,
         tabBarInactiveTintColor: surface.textMuted,
         tabBarStyle: navigationStyle,
@@ -89,6 +100,8 @@ export default function TabLayout() {
       <Tabs.Screen
         name="camera"
         options={{
+          animation: 'none',
+          transitionSpec: { animation: 'timing', config: { duration: 0 } },
           title: expanded ? translate('home.scan_camera') : '',
           headerShown: false,
           tabBarButton: expanded ? undefined : props => <CameraTabButton {...props} />,

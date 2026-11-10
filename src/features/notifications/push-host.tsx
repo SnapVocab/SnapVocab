@@ -3,7 +3,7 @@ import type { PushData } from './push';
 import type { UserSettings } from '@/features/profile/types';
 import { hashKey, useQueryClient } from '@tanstack/react-query';
 import * as Notifications from 'expo-notifications';
-import { useRootNavigationState, useRouter } from 'expo-router';
+import { useNavigationContainerRef, useRouter } from 'expo-router';
 import * as React from 'react';
 import { AppState } from 'react-native';
 import { useAuthStore } from '@/features/auth/use-auth-store';
@@ -23,8 +23,21 @@ export function PushHost() {
   const registered = React.useRef(false);
   const handled = React.useRef(new Set<string>());
   const coldStartChecked = React.useRef(false);
-  const navigationReady = !!useRootNavigationState()?.key;
+  const navigationRef = useNavigationContainerRef();
   const pendingResponse = React.useRef<Notifications.NotificationResponse | null>(null);
+
+  const subscribeReadiness = React.useCallback((onChange: () => void) => {
+    // A preloaded root state can have a key before the container is ready.
+    // Subscribe to the same ref that Expo Router checks before navigating.
+    const removeReady = navigationRef.addListener('ready', onChange);
+    const removeState = navigationRef.addListener('state', onChange);
+    return () => {
+      removeReady();
+      removeState();
+    };
+  }, [navigationRef]);
+  const getReadiness = React.useCallback(() => navigationRef.isReady(), [navigationRef]);
+  const navigationReady = React.useSyncExternalStore(subscribeReadiness, getReadiness, () => false);
 
   React.useEffect(() => {
     silenceForeground();
@@ -81,8 +94,9 @@ export function PushHost() {
   }, [status, queryClient]);
 
   const open = React.useCallback((response: Notifications.NotificationResponse) => {
+    const auth = useAuthStore.getState();
     // Native notification callbacks can arrive before the root navigator mounts.
-    if (!navigationReady || status === 'idle') {
+    if (!navigationRef.isReady() || auth.status === 'idle') {
       pendingResponse.current = response;
       return;
     }
@@ -90,7 +104,6 @@ export function PushHost() {
     if (handled.current.has(id))
       return;
     handled.current.add(id);
-    const auth = useAuthStore.getState();
     const currentUserId = auth.status === 'signIn' ? auth.user?.id ?? null : null;
     const action = openAction(response.notification.request.content.data as PushData, currentUserId);
     if (action.kind === 'ignore')
@@ -102,7 +115,7 @@ export function PushHost() {
       router.push(action.route as Href); // pushed over Home, so Back returns there
       void queryClient.invalidateQueries({ queryKey: notificationKeys.all });
     }
-  }, [navigationReady, status, router, queryClient]);
+  }, [navigationRef, router, queryClient]);
 
   React.useEffect(() => {
     if (!pendingResponse.current || !navigationReady || status === 'idle')
