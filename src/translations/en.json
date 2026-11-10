@@ -534,6 +534,7 @@
     "view_all": "View all"
   },
   "login": {
+    "banned": "This account has been locked. Please contact SnapVocab support.",
     "email": "Email",
     "email_placeholder": "Enter your email",
     "error": "Login failed. Please check your credentials.",

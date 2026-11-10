@@ -534,6 +534,7 @@
     "view_all": "Xem tất cả"
   },
   "login": {
+    "banned": "Tài khoản này đã bị khóa. Vui lòng liên hệ hỗ trợ SnapVocab.",
     "email": "Email",
     "email_placeholder": "Nhập email của bạn",
     "error": "Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin.",

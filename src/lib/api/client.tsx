@@ -18,24 +18,44 @@ client.interceptors.request.use((config) => {
   return config;
 });
 
+// Single flight: the backend rotates refresh tokens, so a second refresh with the same token
+// fails and would sign the user out. Every 401 that arrives while one refresh runs waits for it.
+let refreshing: Promise<string> | null = null;
+
+function refreshAccessToken(refreshToken: string): Promise<string> {
+  if (!refreshing) {
+    refreshing = axios.post(`${Env.EXPO_PUBLIC_API_URL}/api/auth/refresh`, { refreshToken })
+      .then(({ data }) => {
+        const { access_token, refresh_token } = data.data;
+        store.getState().updateTokens(access_token, refresh_token);
+        return access_token as string;
+      })
+      .finally(() => {
+        refreshing = null;
+      });
+  }
+  return refreshing;
+}
+
 client.interceptors.response.use(
   response => response,
   async (error) => {
     const originalRequest = error.config;
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
-      const refreshToken = store.getState().refreshToken;
+      const { accessToken, refreshToken } = store.getState();
+      // Sent with an access token another request already replaced: retry with the new one.
+      if (accessToken && originalRequest.headers.Authorization !== `Bearer ${accessToken}`) {
+        originalRequest.headers.Authorization = `Bearer ${accessToken}`;
+        return client(originalRequest);
+      }
       if (refreshToken) {
         try {
-          const { data } = await axios.post(`${Env.EXPO_PUBLIC_API_URL}/api/auth/refresh`, {
-            refreshToken,
-          });
-          const { access_token, refresh_token } = data.data;
-          store.getState().updateTokens(access_token, refresh_token);
-          originalRequest.headers.Authorization = `Bearer ${access_token}`;
+          originalRequest.headers.Authorization = `Bearer ${await refreshAccessToken(refreshToken)}`;
           return client(originalRequest);
         }
         catch {
+          // Includes 403 USER_BANNED: a locked account gets no new tokens.
           store.getState().logout();
         }
       }
