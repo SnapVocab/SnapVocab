@@ -108,7 +108,6 @@ export default function TabLayout() {
           tabBarButtonTestID: 'shop-tab',
         }}
       />
-      <Tabs.Screen name="community" options={{ href: null }} />
       <Tabs.Screen
         name="profile"
         options={{

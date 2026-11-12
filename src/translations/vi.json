@@ -241,6 +241,57 @@
     "xp_retry": "Thử tải lại XP",
     "xp_to_level": "Còn {{remaining}} XP để lên cấp {{nextLevel}}"
   },
+  "leaderboard": {
+    "admin": "Tài khoản quản trị không tham gia xếp hạng.",
+    "cached_error": "Chưa cập nhật được. Bạn đang xem dữ liệu đã tải trước đó.",
+    "close": "Đóng",
+    "columns": {
+      "learner": "Người học",
+      "rank": "Hạng"
+    },
+    "count": "{{count}} người tham gia",
+    "empty_current_body": "Ôn thẻ hoặc làm quiz để có XP tuần.",
+    "empty_current_title": "Chưa có ai trên bảng tuần này",
+    "empty_previous": "Tuần trước chưa có người được xếp hạng",
+    "error": "Chưa tải được bảng xếp hạng. Vui lòng thử lại.",
+    "finalizing_note": "Kết quả có thể thay đổi trong lúc tổng kết.",
+    "footer": "Hiển thị {{n}} / {{count}} người tham gia",
+    "gap": "Thêm {{xp}} XP để lên hạng {{rank}}",
+    "help": "Cách tính XP và xu hướng",
+    "home_title": "Bảng xếp hạng tuần này",
+    "learn": "Đến màn Học",
+    "learner": "Người học",
+    "link": "Xem bảng xếp hạng",
+    "loading": "Đang tải bảng xếp hạng",
+    "me": "Bạn",
+    "me_first": "Bạn đang ở hạng 1",
+    "period": {
+      "current": "Tuần này",
+      "previous": "Tuần trước"
+    },
+    "previous_trend_note": "Không áp dụng xu hướng cho tuần trước.",
+    "refreshing": "Đang làm mới…",
+    "retry": "Thử lại",
+    "rules": "XP tuần từ ôn thẻ và quiz, gồm bonus Booster. XP thưởng nhiệm vụ và huy hiệu không tính vào bảng.",
+    "status": {
+      "final": "Đã chốt kết quả",
+      "finalizing": "Đang tổng kết"
+    },
+    "timing": "Làm mới khoảng mỗi phút. Thời gian hiển thị theo giờ Việt Nam.",
+    "title": "Bảng xếp hạng",
+    "trend": {
+      "a11y_down": "Giảm {{count}} hạng so với 00:00 hôm nay",
+      "a11y_none": "Chưa có hạng lúc đầu ngày để so sánh",
+      "a11y_same": "Không đổi hạng so với 00:00 hôm nay",
+      "a11y_up": "Tăng {{count}} hạng so với 00:00 hôm nay"
+    },
+    "trend_note": "Xu hướng so với 00:00 hôm nay. Không áp dụng cho tuần trước.",
+    "unranked_current": "Bạn chưa có trên bảng tuần này. Ôn thẻ hoặc làm quiz để có XP tuần.",
+    "unranked_previous": "Bạn chưa có trên bảng tuần trước.",
+    "updated": "Cập nhật {{time}}",
+    "updated_date": "Cập nhật {{time}}, {{date}}",
+    "xp": "{{xp}} XP"
+  },
   "learn": {
     "add_word": {
       "add_error": "Không thể thêm từ vựng. Vui lòng thử lại.",
