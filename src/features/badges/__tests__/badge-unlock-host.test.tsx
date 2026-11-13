@@ -28,8 +28,8 @@ const data: BadgesView = {
   totalCount: 2,
   unseenCount: 1,
   badges: [
-    { id: 7, code: 'QUIZ_10', name: 'Quen Tay Quiz', description: '', metric: 'QUIZ_COMPLETED', threshold: 10, currentValue: 10, iconKey: 'clipboard-check', sortOrder: 21, earned: true, earnedAt: '2026-10-07T00:00:00Z', seen: false },
-    { id: 8, code: 'QUIZ_50', name: 'Chiến Binh Quiz', description: '', metric: 'QUIZ_COMPLETED', threshold: 50, currentValue: 10, iconKey: 'clipboard-check', sortOrder: 22, earned: false, earnedAt: null, seen: null },
+    { id: 7, code: 'QUIZ_10', name: 'Quen Tay Quiz', description: '', metric: 'QUIZ_COMPLETED', threshold: 10, currentValue: 10, imageUrl: null, sortOrder: 21, earned: true, earnedAt: '2026-10-07T00:00:00Z', seen: false },
+    { id: 8, code: 'QUIZ_50', name: 'Chiến Binh Quiz', description: '', metric: 'QUIZ_COMPLETED', threshold: 50, currentValue: 10, imageUrl: null, sortOrder: 22, earned: false, earnedAt: null, seen: null },
   ],
 };
 

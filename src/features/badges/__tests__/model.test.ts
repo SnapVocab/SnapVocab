@@ -3,13 +3,10 @@ import { isDeferredRoute } from '../badge-unlock-host';
 import {
   buildSeries,
   formatEarnedDate,
-  highestProgressRatio,
   isSeriesFinal,
   metricRoute,
-  plankFill,
   recentEarned,
   screenState,
-  visualState,
 } from '../model';
 
 jest.mock('../api', () => ({}));
@@ -25,7 +22,7 @@ function badge(over: Partial<BadgeItem>): BadgeItem {
     metric: 'QUIZ_COMPLETED',
     threshold: 1,
     currentValue: 0,
-    iconKey: 'clipboard-check',
+    imageUrl: null,
     sortOrder: 0,
     earned: false,
     earnedAt: null,
@@ -46,33 +43,6 @@ describe('badge model', () => {
     const series = buildSeries(view([words10, quiz50, quiz1]));
     expect(series.map(s => s.metric)).toEqual(['QUIZ_COMPLETED', 'DISTINCT_WORDS_ADDED']);
     expect(series[0].items.map(i => i.threshold)).toEqual([1, 50]);
-  });
-
-  it('derives earned / next / recording / locked per milestone', () => {
-    const [series] = buildSeries(view([
-      badge({ threshold: 1, currentValue: 12, earned: true }),
-      badge({ threshold: 10, currentValue: 12 }),
-      badge({ threshold: 50, currentValue: 12 }),
-    ]));
-    expect([0, 1, 2].map(i => visualState(series, i))).toEqual(['earned', 'recording', 'locked']);
-  });
-
-  it('fills the shelf linearly between neighbouring milestone centres', () => {
-    const items = (cur: number) => [7, 30, 100].map(t => badge({ metric: 'LONGEST_STREAK_DAYS', threshold: t, currentValue: cur, earned: cur >= t }));
-    expect(plankFill(buildSeries(view(items(0)))[0])).toBe(0);
-    expect(plankFill(buildSeries(view(items(7)))[0])).toBeCloseTo(1 / 6);
-    expect(plankFill(buildSeries(view(items(65)))[0])).toBeCloseTo(0.5 + (1 / 3) * 0.5);
-    expect(plankFill(buildSeries(view(items(100)))[0])).toBe(1);
-  });
-
-  it('picks highestProgressRatio, breaking ties by the smaller remaining amount and skipping recording badges', () => {
-    const quiz1 = badge({ metric: 'QUIZ_COMPLETED', threshold: 1, sortOrder: 20 });
-    const perfect1 = badge({ metric: 'PERFECT_QUIZ', threshold: 1, sortOrder: 30 });
-    const streak7 = badge({ metric: 'LONGEST_STREAK_DAYS', threshold: 7, sortOrder: 10 });
-    expect(highestProgressRatio(buildSeries(view([streak7, quiz1, perfect1])))?.id).toBe(quiz1.id);
-    const words = badge({ metric: 'DISTINCT_WORDS_ADDED', threshold: 10, currentValue: 4, sortOrder: 40 });
-    const recording = badge({ metric: 'QUIZ_COMPLETED', threshold: 1, currentValue: 1, sortOrder: 20 });
-    expect(highestProgressRatio(buildSeries(view([recording, words])))?.id).toBe(words.id);
   });
 
   it('applies screen-state priority NEW → COMPLETE → RECORDING → EMPTY → NORMAL (B9)', () => {

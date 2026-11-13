@@ -210,13 +210,10 @@ export function PurchaseSuccessModal({
                     <CardFrameThumb frameUrl={item.config?.frameUrl} height={84} />
                   ) : isFrame ? (
                     <AvatarFrame
-                      frameId={item.code}
                       frameUrl={item.config?.frameUrl}
                       avatarUri={currentUser?.avatarUrl}
                       avatarSource={require('../../assets/images/snapy-happy.png')}
                       size="sm"
-                      animated
-                      showGlow={false}
                     />
                   ) : item.iconUrl ? (
                     <Image

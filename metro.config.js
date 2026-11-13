@@ -3,6 +3,12 @@ const { withUniwindConfig } = require('uniwind/metro');
 
 const config = getDefaultConfig(__dirname);
 
+// Gradle (IDE Java/Gradle extensions) churns android/**/build inside node_modules; Metro's watcher crashes with ENOENT on it.
+config.resolver.blockList = [
+  ...[].concat(config.resolver.blockList ?? []),
+  /node_modules[/\\].*[/\\]android[/\\](.*[/\\])?(build|\.gradle|\.cxx)[/\\].*/,
+];
+
 // Force zustand to CommonJS on web to prevent `import.meta` syntax error
 const originalResolveRequest = config.resolver.resolveRequest;
 config.resolver.resolveRequest = (context, moduleName, platform) => {

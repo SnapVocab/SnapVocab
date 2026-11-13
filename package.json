@@ -60,7 +60,7 @@
     "app-icon-badge": "^0.1.2",
     "axios": "^1.13.2",
     "expo": "~54.0.37",
-    "expo-asset": "~12.0.13",
+    "expo-asset": "~12.0.14",
     "expo-audio": "~1.1.1",
     "expo-camera": "~17.0.10",
     "expo-constants": "~18.0.14",
@@ -157,7 +157,8 @@
       "reactNativeDirectoryCheck": {
         "listUnknownPackages": false,
         "exclude": [
-          "react-native-restart"
+          "react-native-restart",
+          "react-native-edge-to-edge"
         ]
       }
     },

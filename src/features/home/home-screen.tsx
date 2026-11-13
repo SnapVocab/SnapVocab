@@ -11,6 +11,7 @@ import { FocusAwareStatusBar, SafeAreaView, Text } from '@/components/ui';
 import { ChevronRightIcon, TargetIcon } from '@/components/ui/icons';
 import { useSurface } from '@/components/ui/surface';
 import { useAuthStore } from '@/features/auth/use-auth-store';
+import { HomeLeaderboardCard, leaderboardKey } from '@/features/leaderboard';
 import { notificationKeys } from '@/features/notifications/api';
 import {
   invalidateProgress,
@@ -63,12 +64,17 @@ export function HomeScreen() {
   useFocusEffect(React.useCallback(() => {
     void queryClient.refetchQueries({ queryKey: notificationKeys.unreadCount, stale: true });
     void invalidateStudy(queryClient);
+    void queryClient.refetchQueries({ queryKey: leaderboardKey('CURRENT', 3), stale: true });
   }, [queryClient]));
 
   const onRefresh = React.useCallback(async () => {
     setIsRefreshing(true);
     try {
-      await Promise.all([invalidateProgress(queryClient), invalidateStudy(queryClient)]);
+      await Promise.all([
+        invalidateProgress(queryClient),
+        invalidateStudy(queryClient),
+        queryClient.refetchQueries({ queryKey: leaderboardKey('CURRENT', 3) }),
+      ]);
     }
     finally {
       setIsRefreshing(false);
@@ -137,6 +143,8 @@ export function HomeScreen() {
             </View>
           </View>
           {!expanded && <DailyMissionCard />}
+          {/* leaderboard_ui.md §4: after everything Home already shows, so learning stays first. */}
+          <HomeLeaderboardCard />
         </View>
       </ScrollView>
     </SafeArea>

@@ -1,9 +1,6 @@
 import type { StyleProp, ViewStyle } from 'react-native';
-import type { AvatarFrameDefinition } from './avatarFrameCatalog';
 import * as React from 'react';
-import { useMemo } from 'react';
 import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
-import { getAvatarFrame } from './avatarFrameCatalog';
 
 export type AvatarFrameSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl' | 'hero' | number;
 
@@ -17,8 +14,6 @@ const SIZE_PRESETS: Record<string, number> = {
 };
 
 export type AvatarFrameProps = {
-  /** ID of the avatar frame (e.g. 'frame_fire_streak', 'frame_night_owl') */
-  frameId?: string | null;
   /** Remote image URI for avatar frame from backend config */
   frameUrl?: string | null;
   /** Remote image URI for user avatar */
@@ -29,14 +24,12 @@ export type AvatarFrameProps = {
   initials?: string;
   /** Size preset or numeric pixel dimension */
   size?: AvatarFrameSize;
-  /** Whether to play the looping animated WebP or use static PNG (default: true) */
-  animated?: boolean;
-  /** Whether to render the ambient neon glow effect matching frame colors (default: true) */
-  showGlow?: boolean;
   /** Optional badge element at bottom right (e.g. level, rank or streak flame) */
   badgeComponent?: React.ReactNode;
   /** Callback when remote frame URL fails to load (e.g. presigned URL expired) */
   onFrameError?: () => void;
+  /** Callback when the remote avatar image fails to load */
+  onAvatarError?: () => void;
   /** Press handler */
   onPress?: () => void;
   /** Custom children to render inside the avatar aperture */
@@ -48,43 +41,27 @@ export type AvatarFrameProps = {
 };
 
 export const AvatarFrame: React.FC<AvatarFrameProps> = ({
-  frameId,
   frameUrl,
   avatarUri,
   avatarSource,
   initials = 'SV',
   size = 'md',
-  animated = true,
-  showGlow = true,
   badgeComponent,
   onFrameError,
+  onAvatarError,
   onPress,
   children,
   style,
   className = '',
 }) => {
   const dimension = typeof size === 'number' ? size : SIZE_PRESETS[size] || 72;
-  const frameMeta: AvatarFrameDefinition | undefined = useMemo(
-    () => getAvatarFrame(frameId),
-    [frameId],
-  );
-
-  const hasFrame = Boolean(frameMeta || frameUrl);
+  // The frame art lives on the server (shop item frameUrl); there is no bundled catalog.
+  const hasFrame = Boolean(frameUrl);
 
   // The circular avatar aperture occupies ~58% of the frame canvas (512x512)
   // When no frame is equipped, the avatar fills 88% of the dimension
   const avatarDiameter = hasFrame ? Math.round(dimension * 0.58) : Math.round(dimension * 0.88);
   const avatarBorderRadius = Math.round(avatarDiameter / 2);
-
-  // Selected frame source: remote frameUrl, or animated WebP / static PNG from catalog
-  const frameSource = useMemo(() => {
-    if (frameUrl) {
-      return { uri: frameUrl };
-    }
-    if (!frameMeta)
-      return null;
-    return animated ? frameMeta.webpSource : frameMeta.pngSource;
-  }, [frameUrl, frameMeta, animated]);
 
   const content = (
     <View
@@ -95,22 +72,7 @@ export const AvatarFrame: React.FC<AvatarFrameProps> = ({
       ]}
       className={className}
     >
-      {/* 1. AMBIENT GLOW (Behind Avatar) */}
-      {showGlow && frameMeta && (
-        <View
-          style={[
-            styles.glowEffect,
-            {
-              width: dimension * 0.85,
-              height: dimension * 0.85,
-              borderRadius: (dimension * 0.85) / 2,
-              backgroundColor: frameMeta.glowColor,
-            },
-          ]}
-        />
-      )}
-
-      {/* 2. INNER AVATAR CIRCLE */}
+      {/* 1. INNER AVATAR CIRCLE */}
       <View
         style={[
           styles.avatarWrapper,
@@ -118,13 +80,14 @@ export const AvatarFrame: React.FC<AvatarFrameProps> = ({
             width: avatarDiameter,
             height: avatarDiameter,
             borderRadius: avatarBorderRadius,
-            backgroundColor: frameMeta ? '#0F172A' : '#3B82F6',
+            backgroundColor: '#3B82F6',
           },
         ]}
       >
         {children || (avatarUri ? (
           <Image
             source={{ uri: avatarUri }}
+            onError={onAvatarError}
             style={{ width: avatarDiameter, height: avatarDiameter, borderRadius: avatarBorderRadius }}
             resizeMode="cover"
           />
@@ -146,10 +109,10 @@ export const AvatarFrame: React.FC<AvatarFrameProps> = ({
         ))}
       </View>
 
-      {/* 3. OVERLAY FRAME (PNG or Animated WebP with transparent center) */}
-      {frameSource && (
+      {/* 2. OVERLAY FRAME (PNG with transparent center) */}
+      {frameUrl && (
         <Image
-          source={frameSource}
+          source={{ uri: frameUrl }}
           style={[
             styles.frameOverlay,
             { width: dimension, height: dimension },
@@ -159,7 +122,7 @@ export const AvatarFrame: React.FC<AvatarFrameProps> = ({
         />
       )}
 
-      {/* 4. OPTIONAL BADGE (Bottom Right) */}
+      {/* 3. OPTIONAL BADGE (Bottom Right) */}
       {badgeComponent && (
         <View style={styles.badgeContainer}>
           {badgeComponent}
@@ -187,11 +150,6 @@ const styles = StyleSheet.create({
     position: 'relative',
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  glowEffect: {
-    position: 'absolute',
-    opacity: 0.85,
-    transform: [{ scale: 1.05 }],
   },
   avatarWrapper: {
     overflow: 'hidden',

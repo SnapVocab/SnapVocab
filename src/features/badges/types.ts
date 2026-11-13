@@ -10,11 +10,32 @@ export type BadgeItem = {
   metric: BadgeMetric;
   threshold: number;
   currentValue: number;
-  iconKey: string;
+  /** Presigned MinIO URL of the badge art; null when the badge has none. */
+  imageUrl: string | null;
   sortOrder: number;
   earned: boolean;
   earnedAt: string | null;
   seen: boolean | null;
+  /**
+   * PD-BDG-14: the catalog reward while not earned, what was paid once earned. Null when there is none, including
+   * badges earned before rewards existed; absent from servers older than PD-BDG-14.
+   */
+  reward?: BadgeReward | null;
+};
+
+export type BadgeReward = {
+  coin: number;
+  xp: number;
+  item: BadgeRewardItem | null;
+};
+
+/** A reward-only frame. `granted`: null until earned, false when the learner already held it. */
+export type BadgeRewardItem = {
+  code: string;
+  name: string;
+  type: 'AVATAR_FRAME' | 'CARD_FRAME' | (string & {});
+  previewUrl: string | null;
+  granted: boolean | null;
 };
 
 /** `GET /api/me/badges` and `POST /api/me/badges/sync`. */
@@ -23,12 +44,14 @@ export type BadgesView = {
   totalCount: number;
   unseenCount: number;
   badges: BadgeItem[];
+  /** Coin and XP of the earned badges ("Thưởng đã tích lũy"). Optional fields: absent before PD-BDG-14. */
+  rewardTotals?: { coin: number; xp: number };
+  /** Balances after the call; a sync that paid rewards moves them. */
+  coin?: number;
+  exp?: number;
 };
 
 export type SeenResult = { unseenCount: number };
-
-/** Artifact material on a shelf (achievements_ui.md §3). */
-export type BadgeVisualState = 'earned' | 'locked' | 'next' | 'recording';
 
 export type BadgeSeries = {
   metric: BadgeMetric;

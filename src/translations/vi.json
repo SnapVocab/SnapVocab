@@ -1,6 +1,5 @@
 {
   "badges": {
-    "collection": "Bộ sưu tập",
     "collection_a11y": "Đã đạt {{earned}} trên {{total}} huy hiệu",
     "cta": {
       "quiz": "Làm một bài quiz ›",
@@ -8,16 +7,20 @@
     },
     "eligible": "Đủ điều kiện",
     "empty_catalog": "Huy hiệu đang được chuẩn bị. Quay lại sau nhé.",
+    "empty_filter": {
+      "locked": "Tuyệt vời, bạn đã mở toàn bộ huy hiệu!",
+      "title": "Chưa có huy hiệu nào",
+      "unlocked": "Hãy bắt đầu học hoặc quét ảnh để mở khóa huy hiệu đầu tiên!"
+    },
     "error_body": "Kiểm tra mạng rồi thử lại nhé.",
     "error_title": "Không tải được huy hiệu",
+    "filter": {
+      "all": "Tất cả ({{count}})",
+      "locked": "Đang cày ({{count}})",
+      "unlocked": "Đã mở ({{count}})"
+    },
     "hero": {
-      "complete": "Bạn đã hoàn thành cả bộ sưu tập.",
-      "empty_title": "Huy hiệu đầu tiên đang chờ bạn",
-      "new_hint": "Chạm vào từng huy chương bên dưới để xem",
-      "new_label": "Vừa đạt",
-      "new_many": "{{count}} huy hiệu mới",
-      "position": "Mốc {{index}}/{{count}} · {{series}}",
-      "target": "{{name}} · còn {{remaining}} {{unit}}"
+      "position": "Mốc {{index}}/{{count}} · {{series}}"
     },
     "metric": {
       "other": {
@@ -51,6 +54,7 @@
       "more": "+{{count}} huy hiệu khác",
       "pill": "Huy hiệu mới",
       "pill_final": "Hoàn thành chuỗi",
+      "reward": "Bạn nhận: {{rewards}}",
       "view": "Xem bộ sưu tập"
     },
     "new_pill": "Mới",
@@ -60,6 +64,7 @@
       "see_all": "Xem tất cả ›",
       "strip_a11y": "Huy hiệu gần đây, xem tất cả"
     },
+    "progress": "Tiến độ",
     "quiz_row": {
       "hint": "Chạm để xem",
       "many": "{{count}} huy hiệu mới",
@@ -69,13 +74,26 @@
     "recording": "Đang ghi nhận…",
     "recording_banner": "Đang ghi nhận huy hiệu mới…",
     "retry": "Thử lại",
-    "series_done": "Hoàn thành",
-    "series_progress": "{{earned}}/{{total}} đã đạt",
+    "reward": {
+      "a11y": "Phần thưởng: {{rewards}}",
+      "already_owned": "Bạn đã có vật phẩm này từ trước.",
+      "coin": "+{{count}} Coin",
+      "frame_avatar": "Khung avatar",
+      "frame_card": "Khung thẻ",
+      "frame_other": "Vật phẩm",
+      "in_inventory": "Đã thêm vào kho đồ, trang bị trong Cửa hàng.",
+      "legacy": "Bạn nhận huy hiệu này trước khi có phần thưởng.",
+      "title_earned": "Phần thưởng đã nhận",
+      "title_locked": "Phần thưởng khi đạt",
+      "xp": "+{{count}} XP"
+    },
     "sheet": {
       "close": "Đóng",
+      "earned_date": "Ngày nhận huy hiệu",
       "earned_on": "Đạt ngày {{date}}",
       "eligible": "Đã đủ điều kiện",
       "not_started": "Chưa bắt đầu",
+      "progress": "Tiến độ chinh phục",
       "remaining": "Còn {{remaining}} {{unit}}"
     },
     "slot": {
@@ -84,6 +102,15 @@
       "recording": "{{name}}. Đang ghi nhận. Mốc {{index}} trên {{count}} của {{series}}"
     },
     "stale_banner": "Đang hiển thị dữ liệu đã lưu.",
+    "status": {
+      "locked": "Đang khóa",
+      "unlocked": "Đã mở khóa"
+    },
+    "summary": {
+      "count": "Đã mở {{earned}} / {{total}} huy hiệu",
+      "rewards": "Thưởng đã tích lũy:",
+      "title": "Kho Tàng Vinh Danh"
+    },
     "title": "Thành tựu"
   },
   "cardRenderer": {
@@ -213,6 +240,57 @@
     "xp_progress_a11y": "Mở tiến độ cấp độ. {{amount}} XP.",
     "xp_retry": "Thử tải lại XP",
     "xp_to_level": "Còn {{remaining}} XP để lên cấp {{nextLevel}}"
+  },
+  "leaderboard": {
+    "admin": "Tài khoản quản trị không tham gia xếp hạng.",
+    "cached_error": "Chưa cập nhật được. Bạn đang xem dữ liệu đã tải trước đó.",
+    "close": "Đóng",
+    "columns": {
+      "learner": "Người học",
+      "rank": "Hạng"
+    },
+    "count": "{{count}} người tham gia",
+    "empty_current_body": "Ôn thẻ hoặc làm quiz để có XP tuần.",
+    "empty_current_title": "Chưa có ai trên bảng tuần này",
+    "empty_previous": "Tuần trước chưa có người được xếp hạng",
+    "error": "Chưa tải được bảng xếp hạng. Vui lòng thử lại.",
+    "finalizing_note": "Kết quả có thể thay đổi trong lúc tổng kết.",
+    "footer": "Hiển thị {{n}} / {{count}} người tham gia",
+    "gap": "Thêm {{xp}} XP để lên hạng {{rank}}",
+    "help": "Cách tính XP và xu hướng",
+    "home_title": "Bảng xếp hạng tuần này",
+    "learn": "Đến màn Học",
+    "learner": "Người học",
+    "link": "Xem bảng xếp hạng",
+    "loading": "Đang tải bảng xếp hạng",
+    "me": "Bạn",
+    "me_first": "Bạn đang ở hạng 1",
+    "period": {
+      "current": "Tuần này",
+      "previous": "Tuần trước"
+    },
+    "previous_trend_note": "Không áp dụng xu hướng cho tuần trước.",
+    "refreshing": "Đang làm mới…",
+    "retry": "Thử lại",
+    "rules": "XP tuần từ ôn thẻ và quiz, gồm bonus Booster. XP thưởng nhiệm vụ và huy hiệu không tính vào bảng.",
+    "status": {
+      "final": "Đã chốt kết quả",
+      "finalizing": "Đang tổng kết"
+    },
+    "timing": "Làm mới khoảng mỗi phút. Thời gian hiển thị theo giờ Việt Nam.",
+    "title": "Bảng xếp hạng",
+    "trend": {
+      "a11y_down": "Giảm {{count}} hạng so với 00:00 hôm nay",
+      "a11y_none": "Chưa có hạng lúc đầu ngày để so sánh",
+      "a11y_same": "Không đổi hạng so với 00:00 hôm nay",
+      "a11y_up": "Tăng {{count}} hạng so với 00:00 hôm nay"
+    },
+    "trend_note": "Xu hướng so với 00:00 hôm nay. Không áp dụng cho tuần trước.",
+    "unranked_current": "Bạn chưa có trên bảng tuần này. Ôn thẻ hoặc làm quiz để có XP tuần.",
+    "unranked_previous": "Bạn chưa có trên bảng tuần trước.",
+    "updated": "Cập nhật {{time}}",
+    "updated_date": "Cập nhật {{time}}, {{date}}",
+    "xp": "{{xp}} XP"
   },
   "learn": {
     "add_word": {
@@ -507,6 +585,7 @@
     "view_all": "Xem tất cả"
   },
   "login": {
+    "banned": "Tài khoản này đã bị khóa. Vui lòng liên hệ hỗ trợ SnapVocab.",
     "email": "Email",
     "email_placeholder": "Nhập email của bạn",
     "error": "Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin.",
@@ -541,36 +620,6 @@
     "add_word_hint": "Thêm vào chủ đề của bạn, kèm bản dịch. Từ đã từng được tính sẽ không tính lại.",
     "back": "Quay lại",
     "cached_error": "Lỗi kết nối. Đang hiển thị nhiệm vụ đã lưu; kết nối lại để cập nhật.",
-    "catalog": {
-      "add_5_words": {
-        "description": "Thêm 5 từ mới có nghĩa",
-        "name": "Góp Nhặt Từ Mới"
-      },
-      "buy_shop_item": {
-        "description": "Mua 1 vật phẩm trong Shop",
-        "name": "Ghé Thăm Cửa Hàng"
-      },
-      "finish_2_short_quizzes": {
-        "description": "Hoàn thành 2 quiz 5 câu",
-        "name": "Hai Bài Quiz Ngắn"
-      },
-      "keep_daily_streak": {
-        "description": "Có ít nhất 1 hoạt động học trong ngày",
-        "name": "Giữ Lửa Mỗi Ngày"
-      },
-      "perfect_mini_quiz": {
-        "description": "Đạt 100% một quiz 5 câu",
-        "name": "Quiz Ngắn Hoàn Hảo"
-      },
-      "quiz_score_80": {
-        "description": "Hoàn thành 1 quiz với độ chính xác ≥ 80%",
-        "name": "Trí Nhớ Siêu Phàm"
-      },
-      "use_xp_booster": {
-        "description": "Kích hoạt 1 XP Booster",
-        "name": "Tăng Tốc Học Tập"
-      }
-    },
     "claim": "Nhận thưởng",
     "claim_error": "Chưa xác nhận được thưởng. Nhấn Nhận thưởng để thử lại.",
     "claimed": "Đã nhận thưởng",

@@ -5,14 +5,15 @@ import LottieView from 'lottie-react-native';
 import * as React from 'react';
 import { Modal, View } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
-import { AchievementArtifact } from '@/components/snapvocab';
 import { Button, Text, useSurface } from '@/components/ui';
 import { Snapy } from '@/components/ui/snapy';
 import { translate } from '@/lib/i18n';
 import { seriesTitle } from '../copy';
 import { isSeriesFinal, milestonePosition, seriesOf } from '../model';
 import { useReduceMotion } from '../use-reduce-motion';
-import { NewMedal } from './achievement-shelf';
+import { BadgeImage } from './badge-image';
+import { NewMedal } from './new-medal';
+import { rewardText } from './reward-chips';
 
 type Props = {
   items: BadgeItem[];
@@ -49,6 +50,12 @@ export function BadgeUnlockModal({ items, seriesList, intensity, onClose, onView
   // Series-final celebration plays once; reduced motion keeps the still Snapy (§10).
   const celebrate = showSnapy && !reduce;
   const { index, count } = milestonePosition(seriesList, first);
+  // Everything this modal presents was paid in the same sync (PD-BDG-14).
+  const paid = rewardText(items.reduce((sum, item) => ({
+    coin: sum.coin + (item.reward?.coin ?? 0),
+    xp: sum.xp + (item.reward?.xp ?? 0),
+    item: sum.item ?? (item.reward?.item?.granted ? item.reward.item : null),
+  }), { coin: 0, xp: 0, item: null as NonNullable<BadgeItem['reward']>['item'] }));
   const announce = single
     ? translate('badges.modal.a11y', { name: first.name, description: first.description })
     : translate('badges.modal.many_title', { count: items.length });
@@ -69,14 +76,14 @@ export function BadgeUnlockModal({ items, seriesList, intensity, onClose, onView
             </View>
           )}
           <View className="rounded-full border border-[#FFE7A3] bg-[#FFF6DB] px-3 py-1.5">
-            <Text className="font-inter text-[14px] font-bold text-[#8A5A00]">{translate(final ? 'badges.modal.pill_final' : 'badges.modal.pill')}</Text>
+            <Text className="font-inter text-[14px] font-bold text-[#8A5A00] dark:text-[#8A5A00]">{translate(final ? 'badges.modal.pill_final' : 'badges.modal.pill')}</Text>
           </View>
 
           {single
             ? (
                 <View className="mt-2 flex-row items-end">
                   <NewMedal isNew size={128}>
-                    <AchievementArtifact metric={first.metric} iconKey={first.iconKey} threshold={first.threshold} state="earned" size={128} />
+                    <BadgeImage item={first} size={128} />
                   </NewMedal>
                   {showSnapy && (
                     <Snapy
@@ -91,7 +98,7 @@ export function BadgeUnlockModal({ items, seriesList, intensity, onClose, onView
                 <View className="mt-2 flex-row">
                   {items.slice(0, MAX_MEDALS).map(item => (
                     <NewMedal key={item.id} isNew size={80}>
-                      <AchievementArtifact metric={item.metric} iconKey={item.iconKey} threshold={item.threshold} state="earned" size={80} />
+                      <BadgeImage item={item} size={80} />
                     </NewMedal>
                   ))}
                 </View>
@@ -131,6 +138,12 @@ export function BadgeUnlockModal({ items, seriesList, intensity, onClose, onView
                   </View>
                 </>
               )}
+
+          {paid && (
+            <View className="mt-3 rounded-xl border border-reward-200 bg-reward-50 px-3 py-1.5 dark:border-reward-500/40 dark:bg-reward-500/15">
+              <Text className="text-center font-nunito text-[14px] font-extrabold text-reward-700 dark:text-reward-300">{translate('badges.modal.reward', { rewards: paid })}</Text>
+            </View>
+          )}
 
           <View className="mt-4 w-full gap-1">
             <Button variant="primary" label={translate('badges.modal.view')} textClassName="font-nunito" onPress={onViewCollection} />

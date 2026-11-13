@@ -23,7 +23,16 @@ const refetchedUrls = new Set<string>();
 
 /** The equipped card frame from GET /api/users/me; on a load error, fetch a fresh (re-signed) URL once. */
 export function useEquippedCardFrame() {
-  const frameUrl = useAuthStore(s => s.user?.equipped?.cardFrameUrl ?? null);
+  return useEquippedFrame('cardFrameUrl');
+}
+
+/** Same contract for the avatar slot. */
+export function useEquippedAvatarFrame() {
+  return useEquippedFrame('avatarFrameUrl');
+}
+
+function useEquippedFrame(slot: 'avatarFrameUrl' | 'cardFrameUrl') {
+  const frameUrl = useAuthStore(s => s.user?.equipped?.[slot] ?? null);
   const queryClient = useQueryClient();
   const onFrameError = useCallback(() => {
     if (!frameUrl || refetchedUrls.has(frameUrl))

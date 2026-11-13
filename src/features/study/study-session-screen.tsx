@@ -15,6 +15,7 @@ import { invalidateProgress, useStreak } from '@/features/progress';
 import { useSchema, useTopicSchema } from '@/features/template-builder/api';
 import { translate } from '@/lib/i18n';
 import { invalidateStudy, useStudyQueue, useStudyToday, useSubmitStudyRating } from './api';
+import { EXPLORE_HREF } from './today-state';
 
 const RATINGS: {
   value: FsrsRating;
@@ -154,6 +155,7 @@ export function StudySessionScreen() {
 
   const title = params.topicName || params.collectionName || translate('learn.session.today_title');
   const schemaLoading = Boolean(currentCard && (isTopicSchemaLoading || isFullSchemaLoading));
+  const noLibrary = isToday && today.data?.totalWords === 0;
 
   if (queueQuery.isLoading) {
     return (
@@ -312,18 +314,32 @@ export function StudySessionScreen() {
                 onDone={() => router.back()}
               />
             )
-          : (
-              <View className="flex-1 items-center justify-center px-7">
-                <Snapy pose="happy" animation="none" style={{ width: 112, height: 112 }} />
-                <Text className="mt-5 text-center font-nunito text-2xl font-black text-mascot-navy dark:text-white">
-                  {translate('learn.session.empty_title')}
-                </Text>
-                <Text className="mt-2 max-w-sm text-center font-inter text-sm/5 text-neutral-500 dark:text-neutral-400">
-                  {translate(isToday ? 'learn.session.empty_today_desc' : 'learn.session.empty_scope_desc')}
-                </Text>
-                <Button className="mt-6 px-8" label={translate('learn.session.done')} variant="primary" onPress={() => router.back()} />
-              </View>
-            )}
+          : noLibrary
+            ? (
+                // "Done for today" would be false here: nothing was ever studied (learn_ui.md §10.1 empty).
+                <View className="flex-1 items-center justify-center px-7">
+                  <Snapy pose="welcome" animation="none" style={{ width: 112, height: 112 }} />
+                  <Text className="mt-5 text-center font-nunito text-2xl font-black text-mascot-navy dark:text-white">
+                    {translate('learn.today.empty_title')}
+                  </Text>
+                  <Text className="mt-2 max-w-sm text-center font-inter text-sm/5 text-neutral-500 dark:text-neutral-400">
+                    {translate('learn.today.empty_desc')}
+                  </Text>
+                  <Button className="mt-6 px-8" label={translate('learn.today.cta_explore')} variant="primary" onPress={() => router.replace(EXPLORE_HREF)} />
+                </View>
+              )
+            : (
+                <View className="flex-1 items-center justify-center px-7">
+                  <Snapy pose="happy" animation="none" style={{ width: 112, height: 112 }} />
+                  <Text className="mt-5 text-center font-nunito text-2xl font-black text-mascot-navy dark:text-white">
+                    {translate('learn.session.empty_title')}
+                  </Text>
+                  <Text className="mt-2 max-w-sm text-center font-inter text-sm/5 text-neutral-500 dark:text-neutral-400">
+                    {translate(isToday ? 'learn.session.empty_today_desc' : 'learn.session.empty_scope_desc')}
+                  </Text>
+                  <Button className="mt-6 px-8" label={translate('learn.session.done')} variant="primary" onPress={() => router.back()} />
+                </View>
+              )}
     </SafeAreaView>
   );
 }

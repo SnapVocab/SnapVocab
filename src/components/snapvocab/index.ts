@@ -1,4 +1,4 @@
-export * from './achievements/achievement-artifact';
+export * from './achievements/achievement-glow';
 export * from './achievements/AchievementBadge3D';
 export * from './achievements/AchievementTrophy3D';
 export * from './achievements/MasteredBadge3D';
@@ -9,7 +9,6 @@ export * from './core/SnapVocabVisualSize';
 export * from './core/visualTokens';
 // Branded Avatar Frames
 export * from './frames/AvatarFrame';
-export * from './frames/avatarFrameCatalog';
 // Home Feature 3D Branded Icons
 export * from './home/HomeFeatureIcons';
 export * from './missions/MissionIcon3D';

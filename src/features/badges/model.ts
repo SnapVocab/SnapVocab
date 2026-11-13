@@ -1,4 +1,4 @@
-import type { BadgeItem, BadgeMetric, BadgeSeries, BadgesView, BadgeVisualState } from './types';
+import type { BadgeItem, BadgeMetric, BadgeSeries, BadgesView } from './types';
 
 /** Copy/route keys per metric (achievements_ui.md §4). Unknown metrics fall back to `other`. */
 export type MetricKey = 'streak' | 'quiz' | 'perfect' | 'words' | 'other';
@@ -57,43 +57,9 @@ export function isRecording(item: BadgeItem): boolean {
   return !item.earned && item.currentValue >= item.threshold;
 }
 
-/** First badge of the series that is not earned, or -1 when the series is complete. */
-export function nextIndex(series: BadgeSeries): number {
-  return series.items.findIndex(i => !i.earned);
-}
-
-export function visualState(series: BadgeSeries, index: number): BadgeVisualState {
-  const item = series.items[index];
-  if (item.earned)
-    return 'earned';
-  if (isRecording(item))
-    return 'recording';
-  return index === nextIndex(series) ? 'next' : 'locked';
-}
-
 /** Displayed progress never exceeds the threshold; the raw value stays uncapped in the API. */
 export function shownProgress(item: BadgeItem): number {
   return Math.min(item.currentValue, item.threshold);
-}
-
-/**
- * Gold inlay length as a fraction of the shelf (achievements_ui.md §4): linear in value between neighbouring
- * milestones, whose centres sit at (i + 0.5) / n.
- */
-export function plankFill(series: BadgeSeries): number {
-  const { items, currentValue } = series;
-  const n = items.length;
-  if (n === 0)
-    return 0;
-  if (currentValue >= items[n - 1].threshold)
-    return 1;
-  const center = (i: number) => (i + 0.5) / n;
-  const j = items.findIndex(i => i.threshold > currentValue);
-  const prev = j === 0 ? 0 : items[j - 1].threshold;
-  const start = j === 0 ? 0 : center(j - 1);
-  const span = items[j].threshold - prev;
-  const ratio = span <= 0 ? 0 : Math.max(0, currentValue - prev) / span;
-  return start + (center(j) - start) * ratio;
 }
 
 /** Highest threshold of a series with at least two milestones (stronger unlock feedback, B6). */
@@ -111,27 +77,6 @@ export function milestonePosition(seriesList: BadgeSeries[], item: BadgeItem): {
   if (!series)
     return { index: 1, count: 1 };
   return { index: series.items.findIndex(i => i.id === item.id) + 1, count: series.items.length };
-}
-
-/**
- * The next milestone with the highest progress ratio, ties broken by the smaller remaining amount, then series order.
- * A ratio, not an effort estimate: copy only states "N left" (achievements_ui.md §5).
- */
-export function highestProgressRatio(seriesList: BadgeSeries[]): BadgeItem | null {
-  let best: { item: BadgeItem; ratio: number; remaining: number } | null = null;
-  for (const series of seriesList) {
-    const i = nextIndex(series);
-    if (i < 0)
-      continue;
-    const item = series.items[i];
-    if (isRecording(item))
-      continue;
-    const ratio = shownProgress(item) / item.threshold;
-    const remaining = item.threshold - item.currentValue;
-    if (!best || ratio > best.ratio || (ratio === best.ratio && remaining < best.remaining))
-      best = { item, ratio, remaining };
-  }
-  return best?.item ?? null;
 }
 
 /** Badges in shelf order: series order, then milestone order (modal and NEW hero lists). */

@@ -3,14 +3,16 @@ import type { DailyMissions } from '../types';
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react-native';
 import * as React from 'react';
 import { AppState } from 'react-native';
+import { EXPLORE_HREF } from '@/features/study/today-state';
 import { useClaimMission, useDailyMissions } from '../api';
-import { actions, MissionsScreen } from '../missions-screen';
+import { actions, MissionsScreen, studyHref } from '../missions-screen';
 import { RENDERED_TRIGGERS } from '../types';
 
 const mockPush = jest.fn();
 jest.mock('expo-router', () => ({ useRouter: () => ({ push: mockPush, back: jest.fn() }) }));
 jest.mock('expo-crypto', () => ({ randomUUID: () => 'stable-uuid' }));
 jest.mock('../api', () => ({ useDailyMissions: jest.fn(), useClaimMission: jest.fn(), missionErrorCode: () => undefined }));
+jest.mock('@/features/study/api', () => ({ useStudyToday: () => ({ data: undefined }) }));
 // Echo interpolation values so assertions can see what a message names.
 jest.mock('@/lib/i18n', () => ({
   translate: (key: string, options?: Record<string, unknown>) => (options ? `${key}(${Object.values(options).join('|')})` : key),
@@ -52,6 +54,20 @@ const data: DailyMissions = {
 // PD-DM-13: the app announces exactly the triggers it has a CTA for, or the backend hands out a mission it cannot show.
 it('announces every trigger it renders and only those', () => {
   expect(Object.keys(actions).sort()).toEqual([...RENDERED_TRIGGERS].sort());
+});
+
+// A study mission never lands on an empty session: no library → ready-made sets; today done → a quiz still keeps the streak.
+it('routes study missions by what today can offer', () => {
+  const today = { dueCount: 0, newCount: 0, sessionCount: 0, studiedToday: 0, newPerDay: 20, backlog: false, returning: false, dueTomorrow: 0, totalWords: 0 };
+  expect(studyHref('SRS_REVIEW_COMPLETED', '/study/session', today)).toBe(EXPLORE_HREF);
+  expect(studyHref('LEARNING_ACTIVITY_RECORDED', '/study/session', today)).toBe(EXPLORE_HREF);
+  const done = { ...today, totalWords: 40, studiedToday: 20 };
+  expect(studyHref('SRS_REVIEW_COMPLETED', '/study/session', done)).toBe('/learn');
+  expect(studyHref('LEARNING_ACTIVITY_RECORDED', '/study/session', done)).toBe('/study/quiz-setup');
+  const due = { ...done, dueCount: 5, sessionCount: 5 };
+  expect(studyHref('SRS_REVIEW_COMPLETED', '/study/session', due)).toBe('/study/session');
+  expect(studyHref('SRS_REVIEW_COMPLETED', '/study/session', undefined)).toBe('/study/session');
+  expect(studyHref('QUIZ_COMPLETED', '/study/quiz-setup', today)).toBe('/study/quiz-setup');
 });
 
 describe('daily Mission screen lifecycle', () => {

@@ -240,12 +240,10 @@ function IdentityCard({ user, frame, onEdit, locale, children }: { user: User; f
         {frame ? (
         // Same renderer as the Shop preview, so the bought frame looks the same here.
           <AvatarFrame
-            frameId={frame.code}
             frameUrl={frame.config?.frameUrl}
             avatarUri={user.avatarUrl}
             initials={initials(name)}
             size={80}
-            showGlow={false}
           />
         ) : (
           <View className="size-20 shrink-0 items-center justify-center rounded-full border-2 border-primary-400 bg-primary-50/50 p-1 dark:bg-primary-500/10">

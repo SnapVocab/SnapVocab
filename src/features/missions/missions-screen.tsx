@@ -1,5 +1,6 @@
 import type { Href } from 'expo-router';
 import type { DailyMission, DailyMissions, MissionCategory, MissionTriggerEvent } from './types';
+import type { StudyToday } from '@/features/study/api';
 import type { TxKeyPath } from '@/lib/i18n';
 import { randomUUID } from 'expo-crypto';
 import { useRouter } from 'expo-router';
@@ -9,6 +10,8 @@ import { Button, FocusAwareStatusBar, SafeAreaView, ScreenHeader, Text } from '@
 import { BookIcon, CameraIcon, CheckCircleIcon, ChevronRightIcon, FlameIcon, ShoppingBagIcon, SRSReviewIcon, TargetIcon } from '@/components/ui/icons';
 import { RewardIcon } from '@/components/ui/rewards';
 import { useColorMode } from '@/components/ui/surface';
+import { useStudyToday } from '@/features/study/api';
+import { EXPLORE_HREF, todayState } from '@/features/study/today-state';
 import { translate } from '@/lib/i18n';
 import { missionErrorCode, useClaimMission, useDailyMissions } from './api';
 
@@ -25,15 +28,20 @@ export const actions: Partial<Record<MissionTriggerEvent, { href: Href; tx: TxKe
   SCAN_WORD_SAVED: { href: '/camera', tx: 'missions.action.scan' },
 };
 
-const missionCopy: Record<string, { name: TxKeyPath; description: TxKeyPath }> = {
-  ADD_5_WORDS: { name: 'missions.catalog.add_5_words.name', description: 'missions.catalog.add_5_words.description' },
-  QUIZ_SCORE_80: { name: 'missions.catalog.quiz_score_80.name', description: 'missions.catalog.quiz_score_80.description' },
-  FINISH_2_SHORT_QUIZZES: { name: 'missions.catalog.finish_2_short_quizzes.name', description: 'missions.catalog.finish_2_short_quizzes.description' },
-  PERFECT_MINI_QUIZ: { name: 'missions.catalog.perfect_mini_quiz.name', description: 'missions.catalog.perfect_mini_quiz.description' },
-  KEEP_DAILY_STREAK: { name: 'missions.catalog.keep_daily_streak.name', description: 'missions.catalog.keep_daily_streak.description' },
-  USE_XP_BOOSTER: { name: 'missions.catalog.use_xp_booster.name', description: 'missions.catalog.use_xp_booster.description' },
-  BUY_SHOP_ITEM: { name: 'missions.catalog.buy_shop_item.name', description: 'missions.catalog.buy_shop_item.description' },
-};
+/**
+ * Today's session only helps when it has cards. An empty library starts at the ready-made sets; once today is done,
+ * any learning activity still keeps the streak, so that mission falls back to a quiz.
+ */
+export function studyHref(trigger: MissionTriggerEvent, href: Href, today: StudyToday | undefined): Href {
+  if (!today || (trigger !== 'LEARNING_ACTIVITY_RECORDED' && trigger !== 'SRS_REVIEW_COMPLETED'))
+    return href;
+  const { kind } = todayState(today);
+  if (kind === 'empty')
+    return EXPLORE_HREF;
+  if (kind === 'done')
+    return trigger === 'LEARNING_ACTIVITY_RECORDED' ? '/study/quiz-setup' : '/learn';
+  return href;
+}
 
 const categoryTiles: Partial<Record<MissionCategory, { Icon: typeof BookIcon; tile: string; color: string }>> = {
   SCAN: { Icon: CameraIcon, tile: 'bg-success-100 dark:bg-neutral-800', color: '#2F6E00' },
@@ -54,6 +62,7 @@ export function MissionsScreen() {
   const query = useDailyMissions();
   const { data, dataUpdatedAt, refetch } = query;
   const claim = useClaimMission();
+  const today = useStudyToday().data;
   const router = useRouter();
   const isDark = useColorMode() === 'dark';
   const keys = React.useRef(new Map<number, string>());
@@ -169,7 +178,6 @@ export function MissionsScreen() {
 
         {missions.map((mission) => {
           const { Icon, tile, color } = categoryTiles[mission.category] ?? fallbackTile;
-          const copy = missionCopy[mission.code];
           const action = actions[mission.triggerEvent];
           const ratio = Math.min(1, mission.currentProgress / Math.max(1, mission.targetValue));
           const claimable = mission.status === 'COMPLETED' && !ended;
@@ -189,8 +197,8 @@ export function MissionsScreen() {
                   <Icon width={22} height={22} color={color} />
                 </View>
                 <View className="flex-1">
-                  <Text className="font-nunito text-[15px] font-extrabold text-mascot-navy dark:text-white">{copy ? translate(copy.name) : mission.name}</Text>
-                  <Text className="font-inter text-[13px] text-neutral-500 dark:text-neutral-300">{copy ? translate(copy.description) : mission.description}</Text>
+                  <Text className="font-nunito text-[15px] font-extrabold text-mascot-navy dark:text-white">{mission.name}</Text>
+                  <Text className="font-inter text-[13px] text-neutral-500 dark:text-neutral-300">{mission.description}</Text>
                   {mission.triggerEvent === 'TOPIC_ITEM_CREATED' && mission.status === 'IN_PROGRESS' && (
                     <Text tx="missions.add_word_hint" className="mt-1 font-inter text-xs text-neutral-500 dark:text-neutral-300" />
                   )}
@@ -228,7 +236,7 @@ export function MissionsScreen() {
                 <View className="flex-1" />
                 {claimed && <Text tx="missions.claimed" className="font-nunito text-sm font-extrabold text-primary-800 dark:text-primary-300" />}
                 {mission.status === 'IN_PROGRESS' && !ended && action && (
-                  <Pressable accessibilityRole="button" onPress={() => router.push(action.href)} hitSlop={8} className="min-h-11 flex-row items-center gap-0.5 active:opacity-60">
+                  <Pressable accessibilityRole="button" onPress={() => router.push(studyHref(mission.triggerEvent, action.href, today))} hitSlop={8} className="min-h-11 flex-row items-center gap-0.5 active:opacity-60">
                     <Text tx={action.tx} className="font-nunito text-sm font-extrabold text-primary-800 dark:text-primary-300" />
                     <ChevronRightIcon width={16} height={16} color={isDark ? '#A0E063' : '#2F6E00'} />
                   </Pressable>
