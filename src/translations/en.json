@@ -620,36 +620,6 @@
     "add_word_hint": "Add it to your own topic with a translation. Words counted before will not count again.",
     "back": "Back",
     "cached_error": "Connection failed. Showing saved missions; reconnect to refresh.",
-    "catalog": {
-      "add_5_words": {
-        "description": "Add 5 new words with meanings",
-        "name": "Gather New Words"
-      },
-      "buy_shop_item": {
-        "description": "Buy one item from the Shop",
-        "name": "Visit the Shop"
-      },
-      "finish_2_short_quizzes": {
-        "description": "Complete two 5-question quizzes",
-        "name": "Two Quick Quizzes"
-      },
-      "keep_daily_streak": {
-        "description": "Complete at least one learning activity today",
-        "name": "Keep the Streak"
-      },
-      "perfect_mini_quiz": {
-        "description": "Get 100% on a 5-question quiz",
-        "name": "Perfect Quick Quiz"
-      },
-      "quiz_score_80": {
-        "description": "Complete a quiz with at least 80% accuracy",
-        "name": "Super Memory"
-      },
-      "use_xp_booster": {
-        "description": "Activate one XP Booster",
-        "name": "Boost Your Learning"
-      }
-    },
     "claim": "Claim reward",
     "claim_error": "Reward not confirmed yet. Tap Claim reward to try again.",
     "claimed": "Reward claimed",

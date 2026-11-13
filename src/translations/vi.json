@@ -620,36 +620,6 @@
     "add_word_hint": "Thêm vào chủ đề của bạn, kèm bản dịch. Từ đã từng được tính sẽ không tính lại.",
     "back": "Quay lại",
     "cached_error": "Lỗi kết nối. Đang hiển thị nhiệm vụ đã lưu; kết nối lại để cập nhật.",
-    "catalog": {
-      "add_5_words": {
-        "description": "Thêm 5 từ mới có nghĩa",
-        "name": "Góp Nhặt Từ Mới"
-      },
-      "buy_shop_item": {
-        "description": "Mua 1 vật phẩm trong Shop",
-        "name": "Ghé Thăm Cửa Hàng"
-      },
-      "finish_2_short_quizzes": {
-        "description": "Hoàn thành 2 quiz 5 câu",
-        "name": "Hai Bài Quiz Ngắn"
-      },
-      "keep_daily_streak": {
-        "description": "Có ít nhất 1 hoạt động học trong ngày",
-        "name": "Giữ Lửa Mỗi Ngày"
-      },
-      "perfect_mini_quiz": {
-        "description": "Đạt 100% một quiz 5 câu",
-        "name": "Quiz Ngắn Hoàn Hảo"
-      },
-      "quiz_score_80": {
-        "description": "Hoàn thành 1 quiz với độ chính xác ≥ 80%",
-        "name": "Trí Nhớ Siêu Phàm"
-      },
-      "use_xp_booster": {
-        "description": "Kích hoạt 1 XP Booster",
-        "name": "Tăng Tốc Học Tập"
-      }
-    },
     "claim": "Nhận thưởng",
     "claim_error": "Chưa xác nhận được thưởng. Nhấn Nhận thưởng để thử lại.",
     "claimed": "Đã nhận thưởng",
