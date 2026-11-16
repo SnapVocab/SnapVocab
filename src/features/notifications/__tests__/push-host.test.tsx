@@ -40,6 +40,7 @@ jest.mock('@/features/auth/use-auth-store', () => ({
   ),
 }));
 jest.mock('@/features/profile/api', () => ({ settingsKey: ['settings'] }));
+jest.mock('@/features/scan/api', () => ({ scanStatusKey: (id: string) => ['scan-status', id] }));
 jest.mock('../api', () => ({
   markRead: jest.fn(() => Promise.resolve()),
   notificationKeys: { unreadCount: ['unread'], all: ['notifications'] },

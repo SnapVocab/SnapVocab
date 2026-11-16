@@ -56,6 +56,13 @@ describe('openAction (notification.md §3.8 handleOpen)', () => {
     expect(openAction({ ...data, route: '/admin' }, 42)).toEqual({ kind: 'open', markReadId: 981, route: '/notifications' });
     expect(openAction({ ...data, route: null }, 42)).toMatchObject({ route: '/notifications' });
   });
+
+  it('opens scan result routes directly with their requestId', () => {
+    expect(openAction(
+      { ...data, type: 'SYSTEM', route: '/scan-result?requestId=req-1', requestId: 'req-1' },
+      42,
+    )).toEqual({ kind: 'open', markReadId: 981, route: '/scan-result?requestId=req-1' });
+  });
 });
 
 describe('pushToggle (§3.9)', () => {
