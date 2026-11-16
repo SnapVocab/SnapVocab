@@ -8,6 +8,7 @@ import * as React from 'react';
 import { AppState } from 'react-native';
 import { useAuthStore } from '@/features/auth/use-auth-store';
 import { settingsKey } from '@/features/profile/api';
+import { scanStatusKey } from '@/features/scan/api';
 import { markRead, notificationKeys } from './api';
 import { ensureChannel, openAction, readPermission, registerDevice, silenceForeground } from './push';
 
@@ -84,8 +85,12 @@ export function PushHost() {
         void registerDevice().catch(() => {});
     });
     // Foreground push: no banner (silenceForeground), only the bell catches up (§3.7).
-    const received = Notifications.addNotificationReceivedListener(() =>
-      void queryClient.invalidateQueries({ queryKey: notificationKeys.unreadCount }));
+    const received = Notifications.addNotificationReceivedListener((notification) => {
+      void queryClient.invalidateQueries({ queryKey: notificationKeys.unreadCount });
+      const data = notification?.request?.content?.data as PushData | undefined;
+      if (typeof data?.requestId === 'string' && data.requestId.length > 0)
+        void queryClient.invalidateQueries({ queryKey: scanStatusKey(data.requestId) });
+    });
     return () => {
       token.remove();
       appState.remove();

@@ -708,6 +708,7 @@
     "mark_all_read_error": "Couldn't mark all as read. Please try again.",
     "mark_read_error": "Couldn't mark as read. Please try again.",
     "open_missions": "View missions",
+    "open_scan_result": "View scan result",
     "open_settings": "Open Settings",
     "open_shop": "Open Shop",
     "open_stats": "View stats",

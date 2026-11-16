@@ -12,7 +12,7 @@ import { routeLabel } from './display';
 export type PushPermission = 'granted' | 'denied' | 'undetermined';
 
 /** What the push payload carries (J1, PushSender). */
-export type PushData = { userNotificationId?: number; userId?: number; type?: string; route?: string | null };
+export type PushData = { userNotificationId?: number; userId?: number; type?: string; route?: string | null; requestId?: string };
 
 export type OpenAction =
   | { kind: 'ignore' }
