@@ -18,15 +18,19 @@ import { scanFailureMessageKey, toScanFailure } from './scan-errors';
 
 type Params = {
   requestId: string;
-  imageUri: string;
+  imageUri?: string;
   mimeType?: string;
 };
 
 export function ScanResultScreen() {
+  const params = useLocalSearchParams<Params>();
+  return <ScanResultContent key={params.requestId} params={params} />;
+}
+
+function ScanResultContent({ params }: { params: Params }) {
   const isDark = useColorMode() === 'dark';
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const params = useLocalSearchParams<Params>();
   const [requestId, setRequestId] = useState(params.requestId);
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [acceptedAt, setAcceptedAt] = useState(() => Date.now());
@@ -40,6 +44,10 @@ export function ScanResultScreen() {
   const backToCamera = () => (router.canGoBack() ? router.back() : router.replace('/'));
 
   const retry = () => {
+    if (!params.imageUri) {
+      backToCamera();
+      return;
+    }
     resubmit.mutate(
       { uri: params.imageUri, mimeType: params.mimeType },
       {
@@ -61,6 +69,7 @@ export function ScanResultScreen() {
   };
 
   const data = scan.data;
+  const imageUri = params.imageUri || data?.imageUrl;
   let failure: ScanFailure | null = null;
   if (data?.status === 'FAILED')
     failure = data.errorCode ?? 'UNKNOWN';
@@ -113,12 +122,16 @@ export function ScanResultScreen() {
         contentContainerStyle={{ padding: 16, paddingBottom: result ? 140 : 32 }}
         showsVerticalScrollIndicator={false}
       >
-        <DetectionImage
-          imageUri={params.imageUri}
-          result={result}
-          selectedIndex={selectedIndex}
-          onSelect={selectFromImage}
-        />
+        {imageUri
+          ? (
+              <DetectionImage
+                imageUri={imageUri}
+                result={result}
+                selectedIndex={selectedIndex}
+                onSelect={selectFromImage}
+              />
+            )
+          : null}
 
         {result && items.length > 0 && (
           <View className="mt-3 flex-row items-center gap-1.5 px-1">

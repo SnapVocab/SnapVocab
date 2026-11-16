@@ -76,6 +76,7 @@ export type ScanRequestStatus = {
   errorCode: ScanErrorCode | null;
   createdAt: string;
   finishedAt: string | null;
+  imageUrl?: string | null;
   result: ScanResult | null;
 };
 
