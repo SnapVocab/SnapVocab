@@ -90,6 +90,8 @@ describe('notification display rules (§3.5, §2.3)', () => {
   it('only whitelisted routes get a link', () => {
     expect(routeLabel('/shop')).toBe('notifications.open_shop');
     expect(routeLabel('/study/select')).toBe('notifications.open_study');
+    expect(routeLabel('/scan-result?requestId=req-1')).toBe('notifications.open_scan_result');
+    expect(routeLabel('/scan-result?requestId=bad/path')).toBeNull();
     expect(routeLabel('/admin')).toBeNull();
     expect(routeLabel('constructor')).toBeNull();
     expect(routeLabel(null)).toBeNull();

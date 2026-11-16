@@ -5,6 +5,18 @@ import * as React from 'react';
 import { PushHost } from '../push-host';
 
 let mockNavigationKey: string | undefined;
+let mockNavigationReady = false;
+const mockNavigationListeners = {
+  ready: new Set<() => void>(),
+  state: new Set<() => void>(),
+};
+const mockNavigationRef = {
+  isReady: () => mockNavigationReady,
+  addListener: (event: keyof typeof mockNavigationListeners, listener: () => void) => {
+    mockNavigationListeners[event].add(listener);
+    return () => mockNavigationListeners[event].delete(listener);
+  },
+};
 let mockStatus = 'signIn';
 const mockRouter = { navigate: jest.fn(), push: jest.fn() };
 const mockQueryClient = {
@@ -14,6 +26,7 @@ const mockQueryClient = {
 let mockResponseListener: (response: NotificationResponse) => void;
 jest.mock('expo-router', () => ({
   useRootNavigationState: () => ({ key: mockNavigationKey }),
+  useNavigationContainerRef: () => mockNavigationRef,
   useRouter: () => mockRouter,
 }));
 jest.mock('@tanstack/react-query', () => ({
@@ -27,6 +40,7 @@ jest.mock('@/features/auth/use-auth-store', () => ({
   ),
 }));
 jest.mock('@/features/profile/api', () => ({ settingsKey: ['settings'] }));
+jest.mock('@/features/scan/api', () => ({ scanStatusKey: (id: string) => ['scan-status', id] }));
 jest.mock('../api', () => ({
   markRead: jest.fn(() => Promise.resolve()),
   notificationKeys: { unreadCount: ['unread'], all: ['notifications'] },
@@ -59,16 +73,22 @@ beforeEach(() => {
   jest.clearAllMocks();
   jest.mocked(Notifications.getLastNotificationResponse).mockReturnValue(null);
   mockNavigationKey = undefined;
+  mockNavigationReady = false;
+  mockNavigationListeners.ready.clear();
+  mockNavigationListeners.state.clear();
   mockStatus = 'signIn';
 });
 
 it('defers an early native notification until the navigator mounts and opens it once', () => {
-  const view = render(<PushHost />);
+  render(<PushHost />);
   act(() => mockResponseListener(response));
   expect(mockRouter.navigate).not.toHaveBeenCalled();
   mockNavigationKey = 'root';
   jest.mocked(Notifications.getLastNotificationResponse).mockReturnValue(response);
-  view.rerender(<PushHost />);
+  act(() => {
+    mockNavigationReady = true;
+    mockNavigationListeners.ready.forEach(listener => listener());
+  });
   expect(mockRouter.navigate).toHaveBeenCalledTimes(1);
   expect(mockRouter.push).toHaveBeenCalledWith('/notifications');
 });
@@ -76,6 +96,7 @@ it('defers an early native notification until the navigator mounts and opens it 
 it('waits for session hydration and discards a notification when signed out', () => {
   mockStatus = 'idle';
   mockNavigationKey = 'root';
+  mockNavigationReady = true;
   const view = render(<PushHost />);
   act(() => mockResponseListener(response));
   expect(mockRouter.push).not.toHaveBeenCalled();
@@ -83,4 +104,58 @@ it('waits for session hydration and discards a notification when signed out', ()
   view.rerender(<PushHost />);
   expect(mockRouter.navigate).not.toHaveBeenCalled();
   expect(mockRouter.push).not.toHaveBeenCalled();
+});
+
+it('does not open a cached cold-start push just because the root state already has a key', () => {
+  mockNavigationKey = 'root';
+  jest.mocked(Notifications.getLastNotificationResponse).mockReturnValue(response);
+  render(<PushHost />);
+
+  expect(mockRouter.navigate).not.toHaveBeenCalled();
+  expect(Notifications.clearLastNotificationResponse).not.toHaveBeenCalled();
+
+  act(() => {
+    mockNavigationReady = true;
+    mockNavigationListeners.ready.forEach(listener => listener());
+  });
+  expect(mockRouter.navigate).toHaveBeenCalledTimes(1);
+  expect(mockRouter.push).toHaveBeenCalledWith('/notifications');
+  expect(Notifications.clearLastNotificationResponse).toHaveBeenCalledTimes(1);
+});
+
+it('drains a native callback on the ready event without requiring a route rerender', () => {
+  render(<PushHost />);
+  act(() => mockResponseListener(response));
+
+  act(() => {
+    mockNavigationReady = true;
+    mockNavigationListeners.ready.forEach(listener => listener());
+  });
+  expect(mockRouter.push).toHaveBeenCalledTimes(1);
+});
+
+it('checks live readiness when a callback arrives during navigator remount', () => {
+  mockNavigationKey = 'root';
+  mockNavigationReady = true;
+  render(<PushHost />);
+
+  act(() => {
+    mockNavigationReady = false;
+    mockResponseListener(response);
+    mockNavigationListeners.state.forEach(listener => listener());
+  });
+  expect(mockRouter.navigate).not.toHaveBeenCalled();
+
+  act(() => {
+    mockNavigationReady = true;
+    mockNavigationListeners.ready.forEach(listener => listener());
+  });
+  expect(mockRouter.push).toHaveBeenCalledTimes(1);
+});
+
+it('unsubscribes navigation readiness listeners on unmount', () => {
+  const view = render(<PushHost />);
+  view.unmount();
+  expect(mockNavigationListeners.ready.size).toBe(0);
+  expect(mockNavigationListeners.state.size).toBe(0);
 });

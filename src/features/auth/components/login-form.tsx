@@ -49,6 +49,9 @@ export function LoginForm() {
             },
           });
         }
+        else if (body?.error === 'USER_BANNED') {
+          showErrorMessage(translate('login.banned'));
+        }
         else {
           showErrorMessage(translate('login.error'));
         }

@@ -28,6 +28,8 @@ export type AvatarFrameProps = {
   badgeComponent?: React.ReactNode;
   /** Callback when remote frame URL fails to load (e.g. presigned URL expired) */
   onFrameError?: () => void;
+  /** Callback when the remote avatar image fails to load */
+  onAvatarError?: () => void;
   /** Press handler */
   onPress?: () => void;
   /** Custom children to render inside the avatar aperture */
@@ -46,6 +48,7 @@ export const AvatarFrame: React.FC<AvatarFrameProps> = ({
   size = 'md',
   badgeComponent,
   onFrameError,
+  onAvatarError,
   onPress,
   children,
   style,
@@ -84,6 +87,7 @@ export const AvatarFrame: React.FC<AvatarFrameProps> = ({
         {children || (avatarUri ? (
           <Image
             source={{ uri: avatarUri }}
+            onError={onAvatarError}
             style={{ width: avatarDiameter, height: avatarDiameter, borderRadius: avatarBorderRadius }}
             resizeMode="cover"
           />

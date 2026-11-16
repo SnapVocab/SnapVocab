@@ -43,16 +43,6 @@ export function studyHref(trigger: MissionTriggerEvent, href: Href, today: Study
   return href;
 }
 
-const missionCopy: Record<string, { name: TxKeyPath; description: TxKeyPath }> = {
-  ADD_5_WORDS: { name: 'missions.catalog.add_5_words.name', description: 'missions.catalog.add_5_words.description' },
-  QUIZ_SCORE_80: { name: 'missions.catalog.quiz_score_80.name', description: 'missions.catalog.quiz_score_80.description' },
-  FINISH_2_SHORT_QUIZZES: { name: 'missions.catalog.finish_2_short_quizzes.name', description: 'missions.catalog.finish_2_short_quizzes.description' },
-  PERFECT_MINI_QUIZ: { name: 'missions.catalog.perfect_mini_quiz.name', description: 'missions.catalog.perfect_mini_quiz.description' },
-  KEEP_DAILY_STREAK: { name: 'missions.catalog.keep_daily_streak.name', description: 'missions.catalog.keep_daily_streak.description' },
-  USE_XP_BOOSTER: { name: 'missions.catalog.use_xp_booster.name', description: 'missions.catalog.use_xp_booster.description' },
-  BUY_SHOP_ITEM: { name: 'missions.catalog.buy_shop_item.name', description: 'missions.catalog.buy_shop_item.description' },
-};
-
 const categoryTiles: Partial<Record<MissionCategory, { Icon: typeof BookIcon; tile: string; color: string }>> = {
   SCAN: { Icon: CameraIcon, tile: 'bg-success-100 dark:bg-neutral-800', color: '#2F6E00' },
   VOCABULARY: { Icon: BookIcon, tile: 'bg-info-100 dark:bg-neutral-800', color: '#0B8FCE' },
@@ -188,7 +178,6 @@ export function MissionsScreen() {
 
         {missions.map((mission) => {
           const { Icon, tile, color } = categoryTiles[mission.category] ?? fallbackTile;
-          const copy = missionCopy[mission.code];
           const action = actions[mission.triggerEvent];
           const ratio = Math.min(1, mission.currentProgress / Math.max(1, mission.targetValue));
           const claimable = mission.status === 'COMPLETED' && !ended;
@@ -208,8 +197,8 @@ export function MissionsScreen() {
                   <Icon width={22} height={22} color={color} />
                 </View>
                 <View className="flex-1">
-                  <Text className="font-nunito text-[15px] font-extrabold text-mascot-navy dark:text-white">{copy ? translate(copy.name) : mission.name}</Text>
-                  <Text className="font-inter text-[13px] text-neutral-500 dark:text-neutral-300">{copy ? translate(copy.description) : mission.description}</Text>
+                  <Text className="font-nunito text-[15px] font-extrabold text-mascot-navy dark:text-white">{mission.name}</Text>
+                  <Text className="font-inter text-[13px] text-neutral-500 dark:text-neutral-300">{mission.description}</Text>
                   {mission.triggerEvent === 'TOPIC_ITEM_CREATED' && mission.status === 'IN_PROGRESS' && (
                     <Text tx="missions.add_word_hint" className="mt-1 font-inter text-xs text-neutral-500 dark:text-neutral-300" />
                   )}

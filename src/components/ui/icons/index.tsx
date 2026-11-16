@@ -35,6 +35,7 @@ export * from './globe';
 export * from './help-circle';
 export * from './home';
 export * from './images';
+export * from './info';
 export * from './inventory';
 export * from './layers';
 export * from './layout-grid';

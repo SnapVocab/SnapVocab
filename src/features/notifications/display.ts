@@ -19,7 +19,11 @@ export function isReminder(type: NotificationType): boolean {
 
 /** Null when the route is missing or not whitelisted: the row then never navigates. */
 export function routeLabel(route: string | null): TxKeyPath | null {
-  return route ? ROUTE_LABELS.get(route) ?? null : null;
+  if (!route)
+    return null;
+  if (/^\/scan-result\?requestId=[\w-]+$/.test(route))
+    return 'notifications.open_scan_result';
+  return ROUTE_LABELS.get(route) ?? null;
 }
 
 /** §3.5: "Vừa xong", minutes, hours, days, then dd/MM/yyyy from 7 days on. */

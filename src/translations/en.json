@@ -241,6 +241,57 @@
     "xp_retry": "Retry loading XP",
     "xp_to_level": "{{remaining}} XP to level {{nextLevel}}"
   },
+  "leaderboard": {
+    "admin": "Admin accounts are not ranked.",
+    "cached_error": "Couldn't update. You're seeing data loaded earlier.",
+    "close": "Close",
+    "columns": {
+      "learner": "Learner",
+      "rank": "Rank"
+    },
+    "count": "{{count}} participants",
+    "empty_current_body": "Review cards or take a quiz to earn weekly XP.",
+    "empty_current_title": "No one is on the board this week yet",
+    "empty_previous": "No one was ranked last week",
+    "error": "Couldn't load the leaderboard. Please try again.",
+    "finalizing_note": "Results may change while the week is being finalized.",
+    "footer": "Showing {{n}} / {{count}} participants",
+    "gap": "{{xp}} more XP to reach rank {{rank}}",
+    "help": "How XP and trends work",
+    "home_title": "This week's leaderboard",
+    "learn": "Go to Learn",
+    "learner": "Learner",
+    "link": "View leaderboard",
+    "loading": "Loading leaderboard",
+    "me": "You",
+    "me_first": "You're ranked #1",
+    "period": {
+      "current": "This week",
+      "previous": "Last week"
+    },
+    "previous_trend_note": "Trends don't apply to last week.",
+    "refreshing": "Refreshing…",
+    "retry": "Try again",
+    "rules": "Weekly XP comes from card reviews and quizzes, Booster bonus included. Mission and badge reward XP does not count.",
+    "status": {
+      "final": "Final results",
+      "finalizing": "Finalizing"
+    },
+    "timing": "Refreshes about every minute. Times are shown in Vietnam time.",
+    "title": "Leaderboard",
+    "trend": {
+      "a11y_down": "Down {{count}} ranks since 00:00 today",
+      "a11y_none": "No rank at the start of today to compare",
+      "a11y_same": "Same rank as at 00:00 today",
+      "a11y_up": "Up {{count}} ranks since 00:00 today"
+    },
+    "trend_note": "Trend compares with 00:00 today. Not shown for last week.",
+    "unranked_current": "You're not on the board this week yet. Review cards or take a quiz to earn weekly XP.",
+    "unranked_previous": "You weren't on the board last week.",
+    "updated": "Updated {{time}}",
+    "updated_date": "Updated {{time}}, {{date}}",
+    "xp": "{{xp}} XP"
+  },
   "learn": {
     "add_word": {
       "add_error": "Failed to add word. Please try again.",
@@ -534,6 +585,7 @@
     "view_all": "View all"
   },
   "login": {
+    "banned": "This account has been locked. Please contact SnapVocab support.",
     "email": "Email",
     "email_placeholder": "Enter your email",
     "error": "Login failed. Please check your credentials.",
@@ -568,36 +620,6 @@
     "add_word_hint": "Add it to your own topic with a translation. Words counted before will not count again.",
     "back": "Back",
     "cached_error": "Connection failed. Showing saved missions; reconnect to refresh.",
-    "catalog": {
-      "add_5_words": {
-        "description": "Add 5 new words with meanings",
-        "name": "Gather New Words"
-      },
-      "buy_shop_item": {
-        "description": "Buy one item from the Shop",
-        "name": "Visit the Shop"
-      },
-      "finish_2_short_quizzes": {
-        "description": "Complete two 5-question quizzes",
-        "name": "Two Quick Quizzes"
-      },
-      "keep_daily_streak": {
-        "description": "Complete at least one learning activity today",
-        "name": "Keep the Streak"
-      },
-      "perfect_mini_quiz": {
-        "description": "Get 100% on a 5-question quiz",
-        "name": "Perfect Quick Quiz"
-      },
-      "quiz_score_80": {
-        "description": "Complete a quiz with at least 80% accuracy",
-        "name": "Super Memory"
-      },
-      "use_xp_booster": {
-        "description": "Activate one XP Booster",
-        "name": "Boost Your Learning"
-      }
-    },
     "claim": "Claim reward",
     "claim_error": "Reward not confirmed yet. Tap Claim reward to try again.",
     "claimed": "Reward claimed",
@@ -686,6 +708,7 @@
     "mark_all_read_error": "Couldn't mark all as read. Please try again.",
     "mark_read_error": "Couldn't mark as read. Please try again.",
     "open_missions": "View missions",
+    "open_scan_result": "View scan result",
     "open_settings": "Open Settings",
     "open_shop": "Open Shop",
     "open_stats": "View stats",
