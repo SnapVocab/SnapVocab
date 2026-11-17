@@ -1,6 +1,6 @@
 import { useRouter } from 'expo-router';
 import * as React from 'react';
-import { View } from 'react-native';
+import { Pressable, View } from 'react-native';
 import { Button, Text } from '@/components/ui';
 import { translate } from '@/lib/i18n';
 import { useLeaderboard } from '../api';
@@ -19,9 +19,22 @@ export function HomeLeaderboardCard() {
 
   return (
     <View className="mt-4 overflow-hidden rounded-2xl border border-line bg-surface">
-      <Text className="px-4 pt-4 pb-2 font-nunito text-lg font-black text-mascot-navy dark:text-white">
-        {translate('leaderboard.home_title')}
-      </Text>
+      <Pressable
+        accessibilityRole="button"
+        onPress={() => router.push('/leaderboard')}
+        className="flex-row items-center justify-between gap-2 px-4 pt-4 pb-2.5 active:opacity-80"
+      >
+        <Text className="flex-1 font-nunito text-lg font-black text-mascot-navy dark:text-white">
+          {translate('leaderboard.home_title')}
+        </Text>
+        {data?.me.rank != null && (
+          <View className="rounded-full bg-primary-100 px-2.5 py-1 dark:bg-primary-500/20">
+            <Text className="font-nunito text-xs font-extrabold text-primary-800 tabular-nums dark:text-primary-300">
+              {`#${data.me.rank}`}
+            </Text>
+          </View>
+        )}
+      </Pressable>
       {!data
         ? (query.isError && !query.isFetching ? <LoadError onRetry={() => void query.refetch()} /> : <SkeletonRows count={3} />)
         : data.entries.length === 0
