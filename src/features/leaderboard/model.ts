@@ -14,6 +14,8 @@ function vnWall(instant: Date) {
 
 /** 1240 → "1.240" (vi-VN grouping, never abbreviated to 1,2K). */
 export function formatXp(n: number): string {
+  if (!Number.isFinite(n))
+    return '0';
   return String(Math.trunc(n)).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
 }
 

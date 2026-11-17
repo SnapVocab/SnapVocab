@@ -48,8 +48,8 @@ function WeekSwitch({ week, onChange }: { week: LeaderboardWeek; onChange: (week
 
 function ColumnLabels() {
   return (
-    <View importantForAccessibility="no-hide-descendants" accessibilityElementsHidden className="flex-row items-center gap-2 border-b border-line bg-surface px-4 py-2">
-      <Text className="min-w-10 text-center font-inter text-xs font-semibold text-neutral-500 dark:text-neutral-300">{translate('leaderboard.columns.rank')}</Text>
+    <View importantForAccessibility="no-hide-descendants" accessibilityElementsHidden className="flex-row items-center gap-2.5 border-b border-line bg-surface px-4 py-2">
+      <Text className="w-11 text-center font-inter text-xs font-semibold text-neutral-500 dark:text-neutral-300">{translate('leaderboard.columns.rank')}</Text>
       <Text className="flex-1 font-inter text-xs font-semibold text-neutral-500 dark:text-neutral-300">{translate('leaderboard.columns.learner')}</Text>
       <Text className="font-inter text-xs font-semibold text-neutral-500 dark:text-neutral-300">XP</Text>
     </View>
@@ -66,24 +66,28 @@ function Meta({ data, week, now, refreshing, cachedError, onRetry }: {
 }) {
   const updated = updatedLabel(data.asOf, now);
   return (
-    <View className="gap-1 border-b border-line bg-surface-raised px-4 py-3">
-      <Text className="font-nunito text-base font-black text-mascot-navy dark:text-white">{formatWeekRange(data.weekStart, data.weekEnd)}</Text>
-      {week === 'PREVIOUS' && (
-        <Text className={`font-inter text-[13px] font-bold ${data.isFinal ? 'text-primary-800 dark:text-primary-300' : 'text-amber-800 dark:text-amber-200'}`}>
-          {translate(data.isFinal ? 'leaderboard.status.final' : 'leaderboard.status.finalizing')}
-        </Text>
-      )}
+    <View className="gap-1.5 border-b border-line bg-surface-raised px-4 py-3">
+      <View className="flex-row flex-wrap items-center justify-between gap-2">
+        <Text className="font-nunito text-base font-black text-mascot-navy dark:text-white">{formatWeekRange(data.weekStart, data.weekEnd)}</Text>
+        {week === 'PREVIOUS' && (
+          <View className={`rounded-full px-2.5 py-0.5 ${data.isFinal ? 'bg-primary-100 dark:bg-primary-500/20' : 'bg-amber-100 dark:bg-amber-400/20'}`}>
+            <Text className={`font-inter text-xs font-bold ${data.isFinal ? 'text-primary-800 dark:text-primary-300' : 'text-amber-800 dark:text-amber-200'}`}>
+              {translate(data.isFinal ? 'leaderboard.status.final' : 'leaderboard.status.finalizing')}
+            </Text>
+          </View>
+        )}
+      </View>
       <View className="flex-row flex-wrap justify-between gap-x-3">
-        <Text className="font-inter text-[13px] text-neutral-500 dark:text-neutral-300">{translate('leaderboard.count', { count: data.participants })}</Text>
-        <Text className="font-inter text-[13px] text-neutral-500 dark:text-neutral-300">
+        <Text className="font-inter text-xs text-neutral-500 dark:text-neutral-300">{translate('leaderboard.count', { count: data.participants })}</Text>
+        <Text className="font-inter text-xs text-neutral-500 dark:text-neutral-300">
           {refreshing ? translate('leaderboard.refreshing') : updated}
         </Text>
       </View>
       {week === 'PREVIOUS' && !data.isFinal && (
-        <Text className="font-inter text-[13px] text-neutral-500 dark:text-neutral-300">{translate('leaderboard.finalizing_note')}</Text>
+        <Text className="font-inter text-xs/4 text-neutral-500 dark:text-neutral-300">{translate('leaderboard.finalizing_note')}</Text>
       )}
       {week === 'PREVIOUS' && (
-        <Text className="font-inter text-[13px] text-neutral-500 dark:text-neutral-300">{translate('leaderboard.previous_trend_note')}</Text>
+        <Text className="font-inter text-xs/4 text-neutral-500 dark:text-neutral-300">{translate('leaderboard.previous_trend_note')}</Text>
       )}
       {cachedError && <CachedError onRetry={onRetry} />}
     </View>
@@ -266,7 +270,7 @@ export function LeaderboardScreen() {
           )}
       {pinned && (
         <View className="border-t border-line bg-surface">
-          <MeRowView me={data.me} week={week} gap={gapLabel} />
+          <MeRowView me={data.me} week={week} gap={gapLabel} last />
         </View>
       )}
       <LeaderboardInfoSheet open={infoOpen} onClose={() => setInfoOpen(false)} />
