@@ -26,7 +26,7 @@ export type AvatarFrameProps = {
   size?: AvatarFrameSize;
   /** Optional badge element at bottom right (e.g. level, rank or streak flame) */
   badgeComponent?: React.ReactNode;
-  /** Callback when remote frame URL fails to load (e.g. presigned URL expired) */
+  /** Called when the frame image fails to load; the frame is then dropped for that URL */
   onFrameError?: () => void;
   /** Callback when the remote avatar image fails to load */
   onAvatarError?: () => void;
@@ -56,7 +56,11 @@ export const AvatarFrame: React.FC<AvatarFrameProps> = ({
 }) => {
   const dimension = typeof size === 'number' ? size : SIZE_PRESETS[size] || 72;
   // The frame art lives on the server (shop item frameUrl); there is no bundled catalog.
-  const hasFrame = Boolean(frameUrl);
+  // A frame that fails to load is dropped for that URL,
+  // so the avatar is not left shrunk inside an empty ring.
+  const [failedFrameUrl, setFailedFrameUrl] = React.useState<string | null>(null);
+  const shownFrameUrl = frameUrl && frameUrl !== failedFrameUrl ? frameUrl : null;
+  const hasFrame = Boolean(shownFrameUrl);
 
   // The circular avatar aperture occupies ~58% of the frame canvas (512x512)
   // When no frame is equipped, the avatar fills 88% of the dimension
@@ -110,15 +114,19 @@ export const AvatarFrame: React.FC<AvatarFrameProps> = ({
       </View>
 
       {/* 2. OVERLAY FRAME (PNG with transparent center) */}
-      {frameUrl && (
+      {shownFrameUrl && (
         <Image
-          source={{ uri: frameUrl }}
+          testID="avatar-frame-overlay"
+          source={{ uri: shownFrameUrl }}
           style={[
             styles.frameOverlay,
             { width: dimension, height: dimension },
           ]}
           resizeMode="contain"
-          onError={onFrameError}
+          onError={() => {
+            setFailedFrameUrl(shownFrameUrl);
+            onFrameError?.();
+          }}
         />
       )}
 
