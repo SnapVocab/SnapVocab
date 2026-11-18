@@ -262,15 +262,20 @@
     "learn": "Go to Learn",
     "learner": "Learner",
     "link": "View leaderboard",
+    "list_range": "Ranks {{rank}} – Top 50",
     "loading": "Loading leaderboard",
     "me": "You",
     "me_first": "You're ranked #1",
+    "me_previous_top3": "Last week you finished #{{rank}} · {{xp}} XP",
     "period": {
       "current": "This week",
       "previous": "Last week"
     },
     "previous_trend_note": "Trends don't apply to last week.",
     "refreshing": "Refreshing…",
+    "remaining_days": "{{count}}d left",
+    "remaining_hours": "{{count}}h left",
+    "remaining_soon": "< 1h left",
     "retry": "Try again",
     "rules": "Weekly XP comes from card reviews and quizzes, Booster bonus included. Mission and badge reward XP does not count.",
     "status": {
@@ -279,6 +284,7 @@
     },
     "timing": "Refreshes about every minute. Times are shown in Vietnam time.",
     "title": "Leaderboard",
+    "top3_badge": "Top 3",
     "trend": {
       "a11y_down": "Down {{count}} ranks since 00:00 today",
       "a11y_none": "No rank at the start of today to compare",
@@ -290,7 +296,8 @@
     "unranked_previous": "You weren't on the board last week.",
     "updated": "Updated {{time}}",
     "updated_date": "Updated {{time}}, {{date}}",
-    "xp": "{{xp}} XP"
+    "xp": "{{xp}} XP",
+    "xp_column": "Weekly XP"
   },
   "learn": {
     "add_word": {

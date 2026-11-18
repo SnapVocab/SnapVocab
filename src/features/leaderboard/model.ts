@@ -1,9 +1,10 @@
-import type { Leaderboard, LeaderboardWeek } from './types';
+import type { Leaderboard, LeaderboardRow, LeaderboardWeek } from './types';
 import type { TxKeyPath } from '@/lib/i18n';
 
 /** Vietnam has no DST: shifting by +7 h and reading UTC fields gives Vietnam wall time. */
 const VN_OFFSET_MS = 7 * 60 * 60 * 1000;
-const DAY_MS = 24 * 60 * 60 * 1000;
+const HOUR_MS = 60 * 60 * 1000;
+const DAY_MS = 24 * HOUR_MS;
 
 const pad = (n: number) => String(n).padStart(2, '0');
 
@@ -84,4 +85,94 @@ export function gapOf(data: Leaderboard, week: LeaderboardWeek): { key: TxKeyPat
   if (me.xpToNextRank === null || me.nextRank === null)
     return null;
   return { key: 'leaderboard.gap', xp: formatXp(me.xpToNextRank), rank: me.nextRank };
+}
+
+/**
+ * Bar fill (%) toward the next rank from API `me.score` and `me.xpToNextRank`. No "score / target" text:
+ * the target includes the LB-07 "+1" and is nobody's real score (LBV-01).
+ */
+export function gapProgressOf(data: Leaderboard, week: LeaderboardWeek): number | null {
+  const { me } = data;
+  if (week !== 'CURRENT' || me.rank === null || me.rank === 1 || me.xpToNextRank === null || me.xpToNextRank <= 0)
+    return null;
+  return Math.max(8, Math.min(96, Math.round((me.score / (me.score + me.xpToNextRank)) * 100)));
+}
+
+/**
+ * Remaining time before `endsAt` (exclusive next Monday 00:00 Vietnam) for the CURRENT week pill.
+ * Whole units left, rounded down: 4 d 7 h reads "4 days", never more time than there is.
+ */
+export function remainingParts(endsAt: string, now: Date): { key: TxKeyPath; count?: number } | null {
+  const end = new Date(endsAt);
+  if (Number.isNaN(end.getTime()))
+    return null;
+  const diff = end.getTime() - now.getTime();
+  if (diff <= 0)
+    return null;
+  if (diff >= DAY_MS)
+    return { key: 'leaderboard.remaining_days', count: Math.floor(diff / DAY_MS) };
+  if (diff >= HOUR_MS)
+    return { key: 'leaderboard.remaining_hours', count: Math.floor(diff / HOUR_MS) };
+  return { key: 'leaderboard.remaining_soon' };
+}
+
+export type StagePinTone = 'gold' | 'silver' | 'bronze';
+
+export type StageSlot = {
+  key: string;
+  row: LeaderboardRow;
+  elevated: boolean;
+  laurel: boolean;
+  pinTone: StagePinTone;
+};
+
+function pinToneOf(rank: number): StagePinTone {
+  if (rank <= 1)
+    return 'gold';
+  if (rank === 2)
+    return 'silver';
+  return 'bronze';
+}
+
+function makeSlot(row: LeaderboardRow, index: number, elevated: boolean): StageSlot {
+  return {
+    key: `${index}:${row.rank}`,
+    row,
+    elevated,
+    laurel: elevated && row.rank === 1,
+    pinTone: pinToneOf(row.rank),
+  };
+}
+
+/**
+ * Arranges up to 3 top entries for the Direction B floating honors stage:
+ * - Standard `1–2–3` & tie `1–2–2`: Olympic `2 — 1 — 3` (`#1` elevated in center with gold laurel).
+ * - Tie `1–1–3` / `1–1` / `1–1–1`: all `#1` leaders share equal elevation and matching gold laurels.
+ */
+export function stageSlotsOf(entries: LeaderboardRow[]): StageSlot[] {
+  const top = entries.slice(0, 3);
+  if (top.length === 0)
+    return [];
+  if (top.length === 1)
+    return [makeSlot(top[0], 0, true)];
+  if (top.length === 2) {
+    const bothFirst = top[0].rank === 1 && top[1].rank === 1;
+    return [
+      makeSlot(top[0], 0, true),
+      makeSlot(top[1], 1, bothFirst),
+    ];
+  }
+  const [u1, u2, u3] = top;
+  if (u1.rank === 1 && u2.rank === 1) {
+    return [
+      makeSlot(u1, 0, true),
+      makeSlot(u2, 1, true),
+      makeSlot(u3, 2, u3.rank === 1),
+    ];
+  }
+  return [
+    makeSlot(u2, 1, false),
+    makeSlot(u1, 0, true),
+    makeSlot(u3, 2, false),
+  ];
 }
