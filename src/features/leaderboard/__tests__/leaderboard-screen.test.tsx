@@ -24,11 +24,21 @@ jest.mock('@/lib/i18n', () => ({
 jest.mock('@/components/snapvocab', () => ({ AvatarFrame: () => null }));
 jest.mock('@/components/ui/icons', () => ({ InfoIcon: () => null, CloseIcon: () => null }));
 jest.mock('../components/leaderboard-info-sheet', () => ({ LeaderboardInfoSheet: () => null }));
+let mockColorMode: 'light' | 'dark' = 'light';
+jest.mock('expo-linear-gradient', () => {
+  const RN = require('react-native');
+  return {
+    LinearGradient: ({ children, colors, testID }: { children?: React.ReactNode; colors: string[]; testID?: string }) => (
+      <RN.View testID={testID} accessibilityHint={colors.join(',')}>{children}</RN.View>
+    ),
+  };
+});
 jest.mock('@/components/ui', () => {
   const RN = require('react-native');
   return {
     SafeAreaView: RN.View,
     FocusAwareStatusBar: () => null,
+    useColorMode: () => mockColorMode,
     useSurface: () => ({ text: '#000' }),
     Text: ({ children, accessibilityLabel }: { children?: React.ReactNode; accessibilityLabel?: string }) => (
       <RN.Text accessibilityLabel={accessibilityLabel}>{children}</RN.Text>
@@ -78,6 +88,7 @@ function mockQuery(data: Leaderboard | undefined, extra: Record<string, unknown>
 beforeEach(() => {
   jest.useFakeTimers({ now: NOW });
   jest.clearAllMocks();
+  mockColorMode = 'light';
   AppState.currentState = 'active';
 });
 afterEach(() => {
@@ -228,4 +239,58 @@ it('home snippet: top 3, then "you" below them, and a link to the full board', (
   fireEvent.press(screen.getByText('leaderboard.link'));
   expect(mockPush).toHaveBeenCalledWith('/leaderboard');
   expect(useLeaderboard).toHaveBeenCalledWith('CURRENT', 3);
+});
+
+it('renders the Direction B Top 3 stage (proposed V2 light / V4 dark palette, not PO-approved) and splits rank 4+ into the list', () => {
+  const entries = [
+    row(1, 'Lan', 1680),
+    row(2, 'Bao', 1490),
+    row(3, 'Vy', 1360),
+    row(4, 'Nam', 1290),
+    { ...row(5, 'Minh', 1150), isMe: true, rankChange: 3 },
+  ];
+  mockQuery(board({
+    entries,
+    me: { eligible: true, rank: 5, score: 1150, rankChange: 3, xpToNextRank: 141, nextRank: 4 },
+  }));
+
+  const view = render(<LeaderboardScreen />);
+  expect(screen.getByTestId('leaderboard-top3-stage')).toHaveProp('accessibilityHint', '#FFFFFF,#F4FDEC,#E8F9DA');
+  expect(screen.getByText('leaderboard.list_range(4)')).toBeOnTheScreen();
+  expect(screen.getByText('Nam')).toBeOnTheScreen();
+  expect(screen.getByText('Minh')).toBeOnTheScreen();
+  expect(screen.queryByText('1.150 / 1.291')).toBeNull();
+  expect(screen.queryByText('leaderboard.empty_current_title')).toBeNull();
+  view.unmount();
+
+  mockColorMode = 'dark';
+  render(<LeaderboardScreen />);
+  expect(screen.getByTestId('leaderboard-top3-stage')).toHaveProp('accessibilityHint', '#1D2945,#26385E,#203052');
+});
+
+it('a tie across the stage edge (1-2-3-3) keeps 3 on the stage and starts the list header at rank 3', () => {
+  mockQuery(board({
+    entries: [row(1, 'Lan', 1600), row(2, 'Bao', 1120), row(3, 'Hoa', 520), row(3, 'Khoa', 520), row(5, 'Nam', 500)],
+  }));
+  render(<LeaderboardScreen />);
+  expect(screen.getByTestId('leaderboard-top3-slot-3')).toBeOnTheScreen();
+  expect(screen.getByText('Khoa')).toBeOnTheScreen();
+  expect(screen.getByText('leaderboard.list_range(3)')).toBeOnTheScreen();
+});
+
+it('does not show empty board when 1-3 entries exist and shows previous-week Top 3 banner for "you"', () => {
+  mockQuery(board({
+    weekStart: '2026-11-02',
+    weekEnd: '2026-11-08',
+    isFinal: true,
+    entries: [row(1, 'Lan', 2200), row(2, 'Bao', 2100), { ...row(3, 'Minh', 1890), isMe: true }],
+    me: { eligible: true, rank: 3, score: 1890, rankChange: null, xpToNextRank: 211, nextRank: 2 },
+  }));
+  render(<LeaderboardScreen />);
+  fireEvent.press(screen.getByText('leaderboard.period.previous'));
+  expect(screen.getByTestId('leaderboard-top3-stage')).toBeOnTheScreen();
+  expect(screen.queryByText('leaderboard.empty_previous')).toBeNull();
+  expect(screen.queryByText(/leaderboard.list_range/)).toBeNull();
+  expect(screen.getByText('leaderboard.me_previous_top3(3|1.890)')).toBeOnTheScreen();
+  expect(screen.queryByText(/leaderboard\.gap/)).toBeNull();
 });
