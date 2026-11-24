@@ -226,9 +226,10 @@ function HeaderButton({
     <Pressable
       onPress={onPress}
       testID={testID}
+      hitSlop={10}
       accessibilityLabel={label}
       accessibilityRole="button"
-      className="size-11 items-center justify-center rounded-xl border-2 border-b-4 border-line border-b-edge bg-surface active:translate-y-[2px] active:border-b-2"
+      className="size-11 items-center justify-center overflow-hidden rounded-xl border-2 border-b-4 border-line border-b-edge bg-surface active:translate-y-[2px]"
     >
       {children}
     </Pressable>

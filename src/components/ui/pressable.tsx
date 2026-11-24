@@ -8,12 +8,15 @@ const RIPPLE = {
   dark: { color: 'rgba(243, 244, 246, 0.12)', foreground: true },
 };
 
-/** Pressable with a consistent Android touch ripple that follows the light/dark theme. */
-export function Pressable({ android_ripple, ...props }: PressableProps) {
+const DEFAULT_PRESS_RETENTION = { top: 20, right: 20, bottom: 20, left: 20 };
+
+/** Pressable with a consistent Android touch ripple and generous press retention. */
+export function Pressable({ android_ripple, pressRetentionOffset, ...props }: PressableProps) {
   const mode = useUniwind().theme === 'dark' ? 'dark' : 'light';
   return (
     <NativePressable
       android_ripple={android_ripple ?? RIPPLE[mode]}
+      pressRetentionOffset={pressRetentionOffset ?? DEFAULT_PRESS_RETENTION}
       {...props}
     />
   );

@@ -1,8 +1,8 @@
 import { useRouter } from 'expo-router';
 import * as React from 'react';
-import { Pressable, View } from 'react-native';
+import { View } from 'react-native';
 import { useUniwind } from 'uniwind';
-import { Text } from '@/components/ui';
+import { Pressable, Text } from '@/components/ui';
 import { SearchIcon } from '@/components/ui/icons';
 import { translate } from '@/lib/i18n/utils';
 
@@ -29,7 +29,7 @@ export function HomeSearchBar({ onPress }: HomeSearchBarProps) {
       accessibilityRole="button"
       accessibilityLabel={translate('home.search_action')}
       accessibilityHint={translate('home.search_action_hint')}
-      className="mb-3 flex-row items-center justify-between rounded-2xl border-2 border-b-4 border-line border-b-edge bg-surface px-3.5 py-2.5 active:translate-y-[2px] active:border-b-2 active:bg-pressed"
+      className="mb-3 flex-row items-center justify-between overflow-hidden rounded-2xl border-2 border-b-4 border-line border-b-edge bg-surface px-3.5 py-2.5 active:translate-y-[2px] active:bg-pressed"
     >
       {/* Left: Guided hint / Heading */}
       <View className="flex-1 pr-3">

@@ -1,9 +1,9 @@
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
-import { Pressable, View } from 'react-native';
+import { View } from 'react-native';
 import { withUniwind } from 'uniwind';
 import { AvatarFrame } from '@/components/snapvocab';
-import { SafeAreaView, Text, UserAvatar } from '@/components/ui';
+import { Pressable, SafeAreaView, Text, UserAvatar } from '@/components/ui';
 import { CoinIcon, FlameIcon, NotificationBell } from '@/components/ui/icons';
 import { useThemeConfig } from '@/components/ui/use-theme-config';
 import { useAuthStore } from '@/features/auth/use-auth-store';
@@ -82,7 +82,7 @@ export function HomeHeader({
             onPress={onStreakPress}
             accessibilityRole="button"
             accessibilityLabel={typeof streakDays === 'number' ? t('progressUx.streakA11y', { count: streakDays }) : t('home.streak_unavailable_a11y')}
-            className="min-h-12 min-w-12 flex-row items-center justify-center gap-1.5 rounded-2xl border-2 border-b-[3px] border-orange-200 border-b-orange-300 bg-orange-50 px-2.5 py-1.5 active:translate-y-px active:border-b-2 active:bg-orange-100 dark:border-orange-400/25 dark:border-b-orange-400/45 dark:bg-orange-400/10 dark:active:bg-orange-400/20"
+            className="min-h-12 min-w-12 flex-row items-center justify-center gap-1.5 overflow-hidden rounded-2xl border-2 border-b-[3px] border-orange-200 border-b-orange-300 bg-orange-50 px-2.5 py-1.5 active:translate-y-px active:bg-orange-100 dark:border-orange-400/25 dark:border-b-orange-400/45 dark:bg-orange-400/10 dark:active:bg-orange-400/20"
           >
             <FlameIcon color="#F97316" width={18} height={18} />
             <Text className="font-nunito text-xs font-black text-orange-700 dark:text-orange-300">
@@ -95,7 +95,7 @@ export function HomeHeader({
             onPress={onCoinPress}
             accessibilityRole="button"
             accessibilityLabel={t('home.wallet_a11y', { amount: coins })}
-            className="min-h-12 min-w-12 flex-row items-center justify-center gap-1.5 rounded-2xl border-2 border-b-[3px] border-amber-200 border-b-amber-300 bg-amber-50 px-2.5 py-1.5 active:translate-y-px active:border-b-2 active:bg-amber-100 dark:border-amber-400/25 dark:border-b-amber-400/45 dark:bg-amber-400/10 dark:active:bg-amber-400/20"
+            className="min-h-12 min-w-12 flex-row items-center justify-center gap-1.5 overflow-hidden rounded-2xl border-2 border-b-[3px] border-amber-200 border-b-amber-300 bg-amber-50 px-2.5 py-1.5 active:translate-y-px active:bg-amber-100 dark:border-amber-400/25 dark:border-b-amber-400/45 dark:bg-amber-400/10 dark:active:bg-amber-400/20"
           >
             <CoinIcon size={18} />
             <Text className="font-nunito text-xs font-black text-amber-700 dark:text-amber-400">
@@ -109,7 +109,7 @@ export function HomeHeader({
             accessibilityRole="button"
             accessibilityLabel={unread > 0 ? t('notifications.bell_unread_a11y', { count: unread }) : t('notifications.bell_a11y')}
             testID="home-notifications"
-            className="size-12 items-center justify-center rounded-2xl border-2 border-b-[3px] border-line border-b-edge bg-surface-raised active:translate-y-px active:border-b-2 active:bg-pressed"
+            className="size-12 items-center justify-center overflow-hidden rounded-2xl border-2 border-b-[3px] border-line border-b-edge bg-surface-raised active:translate-y-px active:bg-pressed"
           >
             <NotificationBell color={theme.colors.text} unread={unread > 0} />
           </Pressable>

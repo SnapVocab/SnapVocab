@@ -17,9 +17,9 @@ export default function CollectionHeader({ title, subtitle, onBackPress }: Props
 
   return (
     <View className="flex-row items-center border-b border-line px-3 py-4">
-      <BackButton onPress={handleBack} hitSlop={12} className="mr-3" />
+      <BackButton onPress={handleBack} hitSlop={14} className="z-10 mr-3" />
 
-      <View className="pointer-events-none absolute inset-x-0 items-center">
+      <View pointerEvents="none" className="pointer-events-none absolute inset-x-0 items-center">
         <Text className="font-nunito text-[19px] font-extrabold text-mascot-navy dark:text-white">
           {title ?? translate('learn.collections.title')}
         </Text>

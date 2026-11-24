@@ -161,7 +161,7 @@ export function CardAction({
       disabled={!interactive || loading || disabled}
       accessibilityState={{ disabled: !interactive || loading || disabled, busy: loading }}
       style={neutral ? { backgroundColor: s.surfaceMuted, borderColor: s.border } : undefined}
-      className={cn('h-12 flex-row items-center justify-center gap-1.5 rounded-xl', style.box, interactive && 'border-b-4 active:translate-y-[2px] active:border-b-2', disabled && 'opacity-50')}
+      className={cn('h-12 flex-row items-center justify-center gap-1.5 overflow-hidden rounded-xl', style.box, interactive && 'border-b-4 active:translate-y-[2px]', disabled && 'opacity-50')}
     >
       {loading ? (
         <BouncingDots size={6} gap={4} color={tone === 'primary' ? '#17330B' : s.textMuted} />

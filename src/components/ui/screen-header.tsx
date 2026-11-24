@@ -1,7 +1,8 @@
 import type { ReactNode } from 'react';
-import { Pressable, View } from 'react-native';
+import { View } from 'react-native';
 import { translate } from '@/lib/i18n';
 import { ChevronLeftIcon } from './icons';
+import { Pressable } from './pressable';
 import { useSurface } from './surface';
 import { Text } from './text';
 
@@ -26,8 +27,8 @@ export function ScreenHeader({ title, onBack, right }: ScreenHeaderProps) {
           accessibilityRole="button"
           accessibilityLabel={translate('missions.back')}
           onPress={onBack}
-          hitSlop={12}
-          className="-ml-2 size-10 items-center justify-center rounded-full active:bg-pressed"
+          hitSlop={14}
+          className="-ml-1 size-11 items-center justify-center overflow-hidden rounded-full active:bg-pressed"
         >
           <ChevronLeftIcon width={24} height={24} color={s.text} />
         </Pressable>
