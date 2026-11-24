@@ -78,6 +78,7 @@ jest.mock('react-native-mmkv', () => ({
     getNumber: jest.fn(),
     getBoolean: jest.fn(),
     delete: jest.fn(),
+    remove: jest.fn(),
     clearAll: jest.fn(),
     getAllKeys: jest.fn(() => []),
   })),
@@ -91,9 +92,19 @@ jest.mock('react-native-mmkv', () => ({
     getNumber: jest.fn(),
     getBoolean: jest.fn(),
     delete: jest.fn(),
+    remove: jest.fn(),
     clearAll: jest.fn(),
     getAllKeys: jest.fn(() => []),
   })),
+}));
+
+// Mock react-native-passkey
+jest.mock('react-native-passkey', () => ({
+  Passkey: {
+    isSupported: jest.fn(() => true),
+    create: jest.fn(),
+    get: jest.fn(),
+  },
 }));
 
 // Global window object setup for React Native testing

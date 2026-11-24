@@ -20,12 +20,23 @@ import {
 import {
   BellIcon,
   ClockRotateIcon,
+  FingerprintIcon,
   GlobeIcon,
   LogOutIcon,
   PasswordIcon,
   TargetIcon,
   ThemeModeIcon,
 } from '@/components/ui/icons';
+import {
+  clearStoredPasskeyBinding,
+  getStoredPasskeyBinding,
+  isPasskeyCancelledError,
+  isPasskeySupported,
+  useDisablePasskey,
+  usePasskeyCredentials,
+  useRegisterPasskey,
+} from '@/features/auth/passkey';
+import { useAuthStore } from '@/features/auth/use-auth-store';
 import { askPermission, pushToggle, readPermission, registerDevice } from '@/features/notifications/push';
 import { useSelectedTheme } from '@/lib/hooks/use-selected-theme';
 import { translate, useSelectedLanguage } from '@/lib/i18n';
@@ -61,8 +72,60 @@ export function SettingsScreen() {
   const { data: settings } = useUserSettings();
   const updateSettings = useUpdateSettings();
   const logout = useLogout();
+  const userEmail = useAuthStore(s => s.user?.email ?? '');
   const { selectedTheme, setSelectedTheme } = useSelectedTheme();
   const { language, setLanguage } = useSelectedLanguage();
+
+  const passkeySupported = isPasskeySupported();
+  const [localBinding, setLocalBinding] = useState(() => getStoredPasskeyBinding());
+  const { data: passkeyCredentials } = usePasskeyCredentials(passkeySupported);
+  const registerPasskey = useRegisterPasskey();
+  const disablePasskey = useDisablePasskey();
+
+  const normalizedEmail = userEmail.trim().toLowerCase();
+  const bindingForCurrentUser = localBinding && localBinding.email === normalizedEmail
+    ? localBinding
+    : null;
+  const matchedCredential = bindingForCurrentUser && passkeyCredentials
+    ? passkeyCredentials.find(cred => cred.credentialId === bindingForCurrentUser.credentialId) ?? null
+    : null;
+  const activeDeviceCredential = bindingForCurrentUser
+    ? (passkeyCredentials ? matchedCredential : { id: bindingForCurrentUser.dbId })
+    : null;
+  const biometricEnabled = Boolean(activeDeviceCredential);
+  const biometricBusy = registerPasskey.isPending || disablePasskey.isPending;
+
+  const handleToggleBiometric = async (enable: boolean) => {
+    if (!passkeySupported || !userEmail)
+      return;
+
+    if (enable) {
+      try {
+        await registerPasskey.mutateAsync({ email: userEmail });
+        setLocalBinding(getStoredPasskeyBinding());
+      }
+      catch (error) {
+        if (!isPasskeyCancelledError(error)) {
+          showErrorMessage(translate('settings.biometric_error'));
+        }
+      }
+      return;
+    }
+
+    if (!activeDeviceCredential) {
+      clearStoredPasskeyBinding();
+      setLocalBinding(null);
+      return;
+    }
+
+    try {
+      await disablePasskey.mutateAsync({ dbId: activeDeviceCredential.id });
+      setLocalBinding(null);
+    }
+    catch {
+      showErrorMessage(translate('settings.error'));
+    }
+  };
 
   // Account learning preferences use the API; appearance/language stay on this device.
   const save = (change: UpdateUserSettings) => {
@@ -139,6 +202,21 @@ export function SettingsScreen() {
             tx="settings.change_password"
             onPress={() => router.push('/change-password')}
             testID="settings-change-password"
+            last
+          />
+        </SettingsSection>
+
+        <SettingsSection tx="settings.security">
+          <SettingsRow
+            icon={<FingerprintIcon color={iconColor.row.biometric} size={ROW_ICON_SIZE} />}
+            tx="settings.biometric_login"
+            toggle={{
+              value: biometricEnabled,
+              onChange: value => void handleToggleBiometric(value),
+              disabled: !passkeySupported || biometricBusy,
+            }}
+            hint={!passkeySupported ? translate('settings.biometric_unsupported') : undefined}
+            testID="settings-biometric"
             last
           />
         </SettingsSection>

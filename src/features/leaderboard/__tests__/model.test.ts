@@ -1,5 +1,5 @@
-import type { Leaderboard } from '../types';
-import { expectedWeekStart, formatWeekRange, formatXp, gapOf, shouldPinMe, trendOf, updatedParts, visibleSnapshot } from '../model';
+import type { Leaderboard, LeaderboardRow } from '../types';
+import { expectedWeekStart, formatWeekRange, formatXp, gapOf, gapProgressOf, remainingParts, shouldPinMe, stageSlotsOf, trendOf, updatedParts, visibleSnapshot } from '../model';
 
 function board(patch: Partial<Leaderboard> = {}): Leaderboard {
   return {
@@ -76,4 +76,63 @@ it('shows the API gap this week only, and rank 1 instead of a gap', () => {
   expect(gapOf(board(), 'PREVIOUS')).toBeNull();
   expect(gapOf(board({ me: { ...board().me, rank: 1, xpToNextRank: null, nextRank: null } }), 'CURRENT')).toEqual({ key: 'leaderboard.me_first' });
   expect(gapOf(board({ me: { ...board().me, rank: null } }), 'CURRENT')).toBeNull();
+});
+
+it('computes the gap bar fill from API score and xpToNextRank', () => {
+  expect(gapProgressOf(board(), 'CURRENT')).toBe(44);
+  expect(gapProgressOf(board(), 'PREVIOUS')).toBeNull();
+  expect(gapProgressOf(board({ me: { ...board().me, rank: 1, xpToNextRank: null, nextRank: null } }), 'CURRENT')).toBeNull();
+});
+
+it('derives remaining time label before endsAt', () => {
+  const endsAt = '2026-11-15T17:00:00Z';
+  expect(remainingParts(endsAt, new Date('2026-11-12T17:00:00Z'))).toEqual({ key: 'leaderboard.remaining_days', count: 3 });
+  // Wed 16:30 VN = 4 d 7.5 h left: whole days, rounded down (QA 2026-11-18 saw "5")
+  expect(remainingParts(endsAt, new Date('2026-11-11T09:30:00Z'))).toEqual({ key: 'leaderboard.remaining_days', count: 4 });
+  expect(remainingParts(endsAt, new Date('2026-11-15T12:00:00Z'))).toEqual({ key: 'leaderboard.remaining_hours', count: 5 });
+  expect(remainingParts(endsAt, new Date('2026-11-15T12:30:00Z'))).toEqual({ key: 'leaderboard.remaining_hours', count: 4 });
+  expect(remainingParts(endsAt, new Date('2026-11-15T16:30:00Z'))).toEqual({ key: 'leaderboard.remaining_soon' });
+  expect(remainingParts(endsAt, new Date('2026-11-15T17:00:00Z'))).toBeNull();
+  expect(remainingParts('invalid', new Date())).toBeNull();
+});
+
+it('arranges Top 3 slots for Olympic 2-1-3, tie 1-2-2, and fair dual-laurel tie 1-1-3', () => {
+  const mk = (rank: number, displayName: string): LeaderboardRow => ({
+    rank,
+    displayName,
+    avatarUrl: null,
+    avatarFrameUrl: null,
+    score: 100,
+    rankChange: null,
+    isMe: false,
+  });
+
+  expect(stageSlotsOf([])).toEqual([]);
+
+  const standard = stageSlotsOf([mk(1, 'A'), mk(2, 'B'), mk(3, 'C')]);
+  expect(standard.map(s => [s.row.displayName, s.elevated, s.laurel, s.pinTone])).toEqual([
+    ['B', false, false, 'silver'],
+    ['A', true, true, 'gold'],
+    ['C', false, false, 'bronze'],
+  ]);
+
+  const tie2 = stageSlotsOf([mk(1, 'A'), mk(2, 'B'), mk(2, 'C')]);
+  expect(tie2.map(s => [s.row.displayName, s.elevated, s.laurel, s.pinTone])).toEqual([
+    ['B', false, false, 'silver'],
+    ['A', true, true, 'gold'],
+    ['C', false, false, 'silver'],
+  ]);
+
+  const tie1 = stageSlotsOf([mk(1, 'A'), mk(1, 'B'), mk(3, 'C')]);
+  expect(tie1.map(s => [s.row.displayName, s.elevated, s.laurel, s.pinTone])).toEqual([
+    ['A', true, true, 'gold'],
+    ['B', true, true, 'gold'],
+    ['C', false, false, 'bronze'],
+  ]);
+
+  const twoTied = stageSlotsOf([mk(1, 'A'), mk(1, 'B')]);
+  expect(twoTied.map(s => [s.row.displayName, s.elevated, s.laurel])).toEqual([
+    ['A', true, true],
+    ['B', true, true],
+  ]);
 });

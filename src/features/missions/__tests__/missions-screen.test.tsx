@@ -9,23 +9,36 @@ import { actions, MissionsScreen, studyHref } from '../missions-screen';
 import { RENDERED_TRIGGERS } from '../types';
 
 const mockPush = jest.fn();
-jest.mock('expo-router', () => ({ useRouter: () => ({ push: mockPush, back: jest.fn() }) }));
+const mockBack = jest.fn();
+jest.mock('expo-router', () => ({
+  useRouter: () => ({ push: mockPush, back: mockBack }),
+  useFocusEffect: jest.fn(),
+}));
 jest.mock('expo-crypto', () => ({ randomUUID: () => 'stable-uuid' }));
 jest.mock('../api', () => ({ useDailyMissions: jest.fn(), useClaimMission: jest.fn(), missionErrorCode: () => undefined }));
 jest.mock('@/features/study/api', () => ({ useStudyToday: () => ({ data: undefined }) }));
+jest.mock('@/features/auth/use-auth-store', () => ({
+  useAuthStore: (selector: (s: { user: { coin: number; exp: number } }) => unknown) =>
+    selector({ user: { coin: 145, exp: 420 } }),
+}));
 // Echo interpolation values so assertions can see what a message names.
 jest.mock('@/lib/i18n', () => ({
   translate: (key: string, options?: Record<string, unknown>) => (options ? `${key}(${Object.values(options).join('|')})` : key),
 }));
 jest.mock('@/components/ui/rewards', () => ({ RewardIcon: () => null }));
+jest.mock('@/components/snapvocab', () => ({ MissionIcon3D: () => null }));
+jest.mock('@/components/Snapy', () => ({ Snapy: () => null }));
 jest.mock('@/components/ui', () => {
   const RN = require('react-native');
   return {
     SafeAreaView: RN.View,
     FocusAwareStatusBar: () => null,
     Text: ({ tx, children }: { tx?: string; children?: React.ReactNode }) => <RN.Text>{tx ?? children}</RN.Text>,
-    ScreenHeader: ({ title }: { title: string }) => <RN.Text>{title}</RN.Text>,
-    Button: ({ tx, onPress, disabled }: { tx: string; onPress: () => void; disabled?: boolean }) => <RN.Pressable accessibilityRole="button" onPress={onPress} disabled={disabled}><RN.Text>{tx}</RN.Text></RN.Pressable>,
+    Button: ({ tx, onPress, disabled }: { tx: string; onPress: () => void; disabled?: boolean }) => (
+      <RN.Pressable accessibilityRole="button" onPress={onPress} disabled={disabled}>
+        <RN.Text>{tx}</RN.Text>
+      </RN.Pressable>
+    ),
   };
 });
 
@@ -70,27 +83,41 @@ it('routes study missions by what today can offer', () => {
   expect(studyHref('QUIZ_COMPLETED', '/study/quiz-setup', today)).toBe('/study/quiz-setup');
 });
 
-describe('daily Mission screen lifecycle', () => {
-  const refetch = jest.fn();
+describe('daily Mission screen lifecycle (Snapy Stage)', () => {
+  const refetch = jest.fn(() => Promise.resolve({ data }));
   const mutateAsync = jest.fn();
+
   beforeEach(() => {
     jest.useFakeTimers();
     jest.clearAllMocks();
+    // clearAllMocks keeps queued *Once values; a test that stops early must not hand them to the next one.
+    mutateAsync.mockReset();
     jest.mocked(useDailyMissions).mockReturnValue({ data, dataUpdatedAt: Date.now(), refetch, isPending: false, isError: false, isRefetching: false } as unknown as ReturnType<typeof useDailyMissions>);
     jest.mocked(useClaimMission).mockReturnValue({ mutateAsync, isPending: false, isError: false } as unknown as ReturnType<typeof useClaimMission>);
   });
+
   afterEach(() => {
     jest.useRealTimers();
     jest.restoreAllMocks();
   });
 
-  it('renders five cards, warns on unclaimed rewards and keeps the key after a lost response', async () => {
+  it('renders five cards, dual Coin+XP header, warns on unclaimed rewards and keeps idempotency key after lost response', async () => {
     jest.useRealTimers();
-    mutateAsync.mockRejectedValueOnce(new Error('lost response')).mockResolvedValueOnce({ replayed: true });
+    mutateAsync.mockRejectedValueOnce(new Error('lost response')).mockResolvedValueOnce({
+      missionId: 1,
+      status: 'CLAIMED',
+      coinBalance: 150,
+      totalXp: 430,
+      replayed: true,
+      rewardGranted: { coin: 5, xp: 10, itemCode: null, itemName: null, itemQuantity: 0, fallbackCoin: 0 },
+    });
+    // Real timers: an hour before reset keeps the urgent state without racing a slow first render.
+    jest.mocked(useDailyMissions).mockReturnValue({ data: { ...data, serverNow: '2026-10-05T16:00:00Z' }, dataUpdatedAt: Date.now(), refetch, isPending: false, isError: false, isRefetching: false } as unknown as ReturnType<typeof useDailyMissions>);
     render(<MissionsScreen />);
     expect(screen.getAllByText(/^Mission \d$/)).toHaveLength(5);
-    expect(screen.getByText('1/5')).toBeTruthy();
-    expect(screen.getByText('missions.unclaimed_warning')).toBeTruthy();
+    expect(screen.getByTestId('missions-wallet-coin')).toBeTruthy();
+    expect(screen.getByTestId('missions-wallet-xp')).toBeTruthy();
+    expect(screen.getByText(/missions\.unclaimed_urgent/)).toBeTruthy();
     fireEvent.press(screen.getByText('missions.claim'));
     await waitFor(() => expect(mutateAsync).toHaveBeenCalledTimes(1));
     await act(async () => {
@@ -102,8 +129,59 @@ describe('daily Mission screen lifecycle', () => {
       [{ missionId: 1, idempotencyKey: 'stable-uuid' }],
       [{ missionId: 1, idempotencyKey: 'stable-uuid' }],
     ]);
+    // Replayed claim must NOT trigger double-credit delta badges.
+    expect(screen.queryByTestId('missions-wallet-coin-delta')).toBeNull();
+    expect(screen.queryByTestId('missions-wallet-xp-delta')).toBeNull();
     fireEvent.press(screen.getAllByText('missions.action.quiz')[0]);
     expect(mockPush).toHaveBeenCalledWith('/study/quiz-setup');
+  });
+
+  it('pops BOTH Coin and XP deltas on a fresh non-replayed claim and keeps card order stable', async () => {
+    jest.useRealTimers();
+    const mixed: DailyMissions = {
+      ...data,
+      serverNow: '2026-10-05T10:00:00Z',
+      missions: data.missions.map((m, i) => (i === 3 ? { ...m, status: 'COMPLETED', currentProgress: 1 } : { ...m, status: 'IN_PROGRESS', currentProgress: 0 })),
+    };
+    jest.mocked(useDailyMissions).mockReturnValue({ data: mixed, dataUpdatedAt: Date.now(), refetch, isPending: false, isError: false, isRefetching: false } as unknown as ReturnType<typeof useDailyMissions>);
+    mutateAsync.mockResolvedValueOnce({
+      missionId: 4,
+      status: 'CLAIMED',
+      coinBalance: 165,
+      totalXp: 460,
+      replayed: false,
+      rewardGranted: { coin: 20, xp: 40, itemCode: null, itemName: null, itemQuantity: 0, fallbackCoin: 0 },
+    });
+    render(<MissionsScreen />);
+    // Ready mission (id 4, slot 4) is hoisted to the top before in-progress missions.
+    const beforeCards = screen.getAllByTestId(/^mission-card-/);
+    expect(beforeCards[0].props.testID).toBe('mission-card-4');
+
+    fireEvent.press(screen.getByText('missions.claim'));
+    expect(await screen.findByText('missions.granted(missions.granted_coin(20), missions.granted_xp(40))')).toBeTruthy();
+    expect(screen.getByTestId('missions-wallet-coin-delta')).toBeTruthy();
+    expect(screen.getByTestId('missions-wallet-xp-delta')).toBeTruthy();
+
+    // Card stays in position 0 after claim (no mid-session list jumping).
+    const afterCards = screen.getAllByTestId(/^mission-card-/);
+    expect(afterCards[0].props.testID).toBe('mission-card-4');
+  });
+
+  it('renders the 5/5 Victory Stage and Unified Ledger when all missions are claimed', () => {
+    jest.useRealTimers();
+    const allClaimed: DailyMissions = {
+      ...data,
+      serverNow: '2026-10-05T10:00:00Z',
+      missions: data.missions.map(m => ({ ...m, status: 'CLAIMED', currentProgress: m.targetValue })),
+    };
+    jest.mocked(useDailyMissions).mockReturnValue({ data: allClaimed, dataUpdatedAt: Date.now(), refetch, isPending: false, isError: false, isRefetching: false } as unknown as ReturnType<typeof useDailyMissions>);
+    render(<MissionsScreen />);
+    expect(screen.getByTestId('missions-victory-stage')).toBeTruthy();
+    expect(screen.getByTestId('missions-victory-ledger')).toBeTruthy();
+    expect(screen.getByText('missions.victory_title')).toBeTruthy();
+    expect(screen.queryByText('missions.claim')).toBeNull();
+    fireEvent.press(screen.getByText('missions.next_day_cta'));
+    expect(mockPush).toHaveBeenCalledWith('/learn');
   });
 
   it('refetches at the server deadline and when returning to foreground, and removes its subscription', () => {
@@ -137,7 +215,7 @@ describe('daily Mission screen lifecycle', () => {
     jest.useRealTimers();
     const missions = data.missions.map((m, i) => (i === 1 ? { ...m, triggerEvent: 'TOPIC_ITEM_CREATED' as const } : m));
     jest.mocked(useDailyMissions).mockReturnValue({ data: { ...data, serverNow: '2026-10-05T10:00:00Z', missions }, dataUpdatedAt: Date.now(), refetch, isPending: false, isError: false } as unknown as ReturnType<typeof useDailyMissions>);
-    mutateAsync.mockResolvedValueOnce({ rewardGranted: { coin: 5, xp: 10, itemCode: 'XP_BOOSTER_X2_15M', itemName: '×2 XP · 15 phút', itemQuantity: 1, fallbackCoin: 0 } });
+    mutateAsync.mockResolvedValueOnce({ rewardGranted: { coin: 5, xp: 10, itemCode: 'XP_BOOSTER_X2_15M', itemName: '×2 XP · 15 phút', itemQuantity: 1, fallbackCoin: 0 }, replayed: false });
     render(<MissionsScreen />);
     fireEvent.press(screen.getByText('missions.action.add_word'));
     expect(mockPush).toHaveBeenCalledWith('/learn');
@@ -165,7 +243,7 @@ describe('daily Mission screen lifecycle', () => {
     const reward = { coin: 0, xp: 20, itemCode: 'XP_BOOSTER_X2_15M', itemName: '×2 XP · 15 phút', itemFallbackCoin: 10 };
     const missions = data.missions.map((m, i) => (i === 0 ? { ...m, reward } : m));
     jest.mocked(useDailyMissions).mockReturnValue({ data: { ...data, serverNow: '2026-10-05T10:00:00Z', missions }, dataUpdatedAt: Date.now(), refetch, isPending: false, isError: false } as unknown as ReturnType<typeof useDailyMissions>);
-    mutateAsync.mockResolvedValueOnce({ rewardGranted: { coin: 0, xp: 20, itemCode: reward.itemCode, itemName: reward.itemName, itemQuantity: 0, fallbackCoin: 10 } });
+    mutateAsync.mockResolvedValueOnce({ rewardGranted: { coin: 0, xp: 20, itemCode: reward.itemCode, itemName: reward.itemName, itemQuantity: 0, fallbackCoin: 10 }, replayed: false });
     render(<MissionsScreen />);
     expect(screen.getByText('missions.item(×2 XP · 15 phút)')).toBeTruthy();
     expect(screen.queryByText('0')).toBeNull();
@@ -174,10 +252,14 @@ describe('daily Mission screen lifecycle', () => {
     expect(await screen.findByText('missions.granted(missions.granted_coin(10), missions.granted_xp(20)) · missions.fallback_coin')).toBeTruthy();
   });
 
-  it('removes actions from a cached day once its reset has passed', () => {
+  it('removes actions and shows expired status from a cached day once its reset has passed', () => {
     jest.mocked(useDailyMissions).mockReturnValue({ data: { ...data, receivedAt: Date.now() - 5000 }, dataUpdatedAt: Date.now(), refetch, isPending: false, isError: true, isRefetching: false } as unknown as ReturnType<typeof useDailyMissions>);
     render(<MissionsScreen />);
-    expect(screen.getByText('missions.ended')).toBeTruthy();
+    expect(screen.getByText('missions.ended_unclaimed(1)')).toBeTruthy();
+    expect(screen.getByText('missions.expired_badge')).toBeTruthy();
+    // The ended stage talks about yesterday, so its earnings line must too.
+    expect(screen.getByText('missions.earned_yesterday')).toBeTruthy();
+    expect(screen.queryByText('missions.earned_today')).toBeNull();
     expect(screen.queryByText('missions.claim')).toBeNull();
     expect(screen.queryAllByText('missions.action.quiz')).toHaveLength(0);
   });

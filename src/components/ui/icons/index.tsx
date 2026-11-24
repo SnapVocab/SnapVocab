@@ -26,6 +26,7 @@ export * from './external-link';
 export * from './eye';
 export * from './eye-slash';
 export * from './fb';
+export * from './fingerprint';
 export * from './flame';
 export * from './flash';
 export * from './flash-cards';
