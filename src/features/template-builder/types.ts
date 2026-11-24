@@ -51,6 +51,9 @@ export type TopicSchemaDTO = {
 export type TemplateFieldDTO = {
   id?: number;
   schemaAttributeId: number;
+  attributeName?: string | null;
+  dataType?: DataType;
+  required?: boolean;
   semanticRole?: SemanticRole | null;
   fieldLabel?: string | null;
   hideIfEmpty: boolean;

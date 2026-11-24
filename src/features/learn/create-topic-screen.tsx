@@ -17,6 +17,7 @@ import {
   useSurface,
 } from '@/components/ui';
 import { LayoutGridIcon, SlidersIcon } from '@/components/ui/icons';
+import { useTemplateBuilderStore } from '@/features/template-builder/use-template-builder-store';
 import { translate } from '@/lib/i18n';
 import { useCreateTopic } from './api';
 import { createTopicSchema } from './components/topic/create-topic-validation';
@@ -37,6 +38,12 @@ export function CreateTopicScreen() {
   }>();
 
   const { mutate: createTopic, isPending } = useCreateTopic();
+  const savedCustomTemplate = useTemplateBuilderStore(s => s.savedCustomTemplate);
+  const setSavedCustomTemplate = useTemplateBuilderStore(s => s.setSavedCustomTemplate);
+
+  React.useEffect(() => () => {
+    setSavedCustomTemplate(null);
+  }, [setSavedCustomTemplate]);
 
   const {
     control,
@@ -66,10 +73,13 @@ export function CreateTopicScreen() {
           translation: values.translation?.trim() || undefined,
           description: values.description?.trim() || undefined,
           parentId: parentId ? Number(parentId) : null,
+          schemaId: savedCustomTemplate?.schemaId,
+          activeTemplateId: savedCustomTemplate?.templateId,
         },
       },
       {
         onSuccess: () => {
+          setSavedCustomTemplate(null);
           showSuccessMessage(translate('learn.create_topic.create_success'));
           router.back();
         },
@@ -200,11 +210,11 @@ export function CreateTopicScreen() {
                   <View className="flex-1">
                     <View className="flex-row flex-wrap items-center gap-1.5">
                       <Text className="font-nunito text-sm font-black text-mascot-navy dark:text-white">
-                        {translate('learn.create_topic.layout_name')}
+                        {savedCustomTemplate?.name ?? translate('learn.create_topic.layout_name')}
                       </Text>
                       <View className="rounded-md bg-success-100 px-1.5 py-0.5 dark:bg-emerald-900/60">
                         <Text className="font-inter text-[10px] font-extrabold text-success-700 dark:text-success-400">
-                          {translate('learn.create_topic.layout_badge_default')}
+                          {savedCustomTemplate ? 'Custom' : translate('learn.create_topic.layout_badge_default')}
                         </Text>
                       </View>
                     </View>
@@ -236,7 +246,7 @@ export function CreateTopicScreen() {
                     {translate('learn.create_topic.layout_front_label')}
                   </Text>
                   <Text className="mt-1 font-inter text-xs font-bold text-mascot-navy dark:text-neutral-100">
-                    {translate('learn.create_topic.layout_front_value')}
+                    {savedCustomTemplate?.frontSummary ?? translate('learn.create_topic.layout_front_value')}
                   </Text>
                 </View>
 
@@ -245,7 +255,7 @@ export function CreateTopicScreen() {
                     {translate('learn.create_topic.layout_back_label')}
                   </Text>
                   <Text className="mt-1 font-inter text-xs font-bold text-mascot-navy dark:text-neutral-100">
-                    {translate('learn.create_topic.layout_back_value')}
+                    {savedCustomTemplate?.backSummary ?? translate('learn.create_topic.layout_back_value')}
                   </Text>
                 </View>
               </View>

@@ -3,10 +3,10 @@ import type { BuilderField, BuilderSection } from './types';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import * as React from 'react';
 import { ScrollView, TouchableOpacity, View } from 'react-native';
-import { Button, FocusAwareStatusBar, SafeAreaView, Text } from '@/components/ui';
+import { Button, FocusAwareStatusBar, SafeAreaView, showErrorMessage, showSuccessMessage, Text } from '@/components/ui';
 import { PlusIcon } from '@/components/ui/icons';
 import { translate } from '@/lib/i18n/utils';
-import { useForkTopicSchema, useSchema, useSchemas, useTopicSchema } from './api';
+import { useCreateTemplate, useForkTopicSchema, useSchema, useSchemas, useSetActiveTemplate, useTopicSchema } from './api';
 import {
   AddFieldSheet,
   BuilderHeader,
@@ -17,7 +17,19 @@ import {
   TabSegmentedBar,
   TemplateBuilderSkeleton,
 } from './components';
+import { builderSectionsToTemplateElements } from './mappers';
 import { useTemplateBuilderStore } from './use-template-builder-store';
+
+function summarizeSections(sections: BuilderSection[], fallback: string) {
+  return (
+    sections
+      .flatMap(s => s.fields)
+      .map(f => f.fieldLabel)
+      .filter(Boolean)
+      .slice(0, 3)
+      .join(', ') || fallback
+  );
+}
 
 export function TemplateBuilderScreen() {
   const params = useLocalSearchParams<{ topicId?: string; schemaId?: string }>();
@@ -92,8 +104,13 @@ export function TemplateBuilderScreen() {
   const openEditField = useTemplateBuilderStore(s => s.openEditField);
   const saveFieldSettings = useTemplateBuilderStore(s => s.saveFieldSettings);
   const deleteField = useTemplateBuilderStore(s => s.deleteField);
+  const setSavedCustomTemplate = useTemplateBuilderStore(s => s.setSavedCustomTemplate);
+  const markSaved = useTemplateBuilderStore(s => s.markSaved);
 
   const forkMutation = useForkTopicSchema();
+  const createTemplateMutation = useCreateTemplate();
+  const setActiveTemplateMutation = useSetActiveTemplate();
+  const isSaving = forkMutation.isPending || createTemplateMutation.isPending || setActiveTemplateMutation.isPending;
 
   // BottomSheet Refs
   const fieldSettingsRef = React.useRef<BottomSheetModal>(null);
@@ -139,19 +156,57 @@ export function TemplateBuilderScreen() {
     addFieldRef.current?.present();
   };
 
-  const handleSave = () => {
-    if (topicId && topicSchema?.shared) {
-      forkMutation.mutate(
-        { topicId },
-        {
-          onSuccess: () => {
-            router.back();
-          },
-        },
-      );
-    }
-    else {
+  const handleSave = async () => {
+    if (!isDirty) {
       router.back();
+      return;
+    }
+
+    const elements = builderSectionsToTemplateElements(frontSections, backSections);
+    if (elements.length === 0) {
+      router.back();
+      return;
+    }
+
+    try {
+      let targetSaveSchemaId = schema?.schemaId;
+      if (topicId && topicSchema?.shared) {
+        const forked = await forkMutation.mutateAsync({ topicId });
+        targetSaveSchemaId = forked.schemaId;
+      }
+      if (!targetSaveSchemaId) {
+        showErrorMessage(translate('learn.create_topic.create_error'));
+        return;
+      }
+
+      const baseName = defaultTemplate?.name || schema?.name || translate('template_builder.default_template_name');
+      const customName = baseName.includes('(Custom)') ? baseName : `${baseName} (Custom)`;
+      const created = await createTemplateMutation.mutateAsync({
+        schemaId: targetSaveSchemaId,
+        name: customName,
+        isDefault: !topicId,
+        elements,
+      });
+
+      if (topicId) {
+        await setActiveTemplateMutation.mutateAsync({ topicId, templateId: created.id });
+      }
+      else {
+        setSavedCustomTemplate({
+          schemaId: created.schemaId,
+          templateId: created.id,
+          name: created.name,
+          frontSummary: summarizeSections(frontSections, translate('learn.create_topic.layout_front_value')),
+          backSummary: summarizeSections(backSections, translate('learn.create_topic.layout_back_value')),
+        });
+      }
+      markSaved();
+      showSuccessMessage(translate('template_builder.save_config'));
+      router.back();
+    }
+    catch (error: any) {
+      const message = error?.response?.data?.error || error?.response?.data?.message || translate('learn.create_topic.create_error');
+      showErrorMessage(message);
     }
   };
 
@@ -219,8 +274,8 @@ export function TemplateBuilderScreen() {
               ? translate('template_builder.save_config')
               : translate('template_builder.done')
           }
-          loading={forkMutation.isPending}
-          onPress={handleSave}
+          loading={isSaving}
+          onPress={() => void handleSave()}
         />
       </View>
 

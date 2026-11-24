@@ -32,6 +32,14 @@ export type AddFieldParams = {
   column?: 1 | 2;
 };
 
+export type SavedCustomTemplate = {
+  schemaId: number;
+  templateId: number;
+  name: string;
+  frontSummary: string;
+  backSummary: string;
+};
+
 export type CoreBuilderState = {
   isInitialized: boolean;
   topicId?: number;
@@ -45,10 +53,13 @@ export type CoreBuilderState = {
   availableAttributes: SchemaAttributeDTO[];
   isDirty: boolean;
   previewModalOpen: boolean;
+  savedCustomTemplate: SavedCustomTemplate | null;
 
   setActiveSide: (side: CardSide) => void;
   initBuilder: (params: InitBuilderParams) => void;
   setPreviewModalOpen: (open: boolean) => void;
+  setSavedCustomTemplate: (template: SavedCustomTemplate | null) => void;
+  markSaved: () => void;
   getElementsPayload: () => TemplateElementDTO[];
   reset: () => void;
 };
