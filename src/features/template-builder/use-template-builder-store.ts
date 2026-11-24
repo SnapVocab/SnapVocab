@@ -25,6 +25,7 @@ export const useTemplateBuilderStore = create<TemplateBuilderState>((set, get, a
   availableAttributes: [],
   isDirty: false,
   previewModalOpen: false,
+  savedCustomTemplate: null,
 
   // Compose Section and Field slices
   ...createSectionSlice(set, get, api),
@@ -75,6 +76,10 @@ export const useTemplateBuilderStore = create<TemplateBuilderState>((set, get, a
   },
 
   setPreviewModalOpen: (open: boolean) => set({ previewModalOpen: open }),
+
+  setSavedCustomTemplate: savedCustomTemplate => set({ savedCustomTemplate }),
+
+  markSaved: () => set({ isDirty: false }),
 
   getElementsPayload: (): TemplateElementDTO[] => {
     const { frontSections, backSections } = get();

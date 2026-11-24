@@ -18,6 +18,9 @@ export function createFieldElement({
     side,
     field: {
       schemaAttributeId: field.schemaAttributeId,
+      attributeName: field.attributeName,
+      dataType: field.dataType,
+      required: field.required,
       semanticRole: field.semanticRole,
       fieldLabel: field.fieldLabel,
       hideIfEmpty: field.hideIfEmpty,

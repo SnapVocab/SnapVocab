@@ -1,7 +1,7 @@
 import type { AxiosError } from 'axios';
 import type { ApiResponse } from '../auth/api';
 import type { TopicDTO } from '../learn/types';
-import type { SchemaDTO, TopicSchemaDTO } from './types';
+import type { SchemaDTO, TemplateDTO, TemplateElementDTO, TopicSchemaDTO } from './types';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { client } from '@/lib/api';
 
@@ -68,6 +68,33 @@ export function useForkTopicSchema() {
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['topic-schema', variables.topicId] });
       queryClient.invalidateQueries({ queryKey: ['topics'] });
+    },
+  });
+}
+
+export type CreateTemplateParams = {
+  schemaId: number;
+  name: string;
+  isDefault?: boolean;
+  elements: TemplateElementDTO[];
+};
+
+export function useCreateTemplate() {
+  const queryClient = useQueryClient();
+
+  return useMutation<TemplateDTO, AxiosError<ApiResponse<unknown>>, CreateTemplateParams>({
+    mutationFn: async ({ schemaId, name, isDefault = false, elements }) => {
+      const response = await client<ApiResponse<TemplateDTO>>({
+        url: `/api/schemas/${schemaId}/templates`,
+        method: 'POST',
+        data: { name, isDefault, elements },
+      });
+
+      return response.data.data;
+    },
+    onSuccess: (created) => {
+      queryClient.invalidateQueries({ queryKey: ['schema', created.schemaId] });
+      queryClient.invalidateQueries({ queryKey: ['schemas'] });
     },
   });
 }
