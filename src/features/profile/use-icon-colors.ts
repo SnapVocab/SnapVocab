@@ -26,6 +26,7 @@ export function useIconColors() {
     /** One hue per settings row, in the spirit of the orange streak icon. */
     row: {
       password: pick('#8253EC', '#9E7DFA'),
+      biometric: pick('#0B8FCE', '#4BC2F8'),
       notification: pick('#FF8A00', '#FFA447'),
       goal: pick('#4CAD02', '#7DD634'),
       reminder: pick('#0B8FCE', '#4BC2F8'),

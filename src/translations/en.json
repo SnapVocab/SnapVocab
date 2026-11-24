@@ -593,6 +593,8 @@
   },
   "login": {
     "banned": "This account has been locked. Please contact SnapVocab support.",
+    "biometric_a11y": "Sign in with fingerprint",
+    "biometric_error": "Fingerprint sign-in failed. Please try again or use your password.",
     "email": "Email",
     "email_placeholder": "Enter your email",
     "error": "Login failed. Please check your credentials.",
@@ -1183,6 +1185,11 @@
   "settings": {
     "account": "Account",
     "app": "App",
+    "biometric_disabled": "Fingerprint sign-in turned off on this device.",
+    "biometric_enabled": "Fingerprint sign-in enabled on this device.",
+    "biometric_error": "Could not set up fingerprint sign-in. Please try again.",
+    "biometric_login": "Fingerprint sign-in",
+    "biometric_unsupported": "This device does not support fingerprint sign-in.",
     "cancel": "Cancel",
     "change_password": "Change password",
     "error": "Could not save the setting. Please try again.",
@@ -1200,6 +1207,7 @@
     "reminder_inbox_only": "Shown in the in-app inbox only",
     "reminder_off": "Off",
     "reminder_sheet_desc": "Snapy will remind you to review at this time every day.",
+    "security": "Security",
     "select_language": "Choose language",
     "select_reminder": "Reminder time",
     "select_theme": "Choose appearance",

@@ -2,12 +2,20 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'expo-router';
 import * as React from 'react';
 import { Controller, useForm } from 'react-hook-form';
+import { useUniwind } from 'uniwind';
 import * as z from 'zod';
 
 import { Button, Input, showErrorMessage, ThemedLink, View } from '@/components/ui';
-import { Lock, Mail } from '@/components/ui/icons';
+import { FingerprintIcon, Lock, Mail } from '@/components/ui/icons';
 import { translate } from '@/lib/i18n/utils';
 import { useLogin } from '../api';
+import {
+  getLastLoginEmail,
+  isPasskeyCancelledError,
+  isPasskeySupported,
+  setLastLoginEmail,
+  usePasskeyLogin,
+} from '../passkey';
 import { useAuthStore } from '../use-auth-store';
 
 const loginSchema = z.object({
@@ -19,17 +27,21 @@ type LoginFormValues = z.infer<typeof loginSchema>;
 
 export function LoginForm() {
   const router = useRouter();
+  const { theme } = useUniwind();
   const setAuth = useAuthStore(s => s.login);
   const { mutate: login, isPending } = useLogin();
+  const { mutate: loginWithPasskey, isPending: isPasskeyPending } = usePasskeyLogin();
+  const passkeySupported = isPasskeySupported();
 
   const {
     control,
     handleSubmit,
+    getValues,
     formState: { errors, isSubmitting },
   } = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      email: '',
+      email: getLastLoginEmail(),
       password: '',
     },
   });
@@ -37,6 +49,7 @@ export function LoginForm() {
   const onSubmit = (value: LoginFormValues) => {
     login(value, {
       onSuccess: (data) => {
+        setLastLoginEmail(data.user?.email || value.email);
         setAuth(data);
       },
       onError: (error) => {
@@ -58,6 +71,31 @@ export function LoginForm() {
       },
     });
   };
+
+  const handleBiometricLogin = () => {
+    const email = getValues('email')?.trim() || getLastLoginEmail() || undefined;
+    loginWithPasskey(
+      { email },
+      {
+        onSuccess: (data) => {
+          setAuth(data);
+        },
+        onError: (error) => {
+          if (isPasskeyCancelledError(error))
+            return;
+          const body = (error as { response?: { data?: { error?: string } } })?.response?.data;
+          if (body?.error === 'USER_BANNED') {
+            showErrorMessage(translate('login.banned'));
+          }
+          else {
+            showErrorMessage(translate('login.biometric_error'));
+          }
+        },
+      },
+    );
+  };
+
+  const fingerprintColor = theme === 'dark' ? '#F3F4F6' : '#1E2A44';
 
   return (
     <View className="mt-4">
@@ -100,14 +138,30 @@ export function LoginForm() {
         </ThemedLink>
       </View>
 
-      <Button
-        label={translate('login.sign_in')}
-        variant="brand"
-        loading={isPending || isSubmitting}
-        onPress={handleSubmit(onSubmit)}
-        className="mt-6 w-full rounded-2xl"
-        size="lg"
-      />
+      <View className="mt-6 flex-row items-center gap-3">
+        <Button
+          label={translate('login.sign_in')}
+          variant="brand"
+          loading={isPending || isSubmitting}
+          disabled={isPasskeyPending}
+          onPress={handleSubmit(onSubmit)}
+          className="flex-1 rounded-2xl"
+          size="lg"
+        />
+        {passkeySupported && (
+          <Button
+            variant="secondary"
+            size="lg"
+            loading={isPasskeyPending}
+            disabled={isPending || isSubmitting}
+            onPress={handleBiometricLogin}
+            accessibilityLabel={translate('login.biometric_a11y')}
+            testID="login-biometric-button"
+            icon={<FingerprintIcon color={fingerprintColor} size={24} />}
+            className="w-14 rounded-2xl px-0"
+          />
+        )}
+      </View>
     </View>
   );
 }

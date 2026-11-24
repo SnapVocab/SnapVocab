@@ -27,11 +27,26 @@ jest.mock('./use-icon-colors', () => ({ useIconColors: () => ({ row: {}, danger:
 jest.mock('@/components/ui/icons', () => ({
   BellIcon: () => null,
   ClockRotateIcon: () => null,
+  FingerprintIcon: () => null,
   GlobeIcon: () => null,
   LogOutIcon: () => null,
   PasswordIcon: () => null,
   TargetIcon: () => null,
   ThemeModeIcon: () => null,
+}));
+jest.mock('@/features/auth/passkey', () => ({
+  clearStoredPasskeyBinding: jest.fn(),
+  getStoredPasskeyBinding: jest.fn(() => null),
+  isPasskeyCancelledError: jest.fn(() => false),
+  isPasskeySupported: jest.fn(() => true),
+  useDisablePasskey: () => ({ mutateAsync: jest.fn(), isPending: false }),
+  usePasskeyCredentials: () => ({ data: [] }),
+  useRegisterPasskey: () => ({ mutateAsync: jest.fn(), isPending: false }),
+}));
+jest.mock('@/features/auth/use-auth-store', () => ({
+  store: { subscribe: jest.fn() },
+  useAuthStore: (selector: (s: { user: { email: string } }) => unknown) =>
+    selector({ user: { email: 'learner@example.com' } }),
 }));
 jest.mock('@/components/ui', () => {
   const RN = require('react-native');

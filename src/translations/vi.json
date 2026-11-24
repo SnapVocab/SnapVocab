@@ -593,6 +593,8 @@
   },
   "login": {
     "banned": "Tài khoản này đã bị khóa. Vui lòng liên hệ hỗ trợ SnapVocab.",
+    "biometric_a11y": "Đăng nhập bằng vân tay",
+    "biometric_error": "Đăng nhập bằng vân tay thất bại. Vui lòng thử lại hoặc dùng mật khẩu.",
     "email": "Email",
     "email_placeholder": "Nhập email của bạn",
     "error": "Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin.",
@@ -1183,6 +1185,11 @@
   "settings": {
     "account": "Tài khoản",
     "app": "Ứng dụng",
+    "biometric_disabled": "Đã tắt đăng nhập bằng vân tay trên thiết bị này.",
+    "biometric_enabled": "Đã bật đăng nhập bằng vân tay trên thiết bị này.",
+    "biometric_error": "Không thể thiết lập vân tay. Vui lòng thử lại.",
+    "biometric_login": "Đăng nhập bằng vân tay",
+    "biometric_unsupported": "Thiết bị này chưa hỗ trợ đăng nhập bằng vân tay.",
     "cancel": "Hủy",
     "change_password": "Đổi mật khẩu",
     "error": "Lưu cài đặt thất bại. Vui lòng thử lại.",
@@ -1200,6 +1207,7 @@
     "reminder_inbox_only": "Chỉ hiện trong hộp thông báo của ứng dụng",
     "reminder_off": "Tắt",
     "reminder_sheet_desc": "Snapy sẽ nhắc bạn ôn tập vào giờ này mỗi ngày.",
+    "security": "Bảo mật",
     "select_language": "Chọn ngôn ngữ",
     "select_reminder": "Giờ nhắc",
     "select_theme": "Chọn giao diện",
