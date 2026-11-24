@@ -197,6 +197,7 @@ export function Button({
       ref={ref}
       disabled={isDisabled}
       android_ripple={props.android_ripple ?? defaultRipple}
+      pressRetentionOffset={props.pressRetentionOffset ?? { top: 20, right: 20, bottom: 20, left: 20 }}
       className={containerClasses}
       // Keep the action's name while loading dots replace the text.
       accessibilityRole="button"

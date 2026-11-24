@@ -1,8 +1,9 @@
 import type { PressableProps, ViewProps } from 'react-native';
 import * as React from 'react';
-import { Pressable, View } from 'react-native';
+import { View } from 'react-native';
 import { twMerge } from 'tailwind-merge';
 
+import { Pressable } from './pressable';
 import { Text } from './text';
 
 export type CardProps = ViewProps & {
@@ -48,7 +49,7 @@ export function CardInteractive({
   return (
     <Pressable
       className={twMerge(
-        'w-full flex-row items-center gap-3.5 rounded-2xl border-2 p-4 transition-all active:translate-y-[2px] active:border-b-2',
+        'w-full flex-row items-center gap-3.5 overflow-hidden rounded-2xl border-2 p-4 active:translate-y-[2px]',
         selected
           ? cardVariants.selected
           : 'border-b-4 border-line border-b-edge bg-surface active:bg-pressed',

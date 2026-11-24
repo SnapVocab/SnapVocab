@@ -3,11 +3,11 @@ import type { HomeWidgetDTO, XpOverviewDTO } from '@/features/progress/types';
 import { useQueryClient } from '@tanstack/react-query';
 import { useFocusEffect, useRouter } from 'expo-router';
 import * as React from 'react';
-import { Pressable, RefreshControl, ScrollView, useWindowDimensions, View } from 'react-native';
+import { RefreshControl, ScrollView, useWindowDimensions, View } from 'react-native';
 import { withUniwind } from 'uniwind';
 import { XPOrb3D } from '@/components/snapvocab';
 import { Snapy } from '@/components/Snapy';
-import { FocusAwareStatusBar, SafeAreaView, Text } from '@/components/ui';
+import { FocusAwareStatusBar, Pressable, SafeAreaView, Text } from '@/components/ui';
 import { ChevronRightIcon, TargetIcon } from '@/components/ui/icons';
 import { useSurface } from '@/components/ui/surface';
 import { useAuthStore } from '@/features/auth/use-auth-store';
@@ -26,8 +26,8 @@ import { getLanguage, translate } from '@/lib/i18n';
 import { HomeSearchBar } from './components';
 
 // Same chunky 3D surface as HomeSearchBar.
-const CARD_3D = 'mb-3 rounded-2xl border-2 border-b-4 border-line border-b-edge bg-surface';
-const PRESSABLE_3D = 'active:translate-y-[2px] active:border-b-2 active:bg-pressed';
+const CARD_3D = 'mb-3 overflow-hidden rounded-2xl border-2 border-b-4 border-line border-b-edge bg-surface';
+const PRESSABLE_3D = 'active:translate-y-[2px] active:bg-pressed';
 const SafeArea = withUniwind(SafeAreaView);
 
 // The two progress cards share one row structure, so label, value and caption line up across them.
