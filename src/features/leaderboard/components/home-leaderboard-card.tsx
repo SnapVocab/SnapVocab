@@ -4,7 +4,7 @@ import { Pressable, View } from 'react-native';
 import { Button, Text } from '@/components/ui';
 import { translate } from '@/lib/i18n';
 import { useLeaderboard } from '../api';
-import { CachedError, EmptyBoard, LoadError, PersonalNote, updatedLabel } from '../leaderboard-screen';
+import { CachedError, EmptyBoard, LoadError, PersonalNote } from '../leaderboard-screen';
 import { shouldPinMe, visibleSnapshot } from '../model';
 import { LeaderboardRowView, MeRowView, SkeletonRows } from './leaderboard-row';
 
@@ -15,14 +15,13 @@ export function HomeLeaderboardCard() {
   const now = new Date();
   const data = visibleSnapshot(query, 'CURRENT', now);
   const goLearn = () => router.push('/learn');
-  const updated = data && updatedLabel(data.asOf, now);
 
   return (
-    <View className="mt-4 overflow-hidden rounded-2xl border border-line bg-surface">
+    <View className="mt-4 overflow-hidden rounded-3xl border border-line bg-surface">
       <Pressable
         accessibilityRole="button"
         onPress={() => router.push('/leaderboard')}
-        className="flex-row items-center justify-between gap-2 px-4 pt-4 pb-2.5 active:opacity-80"
+        className="flex-row items-center justify-between gap-2 px-4 pt-4 pb-3 active:opacity-80"
       >
         <Text className="flex-1 font-nunito text-lg font-black text-mascot-navy dark:text-white">
           {translate('leaderboard.home_title')}
@@ -46,10 +45,17 @@ export function HomeLeaderboardCard() {
             )
           : (
               <>
-                {data.entries.map((row, index) => <LeaderboardRowView key={`${index}:${row.rank}`} row={row} week="CURRENT" />)}
+                {data.entries.map((row, index) => (
+                  <LeaderboardRowView
+                    key={`${index}:${row.rank}`}
+                    row={row}
+                    week="CURRENT"
+                    last={index === data.entries.length - 1 && !shouldPinMe(data)}
+                  />
+                ))}
                 {shouldPinMe(data) && (
                   <View className="border-t border-line">
-                    <MeRowView me={data.me} week="CURRENT" />
+                    <MeRowView me={data.me} week="CURRENT" last />
                   </View>
                 )}
                 <PersonalNote data={data} week="CURRENT" onLearn={goLearn} />
@@ -60,8 +66,7 @@ export function HomeLeaderboardCard() {
           <CachedError onRetry={() => void query.refetch()} />
         </View>
       )}
-      {updated && <Text className="px-4 pt-2 font-inter text-[13px] text-neutral-500 dark:text-neutral-300">{updated}</Text>}
-      <View className="p-4">
+      <View className="px-4 pt-3 pb-4">
         <Button tx="leaderboard.link" variant="outline" onPress={() => router.push('/leaderboard')} />
       </View>
     </View>

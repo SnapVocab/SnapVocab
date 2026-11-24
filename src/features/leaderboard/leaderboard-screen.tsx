@@ -24,25 +24,16 @@ export function updatedLabel(asOf: string, now: Date): string | null {
     : translate('leaderboard.updated', { time: parts.time });
 }
 
-function WeekSwitch({ week, onChange, statusPill }: {
+type StatusPill = { text: string; tone: 'neutral' | 'final' | 'settling' };
+
+/** Full-width mobile segmented control for switching between current and previous week. */
+function WeekSwitch({ week, onChange }: {
   week: LeaderboardWeek;
   onChange: (week: LeaderboardWeek) => void;
-  statusPill?: { text: string; tone: 'neutral' | 'final' | 'settling' } | null;
 }) {
-  const pillStyle = statusPill?.tone === 'final'
-    ? 'bg-primary-50 dark:bg-primary-500/15'
-    : statusPill?.tone === 'settling'
-      ? 'bg-amber-50 dark:bg-amber-400/15'
-      : 'bg-neutral-50 dark:bg-neutral-800';
-  const pillTextStyle = statusPill?.tone === 'final'
-    ? 'text-primary-800 dark:text-primary-300'
-    : statusPill?.tone === 'settling'
-      ? 'text-amber-800 dark:text-amber-200'
-      : 'text-neutral-600 dark:text-neutral-300';
-
   return (
-    <View className="flex-row flex-wrap items-center justify-between gap-2 bg-surface px-4 pt-1 pb-2">
-      <View accessibilityRole="tablist" className="flex-row rounded-xl bg-neutral-50 p-0.5 dark:bg-neutral-800">
+    <View className="bg-background px-4 pt-2 pb-1.5">
+      <View accessibilityRole="tablist" className="flex-row rounded-2xl bg-neutral-100/80 p-1 dark:bg-neutral-800">
         {(['CURRENT', 'PREVIOUS'] as const).map((value) => {
           const active = value === week;
           return (
@@ -51,7 +42,7 @@ function WeekSwitch({ week, onChange, statusPill }: {
               accessibilityRole="tab"
               accessibilityState={{ selected: active }}
               onPress={() => onChange(value)}
-              className={`min-h-9 items-center justify-center rounded-[10px] px-3.5 py-1.5 ${active ? 'bg-surface dark:bg-neutral-700' : ''}`}
+              className={`min-h-10 flex-1 items-center justify-center rounded-xl px-3 py-2 ${active ? 'bg-surface shadow-xs dark:bg-neutral-700' : ''}`}
             >
               <Text className={`text-center font-nunito text-[13px] font-extrabold ${active ? 'text-mascot-navy dark:text-white' : 'text-neutral-500 dark:text-neutral-300'}`}>
                 {translate(value === 'CURRENT' ? 'leaderboard.period.current' : 'leaderboard.period.previous')}
@@ -60,13 +51,6 @@ function WeekSwitch({ week, onChange, statusPill }: {
           );
         })}
       </View>
-      {statusPill && (
-        <View className={`rounded-full px-2.5 py-1 ${pillStyle}`}>
-          <Text className={`font-inter text-[11px] font-bold ${pillTextStyle}`}>
-            {statusPill.text}
-          </Text>
-        </View>
-      )}
     </View>
   );
 }
@@ -74,11 +58,11 @@ function WeekSwitch({ week, onChange, statusPill }: {
 /** `fromRank` is the first list row's own rank: a tie across the stage edge (1–2–3–3) starts the list at 3, not 4. */
 function ListSectionHeader({ fromRank }: { fromRank: number }) {
   return (
-    <View className="flex-row items-center justify-between border-b border-line bg-surface px-4 pt-3.5 pb-1.5">
-      <Text accessibilityRole="header" className="font-nunito text-[11px] font-extrabold tracking-wider text-neutral-500 uppercase dark:text-neutral-300">
+    <View className="flex-row items-center justify-between px-5 pt-4 pb-2">
+      <Text accessibilityRole="header" className="font-nunito text-[11px] font-extrabold tracking-wider text-neutral-500 uppercase dark:text-neutral-400">
         {translate('leaderboard.list_range', { rank: fromRank })}
       </Text>
-      <Text importantForAccessibility="no" className="font-nunito text-[11px] font-extrabold tracking-wider text-neutral-500 uppercase dark:text-neutral-300">
+      <Text importantForAccessibility="no" className="font-nunito text-[11px] font-extrabold tracking-wider text-neutral-500 uppercase dark:text-neutral-400">
         {translate('leaderboard.xp_column')}
       </Text>
     </View>
@@ -93,14 +77,14 @@ function MeTop3Banner({ data, week, gapLabel, gapProgress }: {
 }) {
   if (week === 'CURRENT' && gapLabel) {
     return (
-      <View className="mx-3 mt-2.5 rounded-xl border border-primary-200 bg-primary-50 px-3 py-2 dark:border-primary-500/30 dark:bg-primary-500/15">
+      <View className="mx-4 mt-3 rounded-2xl border border-primary-200 bg-primary-50 px-3.5 py-2.5 dark:border-primary-500/30 dark:bg-primary-500/15">
         <GapLine gap={gapLabel} pct={gapProgress} />
       </View>
     );
   }
   if (week === 'PREVIOUS' && data.me.rank !== null) {
     return (
-      <View className="mx-3 mt-2.5 flex-row items-center justify-between gap-2 rounded-xl border border-primary-200 bg-primary-50 px-3 py-2 dark:border-primary-500/30 dark:bg-primary-500/15">
+      <View className="mx-4 mt-3 flex-row items-center justify-between gap-2 rounded-2xl border border-primary-200 bg-primary-50 px-3.5 py-2.5 dark:border-primary-500/30 dark:bg-primary-500/15">
         <Text className="flex-1 font-inter text-xs font-bold text-primary-800 dark:text-primary-300">
           {translate('leaderboard.me_previous_top3', { rank: data.me.rank, xp: formatXp(data.me.score) })}
         </Text>
@@ -113,36 +97,50 @@ function MeTop3Banner({ data, week, gapLabel, gapProgress }: {
   return null;
 }
 
-function Meta({ data, week, now, refreshing, cachedError, onRetry }: {
+/** Single compact meta line above the stage; quiet secondary notes only appear for PREVIOUS or errors. */
+function Meta({ data, week, statusPill, cachedError, onRetry }: {
   data: Leaderboard;
   week: LeaderboardWeek;
-  now: Date;
-  refreshing: boolean;
+  statusPill: StatusPill | null;
   cachedError: boolean;
   onRetry: () => void;
 }) {
-  const updated = updatedLabel(data.asOf, now);
+  const pillStyle = statusPill?.tone === 'final'
+    ? 'bg-primary-50 dark:bg-primary-500/15'
+    : statusPill?.tone === 'settling'
+      ? 'bg-amber-50 dark:bg-amber-400/15'
+      : 'bg-neutral-100 dark:bg-neutral-800';
+  const pillTextStyle = statusPill?.tone === 'final'
+    ? 'text-primary-800 dark:text-primary-300'
+    : statusPill?.tone === 'settling'
+      ? 'text-amber-800 dark:text-amber-200'
+      : 'text-neutral-600 dark:text-neutral-300';
+
   return (
-    <View className="gap-1 bg-surface px-4 pt-0.5 pb-2">
-      <View className="flex-row flex-wrap items-center justify-between gap-x-2 gap-y-0.5">
-        <View className="flex-row flex-wrap items-center gap-x-1.5">
-          <Text className="font-nunito text-[13px] font-black text-mascot-navy dark:text-white">
+    <View className="gap-1.5 px-4 pt-1 pb-2">
+      <View className="flex-row items-center justify-between gap-2">
+        <View className="min-w-0 flex-1 flex-row flex-wrap items-center gap-x-1.5">
+          <Text className="font-nunito text-xs font-extrabold text-mascot-navy dark:text-white">
             {formatWeekRange(data.weekStart, data.weekEnd)}
           </Text>
-          <Text className="font-inter text-xs text-neutral-500 dark:text-neutral-300">·</Text>
-          <Text className="font-inter text-xs text-neutral-500 dark:text-neutral-300">
+          <Text className="font-inter text-xs text-neutral-400 dark:text-neutral-500">·</Text>
+          <Text className="font-inter text-xs text-neutral-500 dark:text-neutral-400">
             {translate('leaderboard.count', { count: data.participants })}
           </Text>
         </View>
-        <Text className="font-inter text-xs text-neutral-500 dark:text-neutral-300">
-          {refreshing ? translate('leaderboard.refreshing') : updated}
-        </Text>
+        {statusPill && (
+          <View className={`shrink-0 rounded-full px-2.5 py-1 ${pillStyle}`}>
+            <Text className={`font-inter text-[11px] font-bold ${pillTextStyle}`}>
+              {statusPill.text}
+            </Text>
+          </View>
+        )}
       </View>
       {week === 'PREVIOUS' && !data.isFinal && (
-        <Text className="font-inter text-xs/4 text-neutral-500 dark:text-neutral-300">{translate('leaderboard.finalizing_note')}</Text>
+        <Text className="font-inter text-xs/4 text-neutral-500 dark:text-neutral-400">{translate('leaderboard.finalizing_note')}</Text>
       )}
       {week === 'PREVIOUS' && (
-        <Text className="font-inter text-xs/4 text-neutral-500 dark:text-neutral-300">{translate('leaderboard.previous_trend_note')}</Text>
+        <Text className="font-inter text-xs/4 text-neutral-500 dark:text-neutral-400">{translate('leaderboard.previous_trend_note')}</Text>
       )}
       {cachedError && <CachedError onRetry={onRetry} />}
     </View>
@@ -151,10 +149,10 @@ function Meta({ data, week, now, refreshing, cachedError, onRetry }: {
 
 export function CachedError({ onRetry }: { onRetry: () => void }) {
   return (
-    <View className="gap-2 rounded-lg bg-amber-50 px-3 py-2 dark:bg-amber-400/10">
+    <View className="gap-2 rounded-xl bg-amber-50 px-3 py-2.5 dark:bg-amber-400/10">
       <Text accessibilityLiveRegion="polite" className="font-inter text-[13px] text-amber-800 dark:text-amber-200">{translate('leaderboard.cached_error')}</Text>
       <View className="items-start">
-        <Button tx="leaderboard.retry" variant="outline" onPress={onRetry} />
+        <Button tx="leaderboard.retry" variant="outline" size="sm" onPress={onRetry} />
       </View>
     </View>
   );
@@ -164,12 +162,12 @@ export function CachedError({ onRetry }: { onRetry: () => void }) {
 export function PersonalNote({ data, week, onLearn }: { data: Leaderboard; week: LeaderboardWeek; onLearn: () => void }) {
   const empty = data.entries.length === 0;
   if (!data.me.eligible)
-    return <Text className="p-4 font-inter text-[15px] text-neutral-600 dark:text-neutral-200">{translate('leaderboard.admin')}</Text>;
+    return <Text className="p-4 font-inter text-sm text-neutral-600 dark:text-neutral-300">{translate('leaderboard.admin')}</Text>;
   if (empty || data.me.rank !== null)
     return null;
   return (
-    <View className="gap-3 p-4">
-      <Text className="font-inter text-[15px] text-neutral-700 dark:text-neutral-100">
+    <View className="mx-4 mt-3 gap-3 rounded-2xl border border-line bg-surface p-4">
+      <Text className="font-inter text-sm text-neutral-700 dark:text-neutral-200">
         {translate(week === 'CURRENT' ? 'leaderboard.unranked_current' : 'leaderboard.unranked_previous')}
       </Text>
       {week === 'CURRENT' && <Button tx="leaderboard.learn" onPress={onLearn} />}
@@ -179,13 +177,13 @@ export function PersonalNote({ data, week, onLearn }: { data: Leaderboard; week:
 
 export function EmptyBoard({ data, week, onLearn }: { data: Leaderboard; week: LeaderboardWeek; onLearn: () => void }) {
   return (
-    <View className="gap-2 px-4 py-8">
-      <Text className="font-nunito text-lg font-black text-mascot-navy dark:text-white">
+    <View className="mx-4 mt-4 items-center gap-2 rounded-3xl border border-line bg-surface px-5 py-8">
+      <Text className="text-center font-nunito text-lg font-black text-mascot-navy dark:text-white">
         {translate(week === 'CURRENT' ? 'leaderboard.empty_current_title' : 'leaderboard.empty_previous')}
       </Text>
       {week === 'CURRENT' && data.me.eligible && (
         <>
-          <Text className="font-inter text-[15px] text-neutral-600 dark:text-neutral-200">{translate('leaderboard.empty_current_body')}</Text>
+          <Text className="mb-2 text-center font-inter text-sm text-neutral-500 dark:text-neutral-300">{translate('leaderboard.empty_current_body')}</Text>
           <Button tx="leaderboard.learn" onPress={onLearn} />
         </>
       )}
@@ -195,8 +193,8 @@ export function EmptyBoard({ data, week, onLearn }: { data: Leaderboard; week: L
 
 export function LoadError({ onRetry }: { onRetry: () => void }) {
   return (
-    <View className="gap-3 px-4 py-8">
-      <Text className="font-inter text-[15px] text-neutral-700 dark:text-neutral-100">{translate('leaderboard.error')}</Text>
+    <View className="mx-4 mt-4 items-center gap-3 rounded-3xl border border-line bg-surface px-5 py-8">
+      <Text className="text-center font-inter text-sm text-neutral-700 dark:text-neutral-200">{translate('leaderboard.error')}</Text>
       <Button tx="leaderboard.retry" variant="outline" onPress={onRetry} />
     </View>
   );
@@ -268,22 +266,23 @@ export function LeaderboardScreen() {
   const rest = data ? data.entries.slice(3) : [];
   const meInTop3 = top3.some(row => row.isMe);
   const remaining = data && week === 'CURRENT' ? remainingParts(data.endsAt, now) : null;
-  const statusPill = !data
+  const updated = data ? updatedLabel(data.asOf, now) : null;
+  const statusPill: StatusPill | null = !data
     ? null
     : week === 'PREVIOUS'
       ? {
           text: translate(data.isFinal ? 'leaderboard.status.final' : 'leaderboard.status.finalizing'),
-          tone: data.isFinal ? 'final' as const : 'settling' as const,
+          tone: data.isFinal ? 'final' : 'settling',
         }
       : remaining
         ? {
             text: remaining.count !== undefined ? translate(remaining.key, { count: remaining.count }) : translate(remaining.key),
-            tone: 'neutral' as const,
+            tone: 'neutral',
           }
         : null;
 
   return (
-    <SafeAreaView style={{ flex: 1 }} className="flex-1 bg-surface" edges={['top', 'bottom']}>
+    <SafeAreaView style={{ flex: 1 }} className="flex-1 bg-background" edges={['top', 'bottom']}>
       <FocusAwareStatusBar />
       <ScreenHeader
         title={translate('leaderboard.title')}
@@ -299,7 +298,7 @@ export function LeaderboardScreen() {
           </Pressable>
         )}
       />
-      <WeekSwitch week={week} onChange={changeWeek} statusPill={statusPill} />
+      <WeekSwitch week={week} onChange={changeWeek} />
       {!data
         ? (query.isError && !query.isFetching
             ? <LoadError onRetry={() => void refetch()} />
@@ -308,6 +307,7 @@ export function LeaderboardScreen() {
             <FlatList
               ref={listRef}
               style={{ flex: 1 }}
+              contentContainerStyle={{ paddingBottom: pinned ? 16 : 24 }}
               data={rest}
               keyExtractor={(row, index) => `${index + 3}:${row.rank}`}
               refreshControl={<RefreshControl refreshing={pulling} onRefresh={() => void pullToRefresh()} />}
@@ -316,8 +316,7 @@ export function LeaderboardScreen() {
                   <Meta
                     data={data}
                     week={week}
-                    now={now}
-                    refreshing={query.isFetching && !pulling}
+                    statusPill={statusPill}
                     cachedError={query.isError}
                     onRetry={() => void refetch()}
                   />
@@ -333,30 +332,44 @@ export function LeaderboardScreen() {
                   {rest.length > 0 && <ListSectionHeader fromRank={rest[0].rank} />}
                 </>
               )}
-              renderItem={({ item }) => (
-                <LeaderboardRowView
-                  row={item}
-                  week={week}
-                  gap={item.isMe ? gapLabel : undefined}
-                  gapProgress={item.isMe ? gapProgress : undefined}
-                />
+              renderItem={({ item, index }) => (
+                <View className={`mx-4 overflow-hidden border-x border-line bg-surface ${index === 0 ? 'rounded-t-2xl border-t' : ''} ${index === rest.length - 1 ? 'rounded-b-2xl border-b' : ''}`}>
+                  <LeaderboardRowView
+                    row={item}
+                    week={week}
+                    gap={item.isMe ? gapLabel : undefined}
+                    gapProgress={item.isMe ? gapProgress : undefined}
+                    last={index === rest.length - 1}
+                  />
+                </View>
               )}
               ListEmptyComponent={data.entries.length === 0 ? <EmptyBoard data={data} week={week} onLearn={goLearn} /> : null}
               ListFooterComponent={(
                 <>
                   <PersonalNote data={data} week={week} onLearn={goLearn} />
                   {data.entries.length > 0 && (
-                    <Text className="p-4 text-center font-inter text-[13px] text-neutral-500 dark:text-neutral-300">
-                      {translate('leaderboard.footer', { n: data.entries.length, count: data.participants })}
-                    </Text>
+                    <View className="items-center gap-0.5 px-4 pt-4 pb-2">
+                      <Text className="text-center font-inter text-xs text-neutral-500 dark:text-neutral-400">
+                        {translate('leaderboard.footer', { n: data.entries.length, count: data.participants })}
+                      </Text>
+                      {(query.isFetching && !pulling) || updated
+                        ? (
+                            <Text className="text-center font-inter text-[11px] text-neutral-400 dark:text-neutral-500">
+                              {query.isFetching && !pulling ? translate('leaderboard.refreshing') : updated}
+                            </Text>
+                          )
+                        : null}
+                    </View>
                   )}
                 </>
               )}
             />
           )}
       {pinned && (
-        <View className="border-t border-line bg-surface">
-          <MeRowView me={data.me} week={week} gap={gapLabel} gapProgress={gapProgress} last />
+        <View className="px-3 pt-1 pb-2">
+          <View className="overflow-hidden rounded-2xl border border-primary-300 bg-surface shadow-sm shadow-black/10 dark:border-primary-500/40">
+            <MeRowView me={data.me} week={week} gap={gapLabel} gapProgress={gapProgress} last />
+          </View>
         </View>
       )}
       <LeaderboardInfoSheet open={infoOpen} onClose={() => setInfoOpen(false)} />

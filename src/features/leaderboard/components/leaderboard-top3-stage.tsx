@@ -289,7 +289,7 @@ export function LeaderboardTop3Stage({ entries, week }: {
   const narrow = width < 345;
   // Fixed widths, not flex + maxWidth: on Android, Yoga collapsed two max-clamped slots to 0 width (2 participants).
   const gap = narrow ? 2 : 6;
-  const sideWidth = Math.min(124, Math.floor((width - 20 - 2 * gap) / 3.12));
+  const sideWidth = Math.min(118, Math.floor((width - 52 - 2 * gap) / 3.12));
   const elevatedWidth = Math.round(sideWidth * 1.12);
 
   return (
@@ -299,7 +299,7 @@ export function LeaderboardTop3Stage({ entries, week }: {
       locations={[...palette.locations]}
       start={palette.start}
       end={palette.end}
-      style={[styles.stage, { borderBottomColor: palette.borderColor }]}
+      style={[styles.stage, { borderColor: palette.borderColor }]}
     >
       <StageBackdrop palette={palette} idPrefix={idPrefix} />
       <View style={[styles.row, { gap }]}>
@@ -322,13 +322,14 @@ const styles = StyleSheet.create({
   stage: {
     position: 'relative',
     overflow: 'hidden',
-    borderBottomWidth: 1,
-    borderBottomLeftRadius: 20,
-    borderBottomRightRadius: 20,
-    paddingTop: 10,
-    paddingBottom: 14,
+    marginHorizontal: 16,
+    marginTop: 4,
+    borderWidth: 1,
+    borderRadius: 24,
+    paddingTop: 14,
+    paddingBottom: 16,
     paddingHorizontal: 10,
-    minHeight: 158,
+    minHeight: 164,
     justifyContent: 'flex-end',
   },
   row: {

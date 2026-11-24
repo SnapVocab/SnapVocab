@@ -69,7 +69,7 @@ const purple: VariantStyle = {
   indicator: { light: '#ffffff', dark: '#1C1430' },
 };
 const neutral: VariantStyle = {
-  container: `${PRESS} bg-surface border-2 border-line border-b-edge active:bg-pressed`,
+  container: `border-2 bg-surface border-line border-b-edge ${PRESS} active:bg-pressed`,
   text: `${LABEL} text-neutral-800 dark:text-neutral-50`,
   indicator: { light: '#1E2A44', dark: '#F3F4F6' },
 };
@@ -111,7 +111,7 @@ const variantStyles: Record<ButtonVariant, VariantStyle> = {
   destructive: danger,
   danger,
   outline: {
-    container: `${PRESS} bg-surface border-2 border-primary-500 border-b-primary-700 active:bg-primary-50 dark:border-[#7FA35E] dark:border-b-[#557044] dark:active:bg-pressed`,
+    container: `border-2 bg-surface border-primary-500 border-b-primary-700 dark:border-[#7FA35E] dark:border-b-[#557044] ${PRESS} active:bg-primary-50 dark:active:bg-pressed`,
     text: `${LABEL} text-primary-700 dark:text-[#B5D894]`,
     indicator: { light: '#3C8C00', dark: '#B5D894' },
   },

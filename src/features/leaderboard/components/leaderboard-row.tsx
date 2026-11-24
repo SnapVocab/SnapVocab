@@ -147,11 +147,12 @@ function RankingRow({ rank, name, score, rankChange, week, mine, gap, gapProgres
 }
 
 /** One leaderboard line (design.md §10.4): rank, framed avatar, name, weekly XP over the trend. */
-export function LeaderboardRowView({ row, week, gap, gapProgress }: {
+export function LeaderboardRowView({ row, week, gap, gapProgress, last }: {
   row: LeaderboardRow;
   week: LeaderboardWeek;
   gap?: string;
   gapProgress?: number | null;
+  last?: boolean;
 }) {
   const stacked = useStackedLeaderboardRow();
   const name = row.displayName.trim() || translate('leaderboard.learner');
@@ -165,6 +166,7 @@ export function LeaderboardRowView({ row, week, gap, gapProgress }: {
       mine={row.isMe}
       gap={gap}
       gapProgress={gapProgress}
+      last={last}
       stacked={stacked}
     >
       <View importantForAccessibility="no-hide-descendants" accessibilityElementsHidden>
