@@ -60,10 +60,10 @@ export function HomeScreen() {
   const expanded = width >= 840;
   const stackProgress = expanded || width < 360 || fontScale > 1.2;
 
-  // notification.md §3.7: coming back to Home refreshes the bell once its count is past its 60 s staleTime.
+  // notification.md §3.7: coming back to Home refreshes stale counts only, avoiding refetch storms on tab switches.
   useFocusEffect(React.useCallback(() => {
     void queryClient.refetchQueries({ queryKey: notificationKeys.unreadCount, stale: true });
-    void invalidateStudy(queryClient);
+    void queryClient.refetchQueries({ queryKey: ['study'], stale: true });
     void queryClient.refetchQueries({ queryKey: leaderboardKey('CURRENT', 3), stale: true });
   }, [queryClient]));
 

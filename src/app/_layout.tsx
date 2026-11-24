@@ -9,6 +9,7 @@ import FlashMessage from 'react-native-flash-message';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { KeyboardProvider } from 'react-native-keyboard-controller';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { enableFreeze } from 'react-native-screens';
 import { useThemeConfig } from '@/components/ui/use-theme-config';
 
 import { useAuthStore } from '@/features/auth/use-auth-store';
@@ -16,6 +17,8 @@ import { PushHost } from '@/features/notifications/push-host';
 import { APIProvider } from '@/lib/api';
 import { loadSelectedTheme } from '@/lib/hooks/use-selected-theme';
 import '../global.css';
+
+enableFreeze(true);
 
 LogBox.ignoreLogs(['Unable to activate keep awake']);
 

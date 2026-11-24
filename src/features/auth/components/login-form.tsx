@@ -11,9 +11,10 @@ import { translate } from '@/lib/i18n/utils';
 import { useLogin } from '../api';
 import {
   getLastLoginEmail,
+  getStoredPasskeyBinding,
   isPasskeyCancelledError,
-  isPasskeySupported,
   setLastLoginEmail,
+  useBiometricSupported,
   usePasskeyLogin,
 } from '../passkey';
 import { useAuthStore } from '../use-auth-store';
@@ -31,7 +32,9 @@ export function LoginForm() {
   const setAuth = useAuthStore(s => s.login);
   const { mutate: login, isPending } = useLogin();
   const { mutate: loginWithPasskey, isPending: isPasskeyPending } = usePasskeyLogin();
-  const passkeySupported = isPasskeySupported();
+  const biometricSupported = useBiometricSupported();
+  const hasBiometricSetup = Boolean(getStoredPasskeyBinding());
+  const showBiometricButton = biometricSupported && hasBiometricSetup;
 
   const {
     control,
@@ -148,7 +151,7 @@ export function LoginForm() {
           className="flex-1 rounded-2xl"
           size="lg"
         />
-        {passkeySupported && (
+        {showBiometricButton && (
           <Button
             variant="secondary"
             size="lg"

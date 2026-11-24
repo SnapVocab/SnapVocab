@@ -1,15 +1,18 @@
 import type { AxiosError } from 'axios';
-import type { PasskeyCreateRequest, PasskeyGetRequest } from 'react-native-passkey';
 import type { ApiResponse, ResponseLoginDTO } from './api';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import * as Device from 'expo-device';
+import * as LocalAuthentication from 'expo-local-authentication';
+import * as SecureStore from 'expo-secure-store';
+import { useEffect, useState } from 'react';
 import { Platform } from 'react-native';
-import { Passkey } from 'react-native-passkey';
 import { client } from '@/lib/api';
+import { translate } from '@/lib/i18n';
 import { storage } from '@/lib/storage';
 
 const LAST_EMAIL_KEY = 'passkey_last_email';
 const DEVICE_PASSKEY_KEY = 'passkey_device_binding';
+const BIOMETRIC_TOKEN_KEY = 'snapvocab_biometric_token';
 
 export type StoredPasskeyBinding = {
   dbId: number;
@@ -28,20 +31,48 @@ export type WebAuthnCredentialDTO = {
   lastUsedAt: string | null;
 };
 
-type WebAuthnLoginOptionsResponse = {
-  challengeId: string;
-  publicKey: PasskeyGetRequest;
+type BiometricRegisterResponse = {
+  id: number;
+  credentialId: string;
+  biometricToken: string;
+  deviceName: string | null;
+  createdAt: string | null;
 };
 
 export const PASSKEY_CREDENTIALS_QUERY_KEY = ['auth', 'webauthn', 'credentials'] as const;
 
 export function isPasskeySupported(): boolean {
-  try {
-    return Passkey.isSupported();
-  }
-  catch {
-    return false;
-  }
+  return Platform.OS === 'android' || Platform.OS === 'ios';
+}
+
+/** Checks asynchronously whether the device has enrolled biometric hardware (fingerprint / Face ID). */
+export function useBiometricSupported(): boolean {
+  const [supported, setSupported] = useState(() => isPasskeySupported());
+
+  useEffect(() => {
+    if (!isPasskeySupported())
+      return;
+    let active = true;
+    void (async () => {
+      try {
+        const [hasHardware, isEnrolled] = await Promise.all([
+          LocalAuthentication.hasHardwareAsync(),
+          LocalAuthentication.isEnrolledAsync(),
+        ]);
+        if (active)
+          setSupported(hasHardware && isEnrolled);
+      }
+      catch {
+        if (active)
+          setSupported(false);
+      }
+    })();
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  return supported;
 }
 
 export function getLastLoginEmail(): string {
@@ -77,6 +108,7 @@ export function setStoredPasskeyBinding(binding: StoredPasskeyBinding): void {
 
 export function clearStoredPasskeyBinding(): void {
   storage.remove(DEVICE_PASSKEY_KEY);
+  void SecureStore.deleteItemAsync(BIOMETRIC_TOKEN_KEY).catch(() => {});
 }
 
 /** True when the user dismissed the OS biometric prompt rather than hitting a real error. */
@@ -96,6 +128,18 @@ function buildDeviceName(): string {
   return Platform.OS === 'ios' ? 'iOS Device' : 'Android Device';
 }
 
+async function promptBiometric(promptMessage: string): Promise<void> {
+  const result = await LocalAuthentication.authenticateAsync({
+    promptMessage,
+    cancelLabel: translate('settings.cancel'),
+    disableDeviceFallback: false,
+  });
+  if (!result.success) {
+    const code = result.error ?? 'biometric_failed';
+    throw Object.assign(new Error(code), { error: code, code });
+  }
+}
+
 export function usePasskeyCredentials(enabled = true) {
   return useQuery<WebAuthnCredentialDTO[], AxiosError>({
     queryKey: PASSKEY_CREDENTIALS_QUERY_KEY,
@@ -113,31 +157,21 @@ export function usePasskeyCredentials(enabled = true) {
 export function useRegisterPasskey() {
   const queryClient = useQueryClient();
 
-  return useMutation<WebAuthnCredentialDTO, unknown, { email: string }>({
+  return useMutation<BiometricRegisterResponse, unknown, { email: string }>({
     mutationFn: async ({ email }) => {
-      const optionsRes = await client<ApiResponse<PasskeyCreateRequest>>({
-        url: '/api/auth/webauthn/register/options',
-        method: 'POST',
-      });
-      const options = optionsRes.data.data;
+      await promptBiometric(translate('settings.biometric_login'));
 
-      const credential = await Passkey.create(options);
-
-      const verifyRes = await client<ApiResponse<WebAuthnCredentialDTO>>({
-        url: '/api/auth/webauthn/register/verify',
+      const response = await client<ApiResponse<BiometricRegisterResponse>>({
+        url: '/api/auth/biometric/register',
         method: 'POST',
-        data: {
-          id: credential.id,
-          response: {
-            clientDataJSON: credential.response.clientDataJSON,
-            attestationObject: credential.response.attestationObject,
-            transports: credential.response.transports,
-          },
-          deviceName: buildDeviceName(),
-        },
+        data: { deviceName: buildDeviceName() },
       });
 
-      const saved = verifyRes.data.data;
+      const saved = response.data.data;
+      await SecureStore.setItemAsync(BIOMETRIC_TOKEN_KEY, saved.biometricToken, {
+        keychainAccessible: SecureStore.WHEN_UNLOCKED_THIS_DEVICE_ONLY,
+      });
+
       setStoredPasskeyBinding({
         dbId: saved.id,
         credentialId: saved.credentialId,
@@ -171,29 +205,26 @@ export function useDisablePasskey() {
 
 export function usePasskeyLogin() {
   return useMutation<ResponseLoginDTO, unknown, { email?: string } | undefined>({
-    mutationFn: async (variables) => {
-      const email = variables?.email?.trim() || getLastLoginEmail() || undefined;
-      const optionsRes = await client<ApiResponse<WebAuthnLoginOptionsResponse>>({
-        url: '/api/auth/webauthn/login/options',
-        method: 'POST',
-        data: email ? { email } : {},
-      });
-      const { challengeId, publicKey } = optionsRes.data.data;
+    mutationFn: async () => {
+      const binding = getStoredPasskeyBinding();
+      if (!binding) {
+        throw new Error('NO_BIOMETRIC_BINDING');
+      }
 
-      const assertion = await Passkey.get(publicKey);
+      await promptBiometric(translate('login.biometric_a11y'));
+
+      const biometricToken = await SecureStore.getItemAsync(BIOMETRIC_TOKEN_KEY);
+      if (!biometricToken) {
+        clearStoredPasskeyBinding();
+        throw new Error('MISSING_BIOMETRIC_TOKEN');
+      }
 
       const verifyRes = await client<ApiResponse<ResponseLoginDTO>>({
-        url: '/api/auth/webauthn/login/verify',
+        url: '/api/auth/biometric/login',
         method: 'POST',
         data: {
-          challengeId,
-          id: assertion.id,
-          response: {
-            clientDataJSON: assertion.response.clientDataJSON,
-            authenticatorData: assertion.response.authenticatorData,
-            signature: assertion.response.signature,
-            userHandle: assertion.response.userHandle,
-          },
+          credentialId: binding.credentialId,
+          biometricToken,
         },
       });
 

@@ -55,6 +55,7 @@ jest.mock('./passkey', () => {
   const actual = jest.requireActual<Record<string, unknown>>('./passkey');
   return {
     ...actual,
+    useBiometricSupported: () => true,
     usePasskeyLogin: () => ({ mutate: mockPasskeyLogin, isPending: false }),
   };
 });
@@ -103,6 +104,11 @@ it('detects cancelled passkey errors', () => {
 
 it('renders fingerprint button beside login button and triggers passkey login with saved email', () => {
   deviceValues.set('passkey_last_email', 'saved@example.com');
+  deviceValues.set('passkey_device_binding', JSON.stringify({
+    dbId: 12,
+    credentialId: 'bio:cred-1',
+    email: 'saved@example.com',
+  }));
   render(<LoginForm />);
 
   const biometricBtn = screen.getByTestId('login-biometric-button');

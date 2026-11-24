@@ -91,6 +91,13 @@ const plugins: ExpoConfig['plugins'] = [
   ['expo-camera', { cameraPermission: CAMERA_PERMISSION, recordAudioAndroid: false }],
   // Review reminders (notification.md §3.9); FCM v1 and APNs keys live on EAS, not in the repo.
   'expo-notifications',
+  [
+    'expo-local-authentication',
+    {
+      faceIDPermission: 'Allow $(PRODUCT_NAME) to use Face ID for quick sign-in.',
+    },
+  ],
+  'expo-secure-store',
 ];
 
 export default ({ config }: ConfigContext): ExpoConfig => ({

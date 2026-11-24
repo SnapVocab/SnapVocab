@@ -31,7 +31,7 @@ import {
   clearStoredPasskeyBinding,
   getStoredPasskeyBinding,
   isPasskeyCancelledError,
-  isPasskeySupported,
+  useBiometricSupported,
   useDisablePasskey,
   usePasskeyCredentials,
   useRegisterPasskey,
@@ -40,6 +40,7 @@ import { useAuthStore } from '@/features/auth/use-auth-store';
 import { askPermission, pushToggle, readPermission, registerDevice } from '@/features/notifications/push';
 import { useSelectedTheme } from '@/lib/hooks/use-selected-theme';
 import { translate, useSelectedLanguage } from '@/lib/i18n';
+import { storage } from '@/lib/storage';
 import { useLogout, useUpdateSettings, useUserSettings } from './api';
 import { OptionSheet } from './components/option-sheet';
 import { SettingsRow } from './components/settings-row';
@@ -76,7 +77,7 @@ export function SettingsScreen() {
   const { selectedTheme, setSelectedTheme } = useSelectedTheme();
   const { language, setLanguage } = useSelectedLanguage();
 
-  const passkeySupported = isPasskeySupported();
+  const passkeySupported = useBiometricSupported();
   const [localBinding, setLocalBinding] = useState(() => getStoredPasskeyBinding());
   const { data: passkeyCredentials } = usePasskeyCredentials(passkeySupported);
   const registerPasskey = useRegisterPasskey();
@@ -143,10 +144,19 @@ export function SettingsScreen() {
     );
   };
 
-  // OS permission is per device, pushEnabled per account (§3.9): re-read when coming back from the OS settings.
-  const [permission, setPermission] = useState<PushPermission>('undetermined');
+  // OS permission is per device, pushEnabled per account (§3.9): seed from MMKV to avoid first-frame flicker,
+  // then re-read when coming back from the OS settings.
+  const [permission, setPermission] = useState<PushPermission>(() => {
+    const cached = storage.getString('push_permission_cached');
+    return cached === 'granted' || cached === 'denied' || cached === 'undetermined'
+      ? cached
+      : 'undetermined';
+  });
   useEffect(() => {
-    const read = () => void readPermission().then(setPermission).catch(() => {});
+    const read = () => void readPermission().then((next) => {
+      storage.set('push_permission_cached', next);
+      setPermission(next);
+    }).catch(() => {});
     read();
     const subscription = AppState.addEventListener('change', state => state === 'active' && read());
     return () => subscription.remove();
@@ -156,6 +166,7 @@ export function SettingsScreen() {
   /** Asks the OS only while undetermined; granted ⇒ register this device (A5). */
   const allowPush = async () => {
     const next = await askPermission().catch(() => permission);
+    storage.set('push_permission_cached', next);
     setPermission(next);
     if (next === 'granted')
       void registerDevice().catch(() => {});
