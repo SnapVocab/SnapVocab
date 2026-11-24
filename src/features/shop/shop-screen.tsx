@@ -1,14 +1,14 @@
+import type { ListRenderItemInfo } from 'react-native';
 import type { ShopItemDTO } from './types';
 import type { ShopCategory } from '@/components/shop/shop-category-tabs';
 import { router } from 'expo-router';
 import { PackageIcon, RefreshCwIcon } from 'lucide-react-native';
 import * as React from 'react';
-import { useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
-  Pressable,
+  FlatList,
   RefreshControl,
-  ScrollView,
   Text,
   View,
 } from 'react-native';
@@ -22,7 +22,7 @@ import { ShopItemDetailModal } from '@/components/shop/shop-item-detail-modal';
 import { ShopItemCard } from '@/components/shop/ShopItemCard';
 import { Coin3D } from '@/components/snapvocab';
 import { Snapy } from '@/components/Snapy';
-import { FocusAwareStatusBar, ScreenHeader, useSurface } from '@/components/ui';
+import { FocusAwareStatusBar, Pressable, ScreenHeader, useSurface } from '@/components/ui';
 import { ShopCatalogSkeleton } from './components/shop-catalog-skeleton';
 import { useShopActions } from './hooks/use-shop-actions';
 import {
@@ -44,7 +44,7 @@ export default function ShopScreen({ isTab = false }: { isTab?: boolean } = {}) 
   const [previewFrameItem, setPreviewFrameItem] = useState<ShopItemDTO | null>(null);
   const [detailItem, setDetailItem] = useState<ShopItemDTO | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const catalogRef = useRef<ScrollView>(null);
+  const catalogRef = useRef<FlatList<ShopItemDTO>>(null);
   const refreshEpoch = useRef(0);
 
   // Queries
@@ -124,8 +124,31 @@ export default function ShopScreen({ isTab = false }: { isTab?: boolean } = {}) 
     refreshEpoch.current++;
     setIsRefreshing(false);
     setActiveCategory(category);
-    catalogRef.current?.scrollTo({ y: 0, animated: false });
+    catalogRef.current?.scrollToOffset({ offset: 0, animated: false });
   };
+
+  const handlePreview = useCallback((i: ShopItemDTO) => {
+    if (isEquippable(i.type)) {
+      setPreviewFrameItem(i);
+    }
+    else {
+      setDetailItem(i);
+    }
+  }, []);
+
+  const renderShopItem = useCallback(
+    ({ item }: ListRenderItemInfo<ShopItemDTO>) => (
+      <ShopItemCard
+        item={item}
+        userCoins={coinBalance}
+        showType={activeCategory === 'all'}
+        purchaseDisabled={purchaseDisabled}
+        onPress={handleItemPress}
+        onPreview={handlePreview}
+      />
+    ),
+    [activeCategory, coinBalance, handleItemPress, handlePreview, purchaseDisabled],
+  );
 
   return (
     <SafeAreaView
@@ -194,8 +217,17 @@ export default function ShopScreen({ isTab = false }: { isTab?: boolean } = {}) 
       )}
 
       {/* 3. MAIN CATALOG CONTENT */}
-      <ScrollView
+      <FlatList
         ref={catalogRef}
+        data={isLoadingCatalog || isCatalogError ? [] : filteredItems}
+        keyExtractor={item => String(item.itemId)}
+        numColumns={2}
+        columnWrapperStyle={{ justifyContent: 'space-between' }}
+        renderItem={renderShopItem}
+        initialNumToRender={6}
+        maxToRenderPerBatch={6}
+        windowSize={5}
+        removeClippedSubviews
         style={{ backgroundColor: s.background }}
         contentContainerStyle={{ padding: 16, paddingBottom: 110 }}
         showsVerticalScrollIndicator={false}
@@ -207,61 +239,41 @@ export default function ShopScreen({ isTab = false }: { isTab?: boolean } = {}) 
             tintColor="#2563EB"
           />
         )}
-      >
-        {isLoadingCatalog ? (
-          <ShopCatalogSkeleton label={t('shopUi.loadingCatalog')} />
-        ) : isCatalogError ? (
-          <View style={{ backgroundColor: s.surface, borderColor: s.border }} className="items-center justify-center rounded-3xl border p-8">
-            <Snapy pose="suy_nghi" animation="idle" className="mb-4 size-24 opacity-80" />
-            <Text style={{ color: s.text }} className="mb-2 font-nunito text-[18px] font-extrabold">
-              {t('shopUi.catalogErrorTitle')}
-            </Text>
-            <Text style={{ color: s.textMuted }} className="mb-5 text-center font-inter text-[13px]">
-              {t('shopUi.networkRetry')}
-            </Text>
-            <Pressable
-              onPress={() => refetchCatalog()}
-              className="flex-row items-center gap-2 rounded-xl bg-brand px-5 py-2.5 active:bg-brand-pressed"
-            >
-              <RefreshCwIcon size={16} color="white" />
-              <Text className="font-nunito text-[14px] font-extrabold text-on-brand uppercase">
-                {t('shopUi.retry')}
+        ListEmptyComponent={
+          isLoadingCatalog ? (
+            <ShopCatalogSkeleton label={t('shopUi.loadingCatalog')} />
+          ) : isCatalogError ? (
+            <View style={{ backgroundColor: s.surface, borderColor: s.border }} className="items-center justify-center rounded-3xl border p-8">
+              <Snapy pose="suy_nghi" animation="idle" className="mb-4 size-24 opacity-80" />
+              <Text style={{ color: s.text }} className="mb-2 font-nunito text-[18px] font-extrabold">
+                {t('shopUi.catalogErrorTitle')}
               </Text>
-            </Pressable>
-          </View>
-        ) : filteredItems.length === 0 ? (
-          <View style={{ backgroundColor: s.surface, borderColor: s.border }} className="items-center justify-center rounded-3xl border p-8">
-            <Snapy pose="suy_nghi" animation="idle" className="mb-4 size-24 opacity-80" />
-            <Text style={{ color: s.text }} className="mb-2 font-nunito text-[18px] font-extrabold">
-              {t('shopUi.emptyCatalogTitle')}
-            </Text>
-            <Text style={{ color: s.textMuted }} className="text-center font-inter text-[13px]">
-              {t('shopUi.emptyCatalogBody')}
-            </Text>
-          </View>
-        ) : (
-          <View className="flex-row flex-wrap justify-between">
-            {filteredItems.map(item => (
-              <ShopItemCard
-                key={item.itemId}
-                item={item}
-                userCoins={coinBalance}
-                showType={activeCategory === 'all'}
-                purchaseDisabled={purchaseDisabled}
-                onPress={handleItemPress}
-                onPreview={(i) => {
-                  if (isEquippable(i.type)) {
-                    setPreviewFrameItem(i);
-                  }
-                  else {
-                    setDetailItem(i);
-                  }
-                }}
-              />
-            ))}
-          </View>
-        )}
-      </ScrollView>
+              <Text style={{ color: s.textMuted }} className="mb-5 text-center font-inter text-[13px]">
+                {t('shopUi.networkRetry')}
+              </Text>
+              <Pressable
+                onPress={() => refetchCatalog()}
+                className="flex-row items-center gap-2 rounded-xl bg-brand px-5 py-2.5 active:bg-brand-pressed"
+              >
+                <RefreshCwIcon size={16} color="white" />
+                <Text className="font-nunito text-[14px] font-extrabold text-on-brand uppercase">
+                  {t('shopUi.retry')}
+                </Text>
+              </Pressable>
+            </View>
+          ) : (
+            <View style={{ backgroundColor: s.surface, borderColor: s.border }} className="items-center justify-center rounded-3xl border p-8">
+              <Snapy pose="suy_nghi" animation="idle" className="mb-4 size-24 opacity-80" />
+              <Text style={{ color: s.text }} className="mb-2 font-nunito text-[18px] font-extrabold">
+                {t('shopUi.emptyCatalogTitle')}
+              </Text>
+              <Text style={{ color: s.textMuted }} className="text-center font-inter text-[13px]">
+                {t('shopUi.emptyCatalogBody')}
+              </Text>
+            </View>
+          )
+        }
+      />
 
       {/* 4. MODALS */}
       <ShopItemDetailModal

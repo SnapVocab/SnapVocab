@@ -1,11 +1,12 @@
 import type { PurchaseResultDTO, ShopItemDTO } from '@/features/shop/types';
+import { Image as ExpoImage } from 'expo-image';
 import { router } from 'expo-router';
 import LottieView from 'lottie-react-native';
 import { SparklesIcon, XIcon } from 'lucide-react-native';
 import * as React from 'react';
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Image, Modal, Pressable, Text, View } from 'react-native';
+import { Modal, Pressable, Text, View } from 'react-native';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -154,10 +155,11 @@ export function PurchaseSuccessModal({
                 }}
                 className="z-10 mb-2 items-center justify-center shadow-sm"
               >
-                <Image
+                <ExpoImage
                   source={require('../../assets/images/mascot/actions/snapy-an-mung-trimmed.png')}
                   style={{ width: 78, height: 78 }}
-                  resizeMode="contain"
+                  contentFit="contain"
+                  cachePolicy="memory-disk"
                 />
               </View>
 
@@ -216,16 +218,18 @@ export function PurchaseSuccessModal({
                       size="sm"
                     />
                   ) : item.iconUrl ? (
-                    <Image
+                    <ExpoImage
                       source={{ uri: item.iconUrl }}
                       style={{ width: 72, height: 72 }}
-                      resizeMode="contain"
+                      contentFit="contain"
+                      cachePolicy="memory-disk"
                     />
                   ) : (
-                    <Image
+                    <ExpoImage
                       source={require('../../assets/images/shop/icon1_clean.png')}
                       style={{ width: 72, height: 72 }}
-                      resizeMode="contain"
+                      contentFit="contain"
+                      cachePolicy="memory-disk"
                     />
                   )}
                 </View>

@@ -37,23 +37,25 @@ export function QuotaBadge({ quota }: Props) {
         </Text>
       </Pressable>
 
-      <Modal visible={showInfo} transparent animationType="fade" onRequestClose={() => setShowInfo(false)}>
-        <Pressable
-          onPress={() => setShowInfo(false)}
-          className="flex-1 items-center justify-center bg-black/60 px-6"
-        >
-          <View className="w-full max-w-[320px] items-center rounded-[32px] border-b-[6px] border-neutral-200 bg-white p-6">
-            <View className="mb-3 size-12 items-center justify-center rounded-2xl bg-primary-50">
-              <SparklesIcon color="#58CC02" width={24} height={24} />
+      {showInfo && (
+        <Modal visible transparent animationType="fade" onRequestClose={() => setShowInfo(false)}>
+          <Pressable
+            onPress={() => setShowInfo(false)}
+            className="flex-1 items-center justify-center bg-black/60 px-6"
+          >
+            <View className="w-full max-w-[320px] items-center rounded-[32px] border-b-[6px] border-neutral-200 bg-white p-6">
+              <View className="mb-3 size-12 items-center justify-center rounded-2xl bg-primary-50">
+                <SparklesIcon color="#58CC02" width={24} height={24} />
+              </View>
+              <Text className="mb-1 text-center font-nunito text-lg font-extrabold text-mascot-navy" tx="scan.quota.title" />
+              <Text className="mb-4 text-center text-sm text-neutral-500">
+                {translate('scan.quota.info', values)}
+              </Text>
+              <Button tx="scan.got_it" fullWidth onPress={() => setShowInfo(false)} />
             </View>
-            <Text className="mb-1 text-center font-nunito text-lg font-extrabold text-mascot-navy" tx="scan.quota.title" />
-            <Text className="mb-4 text-center text-sm text-neutral-500">
-              {translate('scan.quota.info', values)}
-            </Text>
-            <Button tx="scan.got_it" fullWidth onPress={() => setShowInfo(false)} />
-          </View>
-        </Pressable>
-      </Modal>
+          </Pressable>
+        </Modal>
+      )}
     </>
   );
 }

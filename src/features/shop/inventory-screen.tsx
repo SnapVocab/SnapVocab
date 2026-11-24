@@ -35,12 +35,11 @@ import { isEquippable, isKnownItemType } from './types';
 import { formatRemainingTime, getRemainingBoosterMs } from './utils/booster-timer';
 
 /**
- * Remaining ms of the cached activation on server time, re-rendering every second while it runs.
- * At 0 it stops ticking and asks the server once; a new response (new offset/activation) restarts it.
- * Offline, the failed refetch leaves it at 0 instead of retrying every second.
+ * Watches only the expiry boundary of an active booster so the entire InventoryScreen
+ * does not re-render every 1 second; the countdown pill ticks independently below.
  */
-function useBoosterCountdown(active: ActiveBoosterDTO | null | undefined, serverOffset: number, refetch: () => unknown) {
-  const [, setTick] = useState(0);
+function useActiveBooster(active: ActiveBoosterDTO | null | undefined, serverOffset: number, refetch: () => unknown) {
+  const [, setExpiredEpoch] = useState(0);
   const remainingMs = active ? getRemainingBoosterMs(active.expiresAt, serverOffset) : 0;
   const running = remainingMs > 0;
 
@@ -51,11 +50,31 @@ function useBoosterCountdown(active: ActiveBoosterDTO | null | undefined, server
       void refetch();
       return;
     }
+    const timer = setTimeout(() => setExpiredEpoch(e => e + 1), Math.max(250, remainingMs));
+    return () => clearTimeout(timer);
+  }, [active, serverOffset, running, remainingMs, refetch]);
+
+  return running ? active : null;
+}
+
+/** Isolated 1s timer so only the small time pill re-renders while a booster is running. */
+function BoosterCountdownText({ expiresAt, serverOffset }: { expiresAt: string; serverOffset: number }) {
+  const [, setTick] = useState(0);
+  const remainingMs = getRemainingBoosterMs(expiresAt, serverOffset);
+  const running = remainingMs > 0;
+
+  useEffect(() => {
+    if (!running)
+      return;
     const interval = setInterval(() => setTick(t => t + 1), 1000);
     return () => clearInterval(interval);
-  }, [active, serverOffset, running, refetch]);
+  }, [expiresAt, serverOffset, running]);
 
-  return remainingMs;
+  return (
+    <Text className="font-nunito text-[14px] font-extrabold text-amber-700 tabular-nums">
+      {formatRemainingTime(remainingMs)}
+    </Text>
+  );
 }
 
 export default function InventoryScreen() {
@@ -107,9 +126,8 @@ export default function InventoryScreen() {
   const unequipMutation = useUnequipMutation();
 
   const items = inventoryData?.items ?? [];
-  const boosterCountdown = useBoosterCountdown(inventoryData?.activeBooster, serverOffset, refetch);
   // Past its server-time expiry the cached activation is over, even before the refetch lands.
-  const activeBooster = boosterCountdown > 0 ? inventoryData?.activeBooster : null;
+  const activeBooster = useActiveBooster(inventoryData?.activeBooster, serverOffset, refetch);
 
   // A failed frame image (expired signed URL) refreshes the inventory once per visit, not in a loop.
   const frameRefetched = useRef(false);
@@ -257,9 +275,7 @@ export default function InventoryScreen() {
 
             <View style={{ backgroundColor: s.surface }} className="flex-row items-center gap-1.5 rounded-full px-3 py-1.5 shadow-sm">
               <ClockIcon size={14} color="#D97706" />
-              <Text className="font-nunito text-[14px] font-extrabold text-amber-700 tabular-nums">
-                {formatRemainingTime(boosterCountdown)}
-              </Text>
+              <BoosterCountdownText expiresAt={activeBooster.expiresAt} serverOffset={serverOffset} />
             </View>
           </View>
         )}

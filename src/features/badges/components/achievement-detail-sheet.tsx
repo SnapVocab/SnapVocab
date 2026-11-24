@@ -1,8 +1,9 @@
 import type { BottomSheetBackdropProps } from '@gorhom/bottom-sheet';
 import type { BadgeItem } from '../types';
 import { BottomSheetBackdrop, BottomSheetModal, BottomSheetScrollView } from '@gorhom/bottom-sheet';
+import { Image as ExpoImage } from 'expo-image';
 import * as React from 'react';
-import { ActivityIndicator, Image, Pressable, View } from 'react-native';
+import { ActivityIndicator, Pressable, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text, useSurface } from '@/components/ui';
 import { CheckCircleIcon, CloseIcon, LockIcon, SparklesIcon } from '@/components/ui/icons';
@@ -73,7 +74,7 @@ function RewardBox({ item }: { item: BadgeItem }) {
       {frame && (
         <View className="mt-3 flex-row items-center gap-3">
           {frame.previewUrl
-            ? <Image source={{ uri: frame.previewUrl }} resizeMode="contain" className="size-14 rounded-xl" />
+            ? <ExpoImage source={{ uri: frame.previewUrl }} contentFit="contain" cachePolicy="memory-disk" style={{ width: 56, height: 56, borderRadius: 12 }} />
             : <View className="size-14 rounded-xl border border-purple-200 bg-purple-50" />}
           <View className="flex-1">
             <Text className="font-nunito text-[15px] font-extrabold text-mascot-navy dark:text-white">{frame.name}</Text>

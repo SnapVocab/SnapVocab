@@ -1,6 +1,7 @@
+import { Image as ExpoImage } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { ArrowRightIcon } from 'lucide-react-native';
-import { Image, Pressable, ScrollView } from 'react-native';
+import { Pressable, ScrollView } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { FocusAwareStatusBar, Text, useColorMode, useSurface, View } from '@/components/ui';
 import { translate } from '@/lib/i18n';
@@ -44,7 +45,13 @@ export function LearnScreen() {
                 <ArrowRightIcon size={16} color={id === 'quiz' ? (colorMode === 'dark' ? '#1C1430' : '#FFFFFF') : '#17330B'} />
               </View>
             </View>
-            <Image accessible={false} source={art} className="size-28" resizeMode="contain" />
+            <ExpoImage
+              accessible={false}
+              source={art}
+              style={{ width: 112, height: 112 }}
+              contentFit="contain"
+              cachePolicy="memory-disk"
+            />
           </Pressable>
         ))}
       </ScrollView>

@@ -1,6 +1,7 @@
 import type { StyleProp, ViewStyle } from 'react-native';
+import { Image as ExpoImage } from 'expo-image';
 import * as React from 'react';
-import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 export type AvatarFrameSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl' | 'hero' | number;
 
@@ -89,17 +90,19 @@ export const AvatarFrame: React.FC<AvatarFrameProps> = ({
         ]}
       >
         {children || (avatarUri ? (
-          <Image
+          <ExpoImage
             source={{ uri: avatarUri }}
             onError={onAvatarError}
             style={{ width: avatarDiameter, height: avatarDiameter, borderRadius: avatarBorderRadius }}
-            resizeMode="cover"
+            contentFit="cover"
+            cachePolicy="memory-disk"
           />
         ) : avatarSource ? (
-          <Image
+          <ExpoImage
             source={avatarSource}
             style={{ width: avatarDiameter, height: avatarDiameter, borderRadius: avatarBorderRadius }}
-            resizeMode="cover"
+            contentFit="cover"
+            cachePolicy="memory-disk"
           />
         ) : (
           <Text
@@ -115,14 +118,15 @@ export const AvatarFrame: React.FC<AvatarFrameProps> = ({
 
       {/* 2. OVERLAY FRAME (PNG with transparent center) */}
       {shownFrameUrl && (
-        <Image
+        <ExpoImage
           testID="avatar-frame-overlay"
           source={{ uri: shownFrameUrl }}
           style={[
             styles.frameOverlay,
             { width: dimension, height: dimension },
           ]}
-          resizeMode="contain"
+          contentFit="contain"
+          cachePolicy="memory-disk"
           onError={() => {
             setFailedFrameUrl(shownFrameUrl);
             onFrameError?.();

@@ -59,6 +59,8 @@ export function WelcomeScreen() {
               <Image
                 source={slide.image}
                 alt={slide.title}
+                placeholder={null}
+                cachePolicy="memory-disk"
                 className={`flex aspect-square w-full max-w-[18rem] items-center justify-center rounded-[2.5rem] bg-linear-to-br ${slide.bg} p-6`}
                 contentFit="contain"
               />

@@ -1,11 +1,12 @@
 import type { ReactNode } from 'react';
 import type { ShopItemDTO } from '@/features/shop/types';
+import { Image as ExpoImage } from 'expo-image';
 import { CheckIcon, SnowflakeIcon } from 'lucide-react-native';
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
-import { Image, Pressable, Text, View } from 'react-native';
+import { Text, View } from 'react-native';
 import { AvatarFrame, Coin3D } from '@/components/snapvocab';
-import { BouncingDots, useSurface } from '@/components/ui';
+import { BouncingDots, Pressable, useSurface } from '@/components/ui';
 import { useAuthStore } from '@/features/auth/use-auth-store';
 import { isEquippable, isStackable } from '@/features/shop/types';
 import { shopItemTitle } from '@/features/shop/utils/item-presentation';
@@ -46,10 +47,11 @@ export function ItemArtwork({ item, size = 76, onFrameError }: { item: Omit<Card
   }
   const fallback = require('../../assets/images/shop/icon1_clean.png');
   return (
-    <Image
+    <ExpoImage
       source={item.iconUrl && !iconFailed ? { uri: item.iconUrl } : fallback}
       style={{ width: size, height: size }}
-      resizeMode="contain"
+      contentFit="contain"
+      cachePolicy="memory-disk"
       onError={() => setIconFailed(true)}
     />
   );
@@ -78,7 +80,7 @@ export function ItemCard({
       onPress={onPress}
       disabled={!onPress}
       style={{ backgroundColor: surfaceTokens.surface, borderColor: item.equipped ? '#58CC02' : surfaceTokens.border }}
-      className="mb-4 w-[48%] overflow-hidden rounded-2xl border-2 border-b-4 active:translate-y-[2px] active:border-b-2"
+      className="mb-4 w-[48%] overflow-hidden rounded-2xl border-2 border-b-4 active:translate-y-[2px]"
     >
       <View style={{ height: 96 }} className={cn('relative items-center justify-center p-2', ARTWORK_BG[item.type])}>
         {item.equipped && (
@@ -189,7 +191,7 @@ export type ShopItemCardProps = {
 };
 
 /** Shop variant: card body previews cosmetics; the button buys, equips, or shows status. */
-export function ShopItemCard({ item, onPress, onPreview, userCoins, showType, purchaseDisabled }: ShopItemCardProps) {
+export const ShopItemCard = React.memo(({ item, onPress, onPreview, userCoins, showType, purchaseDisabled }: ShopItemCardProps) => {
   const { t } = useTranslation();
   const isCosmetic = isEquippable(item.type);
   const isOutOfCoin = item.blockReason === 'INSUFFICIENT_COINS' || userCoins < item.price;
@@ -218,4 +220,4 @@ export function ShopItemCard({ item, onPress, onPreview, userCoins, showType, pu
       )}
     </ItemCard>
   );
-}
+});

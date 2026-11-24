@@ -1,4 +1,5 @@
 import type { ImageStyle, StyleProp } from 'react-native';
+import { Image as ExpoImage } from 'expo-image';
 import * as React from 'react';
 import { useEffect, useRef } from 'react';
 import {
@@ -298,19 +299,24 @@ export function Snapy({
 
   const flattenedStyle = StyleSheet.flatten(style) || {};
   const hasDimension = flattenedStyle.width !== undefined || flattenedStyle.height !== undefined;
-  const hasClassDimension = className.includes('w-') || className.includes('h-');
+  const hasClassDimension = className.includes('w-') || className.includes('h-') || className.includes('size-');
 
   return (
-    <Animated.Image
-      source={POSES[pose] || POSES.main}
-      resizeMode="contain"
+    <Animated.View
       style={[
         animatedTransform,
         !hasDimension && !hasClassDimension && { width: 90, height: 90 },
         style,
       ]}
       className={twMerge('drop-shadow-md', className)}
-    />
+    >
+      <ExpoImage
+        source={POSES[pose] || POSES.main}
+        contentFit="contain"
+        cachePolicy="memory-disk"
+        style={{ width: '100%', height: '100%' }}
+      />
+    </Animated.View>
   );
 }
 

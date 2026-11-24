@@ -2,6 +2,7 @@ import type { GameVisualProps } from '../core/GameVisual';
 import * as React from 'react';
 import { useEffect } from 'react';
 import Animated, {
+  cancelAnimation,
   Easing,
   useAnimatedStyle,
   useSharedValue,
@@ -52,7 +53,8 @@ export function Coin3D({
     else {
       rotateY.value = withTiming(0, { duration: 200 });
     }
-  }, [animation]);
+    return () => cancelAnimation(rotateY);
+  }, [animation, rotateY]);
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ rotateY: `${rotateY.value}deg` }],

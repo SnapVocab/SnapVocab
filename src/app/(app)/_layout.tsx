@@ -5,7 +5,7 @@ import { BadgeUnlockHost } from '@/features/badges';
 export default function AppLayout() {
   return (
     <>
-      <Stack screenOptions={{ headerShown: false }}>
+      <Stack screenOptions={{ headerShown: false, freezeOnBlur: true }}>
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="lookup" />
         <Stack.Screen name="word-detail" />

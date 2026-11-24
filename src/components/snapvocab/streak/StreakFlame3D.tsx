@@ -2,6 +2,7 @@ import type { GameVisualProps } from '../core/GameVisual';
 import * as React from 'react';
 import { useEffect } from 'react';
 import Animated, {
+  cancelAnimation,
   Easing,
   useAnimatedStyle,
   useSharedValue,
@@ -56,6 +57,7 @@ export function StreakFlame3D({
     else {
       scale.value = withTiming(1, { duration: 200 });
     }
+    return () => cancelAnimation(scale);
   }, [animation, scale, state]);
 
   const animatedStyle = useAnimatedStyle(() => ({
