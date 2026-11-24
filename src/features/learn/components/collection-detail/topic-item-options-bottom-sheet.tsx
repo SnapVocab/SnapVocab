@@ -2,10 +2,10 @@ import type { BottomSheetBackdropProps } from '@gorhom/bottom-sheet';
 import type { TopicItemData } from '../../types';
 import { BottomSheetBackdrop, BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet';
 import * as React from 'react';
-import { Pressable, View } from 'react-native';
+import { View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useUniwind } from 'uniwind';
-import { Button, showErrorMessage, showSuccessMessage, Text } from '@/components/ui';
+import { Button, Pressable, showErrorMessage, showSuccessMessage, Text } from '@/components/ui';
 import colors from '@/components/ui/colors';
 import { EditIcon, TrashIcon } from '@/components/ui/icons';
 import { translate } from '@/lib/i18n';
@@ -80,6 +80,7 @@ export function TopicItemOptionsBottomSheet({ bottomSheetRef, item, topicId, onE
   return (
     <BottomSheetModal
       ref={bottomSheetRef}
+      stackBehavior="replace"
       enableDynamicSizing
       backdropComponent={renderBackdrop}
       onDismiss={handleDismiss}
@@ -105,8 +106,7 @@ export function TopicItemOptionsBottomSheet({ bottomSheetRef, item, topicId, onE
                 </View>
                 <Pressable
                   onPress={handleEdit}
-                  android_ripple={{ color: 'transparent' }}
-                  className="mb-2 flex-row items-center rounded-2xl bg-neutral-50 p-3.5 active:opacity-70 dark:bg-neutral-800/60"
+                  className="mb-2 flex-row items-center overflow-hidden rounded-2xl bg-neutral-50 p-3.5 active:opacity-70 dark:bg-neutral-800/60"
                 >
                   <View className="mr-3 size-10 items-center justify-center rounded-xl bg-blue-100 dark:bg-blue-950/60">
                     <EditIcon width={18} height={18} color="#3B82F6" />
@@ -118,8 +118,7 @@ export function TopicItemOptionsBottomSheet({ bottomSheetRef, item, topicId, onE
                 <Pressable
                   onPress={handleDelete}
                   disabled={isPending || topicId === null}
-                  android_ripple={{ color: 'transparent' }}
-                  className="flex-row items-center rounded-2xl bg-rose-50 p-3.5 active:opacity-70 dark:bg-rose-950/30"
+                  className="flex-row items-center overflow-hidden rounded-2xl bg-rose-50 p-3.5 active:opacity-70 dark:bg-rose-950/30"
                 >
                   <View className="mr-3 size-10 items-center justify-center rounded-xl bg-rose-100 dark:bg-rose-950/70">
                     <TrashIcon width={18} height={18} color="#E11D48" />

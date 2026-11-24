@@ -14,7 +14,7 @@ export function useTopicItemOptions(
 
   const handleTopicItemOptionsPress = React.useCallback((item: TopicItemData) => {
     setSelectedItem(item);
-    itemOptionsBottomSheetRef.current?.present();
+    requestAnimationFrame(() => itemOptionsBottomSheetRef.current?.present());
   }, []);
 
   const handleEditTopicItem = React.useCallback((item: TopicItemData) => {

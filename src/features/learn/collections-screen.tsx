@@ -62,13 +62,13 @@ function CollectionsContent({ initialView }: { initialView: 'USER' | 'SYSTEM' })
   const handleOptionsPress = useCallback((collection: Collection) => {
     setSelectedCollection(collection);
     setSheetMode('OPTIONS');
-    bottomSheetRef.current?.present();
+    requestAnimationFrame(() => bottomSheetRef.current?.present());
   }, []);
 
   const handleCreatePress = useCallback(() => {
     setSelectedCollection(null);
     setSheetMode('CREATE');
-    bottomSheetRef.current?.present();
+    requestAnimationFrame(() => bottomSheetRef.current?.present());
   }, []);
 
   return (

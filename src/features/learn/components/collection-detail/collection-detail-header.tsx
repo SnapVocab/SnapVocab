@@ -1,6 +1,6 @@
 import { useRouter } from 'expo-router';
-import { Pressable, View } from 'react-native';
-import { BackButton, Text } from '@/components/ui';
+import { View } from 'react-native';
+import { BackButton, Pressable, Text } from '@/components/ui';
 import { MoreVerticalIcon } from '@/components/ui/icons';
 import { translate } from '@/lib/i18n';
 
@@ -51,8 +51,7 @@ export default function CollectionDetailHeader({
                 accessibilityLabel={translate('learn.library.options', { name: title ?? '' })}
                 onPress={onOptionsPress}
                 hitSlop={12}
-                android_ripple={{ color: 'transparent' }}
-                className="size-12 items-center justify-center rounded-xl border border-line bg-neutral-100/60 active:opacity-60 dark:bg-neutral-800"
+                className="size-12 items-center justify-center overflow-hidden rounded-xl border border-line bg-neutral-100/60 active:opacity-60 dark:bg-neutral-800"
               >
                 <MoreVerticalIcon width={20} height={20} color="#71717A" />
               </Pressable>

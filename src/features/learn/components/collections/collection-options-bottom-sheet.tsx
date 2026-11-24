@@ -78,6 +78,7 @@ export function CollectionOptionsBottomSheet({
   return (
     <BottomSheetModal
       ref={bottomSheetRef}
+      stackBehavior="replace"
       enableDynamicSizing={mode !== 'CREATE' && currentView !== 'EDIT'}
       snapPoints={mode === 'CREATE' || currentView === 'EDIT' ? ['75%'] : undefined}
       topInset={insets.top}
