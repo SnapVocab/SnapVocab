@@ -5,10 +5,37 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { store as authStore, useAuthStore } from '@/features/auth/use-auth-store';
 import { unregisterDevice } from '@/features/notifications/push';
 import { client } from '@/lib/api';
+import { storage } from '@/lib/storage';
 import { putFileToStorage } from '@/lib/storage/upload';
 
 export const meKey = ['me'] as const;
 export const settingsKey = ['user-settings'] as const;
+
+function settingsStorageKey(userId: number | undefined): string | null {
+  return userId ? `user_settings:${userId}` : null;
+}
+
+function readCachedSettings(userId: number | undefined): UserSettings | undefined {
+  const key = settingsStorageKey(userId);
+  if (!key)
+    return undefined;
+  const raw = storage.getString(key);
+  if (!raw)
+    return undefined;
+  try {
+    return JSON.parse(raw) as UserSettings;
+  }
+  catch {
+    return undefined;
+  }
+}
+
+function writeCachedSettings(userId: number | undefined, settings: UserSettings): void {
+  const key = settingsStorageKey(userId);
+  if (key) {
+    storage.set(key, JSON.stringify(settings));
+  }
+}
 
 /** The signed-in user, refreshed from the server (the stored copy goes stale). */
 export function useMe() {
@@ -42,13 +69,18 @@ export function useUpdateProfile() {
 }
 
 export function useUserSettings() {
+  const userId = useAuthStore(s => s.user?.id);
+
   return useQuery<UserSettings, AxiosError>({
     queryKey: settingsKey,
+    initialData: () => readCachedSettings(userId),
+    staleTime: 5 * 60_000,
     queryFn: async () => {
       const response = await client<ApiResponse<UserSettings>>({
         url: '/api/users/me/settings',
         method: 'GET',
       });
+      writeCachedSettings(userId, response.data.data);
       return response.data.data;
     },
   });
@@ -56,8 +88,9 @@ export function useUserSettings() {
 
 export function useUpdateSettings() {
   const queryClient = useQueryClient();
+  const userId = useAuthStore(s => s.user?.id);
 
-  return useMutation<UserSettings, AxiosError, UpdateUserSettings>({
+  return useMutation<UserSettings, AxiosError, UpdateUserSettings, { previous?: UserSettings }>({
     mutationFn: async (data) => {
       const response = await client<ApiResponse<UserSettings>>({
         url: '/api/users/me/settings',
@@ -66,9 +99,33 @@ export function useUpdateSettings() {
       });
       return response.data.data;
     },
+    onMutate: async (patch) => {
+      await queryClient.cancelQueries({ queryKey: settingsKey });
+      const previous = queryClient.getQueryData<UserSettings>(settingsKey);
+      if (previous) {
+        const optimistic: UserSettings = {
+          pushEnabled: patch.pushEnabled ?? previous.pushEnabled,
+          srsReminderAt: patch.srsReminderCleared
+            ? null
+            : (patch.srsReminderAt !== undefined ? patch.srsReminderAt : previous.srsReminderAt),
+        };
+        queryClient.setQueryData(settingsKey, optimistic);
+        writeCachedSettings(userId, optimistic);
+      }
+      return { previous };
+    },
+    onError: (_err, _patch, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(settingsKey, context.previous);
+        writeCachedSettings(userId, context.previous);
+      }
+    },
     // Write the server's answer straight in: the screen shows toggles, and a
     // refetch would make them flicker back to the old value first.
-    onSuccess: settings => queryClient.setQueryData(settingsKey, settings),
+    onSuccess: (settings) => {
+      queryClient.setQueryData(settingsKey, settings);
+      writeCachedSettings(userId, settings);
+    },
   });
 }
 
