@@ -23,7 +23,7 @@ import { invalidateStudy, useStudyToday } from '@/features/study/api';
 import { TodayBlock } from '@/features/study/today-block';
 import { formatCount } from '@/lib/format-count';
 import { getLanguage, translate } from '@/lib/i18n';
-import { HomeSearchBar } from './components';
+import { HomeMyWordsCard, HomeSearchBar } from './components';
 
 // Same chunky 3D surface as HomeSearchBar.
 const CARD_3D = 'mb-3 overflow-hidden rounded-2xl border-2 border-b-4 border-line border-b-edge bg-surface';
@@ -74,6 +74,7 @@ export function HomeScreen() {
         invalidateProgress(queryClient),
         invalidateStudy(queryClient),
         queryClient.refetchQueries({ queryKey: leaderboardKey('CURRENT', 3) }),
+        queryClient.refetchQueries({ queryKey: ['my-words'] }),
       ]);
     }
     finally {
@@ -123,6 +124,7 @@ export function HomeScreen() {
           </View>
 
           <HomeSearchBar />
+          <HomeMyWordsCard />
           <View className={expanded ? 'flex-row items-start gap-6' : ''}>
             <View className={expanded ? 'flex-1' : ''}>
               <TodayBlock compact />

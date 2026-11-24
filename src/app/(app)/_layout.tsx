@@ -25,6 +25,8 @@ export default function AppLayout() {
         <Stack.Screen name="stats" />
         <Stack.Screen name="level-progress" />
         <Stack.Screen name="leaderboard" />
+        <Stack.Screen name="story/index" />
+        <Stack.Screen name="story/[id]" />
       </Stack>
       {/* Badge sync on open/foreground and the unlock modal (achievements_ui.md §7, §9). */}
       <BadgeUnlockHost />
