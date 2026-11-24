@@ -10,6 +10,7 @@ export const queryClient = new QueryClient({
     // Opt-in per query: refetching every screen's data on resume could clobber in-flight flows (e.g. a quiz).
     queries: {
       refetchOnWindowFocus: false,
+      staleTime: 30_000,
     },
     mutations: {
       retry: 1,

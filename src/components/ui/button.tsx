@@ -51,9 +51,11 @@ type VariantStyle = {
   indicator: { light: string; dark: string };
 };
 
-// The 3D press: the face sinks by the depth it gives up from its bottom border.
-const PRESS = 'border-b-[4px] active:translate-y-[2px] active:border-b-[2px]';
+// The 3D press: GPU-only translateY avoids Yoga border-width layout reflow on Android.
+const PRESS = 'border-b-[4px] active:translate-y-[2px]';
 const LABEL = 'font-extrabold tracking-wider uppercase';
+
+const LIGHT_SURFACE_VARIANTS = new Set<ButtonVariant>(['secondary', 'white', 'outline', 'ghost']);
 
 // Dark mode keeps each hue but softens it: a lighter, less saturated face with a dark label,
 // so a colored button reads as part of the dark UI instead of glowing on top of it.
@@ -170,7 +172,7 @@ export function Button({
   const resolvedText = tx ? translate(tx) : label;
 
   const containerClasses = twMerge(
-    'flex-row items-center justify-center',
+    'flex-row items-center justify-center overflow-hidden',
     currentSize.container,
     currentVariant.container,
     shouldFullWidth ? 'w-full' : 'self-center',
@@ -186,10 +188,15 @@ export function Button({
     textClassName,
   );
 
+  const defaultRipple = LIGHT_SURFACE_VARIANTS.has(variant)
+    ? { color: colorMode === 'dark' ? 'rgba(243, 244, 246, 0.14)' : 'rgba(30, 42, 68, 0.10)', foreground: true }
+    : { color: 'rgba(255, 255, 255, 0.22)', foreground: true };
+
   return (
     <Pressable
       ref={ref}
       disabled={isDisabled}
+      android_ripple={props.android_ripple ?? defaultRipple}
       className={containerClasses}
       // Keep the action's name while loading dots replace the text.
       accessibilityRole="button"

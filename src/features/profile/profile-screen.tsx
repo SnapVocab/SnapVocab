@@ -59,15 +59,18 @@ export function ProfileScreen() {
   const openAchievements = (badgeId?: number) =>
     router.push((badgeId ? `/profile/achievements?open=${badgeId}` : '/profile/achievements') as Href);
   const isFocused = useIsFocused();
-  const [, tick] = useState(0);
+  const [, setExpiredCheck] = useState(0);
   const frame = inventory.data?.items.find(i => i.type === 'AVATAR_FRAME' && i.equipped);
-  const boosterLive = isBoosterLive(inventory.data?.activeBooster, inventory.serverOffset);
+  const activeBooster = inventory.data?.activeBooster;
+  const boosterLive = isBoosterLive(activeBooster, inventory.serverOffset);
+  // Schedule a single wake-up at expiry instead of re-rendering the entire profile every 1s.
   useEffect(() => {
-    if (!boosterLive || !isFocused)
+    if (!boosterLive || !isFocused || !activeBooster)
       return;
-    const timer = setInterval(() => tick(n => n + 1), 1000);
-    return () => clearInterval(timer);
-  }, [boosterLive, isFocused]);
+    const msLeft = Math.max(250, new Date(activeBooster.expiresAt).getTime() - (Date.now() + inventory.serverOffset));
+    const timer = setTimeout(() => setExpiredCheck(n => n + 1), msLeft);
+    return () => clearTimeout(timer);
+  }, [boosterLive, isFocused, activeBooster, inventory.serverOffset]);
   const failedSources = [
     isError && translate('profile.account_data'),
     streak.isError && translate('profile.streak'),

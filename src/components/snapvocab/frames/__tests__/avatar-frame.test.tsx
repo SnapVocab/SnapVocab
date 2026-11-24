@@ -12,7 +12,7 @@ describe('avatar frame', () => {
     render(<AvatarFrame frameUrl="https://cdn/a.png" initials="AB" size={80} onFrameError={onFrameError} />);
     expect(initialsSize()).toBe(17); // 46 px avatar inside the frame
 
-    act(() => screen.getByTestId('avatar-frame-overlay').props.onError());
+    act(() => screen.getByTestId('avatar-frame-overlay').props.onError({ nativeEvent: { error: 'failed' } }));
 
     expect(onFrameError).toHaveBeenCalledTimes(1);
     expect(screen.queryByTestId('avatar-frame-overlay')).toBeNull();
@@ -21,10 +21,10 @@ describe('avatar frame', () => {
 
   it('shows the frame again when a new URL arrives', () => {
     const view = render(<AvatarFrame frameUrl="https://cdn/a.png" initials="AB" size={80} />);
-    act(() => screen.getByTestId('avatar-frame-overlay').props.onError());
+    act(() => screen.getByTestId('avatar-frame-overlay').props.onError({ nativeEvent: { error: 'failed' } }));
 
     view.rerender(<AvatarFrame frameUrl="https://cdn/b.png" initials="AB" size={80} />);
 
-    expect(screen.getByTestId('avatar-frame-overlay').props.source).toEqual({ uri: 'https://cdn/b.png' });
+    expect(screen.getByTestId('avatar-frame-overlay').props.source).toEqual([{ uri: 'https://cdn/b.png' }]);
   });
 });

@@ -45,8 +45,11 @@ export function QuizExitModal({ visible, quizId, onClose, onExited }: QuizExitMo
     onClose();
   };
 
+  if (!visible)
+    return null;
+
   return (
-    <Modal visible={visible} transparent animationType="fade" onRequestClose={handleStay}>
+    <Modal visible transparent animationType="fade" onRequestClose={handleStay}>
       <View className="flex-1 items-center justify-center bg-black/50 p-6">
         <View className="w-full max-w-sm rounded-3xl bg-surface p-6 shadow-xl">
           <View className="mb-4 size-14 items-center justify-center self-center rounded-2xl bg-amber-50 dark:bg-amber-500/15">

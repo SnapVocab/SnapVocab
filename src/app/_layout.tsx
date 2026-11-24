@@ -45,7 +45,7 @@ export default function RootLayout() {
 
   return (
     <Providers>
-      <Stack screenOptions={{ headerShown: false }}>
+      <Stack screenOptions={{ headerShown: false, freezeOnBlur: true }}>
         <Stack.Protected guard={status === 'signIn'}>
           <Stack.Screen name="(app)" />
         </Stack.Protected>

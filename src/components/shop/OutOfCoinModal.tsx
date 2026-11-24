@@ -1,9 +1,10 @@
 import type { ShopItemDTO } from '@/features/shop/types';
+import { Image as ExpoImage } from 'expo-image';
 import { router } from 'expo-router';
 import { BookOpenIcon, TargetIcon, XIcon } from 'lucide-react-native';
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
-import { Image, Modal, Pressable, Text, View } from 'react-native';
+import { Modal, Pressable, Text, View } from 'react-native';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -97,10 +98,11 @@ export function OutOfCoinModal({
             }}
             className="mb-3 items-center justify-center shadow-sm"
           >
-            <Image
+            <ExpoImage
               source={require('../../assets/images/snapy-curious.png')}
               style={{ width: 80, height: 80 }}
-              resizeMode="contain"
+              contentFit="contain"
+              cachePolicy="memory-disk"
             />
           </View>
 
