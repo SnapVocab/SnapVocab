@@ -1,8 +1,8 @@
 import type { TopicItemData } from '../../types';
 import * as React from 'react';
-import { Pressable, View } from 'react-native';
+import { View } from 'react-native';
 import { useUniwind } from 'uniwind';
-import { Text } from '@/components/ui';
+import { Pressable, Text } from '@/components/ui';
 import { ChevronRightIcon, VolumeIcon } from '@/components/ui/icons';
 import { useTts } from '@/lib/hooks/use-tts';
 import { extractTopicItemDisplay } from './topic-item-utils';
@@ -36,15 +36,11 @@ export function TopicItemRow({ item, onPress, onLongPress }: Props) {
     return `/${phonetic}/`;
   }, [phonetic]);
 
-  const handleAudioPress = React.useCallback(
-    (e: { stopPropagation?: () => void }) => {
-      e.stopPropagation?.();
-      if (word && word !== '—') {
-        speak(word);
-      }
-    },
-    [speak, word],
-  );
+  const handleAudioPress = React.useCallback(() => {
+    if (word && word !== '—') {
+      speak(word);
+    }
+  }, [speak, word]);
 
   const handlePress = React.useCallback(() => {
     if (didLongPressRef.current) {
@@ -73,14 +69,16 @@ export function TopicItemRow({ item, onPress, onLongPress }: Props) {
   }, []);
 
   return (
-    <Pressable
-      onPress={handlePress}
-      onLongPress={handleLongPress}
-      delayLongPress={350}
-      className={`flex-row items-center justify-between rounded-2xl border-2 border-b-4 px-4 py-3.5 shadow-2xs active:translate-y-[2px] active:border-b-2 ${cardSurfaceClasses}`}
+    <View
+      className={`flex-row items-center justify-between overflow-hidden rounded-2xl border-2 border-b-4 shadow-2xs ${cardSurfaceClasses}`}
     >
-      {/* Left Column: Word, Phonetic, POS & Translation */}
-      <View className="flex-1 pr-3">
+      {/* Left Column: Word, Phonetic, POS & Translation (sibling Pressable) */}
+      <Pressable
+        onPress={handlePress}
+        onLongPress={handleLongPress}
+        delayLongPress={350}
+        className="flex-1 py-3.5 pr-3 pl-4 active:opacity-80"
+      >
         {/* Top line: Word + POS + Phonetic */}
         <View className="flex-row flex-wrap items-center gap-2">
           <Text className="font-nunito text-base font-black text-mascot-navy dark:text-white">
@@ -111,14 +109,14 @@ export function TopicItemRow({ item, onPress, onLongPress }: Props) {
             {translation}
           </Text>
         ) : null}
-      </View>
+      </Pressable>
 
-      {/* Right Column: Quick Audio Button + Chevron */}
-      <View className="flex-row items-center gap-2">
+      {/* Right Column: Quick Audio Button + Chevron (sibling Pressable) */}
+      <View className="flex-row items-center gap-2 pr-4">
         <Pressable
           onPress={handleAudioPress}
           hitSlop={8}
-          className={`size-9 items-center justify-center rounded-xl border-2 border-b-[3px] active:translate-y-px active:border-b-2 ${
+          className={`size-9 items-center justify-center overflow-hidden rounded-xl border-2 border-b-[3px] active:translate-y-px ${
             isPlaying
               ? 'border-lime-600 border-b-lime-700 bg-lime-500'
               : 'border-lime-300 border-b-lime-400 bg-lime-50 active:bg-lime-100 dark:border-lime-800 dark:border-b-lime-900 dark:bg-lime-950/40'
@@ -131,11 +129,16 @@ export function TopicItemRow({ item, onPress, onLongPress }: Props) {
           />
         </Pressable>
 
-        <View className="size-9 items-center justify-center rounded-xl border-2 border-b-[3px] border-line border-b-edge bg-surface-raised">
+        <Pressable
+          onPress={handlePress}
+          onLongPress={handleLongPress}
+          delayLongPress={350}
+          className="size-9 items-center justify-center overflow-hidden rounded-xl border-2 border-b-[3px] border-line border-b-edge bg-surface-raised"
+        >
           <ChevronRightIcon width={14} height={14} color="#94A3B8" />
-        </View>
+        </Pressable>
       </View>
-    </Pressable>
+    </View>
   );
 }
 

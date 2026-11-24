@@ -206,7 +206,7 @@ export function useCollectionDetail() {
         const idx = filteredItems.findIndex(i => i.topicItemId === item.topicItemId);
         setPreviewIndex(idx >= 0 ? idx : 0);
       }
-      previewBottomSheetRef.current?.present();
+      requestAnimationFrame(() => previewBottomSheetRef.current?.present());
     },
     [filteredItems],
   );

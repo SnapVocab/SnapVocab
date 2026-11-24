@@ -24,21 +24,23 @@ type RowProps = {
 export function LibraryRow({ collection, onPress, onOptionsPress }: RowProps) {
   const { name, translation, wordCount, dueCount } = collection;
   return (
-    <Pressable
-      onPress={onPress}
-      accessibilityRole="button"
-      className="min-h-16 flex-row items-center border-b border-neutral-50 py-3 pr-2 pl-4 dark:border-neutral-800"
-    >
-      <View className="mr-3 flex-1">
-        <Text className="font-nunito text-base font-black text-mascot-navy dark:text-white" numberOfLines={1}>{name}</Text>
-        {!!translation && (
-          <Text className="mt-0.5 font-inter text-xs text-neutral-500 dark:text-neutral-400" numberOfLines={1}>{translation}</Text>
-        )}
-        <StudyCountLabels counts={{ newCount: collection.newCount ?? 0, dueCount }} className="mt-2" />
-      </View>
-      <Text className="font-inter text-xs font-semibold text-neutral-500 dark:text-neutral-400">
-        {wordCount ? translate('learn.library.words', { count: wordCount }) : translate('learn.library.no_words')}
-      </Text>
+    <View className="min-h-16 flex-row items-center border-b border-neutral-50 pr-2 dark:border-neutral-800">
+      <Pressable
+        onPress={onPress}
+        accessibilityRole="button"
+        className="flex-1 flex-row items-center py-3 pl-4"
+      >
+        <View className="mr-3 flex-1">
+          <Text className="font-nunito text-base font-black text-mascot-navy dark:text-white" numberOfLines={1}>{name}</Text>
+          {!!translation && (
+            <Text className="mt-0.5 font-inter text-xs text-neutral-500 dark:text-neutral-400" numberOfLines={1}>{translation}</Text>
+          )}
+          <StudyCountLabels counts={{ newCount: collection.newCount ?? 0, dueCount }} className="mt-2" />
+        </View>
+        <Text className="font-inter text-xs font-semibold text-neutral-500 dark:text-neutral-400">
+          {wordCount ? translate('learn.library.words', { count: wordCount }) : translate('learn.library.no_words')}
+        </Text>
+      </Pressable>
       {onOptionsPress
         ? (
             <Pressable
@@ -46,13 +48,13 @@ export function LibraryRow({ collection, onPress, onOptionsPress }: RowProps) {
               hitSlop={8}
               accessibilityRole="button"
               accessibilityLabel={translate('learn.library.options', { name })}
-              className="ml-1 size-10 items-center justify-center"
+              className="ml-1 size-10 items-center justify-center overflow-hidden rounded-full"
             >
               <MoreVerticalIcon width={16} height={16} color="#9CA3AF" />
             </Pressable>
           )
         : <View className="ml-1 size-10" />}
-    </Pressable>
+    </View>
   );
 }
 

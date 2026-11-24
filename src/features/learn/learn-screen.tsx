@@ -1,9 +1,9 @@
 import { Image as ExpoImage } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { ArrowRightIcon } from 'lucide-react-native';
-import { Pressable, ScrollView } from 'react-native';
+import { ScrollView } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { FocusAwareStatusBar, Text, useColorMode, useSurface, View } from '@/components/ui';
+import { FocusAwareStatusBar, Pressable, Text, useColorMode, useSurface, View } from '@/components/ui';
 import { translate } from '@/lib/i18n';
 
 export function LearnScreen() {
@@ -35,7 +35,7 @@ export function LearnScreen() {
             accessibilityLabel={title}
             accessibilityHint={description}
             onPress={() => router.push(route)}
-            className={`min-h-44 flex-row items-center gap-2 overflow-hidden rounded-2xl border-2 border-b-4 border-line border-b-edge p-5 active:translate-y-[2px] active:border-b-2 ${tone}`}
+            className={`min-h-44 flex-row items-center gap-2 overflow-hidden rounded-2xl border-2 border-b-4 border-line border-b-edge p-5 active:translate-y-[2px] ${tone}`}
           >
             <View className="flex-1 items-start gap-2">
               <Text className="font-nunito text-[22px] font-black text-mascot-navy dark:text-white">{title}</Text>

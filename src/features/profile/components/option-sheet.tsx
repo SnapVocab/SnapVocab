@@ -136,6 +136,7 @@ export function OptionSheet<T extends string | number>({
   return (
     <BottomSheetModal
       ref={sheetRef}
+      stackBehavior="replace"
       onDismiss={onClose}
       enableDynamicSizing
       backdropComponent={renderBackdrop}

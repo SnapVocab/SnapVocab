@@ -1,7 +1,7 @@
 import type { TopicDTO } from '../../types';
-import { Pressable, View } from 'react-native';
+import { View } from 'react-native';
 import { useUniwind } from 'uniwind';
-import { Text } from '@/components/ui';
+import { Pressable, Text } from '@/components/ui';
 import { BookIcon, ChevronRightIcon, FolderIcon, PlayIcon } from '@/components/ui/icons';
 import { StudyCountLabels } from '@/features/study/study-count-labels';
 import { translate } from '@/lib/i18n';
