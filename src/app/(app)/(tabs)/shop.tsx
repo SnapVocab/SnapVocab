@@ -1,1 +1,5 @@
-export { ShopScreen as default } from '@/features/shop';
+import { ShopScreen } from '@/features/shop';
+
+export default function ShopTabScreen() {
+  return <ShopScreen isTab />;
+}

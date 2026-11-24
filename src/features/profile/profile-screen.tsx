@@ -2,6 +2,7 @@ import type { Href } from 'expo-router';
 import type { ReactNode } from 'react';
 import type { User } from '../auth/api';
 import type { InventoryItemDTO } from '@/features/shop/types';
+import { useIsFocused } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -57,15 +58,16 @@ export function ProfileScreen() {
   const badges = useBadges().data;
   const openAchievements = (badgeId?: number) =>
     router.push((badgeId ? `/profile/achievements?open=${badgeId}` : '/profile/achievements') as Href);
+  const isFocused = useIsFocused();
   const [, tick] = useState(0);
   const frame = inventory.data?.items.find(i => i.type === 'AVATAR_FRAME' && i.equipped);
   const boosterLive = isBoosterLive(inventory.data?.activeBooster, inventory.serverOffset);
   useEffect(() => {
-    if (!boosterLive)
+    if (!boosterLive || !isFocused)
       return;
     const timer = setInterval(() => tick(n => n + 1), 1000);
     return () => clearInterval(timer);
-  }, [boosterLive]);
+  }, [boosterLive, isFocused]);
   const failedSources = [
     isError && translate('profile.account_data'),
     streak.isError && translate('profile.streak'),

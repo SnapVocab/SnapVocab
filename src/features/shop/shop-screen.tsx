@@ -1,6 +1,6 @@
 import type { ShopItemDTO } from './types';
 import type { ShopCategory } from '@/components/shop/shop-category-tabs';
-import { router, useSegments } from 'expo-router';
+import { router } from 'expo-router';
 import { PackageIcon, RefreshCwIcon } from 'lucide-react-native';
 import * as React from 'react';
 import { useMemo, useRef, useState } from 'react';
@@ -36,9 +36,9 @@ import { shopItemTitle } from './utils/item-presentation';
 
 const ITEM_ORDER = { XP_BOOSTER: 0, STREAK_FREEZE: 1, AVATAR_FRAME: 2, CARD_FRAME: 3 };
 
-export default function ShopScreen() {
+export default function ShopScreen({ isTab = false }: { isTab?: boolean } = {}) {
   const s = useSurface();
-  const isShopTab = (useSegments() as string[]).includes('(tabs)');
+  const isShopTab = isTab;
   const { t, i18n } = useTranslation();
   const [activeCategory, setActiveCategory] = useState<ShopCategory>('all');
   const [previewFrameItem, setPreviewFrameItem] = useState<ShopItemDTO | null>(null);

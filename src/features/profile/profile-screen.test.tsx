@@ -11,6 +11,7 @@ let mockStreakError = false;
 let mockInventoryError = false;
 let mockBooster: { multiplier: number; expiresAt: string } | null = null;
 
+jest.mock('@react-navigation/native', () => ({ useIsFocused: () => true }));
 jest.mock('expo-router', () => ({ useRouter: () => ({ push: jest.fn() }) }));
 jest.mock('react-native-safe-area-context', () => ({ useSafeAreaInsets: () => ({ top: 0, bottom: 0, left: 0, right: 0 }) }));
 jest.mock('@/features/auth/use-auth-store', () => ({ useAuthStore: (select: (state: unknown) => unknown) => select({ user: mockUser }) }));
