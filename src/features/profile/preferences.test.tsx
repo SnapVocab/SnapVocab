@@ -38,7 +38,7 @@ jest.mock('@/features/auth/passkey', () => ({
   clearStoredPasskeyBinding: jest.fn(),
   getStoredPasskeyBinding: jest.fn(() => null),
   isPasskeyCancelledError: jest.fn(() => false),
-  isPasskeySupported: jest.fn(() => true),
+  useBiometricSupported: jest.fn(() => true),
   useDisablePasskey: () => ({ mutateAsync: jest.fn(), isPending: false }),
   usePasskeyCredentials: () => ({ data: [] }),
   useRegisterPasskey: () => ({ mutateAsync: jest.fn(), isPending: false }),

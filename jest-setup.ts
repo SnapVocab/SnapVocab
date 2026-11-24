@@ -98,13 +98,17 @@ jest.mock('react-native-mmkv', () => ({
   })),
 }));
 
-// Mock react-native-passkey
-jest.mock('react-native-passkey', () => ({
-  Passkey: {
-    isSupported: jest.fn(() => true),
-    create: jest.fn(),
-    get: jest.fn(),
-  },
+// Mock expo-local-authentication and expo-secure-store
+jest.mock('expo-local-authentication', () => ({
+  hasHardwareAsync: jest.fn(async () => true),
+  isEnrolledAsync: jest.fn(async () => true),
+  authenticateAsync: jest.fn(async () => ({ success: true })),
+}));
+jest.mock('expo-secure-store', () => ({
+  WHEN_UNLOCKED_THIS_DEVICE_ONLY: 6,
+  setItemAsync: jest.fn(async () => undefined),
+  getItemAsync: jest.fn(async () => null),
+  deleteItemAsync: jest.fn(async () => undefined),
 }));
 
 // Global window object setup for React Native testing
