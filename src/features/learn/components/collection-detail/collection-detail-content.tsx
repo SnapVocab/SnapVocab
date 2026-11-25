@@ -70,6 +70,20 @@ export function CollectionDetailContent({ detail }: Props) {
     } as Href);
   }, [router, id, collectionTitle, currentParent, handleStudyTopic]);
 
+  const handleStoryTopic = React.useCallback(() => {
+    if (!currentParent)
+      return;
+    router.push({
+      pathname: '/story/[id]',
+      params: {
+        id: 'new',
+        source: 'TOPIC',
+        topicId: String(currentParent.id),
+        topicName: currentParent.name,
+      },
+    } as any);
+  }, [router, currentParent]);
+
   const ListHeader = React.useMemo(
     () => (
       <CollectionDetailListHeader
@@ -81,6 +95,7 @@ export function CollectionDetailContent({ detail }: Props) {
         onSelectTopic={handleTopicPress}
         onStudyTopic={handleStudyTopic}
         onStudyCollection={handleStudyCollection}
+        onStoryTopic={handleStoryTopic}
         counts={currentCounts}
         topicCounts={overview.data?.topics}
         countsError={overview.isError}
@@ -97,6 +112,7 @@ export function CollectionDetailContent({ detail }: Props) {
       handleTopicPress,
       handleStudyTopic,
       handleStudyCollection,
+      handleStoryTopic,
       currentCounts,
       overview.data?.topics,
       overview.isError,
