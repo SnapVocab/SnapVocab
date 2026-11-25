@@ -1,9 +1,9 @@
 import type { TopicDTO } from '../../types';
 import type { StudyCounts } from '@/features/study/api';
 import * as React from 'react';
-import { Pressable, TextInput, View } from 'react-native';
-import { Button, Text } from '@/components/ui';
-import { CloseIcon, SearchIcon } from '@/components/ui/icons';
+import { TextInput, View } from 'react-native';
+import { Button, Pressable, Text } from '@/components/ui';
+import { ChevronRightIcon, CloseIcon, SearchIcon, SparklesIcon } from '@/components/ui/icons';
 import { StudyCountLabels } from '@/features/study/study-count-labels';
 import { translate } from '@/lib/i18n';
 import SubtopicSection from './subtopic-section';
@@ -17,6 +17,7 @@ type Props = {
   onSelectTopic: (topic: TopicDTO) => void;
   onStudyTopic: (topic: TopicDTO) => void;
   onStudyCollection: () => void;
+  onStoryTopic?: () => void;
   counts?: StudyCounts;
   topicCounts?: StudyCounts[];
   countsError?: boolean;
@@ -32,6 +33,7 @@ export function CollectionDetailListHeader({
   onSelectTopic,
   onStudyTopic,
   onStudyCollection,
+  onStoryTopic,
   counts,
   topicCounts,
   countsError,
@@ -55,6 +57,25 @@ export function CollectionDetailListHeader({
         disabled={!counts || counts.newCount + counts.dueCount === 0}
         testID="study-collection"
       />
+      {isInsideTopic && totalCount >= 3 && onStoryTopic && (
+        <Pressable
+          onPress={onStoryTopic}
+          className="mb-3 flex-row items-center justify-between rounded-2xl border-2 border-b-4 border-amber-300 border-b-amber-400 bg-amber-50 px-4 py-3 active:translate-y-px dark:border-amber-500/40 dark:border-b-amber-600/50 dark:bg-amber-500/15"
+        >
+          <View className="flex-1 flex-row items-center gap-2.5 pr-2">
+            <SparklesIcon width={18} height={18} color="#D97706" />
+            <View className="flex-1">
+              <Text className="font-nunito text-sm font-black text-amber-900 dark:text-amber-200">
+                {translate('story.topic_1tap_title')}
+              </Text>
+              <Text className="font-inter text-xs text-amber-800/80 dark:text-amber-200/80" numberOfLines={1}>
+                {translate('story.topic_1tap_subtitle')}
+              </Text>
+            </View>
+          </View>
+          <ChevronRightIcon width={18} height={18} color="#B45309" />
+        </Pressable>
+      )}
       {/* Search Box */}
       <View className="mb-3 flex-row items-center rounded-2xl border border-line bg-surface px-3.5 py-2.5">
         <SearchIcon width={18} height={18} color="#9CA3AF" />

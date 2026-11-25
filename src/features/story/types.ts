@@ -62,6 +62,7 @@ export type StoryListResponse = {
 export type GenerateStoryRequest = {
   source: StorySource;
   topicId?: number;
+  wordCount?: number;
   words?: string[];
   mode: StoryMode;
   level: StoryLevel;
