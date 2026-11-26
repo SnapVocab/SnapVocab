@@ -3,7 +3,7 @@ import type { StoryBlankDTO, StorySentenceDTO } from './types';
 export const MIN_STORY_WORDS = 3;
 export const MAX_STORY_WORDS = 20;
 export const DEFAULT_SMART_PICK_COUNT = 6;
-export const WORD_TOKEN_REGEX = /^[a-z][a-z\s'-]{0,39}$/i;
+export const WORD_TOKEN_REGEX = /^[a-z][a-z\s'.-]{0,59}$/i;
 
 export type StoryTextSegment =
   | { id: string; type: 'text'; text: string }
@@ -129,4 +129,19 @@ export function sanitizeWordList(rawWords: string[]): string[] {
       break;
   }
   return clean;
+}
+
+export function pickRandomFromPool(pool: string[], count: number, prevWords?: string[]): string[] {
+  if (pool.length <= count)
+    return [...pool];
+  const prevSet = new Set((prevWords ?? []).map(w => w.toLowerCase()));
+  const fresh = pool.filter(w => !prevSet.has(w.toLowerCase()));
+  const candidates = fresh.length >= count ? [...fresh] : [...pool];
+  for (let i = candidates.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1));
+    const tmp = candidates[i];
+    candidates[i] = candidates[j];
+    candidates[j] = tmp;
+  }
+  return candidates.slice(0, count);
 }

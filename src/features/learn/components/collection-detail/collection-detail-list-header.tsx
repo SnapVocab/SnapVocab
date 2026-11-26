@@ -57,7 +57,7 @@ export function CollectionDetailListHeader({
         disabled={!counts || counts.newCount + counts.dueCount === 0}
         testID="study-collection"
       />
-      {isInsideTopic && totalCount >= 3 && onStoryTopic && (
+      {isInsideTopic && (totalCount >= 3 || subtopics.length > 0) && onStoryTopic && (
         <Pressable
           onPress={onStoryTopic}
           className="mb-3 flex-row items-center justify-between rounded-2xl border-2 border-b-4 border-amber-300 border-b-amber-400 bg-amber-50 px-4 py-3 active:translate-y-px dark:border-amber-500/40 dark:border-b-amber-600/50 dark:bg-amber-500/15"

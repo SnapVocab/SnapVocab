@@ -3,7 +3,6 @@ import { ActivityIndicator, FlatList, RefreshControl } from 'react-native';
 import { BackButton, Button, FocusAwareStatusBar, Mascot, Pressable, SafeAreaView, Text, View } from '@/components/ui';
 import { ChevronRightIcon, SearchIcon, SparklesIcon } from '@/components/ui/icons';
 import { useColorMode } from '@/components/ui/surface';
-import { sanitizeWordList } from '@/features/story/utils';
 import { translate } from '@/lib/i18n';
 import { useMyWords } from './api';
 import { PersonalWordRow } from './components/personal-word-row';
@@ -48,13 +47,10 @@ export function MyWordsScreen() {
                 {words.length >= 3 && (
                   <Pressable
                     onPress={() => {
-                      const picked = sanitizeWordList(words.map(w => w.word)).slice(0, 6);
-                      if (picked.length >= 3) {
-                        router.push({
-                          pathname: '/story/[id]',
-                          params: { id: 'new', source: 'MY_WORDS', words: picked.join(',') },
-                        } as any);
-                      }
+                      router.push({
+                        pathname: '/story',
+                        params: { source: 'MY_WORDS' },
+                      } as any);
                     }}
                     className="flex-row items-center justify-between rounded-2xl border-2 border-b-4 border-amber-300 border-b-amber-400 bg-amber-50 px-4 py-3 active:translate-y-px dark:border-amber-500/40 dark:border-b-amber-600/50 dark:bg-amber-500/15"
                   >
