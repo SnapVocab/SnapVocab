@@ -1,10 +1,6 @@
-import type { BottomSheetBackdropProps } from '@gorhom/bottom-sheet';
+import type { BottomSheetBackdropProps, BottomSheetModal } from '@gorhom/bottom-sheet';
 import type { QuizAvailableTopic } from '../api/quiz-api';
-import {
-  BottomSheetBackdrop,
-  BottomSheetModal,
-  BottomSheetScrollView,
-} from '@gorhom/bottom-sheet';
+import { BottomSheetBackdrop, BottomSheetScrollView } from '@gorhom/bottom-sheet';
 import * as React from 'react';
 import { useCallback, useMemo, useState } from 'react';
 import {
@@ -16,6 +12,7 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSurface } from '@/components/ui';
+import { AppBottomSheetModal } from '@/components/ui/app-bottom-sheet-modal';
 import {
   CheckCircleIcon,
   CloseIcon,
@@ -78,7 +75,7 @@ export function TopicSelectBottomSheet({
   }, [topics, searchQuery]);
 
   return (
-    <BottomSheetModal
+    <AppBottomSheetModal
       ref={bottomSheetRef}
       snapPoints={['60%', '88%']}
       enableDynamicSizing={false}
@@ -239,6 +236,6 @@ export function TopicSelectBottomSheet({
           )}
         </BottomSheetScrollView>
       </View>
-    </BottomSheetModal>
+    </AppBottomSheetModal>
   );
 }

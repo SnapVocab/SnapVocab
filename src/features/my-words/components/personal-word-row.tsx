@@ -1,4 +1,4 @@
-import type { WordSuggestionResponse } from '@/features/lookup/types';
+import type { MyWordResponse } from '@/features/lookup/types';
 import { ActivityIndicator, Alert } from 'react-native';
 import { Pressable, showErrorMessage, showSuccessMessage, Text, View } from '@/components/ui';
 import { BookIcon, FolderIcon, MoreVerticalIcon } from '@/components/ui/icons';
@@ -7,7 +7,7 @@ import { translate } from '@/lib/i18n';
 import { useSetMyWord } from '../api';
 
 type Props = {
-  word: WordSuggestionResponse;
+  word: MyWordResponse;
   onOpen: () => void;
   onAdd: () => void;
 };
@@ -39,7 +39,16 @@ export function PersonalWordRow({ word, onOpen, onAdd }: Props) {
         <View className="size-10 items-center justify-center rounded-xl bg-surface-raised">
           <BookIcon width={20} height={20} color={dark ? '#B5D894' : '#4E7A25'} />
         </View>
-        <Text numberOfLines={2} className="flex-1 font-nunito text-xl font-extrabold text-mascot-navy dark:text-white">{word.word}</Text>
+        <View className="flex-1">
+          <Text numberOfLines={2} className="font-nunito text-xl font-extrabold text-mascot-navy dark:text-white">{word.word}</Text>
+          {!!word.meaning && <Text numberOfLines={1} className="text-sm text-neutral-600 dark:text-neutral-300">{word.meaning}</Text>}
+          {/* Whether it is already being studied, so the folder button is not pressed twice for nothing. */}
+          {!!word.topics?.length && (
+            <Text numberOfLines={1} className="mt-0.5 text-xs font-semibold text-primary-700 dark:text-primary-200" testID={`my-word-topics-${word.id}`}>
+              {translate('my_words.in_topics', { topics: word.topics.map(topic => topic.topicName).join(', ') })}
+            </Text>
+          )}
+        </View>
       </Pressable>
       <Pressable
         accessibilityRole="button"

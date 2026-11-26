@@ -186,7 +186,8 @@ it('settings displays and edits local choices without sending them to the server
 it('opens collection limits instead of changing a global daily goal', () => {
   render(<SettingsScreen />);
   fireEvent.press(screen.getByTestId('settings-collection-limits'));
-  expect(mockPush).toHaveBeenCalledWith('/collections');
+  // Straight to the per-collection limits list, not the collection list with a ⋮ menu to find (UX audit #12).
+  expect(mockPush).toHaveBeenCalledWith('/study-limits');
   expect(mockMutate).not.toHaveBeenCalled();
 });
 

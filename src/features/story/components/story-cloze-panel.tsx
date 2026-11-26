@@ -3,6 +3,7 @@ import * as React from 'react';
 import { View } from 'react-native';
 import { Button, Pressable, showErrorMessage, Text } from '@/components/ui';
 import { CheckCircleIcon, RotateCcwIcon, TrophyIcon } from '@/components/ui/icons';
+import { apiErrorMessage } from '@/lib/api/error-message';
 import { translate } from '@/lib/i18n';
 import { useSubmitStoryCloze } from '../api';
 import { buildStoryParagraphs } from '../utils';
@@ -94,7 +95,7 @@ export function StoryClozePanel({ story, onBackToRead }: Props) {
       setResult(res);
     }
     catch (err: any) {
-      showErrorMessage(err?.response?.data?.message || translate('story.submit_error'));
+      showErrorMessage(apiErrorMessage(err, 'story.submit_error'));
     }
   };
 

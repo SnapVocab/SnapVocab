@@ -37,6 +37,8 @@ jest.mock('@/components/ui', () => {
   return {
     useColorMode: () => 'light',
     useSurface: () => DEFAULT_SURFACE.light,
+    Pressable: RN.Pressable,
+    BouncingDots: () => null,
     Button: ({ label, onPress, disabled }: { label: string; onPress?: () => void; disabled?: boolean }) => (
       <RN.Pressable accessibilityRole="button" onPress={onPress} disabled={disabled}><RN.Text>{label}</RN.Text></RN.Pressable>
     ),

@@ -173,7 +173,7 @@ export default function WalletScreen() {
         right={(
           <Pressable
             accessibilityRole="button"
-            onPress={() => router.push('/(tabs)/shop' as any)}
+            onPress={() => router.dismissTo('/shop')}
             className="rounded-full border border-reward-200 bg-reward-50 px-3 py-1.5 active:scale-95 dark:border-amber-400/25 dark:bg-amber-400/10"
           >
             <Text className="font-nunito text-[13px] font-extrabold text-reward-700 dark:text-amber-300">{t('shop.title')}</Text>

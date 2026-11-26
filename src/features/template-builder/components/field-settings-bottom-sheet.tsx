@@ -1,12 +1,14 @@
-import type { BottomSheetBackdropProps } from '@gorhom/bottom-sheet';
+import type { BottomSheetBackdropProps, BottomSheetModal } from '@gorhom/bottom-sheet';
 import type { Alignment, BuilderField, DataType, FontSize, SemanticRole } from '../types';
-import { BottomSheetBackdrop, BottomSheetModal, BottomSheetScrollView } from '@gorhom/bottom-sheet';
+import { BottomSheetBackdrop, BottomSheetScrollView } from '@gorhom/bottom-sheet';
 import * as React from 'react';
 import { TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { AppBottomSheetModal } from '@/components/ui/app-bottom-sheet-modal';
 import { Button } from '@/components/ui/button';
 import { CloseIcon, TrashIcon } from '@/components/ui/icons';
 import { Input } from '@/components/ui/input';
+import { useSurface } from '@/components/ui/surface';
 import { Text } from '@/components/ui/text';
 import { translate } from '@/lib/i18n/utils';
 import {
@@ -34,6 +36,7 @@ export function FieldSettingsBottomSheet({
   onSave,
   onDelete,
 }: FieldSettingsBottomSheetProps) {
+  const surface = useSurface();
   const insets = useSafeAreaInsets();
   const [label, setLabel] = React.useState('');
   const [dataType, setDataType] = React.useState<DataType>('TEXT');
@@ -101,7 +104,7 @@ export function FieldSettingsBottomSheet({
   }
 
   return (
-    <BottomSheetModal
+    <AppBottomSheetModal
       ref={bottomSheetRef}
       snapPoints={snapPoints}
       enableDynamicSizing={false}
@@ -110,6 +113,7 @@ export function FieldSettingsBottomSheet({
       enableOverDrag={false}
       backdropComponent={renderBackdrop}
       handleIndicatorStyle={{ backgroundColor: '#D1D5DB', width: 40 }}
+      backgroundStyle={{ backgroundColor: surface.background }}
     >
       <View className="flex-1 bg-background">
         {/* Header */}
@@ -201,6 +205,6 @@ export function FieldSettingsBottomSheet({
           </View>
         </View>
       </View>
-    </BottomSheetModal>
+    </AppBottomSheetModal>
   );
 }

@@ -49,6 +49,19 @@ export function studyHref(trigger: MissionTriggerEvent, href: Href, today: Study
   return href;
 }
 
+const TAB_HREFS = new Set<string>(['/', '/learn', '/camera', '/shop', '/profile']);
+
+/**
+ * A tab is already under this screen: go back to it. Pushing it from a stack screen would stack a
+ * second tab bar on top, and Back would then return here instead of leaving the tabs.
+ */
+export function openMissionHref(router: { push: (href: Href) => void; dismissTo: (href: Href) => void }, href: Href) {
+  if (typeof href === 'string' && TAB_HREFS.has(href))
+    router.dismissTo(href);
+  else
+    router.push(href);
+}
+
 // Plain colors, not classes: Uniwind does not style the third-party SafeAreaView.
 const TOP_SAFE_BG = {
   default: '#1E2A44',
@@ -296,7 +309,7 @@ export function MissionsScreen() {
           )}
 
           {data && missions.length > 0 && summary.allClaimed && (
-            <VictoryLedger missions={rawMissions} minutesLeft={minutesLeft} onContinueLearning={() => router.push('/learn')} />
+            <VictoryLedger missions={rawMissions} minutesLeft={minutesLeft} onContinueLearning={() => router.dismissTo('/learn')} />
           )}
 
           {data && missions.length > 0 && !summary.allClaimed && (
@@ -316,7 +329,7 @@ export function MissionsScreen() {
                     ended={ended}
                     compact={compact}
                     actionTx={action?.tx}
-                    onAction={action ? () => router.push(studyHref(mission.triggerEvent, action.href, today)) : undefined}
+                    onAction={action ? () => openMissionHref(router, studyHref(mission.triggerEvent, action.href, today)) : undefined}
                     onClaim={() => void receive(mission)}
                     claiming={claimingId === mission.id}
                     claimDisabled={claimingId !== null}

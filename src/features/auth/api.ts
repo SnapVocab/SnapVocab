@@ -151,6 +151,15 @@ export function useForgotPassword() {
   });
 }
 
+/** Checks a reset code before the new password is typed; the code stays valid for the reset. */
+export function useVerifyResetCode() {
+  return useMutation<void, AxiosError, { email: string; code: string }>({
+    mutationFn: async (variables) => {
+      await client({ url: '/api/auth/verify-reset-code', method: 'POST', data: variables });
+    },
+  });
+}
+
 export function useResetPassword() {
   return useMutation<object, AxiosError, ResetPasswordRequest>({
     mutationFn: async (variables) => {

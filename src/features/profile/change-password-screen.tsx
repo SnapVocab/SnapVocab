@@ -17,6 +17,7 @@ import {
   Text,
   View,
 } from '@/components/ui';
+import { clearStoredPasskeyBinding } from '@/features/auth/passkey';
 import { translate } from '@/lib/i18n';
 import { useChangePassword } from './api';
 
@@ -68,6 +69,8 @@ export function ChangePasswordScreen() {
       { currentPassword, newPassword },
       {
         onSuccess: () => {
+          // The server revoked fingerprint sign-in with the old password; forget this device's binding too.
+          clearStoredPasskeyBinding();
           showSuccessMessage(translate('change_password.success'));
           router.back();
         },

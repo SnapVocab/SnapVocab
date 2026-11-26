@@ -1,42 +1,38 @@
 import type { BottomSheetModal } from '@gorhom/bottom-sheet';
 import type { BuilderField, BuilderSection } from './types';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useLocalSearchParams } from 'expo-router';
 import * as React from 'react';
 import { ScrollView, TouchableOpacity, View } from 'react-native';
-import { Button, FocusAwareStatusBar, SafeAreaView, showErrorMessage, showSuccessMessage, Text } from '@/components/ui';
+import { Button, FocusAwareStatusBar, SafeAreaView, Text } from '@/components/ui';
 import { PlusIcon } from '@/components/ui/icons';
 import { translate } from '@/lib/i18n/utils';
-import { useCreateTemplate, useForkTopicSchema, useSchema, useSchemas, useSetActiveTemplate, useTopicSchema } from './api';
+import { useSchema, useSchemas, useTopicSchema } from './api';
 import {
   AddFieldSheet,
   BuilderHeader,
   FieldSettingsBottomSheet,
   FlashcardPreviewModal,
+  SaveTemplateModal,
   SectionCard,
   SectionSettingsBottomSheet,
   TabSegmentedBar,
   TemplateBuilderSkeleton,
 } from './components';
 import { builderSectionsToTemplateElements } from './mappers';
+import { useSaveTemplate } from './use-save-template';
 import { useTemplateBuilderStore } from './use-template-builder-store';
 
-function summarizeSections(sections: BuilderSection[], fallback: string) {
-  return (
-    sections
-      .flatMap(s => s.fields)
-      .map(f => f.fieldLabel)
-      .filter(Boolean)
-      .slice(0, 3)
-      .join(', ') || fallback
-  );
-}
-
 export function TemplateBuilderScreen() {
-  const params = useLocalSearchParams<{ topicId?: string; schemaId?: string }>();
-  const router = useRouter();
+  /**
+   * topicId: that topic's layout. schemaId + templateId: a template from "Mẫu thẻ của tôi".
+   * from=create-topic: the saved template becomes the layout of the topic being created.
+   */
+  const params = useLocalSearchParams<{ topicId?: string; schemaId?: string; templateId?: string; from?: string }>();
 
   const topicId = params.topicId ? Number(params.topicId) : undefined;
   const schemaId = params.schemaId ? Number(params.schemaId) : undefined;
+  const templateId = params.templateId ? Number(params.templateId) : undefined;
+  const forCreateTopic = params.from === 'create-topic';
 
   const { data: topicSchema, isLoading: isTopicSchemaLoading } = useTopicSchema(topicId);
   const targetSchemaId = topicSchema?.schemaId ?? (!topicId ? schemaId : undefined);
@@ -51,7 +47,8 @@ export function TemplateBuilderScreen() {
   // Determine active schema and default template
   const { schema, defaultTemplate } = React.useMemo(() => {
     if (fullSchema) {
-      const defTpl = fullSchema.templates?.find(t => t.isDefault) ?? fullSchema.templates?.[0];
+      const defTpl = (templateId ? fullSchema.templates?.find(t => t.id === templateId) : undefined)
+        ?? fullSchema.templates?.find(t => t.isDefault) ?? fullSchema.templates?.[0];
       return {
         schema: {
           topicId: topicId ?? 0,
@@ -83,7 +80,17 @@ export function TemplateBuilderScreen() {
       };
     }
     return { schema: undefined, defaultTemplate: undefined };
-  }, [fullSchema, topicSchema, topicId, allSchemas]);
+  }, [fullSchema, topicSchema, topicId, templateId, allSchemas]);
+
+  const save = useSaveTemplate({
+    topicId,
+    templateId,
+    forCreateTopic,
+    fullSchema,
+    topicSchema,
+    schemaId: schema?.schemaId,
+    loadedTemplate: defaultTemplate,
+  });
 
   // Store state and actions
   const activeSide = useTemplateBuilderStore(s => s.activeSide);
@@ -104,13 +111,6 @@ export function TemplateBuilderScreen() {
   const openEditField = useTemplateBuilderStore(s => s.openEditField);
   const saveFieldSettings = useTemplateBuilderStore(s => s.saveFieldSettings);
   const deleteField = useTemplateBuilderStore(s => s.deleteField);
-  const setSavedCustomTemplate = useTemplateBuilderStore(s => s.setSavedCustomTemplate);
-  const markSaved = useTemplateBuilderStore(s => s.markSaved);
-
-  const forkMutation = useForkTopicSchema();
-  const createTemplateMutation = useCreateTemplate();
-  const setActiveTemplateMutation = useSetActiveTemplate();
-  const isSaving = forkMutation.isPending || createTemplateMutation.isPending || setActiveTemplateMutation.isPending;
 
   // BottomSheet Refs
   const fieldSettingsRef = React.useRef<BottomSheetModal>(null);
@@ -154,60 +154,6 @@ export function TemplateBuilderScreen() {
     setTargetColumnForAdd(column);
     openAddField(sectionId);
     addFieldRef.current?.present();
-  };
-
-  const handleSave = async () => {
-    if (!isDirty) {
-      router.back();
-      return;
-    }
-
-    const elements = builderSectionsToTemplateElements(frontSections, backSections);
-    if (elements.length === 0) {
-      router.back();
-      return;
-    }
-
-    try {
-      let targetSaveSchemaId = schema?.schemaId;
-      if (topicId && topicSchema?.shared) {
-        const forked = await forkMutation.mutateAsync({ topicId });
-        targetSaveSchemaId = forked.schemaId;
-      }
-      if (!targetSaveSchemaId) {
-        showErrorMessage(translate('learn.create_topic.create_error'));
-        return;
-      }
-
-      const baseName = defaultTemplate?.name || schema?.name || translate('template_builder.default_template_name');
-      const customName = baseName.includes('(Custom)') ? baseName : `${baseName} (Custom)`;
-      const created = await createTemplateMutation.mutateAsync({
-        schemaId: targetSaveSchemaId,
-        name: customName,
-        isDefault: !topicId,
-        elements,
-      });
-
-      if (topicId) {
-        await setActiveTemplateMutation.mutateAsync({ topicId, templateId: created.id });
-      }
-      else {
-        setSavedCustomTemplate({
-          schemaId: created.schemaId,
-          templateId: created.id,
-          name: created.name,
-          frontSummary: summarizeSections(frontSections, translate('learn.create_topic.layout_front_value')),
-          backSummary: summarizeSections(backSections, translate('learn.create_topic.layout_back_value')),
-        });
-      }
-      markSaved();
-      showSuccessMessage(translate('template_builder.save_config'));
-      router.back();
-    }
-    catch (error: any) {
-      const message = error?.response?.data?.error || error?.response?.data?.message || translate('learn.create_topic.create_error');
-      showErrorMessage(message);
-    }
   };
 
   if (isLoading) {
@@ -274,10 +220,13 @@ export function TemplateBuilderScreen() {
               ? translate('template_builder.save_config')
               : translate('template_builder.done')
           }
-          loading={isSaving}
-          onPress={() => void handleSave()}
+          loading={save.saving !== null}
+          onPress={save.start}
+          testID="template-builder-save"
         />
       </View>
+
+      <SaveTemplateModal {...save.modal} />
 
       {/* 4 Bottom Sheets */}
       <FieldSettingsBottomSheet

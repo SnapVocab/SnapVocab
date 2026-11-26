@@ -312,7 +312,7 @@ export default function InventoryScreen() {
               {t('shopUi.inventoryEmptyBody')}
             </Text>
             <Pressable
-              onPress={() => router.push('/(tabs)/shop' as any)}
+              onPress={() => router.dismissTo('/shop')}
               className="flex-row items-center gap-2 rounded-2xl border-b-4 border-brand-edge bg-brand px-6 py-3 active:border-b-2"
             >
               <PackageIcon size={18} color="white" />

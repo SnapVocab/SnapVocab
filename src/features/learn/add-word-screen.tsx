@@ -13,6 +13,7 @@ import {
 } from '@/components/ui';
 import { AlertTriangleIcon } from '@/components/ui/icons';
 import { useSchema, useTopicSchema } from '@/features/template-builder/api';
+import { apiErrorMessage } from '@/lib/api/error-message';
 import { useTts } from '@/lib/hooks/use-tts';
 import { translate } from '@/lib/i18n';
 import { useAddTopicItem, useTopicItem, useUpdateTopicItem } from './api';
@@ -25,13 +26,16 @@ import {
   validateAddWordForm,
 } from './components/add-word';
 import { withTemplateRoles } from './components/add-word/lookup-prefill';
+import { useUnsavedGuard } from './components/add-word/use-unsaved-guard';
+import { rememberSaveDestination, useSavedThroughForm } from './save-destination';
 
 export function AddWordScreen() {
   const router = useRouter();
-  const { topicId, topicName = '', itemId, word, wordId, activeTemplateId, scanRequestId } = useLocalSearchParams<{
+  const { topicId, topicName = '', collectionId, collectionName, itemId, word, wordId, activeTemplateId, scanRequestId } = useLocalSearchParams<{
     topicId?: string;
     topicName?: string;
     collectionId?: string;
+    collectionName?: string;
     itemId?: string;
     /** From a scan result: prefilled and looked up once the schema loads. */
     word?: string;
@@ -84,12 +88,23 @@ export function AddWordScreen() {
     errors,
     setErrors,
     isLookingUp,
-    handleSingleFieldChange,
-    handleMultipleFieldChange,
-    handleAddInstance,
-    handleRemoveInstance,
+    handleSingleFieldChange: changeSingleField,
+    handleMultipleFieldChange: changeMultipleField,
+    handleAddInstance: addInstance,
+    handleRemoveInstance: removeInstance,
     handleQuickLookup,
+    resetForm,
   } = useAddWordForm(topicSchema, topicItem?.groups, numItemId);
+
+  // Leaving with the learner's own edits unsaved asks first; a prefill alone is not an edit.
+  const guard = useUnsavedGuard(() => router.back());
+  const handleSingleFieldChange = guard.touch(changeSingleField);
+  const handleMultipleFieldChange = guard.touch(changeMultipleField);
+  const handleAddInstance = guard.touch(addInstance);
+  const handleRemoveInstance = guard.touch(removeInstance);
+  // "Lưu & thêm từ khác" only for a word typed in by hand into a topic.
+  const canAddAnother = !isEditing && !word;
+  const addAnother = React.useRef(false);
 
   const prefilled = React.useRef(false);
   React.useEffect(() => {
@@ -99,7 +114,8 @@ export function AddWordScreen() {
     void handleQuickLookup(word, wordId ? Number(wordId) : undefined);
   }, [word, wordId, canPrefill, isResolvingPrefill, handleQuickLookup]);
 
-  const handleSubmit = () => {
+  const handleSubmit = (andAddAnother = false) => {
+    addAnother.current = andAddAnother;
     if (!numTopicId) {
       showErrorMessage(translate('learn.add_word.missing_topic_id'));
       return;
@@ -125,16 +141,33 @@ export function AddWordScreen() {
         showSuccessMessage(translate(isEditing
           ? 'learn.add_word.update_success'
           : 'learn.add_word.add_success'));
-        router.back();
+        // A scan result waiting behind this form marks its card as saved.
+        if (!isEditing && word)
+          useSavedThroughForm.getState().add(word);
+        // "Topic gần nhất" (BF-07 step 2): the next save, from any screen, offers this topic first.
+        if (!isEditing && numTopicId && collectionId) {
+          rememberSaveDestination({
+            collectionId: Number(collectionId),
+            collectionName: collectionName ?? '',
+            topicId: numTopicId,
+            topicName,
+            activeTemplateId: activeTemplateId ? Number(activeTemplateId) : null,
+          });
+        }
+        if (addAnother.current) {
+          addAnother.current = false;
+          resetForm();
+          guard.markClean();
+          return;
+        }
+        guard.leave();
       },
       onError: (err: any) => {
-        const message
-          = (err.response?.data as any)?.error
-            || (err.response?.data as any)?.message
-            || translate(isEditing
-              ? 'learn.add_word.update_error'
-              : 'learn.add_word.add_error');
-        showErrorMessage(message);
+        if (err.response?.status === 409 && err.response?.data?.error === 'WORD_ALREADY_IN_TOPIC') {
+          showErrorMessage(translate('learn.add_word.duplicate_error', { topic: topicName }));
+          return;
+        }
+        showErrorMessage(apiErrorMessage(err, isEditing ? 'learn.add_word.update_error' : 'learn.add_word.add_error'));
       },
     };
 
@@ -274,19 +307,49 @@ export function AddWordScreen() {
         </ScrollView>
 
         {!isFormLoading && !isFormError && (
-          <View className="border-t border-line bg-surface px-4 pt-3 pb-4">
-            <Button
-              label={translate(isEditing
-                ? 'learn.add_word.update_button'
-                : 'learn.add_word.submit_button')}
-              loading={isSubmitting}
-              disabled={isSubmitting || isFormLoading || isLookingUp || sortedGroups.length === 0}
-              onPress={handleSubmit}
-            />
-          </View>
+          <AddWordFooter
+            isEditing={isEditing}
+            canAddAnother={canAddAnother}
+            submitting={isSubmitting ? (addAnother.current ? 'next' : 'save') : null}
+            disabled={isSubmitting || isFormLoading || isLookingUp || sortedGroups.length === 0}
+            onSave={() => handleSubmit()}
+            onSaveAndNext={() => handleSubmit(true)}
+          />
         )}
       </KeyboardAvoidingView>
     </SafeAreaView>
+  );
+}
+
+/** Save, and for a word typed by hand "Lưu & thêm từ khác" (the form resets for the same topic). */
+function AddWordFooter({ isEditing, canAddAnother, submitting, disabled, onSave, onSaveAndNext }: {
+  isEditing: boolean;
+  canAddAnother: boolean;
+  submitting: 'save' | 'next' | null;
+  disabled: boolean;
+  onSave: () => void;
+  onSaveAndNext: () => void;
+}) {
+  return (
+    <View className="gap-2 border-t border-line bg-surface px-4 pt-3 pb-4">
+      <Button
+        label={translate(isEditing ? 'learn.add_word.update_button' : 'learn.add_word.submit_button')}
+        loading={submitting === 'save'}
+        disabled={disabled}
+        onPress={onSave}
+        testID="add-word-submit"
+      />
+      {canAddAnother && (
+        <Button
+          tx="learn.add_word.save_and_next"
+          variant="white"
+          loading={submitting === 'next'}
+          disabled={disabled}
+          onPress={onSaveAndNext}
+          testID="add-word-save-next"
+        />
+      )}
+    </View>
   );
 }
 

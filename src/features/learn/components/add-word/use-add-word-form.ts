@@ -159,10 +159,17 @@ export function useAddWordForm(
     [topicSchema],
   );
 
+  /** "Lưu & thêm từ khác": an empty form for the same topic. */
+  const resetForm = React.useCallback(() => {
+    setFormData(initializeFormData(topicSchema));
+    setErrors({});
+  }, [topicSchema]);
+
   return {
     formData,
     errors,
     setErrors,
+    resetForm,
     isLookingUp,
     handleSingleFieldChange,
     handleMultipleFieldChange,

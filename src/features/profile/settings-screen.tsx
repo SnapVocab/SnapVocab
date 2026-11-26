@@ -1,3 +1,4 @@
+import type { Href } from 'expo-router';
 import type { ThemePreference, UpdateUserSettings } from './types';
 import type { PushPermission } from '@/features/notifications/push';
 import type { ColorSchemeType } from '@/lib/hooks/use-selected-theme';
@@ -22,6 +23,7 @@ import {
   ClockRotateIcon,
   FingerprintIcon,
   GlobeIcon,
+  LayoutGridIcon,
   LogOutIcon,
   PasswordIcon,
   TargetIcon,
@@ -261,8 +263,15 @@ export function SettingsScreen() {
             icon={<TargetIcon color={iconColor.row.goal} size={ROW_ICON_SIZE} />}
             tx="study_limits.collection_limits"
             hint={translate('study_limits.global_hint')}
-            onPress={() => router.push('/collections')}
+            onPress={() => router.push('/study-limits' as Href)}
             testID="settings-collection-limits"
+          />
+          <SettingsRow
+            icon={<LayoutGridIcon color={iconColor.row.goal} size={ROW_ICON_SIZE} />}
+            tx="template_builder.library.title"
+            hint={translate('template_builder.library.settings_hint')}
+            onPress={() => router.push('/template-library' as Href)}
+            testID="settings-template-library"
             last
           />
         </SettingsSection>

@@ -7,6 +7,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { BackButton, Button, FocusAwareStatusBar, Mascot, Pressable, SafeAreaView, showErrorMessage, Text, View } from '@/components/ui';
 import { CameraIcon, ChevronRightIcon, SparklesIcon } from '@/components/ui/icons';
 import { useColorMode } from '@/components/ui/surface';
+import { SaveDestinationBar } from '@/features/learn/components/save-destination-bar';
 import { sanitizeWordList } from '@/features/story/utils';
 import { translate } from '@/lib/i18n';
 import { useScanStatus, useStartScan } from './api';
@@ -16,6 +17,7 @@ import { ScanFailed } from './components/scan-failed';
 import { ScanWaiting } from './components/scan-waiting';
 import { boxColor } from './display';
 import { scanFailureMessageKey, toScanFailure } from './scan-errors';
+import { useScanSave } from './use-scan-save';
 
 type Params = {
   requestId: string;
@@ -43,7 +45,6 @@ function ScanResultContent({ params }: { params: Params }) {
   const scan = useScanStatus(requestId);
   const resubmit = useStartScan();
   const backToCamera = () => (router.canGoBack() ? router.back() : router.replace('/'));
-
   const retry = () => {
     if (!params.imageUri) {
       backToCamera();
@@ -54,6 +55,7 @@ function ScanResultContent({ params }: { params: Params }) {
       {
         onSuccess: (data) => {
           setSelectedIndex(null);
+          save.reset();
           setAcceptedAt(Date.now());
           setRequestId(data.requestId);
         },
@@ -79,6 +81,7 @@ function ScanResultContent({ params }: { params: Params }) {
 
   const result = data?.status === 'DONE' ? data.result : null;
   const items = result?.items ?? [];
+  const save = useScanSave(requestId, items);
   const allLow = items.length > 0 && items.every(item => item.reliability === 'LOW');
   const storyWords = sanitizeWordList(
     items.map(it => it.word?.word).filter((w): w is string => Boolean(w)),
@@ -143,6 +146,12 @@ function ScanResultContent({ params }: { params: Params }) {
             <Text className="font-nunito text-sm font-bold text-neutral-600 dark:text-neutral-300">
               {translate('scan.result.found', { count: items.length })}
             </Text>
+          </View>
+        )}
+
+        {result && items.length > 0 && (
+          <View className="mt-3">
+            <SaveDestinationBar destination={save.destination} onChange={save.changeDestination} disabled={save.busy} />
           </View>
         )}
 
@@ -214,6 +223,9 @@ function ScanResultContent({ params }: { params: Params }) {
                   color={boxColor(index)}
                   selected={selectedIndex === index}
                   onPress={() => setSelectedIndex(index)}
+                  saveState={save.saveStates[index] ?? 'idle'}
+                  onSave={() => void save.saveOne(index, item)}
+                  onOpenForm={() => void save.openForm(item)}
                 />
               </View>
             ))}
@@ -227,8 +239,15 @@ function ScanResultContent({ params }: { params: Params }) {
           className="absolute inset-x-0 bottom-0 flex-row gap-3 border-t border-line bg-surface p-4"
         >
           <Button
-            tx="my_words.open"
-            onPress={() => router.push({ pathname: '/my-words', params: { scanRequestId: requestId } })}
+            label={save.bulkIndexes.length > 0
+              ? translate('scan.result.save_count', { count: save.bulkIndexes.length })
+              : save.savedCount > 0
+                ? translate('scan.result.saved_count', { count: save.savedCount })
+                : translate('scan.result.save_one_by_one')}
+            onPress={() => void save.saveAll()}
+            loading={save.savingAll}
+            disabled={save.bulkIndexes.length === 0 || save.busy}
+            testID="scan-save-all"
             className="h-auto min-h-14 flex-1 py-3"
             textClassName="shrink"
           />

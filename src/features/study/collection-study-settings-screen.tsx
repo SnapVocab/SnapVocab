@@ -2,7 +2,8 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useRef } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
+import { ActivityIndicator, ScrollView } from 'react-native';
+import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
 import { withUniwind } from 'uniwind';
 import { z } from 'zod';
 import { BackButton, Button, FocusAwareStatusBar, Input, SafeAreaView, showErrorMessage, showSuccessMessage, Text, View } from '@/components/ui';
@@ -10,7 +11,6 @@ import { translate } from '@/lib/i18n';
 import { useCollectionStudySettings, useSaveCollectionStudySettings } from './api';
 
 const StyledSafeAreaView = withUniwind(SafeAreaView);
-const StyledKeyboardAvoidingView = withUniwind(KeyboardAvoidingView);
 
 function limitSchema(max: number) {
   return z.string().trim().regex(/^\d+$/, translate('study_limits.whole_number')).refine(value => Number(value) <= max, translate('study_limits.maximum', { count: max })).transform(Number);
@@ -63,7 +63,7 @@ export function CollectionStudySettingsScreen() {
               </View>
             )
           : (
-              <StyledKeyboardAvoidingView className="flex-1" behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+              <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
                 <ScrollView className="flex-1" contentContainerClassName="w-full max-w-2xl self-center gap-5 px-5 py-6" keyboardShouldPersistTaps="handled">
                   <Text className="text-base/6 text-neutral-600 dark:text-neutral-300" tx="study_limits.description" />
                   <Controller
@@ -115,7 +115,7 @@ export function CollectionStudySettingsScreen() {
                     testID="collection-limits-reset"
                   />
                 </ScrollView>
-              </StyledKeyboardAvoidingView>
+              </KeyboardAvoidingView>
             )}
     </StyledSafeAreaView>
   );

@@ -1,5 +1,6 @@
 import { useRouter } from 'expo-router';
 import * as React from 'react';
+import { showMessage } from 'react-native-flash-message';
 import { SpeedDialFAB } from '@/components/ui';
 import { BookIcon, FolderIcon } from '@/components/ui/icons';
 import { translate } from '@/lib/i18n';
@@ -24,10 +25,17 @@ export function CollectionDetailFAB({
   const router = useRouter();
 
   const handleAddWord = React.useCallback(() => {
-    const targetTopicId = currentParentId ?? firstTopicId ?? null;
-    const targetTopicName = currentParentName ?? firstTopicName ?? '';
+    // Inside a topic: that topic. At the collection root: the learner picks the topic, instead of the word
+    // silently landing in the first one (UX audit #3).
+    if (currentParentId === null && firstTopicId) {
+      router.push({ pathname: '/scan-save', params: { collectionId, mode: 'add' } });
+      return;
+    }
+    const targetTopicId = currentParentId;
+    const targetTopicName = currentParentName ?? '';
 
     if (!targetTopicId) {
+      showMessage({ message: translate('learn.topic.create_topic_first'), type: 'info' });
       router.push({
         pathname: '/(app)/collections/create-topic' as any,
         params: {
@@ -45,6 +53,7 @@ export function CollectionDetailFAB({
         topicId: String(targetTopicId),
         topicName: targetTopicName,
         collectionId,
+        collectionName,
       },
     });
   }, [

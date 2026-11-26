@@ -5,7 +5,7 @@ import { act, renderHook, waitFor } from '@testing-library/react-native';
 import * as React from 'react';
 import { client } from '@/lib/api';
 import { notificationKeys, reloadFirstPage, useMarkAllRead, useMarkRead, useNotifications } from '../api';
-import { groupByDay, isReminder, relativeTime, routeLabel } from '../display';
+import { groupByDay, isReminder, opensOnTap, relativeTime, routeLabel } from '../display';
 
 jest.mock('@/lib/api', () => ({ client: jest.fn() }));
 jest.mock('@/lib/i18n', () => ({
@@ -101,6 +101,14 @@ describe('notification display rules (§3.5, §2.3)', () => {
     expect(isReminder('SRS_REMINDER')).toBe(true);
     expect(isReminder('STREAK_WARNING')).toBe(true);
     expect(isReminder('SYSTEM')).toBe(false);
+  });
+
+  it('a finished scan opens its result on the first tap; other messages still expand', () => {
+    expect(opensOnTap({ type: 'SYSTEM', route: '/scan-result?requestId=abc-1' })).toBe(true);
+    expect(opensOnTap({ type: 'SRS_REMINDER', route: '/study/select' })).toBe(true);
+    expect(opensOnTap({ type: 'SYSTEM', route: '/shop' })).toBe(false);
+    expect(opensOnTap({ type: 'SRS_REMINDER', route: '/admin' })).toBe(false);
+    expect(opensOnTap({ type: 'SYSTEM', route: null })).toBe(false);
   });
 });
 

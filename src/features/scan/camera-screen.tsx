@@ -1,3 +1,4 @@
+import type { Href } from 'expo-router';
 import type { StartScanRequest } from './api';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import * as ImagePicker from 'expo-image-picker';
@@ -7,7 +8,7 @@ import { Pressable, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { FocusAwareStatusBar, showErrorMessage, View } from '@/components/ui';
-import { CloseIcon, FlashIcon, FlashOffIcon, ImagesIcon } from '@/components/ui/icons';
+import { ClockRotateIcon, CloseIcon, FlashIcon, FlashOffIcon, ImagesIcon } from '@/components/ui/icons';
 import { translate } from '@/lib/i18n';
 import { useScanQuota, useStartScan } from './api';
 import { CameraPermissionGate } from './components/camera-permission-gate';
@@ -197,7 +198,7 @@ export function CameraScreen() {
       {exhausted && quota.data
         ? (
             <View style={{ flex: 1 }} className="flex-1 items-center justify-center px-6">
-              <QuotaExhaustedCard quota={quota.data} onReview={() => router.replace('/learn')} onClose={close} />
+              <QuotaExhaustedCard quota={quota.data} onReview={() => router.push('/(app)/study/session' as Href)} onClose={close} />
             </View>
           )
         : <CameraViewfinder />}
@@ -228,7 +229,15 @@ export function CameraScreen() {
               </View>
             </Pressable>
 
-            <View className="size-14" />
+            <Pressable
+              onPress={() => router.push('/scan-history' as Href)}
+              accessibilityRole="button"
+              accessibilityLabel={translate('scan.history.title')}
+              testID="scan-history-button"
+              className="size-14 items-center justify-center rounded-full border border-white/20 bg-black/50"
+            >
+              <ClockRotateIcon color="#fff" />
+            </Pressable>
           </>
         )}
       </View>

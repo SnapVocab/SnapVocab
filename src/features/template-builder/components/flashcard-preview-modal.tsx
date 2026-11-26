@@ -1,9 +1,10 @@
-import type { BottomSheetBackdropProps } from '@gorhom/bottom-sheet';
+import type { BottomSheetBackdropProps, BottomSheetModal } from '@gorhom/bottom-sheet';
 import type { BuilderSection } from '../types';
-import { BottomSheetBackdrop, BottomSheetModal, BottomSheetScrollView } from '@gorhom/bottom-sheet';
+import { BottomSheetBackdrop, BottomSheetScrollView } from '@gorhom/bottom-sheet';
 import * as React from 'react';
 import { TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { AppBottomSheetModal } from '@/components/ui/app-bottom-sheet-modal';
 import { Button } from '@/components/ui/button';
 import { CloseIcon, RotateCwIcon } from '@/components/ui/icons';
 import { Text } from '@/components/ui/text';
@@ -44,7 +45,7 @@ export function FlashcardPreviewModal({
   };
 
   return (
-    <BottomSheetModal
+    <AppBottomSheetModal
       ref={bottomSheetRef}
       snapPoints={snapPoints}
       enableDynamicSizing={false}
@@ -123,7 +124,7 @@ export function FlashcardPreviewModal({
           />
         </View>
       </View>
-    </BottomSheetModal>
+    </AppBottomSheetModal>
   );
 }
 

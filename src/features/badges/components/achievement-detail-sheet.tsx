@@ -1,11 +1,12 @@
-import type { BottomSheetBackdropProps } from '@gorhom/bottom-sheet';
+import type { BottomSheetBackdropProps, BottomSheetModal } from '@gorhom/bottom-sheet';
 import type { BadgeItem } from '../types';
-import { BottomSheetBackdrop, BottomSheetModal, BottomSheetScrollView } from '@gorhom/bottom-sheet';
+import { BottomSheetBackdrop, BottomSheetScrollView } from '@gorhom/bottom-sheet';
 import { Image as ExpoImage } from 'expo-image';
 import * as React from 'react';
 import { ActivityIndicator, Pressable, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text, useSurface } from '@/components/ui';
+import { AppBottomSheetModal } from '@/components/ui/app-bottom-sheet-modal';
 import { CheckCircleIcon, CloseIcon, LockIcon, SparklesIcon } from '@/components/ui/icons';
 import { translate } from '@/lib/i18n';
 import { amount, ctaOf, noteOf, unitOf } from '../copy';
@@ -39,7 +40,7 @@ export function AchievementDetailSheet({ item, stale, onClose, onNavigate }: Pro
   );
 
   return (
-    <BottomSheetModal
+    <AppBottomSheetModal
       ref={ref}
       onDismiss={onClose}
       enableDynamicSizing
@@ -50,7 +51,7 @@ export function AchievementDetailSheet({ item, stale, onClose, onNavigate }: Pro
       <BottomSheetScrollView contentContainerStyle={{ paddingHorizontal: 18, paddingBottom: 24 + insets.bottom }}>
         {item && <SheetBody item={item} stale={stale} onClose={() => ref.current?.dismiss()} onNavigate={onNavigate} />}
       </BottomSheetScrollView>
-    </BottomSheetModal>
+    </AppBottomSheetModal>
   );
 }
 

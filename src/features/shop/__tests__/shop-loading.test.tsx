@@ -26,6 +26,7 @@ jest.mock('@/components/ui', () => {
   const RN = require('react-native');
   return {
     useSurface: () => require('@/components/ui/surface').DEFAULT_SURFACE.light,
+    Pressable: RN.Pressable,
     FocusAwareStatusBar: () => null,
     ScreenHeader: ({ title, right }: { title: string; right: React.ReactNode }) => (
       <RN.View>

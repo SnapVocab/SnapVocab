@@ -3,17 +3,20 @@ import * as React from 'react';
 import { View } from 'react-native';
 import { useUniwind } from 'uniwind';
 import { Pressable, Text } from '@/components/ui';
-import { ChevronRightIcon, VolumeIcon } from '@/components/ui/icons';
+import { ChevronRightIcon, MoreVerticalIcon, VolumeIcon } from '@/components/ui/icons';
 import { useTts } from '@/lib/hooks/use-tts';
+import { translate } from '@/lib/i18n';
 import { extractTopicItemDisplay } from './topic-item-utils';
 
 type Props = {
   item: TopicItemData;
   onPress?: () => void;
   onLongPress?: () => void;
+  /** Edit / delete: a visible ⋮ instead of a long press only (UX audit #15). Absent on system collections. */
+  onOptions?: () => void;
 };
 
-export function TopicItemRow({ item, onPress, onLongPress }: Props) {
+export function TopicItemRow({ item, onPress, onLongPress, onOptions }: Props) {
   const didLongPressRef = React.useRef(false);
   const resetLongPressTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
   const { theme } = useUniwind();
@@ -129,14 +132,29 @@ export function TopicItemRow({ item, onPress, onLongPress }: Props) {
           />
         </Pressable>
 
-        <Pressable
-          onPress={handlePress}
-          onLongPress={handleLongPress}
-          delayLongPress={350}
-          className="size-9 items-center justify-center overflow-hidden rounded-xl border-2 border-b-[3px] border-line border-b-edge bg-surface-raised"
-        >
-          <ChevronRightIcon width={14} height={14} color="#94A3B8" />
-        </Pressable>
+        {onOptions
+          ? (
+              <Pressable
+                onPress={onOptions}
+                accessibilityRole="button"
+                accessibilityLabel={translate('learn.topic_item_options.open_a11y', { word })}
+                hitSlop={8}
+                testID={`topic-item-options-${item.topicItemId}`}
+                className="size-9 items-center justify-center overflow-hidden rounded-xl border-2 border-b-[3px] border-line border-b-edge bg-surface-raised"
+              >
+                <MoreVerticalIcon width={16} height={16} color="#94A3B8" />
+              </Pressable>
+            )
+          : (
+              <Pressable
+                onPress={handlePress}
+                onLongPress={handleLongPress}
+                delayLongPress={350}
+                className="size-9 items-center justify-center overflow-hidden rounded-xl border-2 border-b-[3px] border-line border-b-edge bg-surface-raised"
+              >
+                <ChevronRightIcon width={14} height={14} color="#94A3B8" />
+              </Pressable>
+            )}
       </View>
     </View>
   );

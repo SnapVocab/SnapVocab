@@ -131,6 +131,26 @@ async function get<T>(url: string) {
   return (await client<ApiResponse<T>>({ url, method: 'GET' })).data.data;
 }
 
+/** One row of Settings → "Giới hạn học theo bộ" (GET /api/study/settings). */
+export type LibraryStudySettings = {
+  collectionId: number;
+  name: string;
+  translation: string | null;
+  type: 'USER' | 'SYSTEM';
+  newCardsPerDay: number;
+  reviewCardsPerDay: number;
+  /** false = the defaults (20 new / 200 review). */
+  customized: boolean;
+};
+
+/** Under ['study'], so saving a collection's limits (invalidateStudy) refreshes the list. */
+export function useLibraryStudySettings() {
+  return useQuery<LibraryStudySettings[], StudyError>({
+    queryKey: ['study', 'library-settings'],
+    queryFn: () => get('/api/study/settings'),
+  });
+}
+
 export function useStudyToday() {
   return useQuery<StudyToday, StudyError>({
     queryKey: studyKeys.today,

@@ -1,6 +1,6 @@
 import type { AxiosError } from 'axios';
 import type { ApiResponse } from '@/features/auth/api';
-import type { LookupResultDTO, WordSuggestionResponse } from '@/features/lookup/types';
+import type { LookupResultDTO, MyWordResponse } from '@/features/lookup/types';
 import type { ScanRequestStatus } from '@/features/scan/types';
 import type { PaginateResponse } from '@/lib/api/types';
 import { useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -11,7 +11,7 @@ export function useMyWords() {
     queryKey: ['my-words'],
     initialPageParam: 0,
     queryFn: async ({ pageParam }) => {
-      const response = await client.get<ApiResponse<PaginateResponse<WordSuggestionResponse>>>('/api/words/my', {
+      const response = await client.get<ApiResponse<PaginateResponse<MyWordResponse>>>('/api/words/my', {
         params: { page: pageParam, size: 30 },
       });
       return response.data.data;
