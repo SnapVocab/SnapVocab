@@ -4,10 +4,10 @@ import { useRef, useState } from 'react';
 import { ScrollView } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { BackButton, Button, FocusAwareStatusBar, Mascot, Pressable, SafeAreaView, showErrorMessage, Text, View } from '@/components/ui';
-import { CameraIcon, ChevronRightIcon, SparklesIcon } from '@/components/ui/icons';
+import { BackButton, Button, FocusAwareStatusBar, Mascot, SafeAreaView, showErrorMessage, Text, View } from '@/components/ui';
+import { CameraIcon, SparklesIcon } from '@/components/ui/icons';
 import { useColorMode } from '@/components/ui/surface';
-import { sanitizeWordList } from '@/features/story/utils';
+import { SaveDestinationBar } from '@/features/learn/components/save-destination-bar';
 import { translate } from '@/lib/i18n';
 import { useScanStatus, useStartScan } from './api';
 import { DetectedItemCard } from './components/detected-item-card';
@@ -16,6 +16,7 @@ import { ScanFailed } from './components/scan-failed';
 import { ScanWaiting } from './components/scan-waiting';
 import { boxColor } from './display';
 import { scanFailureMessageKey, toScanFailure } from './scan-errors';
+import { useScanSave } from './use-scan-save';
 
 type Params = {
   requestId: string;
@@ -43,7 +44,6 @@ function ScanResultContent({ params }: { params: Params }) {
   const scan = useScanStatus(requestId);
   const resubmit = useStartScan();
   const backToCamera = () => (router.canGoBack() ? router.back() : router.replace('/'));
-
   const retry = () => {
     if (!params.imageUri) {
       backToCamera();
@@ -54,6 +54,7 @@ function ScanResultContent({ params }: { params: Params }) {
       {
         onSuccess: (data) => {
           setSelectedIndex(null);
+          save.reset();
           setAcceptedAt(Date.now());
           setRequestId(data.requestId);
         },
@@ -79,8 +80,8 @@ function ScanResultContent({ params }: { params: Params }) {
 
   const result = data?.status === 'DONE' ? data.result : null;
   const items = result?.items ?? [];
+  const save = useScanSave(requestId, items);
   const allLow = items.length > 0 && items.every(item => item.reliability === 'LOW');
-  const storyWords = sanitizeWordList(items.map(it => it.word?.word ?? it.label));
 
   const header = (
     <View className="h-14 flex-row items-center border-b border-line bg-surface px-4">
@@ -144,28 +145,10 @@ function ScanResultContent({ params }: { params: Params }) {
           </View>
         )}
 
-        {result && storyWords.length >= 3 && (
-          <Pressable
-            onPress={() =>
-              router.push({
-                pathname: '/story/[id]',
-                params: { id: 'new', source: 'SCAN', words: storyWords.slice(0, 8).join(',') },
-              } as any)}
-            className="mt-3 flex-row items-center justify-between rounded-2xl border-2 border-b-4 border-amber-300 border-b-amber-400 bg-amber-50 px-4 py-3 active:translate-y-px dark:border-amber-500/40 dark:border-b-amber-600/50 dark:bg-amber-500/15"
-          >
-            <View className="flex-1 flex-row items-center gap-2.5 pr-2">
-              <SparklesIcon width={18} height={18} color="#D97706" />
-              <View className="flex-1">
-                <Text className="font-nunito text-sm font-black text-amber-900 dark:text-amber-200">
-                  {translate('story.scan_1tap_title')}
-                </Text>
-                <Text className="font-inter text-xs text-amber-800/80 dark:text-amber-200/80" numberOfLines={1}>
-                  {translate('story.scan_1tap_subtitle', { count: Math.min(8, storyWords.length) })}
-                </Text>
-              </View>
-            </View>
-            <ChevronRightIcon width={18} height={18} color="#B45309" />
-          </Pressable>
+        {result && items.length > 0 && (
+          <View className="mt-3">
+            <SaveDestinationBar destination={save.destination} onChange={save.changeDestination} disabled={save.busy} />
+          </View>
         )}
 
         {!result && (
@@ -212,6 +195,9 @@ function ScanResultContent({ params }: { params: Params }) {
                   color={boxColor(index)}
                   selected={selectedIndex === index}
                   onPress={() => setSelectedIndex(index)}
+                  saveState={save.saveStates[index] ?? 'idle'}
+                  onSave={() => void save.saveOne(index, item)}
+                  onOpenForm={() => void save.openForm(item)}
                 />
               </View>
             ))}
@@ -225,8 +211,15 @@ function ScanResultContent({ params }: { params: Params }) {
           className="absolute inset-x-0 bottom-0 flex-row gap-3 border-t border-line bg-surface p-4"
         >
           <Button
-            tx="my_words.open"
-            onPress={() => router.push({ pathname: '/my-words', params: { scanRequestId: requestId } })}
+            label={save.bulkIndexes.length > 0
+              ? translate('scan.result.save_count', { count: save.bulkIndexes.length })
+              : save.savedCount > 0
+                ? translate('scan.result.saved_count', { count: save.savedCount })
+                : translate('scan.result.save_one_by_one')}
+            onPress={() => void save.saveAll()}
+            loading={save.savingAll}
+            disabled={save.bulkIndexes.length === 0 || save.busy}
+            testID="scan-save-all"
             className="h-auto min-h-14 flex-1 py-3"
             textClassName="shrink"
           />

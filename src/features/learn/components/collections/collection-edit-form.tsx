@@ -6,6 +6,7 @@ import * as React from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { View } from 'react-native';
 import { Button, Input, showErrorMessage, Text } from '@/components/ui';
+import { apiErrorMessage } from '@/lib/api/error-message';
 import { translate } from '@/lib/i18n';
 import { useUpdateCollection } from '../../api';
 import { collectionFormSchema } from './validation';
@@ -46,8 +47,7 @@ export function CollectionEditForm({ collection, onSuccess, onCancel }: Props) {
           onSuccess(updatedData);
         },
         onError: (error) => {
-          const message = error.response?.data?.error || translate('learn.collections.update_error');
-          showErrorMessage(message);
+          showErrorMessage(apiErrorMessage(error, 'learn.collections.update_error', { 409: 'learn.collections.name_taken' }));
         },
       },
     );

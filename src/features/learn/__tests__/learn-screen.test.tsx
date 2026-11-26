@@ -16,6 +16,7 @@ jest.mock('react-native-safe-area-context', () => ({
 jest.mock('@/components/ui', () => ({
   View: require('react-native').View,
   Text: require('react-native').Text,
+  Pressable: require('react-native').Pressable,
   FocusAwareStatusBar: () => null,
   useSurface: () => ({ background: '#F7F8FA', headerBg: '#FFFFFF' }),
   useColorMode: () => 'light',

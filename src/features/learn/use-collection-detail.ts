@@ -6,6 +6,7 @@ import { useSchema, useTopicSchema } from '@/features/template-builder/api';
 import { useCollection, useInfiniteCollectionTopics, useInfiniteTopicItems } from './api';
 import { extractTopicItemDisplay } from './components/collection-detail/topic-item-utils';
 import { useTopicItemOptions } from './use-topic-item-options';
+import { useBackWalksUpTopics, useLoadAllWhileSearching } from './use-topic-level-effects';
 
 export type ParentBreadcrumb = {
   id: number;
@@ -94,7 +95,7 @@ export function useCollectionDetail() {
     );
   }, [fullSchema]);
 
-  const totalItemsCount = items.length;
+  const totalItemsCount = itemsResponse?.pages[0]?.total ?? items.length;
   const totalTopicsCount = topicsResponse?.pages[0]?.meta.total ?? topics.length;
 
   // Search filtered topics
@@ -155,6 +156,11 @@ export function useCollectionDetail() {
     }
   }, [parentStack.length, router]);
 
+  useBackWalksUpTopics(parentStack.length, handleBack);
+  useLoadAllWhileSearching(searchQuery.trim().length > 0, isInsideTopic
+    ? { hasNextPage: hasNextItems, isFetchingNextPage: isFetchingNextItems, fetchNextPage: fetchNextItems }
+    : { hasNextPage: hasNextTopics, isFetchingNextPage: isFetchingNextTopics, fetchNextPage: fetchNextTopics });
+
   const handleBreadcrumbPress = React.useCallback((index: number) => {
     if (index === -1) {
       setParentStack([]);
@@ -187,13 +193,9 @@ export function useCollectionDetail() {
   ]);
 
   const handleRefresh = React.useCallback(() => {
-    if (isInsideTopic) {
-      refetchTopics();
+    refetchTopics();
+    if (isInsideTopic)
       refetchItems();
-    }
-    else {
-      refetchTopics();
-    }
   }, [isInsideTopic, refetchTopics, refetchItems]);
 
   const handlePreviewItem = React.useCallback(
@@ -240,8 +242,8 @@ export function useCollectionDetail() {
     : isTopicsRefetching && !isFetchingNextTopics;
 
   const headerTitle = currentParent?.name || collectionData?.name || paramName || '';
-  const headerSubtitle
-    = currentParent?.translation || collectionData?.translation || paramTranslation;
+  // A topic without a translation shows none, not the collection's (it read as the topic's own).
+  const headerSubtitle = currentParent ? currentParent.translation || undefined : collectionData?.translation || paramTranslation;
   const collectionTitle = collectionData?.name || paramName || '';
   const isUserCollection = (collectionData?.type ?? paramType) === 'USER';
 

@@ -54,9 +54,20 @@ export function prefillLookup(schema: TopicSchemaDTO, previous: Record<string, a
     // have many definitions and no examples at all.
     const hasDefinition = group.attributes.some(attr => attr.semanticRole === 'DEFINITION');
     const hasExample = group.attributes.some(attr => attr.semanticRole === 'EXAMPLE_SENTENCE');
+    // Dictionaries repeat the same sentence under several senses; an examples-only group would get it once per sense.
+    const seen = new Set<string>();
     const candidates = hasDefinition || hasExample
-      ? (data.meanings ?? []).map((_, index) => index).filter(index =>
-          group.attributes.some(attribute => !!valueFor(attribute, data, index)))
+      ? (data.meanings ?? []).map((_, index) => index).filter((index) => {
+          const values = group.attributes.map(attribute => valueFor(attribute, data, index)
+            .toLowerCase()
+            .replace(/[\s.!?…]+$/u, '')
+            .replace(/\s+/g, ' '));
+          const key = values.join('\u0000');
+          if (!values.some(Boolean) || seen.has(key))
+            return false;
+          seen.add(key);
+          return true;
+        })
       : group.attributes.some(attribute => !!valueFor(attribute, data)) ? [0] : [];
     const count = Math.max(rows.length, candidates.length);
     next[group.name] = Array.from({ length: count }, (_, index) => {

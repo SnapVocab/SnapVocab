@@ -41,14 +41,17 @@ export function CollectionDetailScreen() {
       </View>
 
       {/* Floating Speed Dial to add Words or Topics/Subtopics */}
-      <CollectionDetailFAB
-        collectionId={String(detail.id)}
-        collectionName={detail.collectionTitle}
-        currentParentId={detail.currentParentId}
-        currentParentName={detail.currentParent?.name}
-        firstTopicId={detail.firstTopicId}
-        firstTopicName={detail.firstTopicName}
-      />
+      {/* System collections are read-only: the server refuses new topics and words there. */}
+      {detail.isUserCollection && (
+        <CollectionDetailFAB
+          collectionId={String(detail.id)}
+          collectionName={detail.collectionTitle}
+          currentParentId={detail.currentParentId}
+          currentParentName={detail.currentParent?.name}
+          firstTopicId={detail.firstTopicId}
+          firstTopicName={detail.firstTopicName}
+        />
+      )}
 
       {/* Collection Options (Edit / Delete) Bottom Sheet Modal */}
       <CollectionOptionsBottomSheet

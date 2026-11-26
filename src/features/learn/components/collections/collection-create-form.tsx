@@ -6,6 +6,7 @@ import * as React from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { View } from 'react-native';
 import { Button, Input, showErrorMessage, Text } from '@/components/ui';
+import { apiErrorMessage } from '@/lib/api/error-message';
 import { translate } from '@/lib/i18n';
 import { useCreateCollection } from '../../api';
 import { collectionFormSchema } from './validation';
@@ -42,8 +43,7 @@ export function CollectionCreateForm({ onSuccess, onCancel }: Props) {
           onSuccess(newCollection);
         },
         onError: (error) => {
-          const message = error.response?.data?.error || translate('learn.collections.create_error');
-          showErrorMessage(message);
+          showErrorMessage(apiErrorMessage(error, 'learn.collections.create_error', { 409: 'learn.collections.name_taken' }));
         },
       },
     );

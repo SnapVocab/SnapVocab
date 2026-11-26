@@ -1,3 +1,4 @@
+import type { QueryClient } from '@tanstack/react-query';
 import type { AxiosError } from 'axios';
 import type { ApiResponse } from '../auth/api';
 import type {
@@ -203,8 +204,8 @@ export function useCreateTopic() {
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['collection-topics', variables.collectionId] });
       queryClient.invalidateQueries({ queryKey: ['collection-topics', String(variables.collectionId)] });
-      queryClient.invalidateQueries({ queryKey: ['collection-topics-infinite', variables.collectionId] });
-      queryClient.invalidateQueries({ queryKey: ['collection-topics-infinite', String(variables.collectionId)] });
+      // Every infinite topic list: the topic picker keys the collection id as a number, this mutation gets a string.
+      queryClient.invalidateQueries({ queryKey: ['collection-topics-infinite'] });
       queryClient.invalidateQueries({ queryKey: ['collections'] });
       void invalidateStudy(queryClient);
     },
@@ -225,21 +226,24 @@ export function useAddTopicItem() {
 
       return response.data.data;
     },
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['topic-items', variables.topicId] });
-      queryClient.invalidateQueries({ queryKey: ['topic-items', String(variables.topicId)] });
-      queryClient.invalidateQueries({ queryKey: ['topic-items-cursor', variables.topicId] });
-      queryClient.invalidateQueries({ queryKey: ['topic-items-cursor', String(variables.topicId)] });
-      queryClient.invalidateQueries({ queryKey: ['topic-items-infinite', variables.topicId] });
-      queryClient.invalidateQueries({ queryKey: ['topic-items-infinite', String(variables.topicId)] });
-      queryClient.invalidateQueries({ queryKey: ['collections'] });
-      void invalidateStudy(queryClient);
-      queryClient.invalidateQueries({ queryKey: ['collection-topics'] });
-      invalidateProgress(queryClient);
-      // A quiz-ready word may complete a word badge; a credited scan save is a study day (badges.md §9).
-      void syncBadges(queryClient);
-    },
+    onSuccess: (_, variables) => invalidateAfterTopicItemAdded(queryClient, variables.topicId),
   });
+}
+
+/** Everything a new topic item changes: the topic's lists, counts, study queue, progress and badges. */
+export function invalidateAfterTopicItemAdded(queryClient: QueryClient, topicId: number | string) {
+  queryClient.invalidateQueries({ queryKey: ['topic-items', topicId] });
+  queryClient.invalidateQueries({ queryKey: ['topic-items', String(topicId)] });
+  queryClient.invalidateQueries({ queryKey: ['topic-items-cursor', topicId] });
+  queryClient.invalidateQueries({ queryKey: ['topic-items-cursor', String(topicId)] });
+  queryClient.invalidateQueries({ queryKey: ['topic-items-infinite', topicId] });
+  queryClient.invalidateQueries({ queryKey: ['topic-items-infinite', String(topicId)] });
+  queryClient.invalidateQueries({ queryKey: ['collections'] });
+  void invalidateStudy(queryClient);
+  queryClient.invalidateQueries({ queryKey: ['collection-topics'] });
+  invalidateProgress(queryClient);
+  // A quiz-ready word may complete a word badge; a credited scan save is a study day (badges.md §9).
+  void syncBadges(queryClient);
 }
 
 export function useTopicItem(topicId?: number | string, itemId?: number | string) {

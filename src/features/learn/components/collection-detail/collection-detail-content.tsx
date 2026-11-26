@@ -182,7 +182,9 @@ export function CollectionDetailContent({ detail }: Props) {
             <TopicItemRow
               item={item}
               onPress={() => detail.handlePreviewItem(item, index)}
-              onLongPress={() => detail.handleTopicItemOptionsPress(item)}
+              // System collections are read-only: no edit/delete to offer (the server refuses them).
+              onLongPress={detail.isUserCollection ? () => detail.handleTopicItemOptionsPress(item) : undefined}
+              onOptions={detail.isUserCollection ? () => detail.handleTopicItemOptionsPress(item) : undefined}
             />
           )}
           ItemSeparatorComponent={() => <View className="h-2.5" />}
