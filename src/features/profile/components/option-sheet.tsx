@@ -1,12 +1,13 @@
-import type { BottomSheetBackdropProps } from '@gorhom/bottom-sheet';
+import type { BottomSheetBackdropProps, BottomSheetModal } from '@gorhom/bottom-sheet';
 import type { ListRenderItemInfo } from 'react-native';
 import type { TxKeyPath } from '@/lib/i18n';
-import { BottomSheetBackdrop, BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet';
+import { BottomSheetBackdrop, BottomSheetView } from '@gorhom/bottom-sheet';
 import { useCallback, useEffect, useRef } from 'react';
 import { useWindowDimensions } from 'react-native';
 import { FlatList } from 'react-native-gesture-handler';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button, Pressable, Text, useSurface, View } from '@/components/ui';
+import { AppBottomSheetModal } from '@/components/ui/app-bottom-sheet-modal';
 import { CheckIcon, CloseIcon } from '@/components/ui/icons';
 import { useIconColors } from '../use-icon-colors';
 
@@ -134,7 +135,7 @@ export function OptionSheet<T extends string | number>({
   );
 
   return (
-    <BottomSheetModal
+    <AppBottomSheetModal
       ref={sheetRef}
       stackBehavior="replace"
       onDismiss={onClose}
@@ -177,6 +178,6 @@ export function OptionSheet<T extends string | number>({
           <Button tx={clearTx} variant="outline" fullWidth onPress={onClear} className="mb-2" />
         )}
       </BottomSheetView>
-    </BottomSheetModal>
+    </AppBottomSheetModal>
   );
 }

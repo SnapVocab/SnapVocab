@@ -1,13 +1,15 @@
-import type { BottomSheetBackdropProps } from '@gorhom/bottom-sheet';
+import type { BottomSheetBackdropProps, BottomSheetModal } from '@gorhom/bottom-sheet';
 import type { TopicItemData } from '../../types';
-import { BottomSheetBackdrop, BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet';
+import { BottomSheetBackdrop, BottomSheetView } from '@gorhom/bottom-sheet';
 import * as React from 'react';
 import { View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useUniwind } from 'uniwind';
 import { Button, Pressable, showErrorMessage, showSuccessMessage, Text } from '@/components/ui';
+import { AppBottomSheetModal } from '@/components/ui/app-bottom-sheet-modal';
 import colors from '@/components/ui/colors';
 import { EditIcon, TrashIcon } from '@/components/ui/icons';
+import { apiErrorMessage } from '@/lib/api/error-message';
 import { translate } from '@/lib/i18n';
 import { useDeleteTopicItem } from '../../api';
 import { extractTopicItemDisplay } from './topic-item-utils';
@@ -71,14 +73,14 @@ export function TopicItemOptionsBottomSheet({ bottomSheetRef, item, topicId, onE
           showSuccessMessage(translate('learn.topic_item_options.delete_success'));
         },
         onError: (error) => {
-          showErrorMessage(error.response?.data?.error || translate('learn.topic_item_options.delete_error'));
+          showErrorMessage(apiErrorMessage(error, 'learn.topic_item_options.delete_error'));
         },
       },
     );
   }, [bottomSheetRef, deleteTopicItem, isPending, item, topicId]);
 
   return (
-    <BottomSheetModal
+    <AppBottomSheetModal
       ref={bottomSheetRef}
       stackBehavior="replace"
       enableDynamicSizing
@@ -160,7 +162,7 @@ export function TopicItemOptionsBottomSheet({ bottomSheetRef, item, topicId, onE
               </View>
             )}
       </BottomSheetView>
-    </BottomSheetModal>
+    </AppBottomSheetModal>
   );
 }
 

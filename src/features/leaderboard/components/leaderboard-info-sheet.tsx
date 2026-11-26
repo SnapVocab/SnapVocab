@@ -1,9 +1,10 @@
-import type { BottomSheetBackdropProps } from '@gorhom/bottom-sheet';
-import { BottomSheetBackdrop, BottomSheetModal, BottomSheetScrollView } from '@gorhom/bottom-sheet';
+import type { BottomSheetBackdropProps, BottomSheetModal } from '@gorhom/bottom-sheet';
+import { BottomSheetBackdrop, BottomSheetScrollView } from '@gorhom/bottom-sheet';
 import * as React from 'react';
 import { Pressable, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text, useSurface } from '@/components/ui';
+import { AppBottomSheetModal } from '@/components/ui/app-bottom-sheet-modal';
 import { CloseIcon } from '@/components/ui/icons';
 import { translate } from '@/lib/i18n';
 
@@ -26,7 +27,7 @@ export function LeaderboardInfoSheet({ open, onClose }: { open: boolean; onClose
   );
 
   return (
-    <BottomSheetModal
+    <AppBottomSheetModal
       ref={ref}
       onDismiss={onClose}
       enableDynamicSizing
@@ -50,6 +51,6 @@ export function LeaderboardInfoSheet({ open, onClose }: { open: boolean; onClose
           <Text key={key} className="mb-3 font-inter text-[15px] text-neutral-600 dark:text-neutral-200">{translate(key)}</Text>
         ))}
       </BottomSheetScrollView>
-    </BottomSheetModal>
+    </AppBottomSheetModal>
   );
 }

@@ -1,13 +1,10 @@
-import type { BottomSheetBackdropProps } from '@gorhom/bottom-sheet';
-import {
-  BottomSheetBackdrop,
-  BottomSheetModal,
-  BottomSheetScrollView,
-} from '@gorhom/bottom-sheet';
+import type { BottomSheetBackdropProps, BottomSheetModal } from '@gorhom/bottom-sheet';
+import { BottomSheetBackdrop, BottomSheetScrollView } from '@gorhom/bottom-sheet';
 import * as React from 'react';
 import { TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button, Pressable, showErrorMessage, Text, useSurface } from '@/components/ui';
+import { AppBottomSheetModal } from '@/components/ui/app-bottom-sheet-modal';
 import { CheckIcon, CloseIcon, PlusIcon, SearchIcon } from '@/components/ui/icons';
 import { translate } from '@/lib/i18n';
 import { MAX_STORY_WORDS, WORD_TOKEN_REGEX } from '../utils';
@@ -85,7 +82,7 @@ export function StoryWordPickerSheet({
   }, [savedWords, search]);
 
   return (
-    <BottomSheetModal
+    <AppBottomSheetModal
       ref={bottomSheetRef}
       snapPoints={['72%', '90%']}
       enableDynamicSizing={false}
@@ -243,6 +240,6 @@ export function StoryWordPickerSheet({
           />
         </View>
       </View>
-    </BottomSheetModal>
+    </AppBottomSheetModal>
   );
 }

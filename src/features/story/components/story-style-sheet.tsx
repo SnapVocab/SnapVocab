@@ -1,10 +1,11 @@
-import type { BottomSheetBackdropProps } from '@gorhom/bottom-sheet';
+import type { BottomSheetBackdropProps, BottomSheetModal } from '@gorhom/bottom-sheet';
 import type { StoryGenre, StoryLevel, StoryMode } from '../types';
-import { BottomSheetBackdrop, BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet';
+import { BottomSheetBackdrop, BottomSheetView } from '@gorhom/bottom-sheet';
 import * as React from 'react';
 import { View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button, Pressable, Text, useSurface } from '@/components/ui';
+import { AppBottomSheetModal } from '@/components/ui/app-bottom-sheet-modal';
 import { CloseIcon } from '@/components/ui/icons';
 import { translate } from '@/lib/i18n';
 
@@ -46,7 +47,7 @@ export function StoryStyleSheet({
   );
 
   return (
-    <BottomSheetModal
+    <AppBottomSheetModal
       ref={bottomSheetRef}
       enableDynamicSizing
       stackBehavior="replace"
@@ -157,6 +158,6 @@ export function StoryStyleSheet({
           onPress={() => bottomSheetRef.current?.dismiss()}
         />
       </BottomSheetView>
-    </BottomSheetModal>
+    </AppBottomSheetModal>
   );
 }
