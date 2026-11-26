@@ -2,8 +2,6 @@ import type { Href } from 'expo-router';
 import type {
   StoryDTO,
   StoryGenre,
-  StoryLevel,
-  StoryMode,
   StorySource,
 } from './types';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -33,8 +31,6 @@ type Params = {
   topicId?: string;
   topicName?: string;
   words?: string;
-  mode?: string;
-  level?: string;
   genre?: string;
 };
 
@@ -62,14 +58,9 @@ export function StoryReaderScreen() {
   const runInstantGeneration = React.useCallback(async () => {
     setGenError(null);
     const source: StorySource
-      = params.source === 'TOPIC' || params.source === 'SCAN' || params.source === 'CUSTOM'
+      = params.source === 'TOPIC' || params.source === 'SCAN'
         ? params.source
         : 'MY_WORDS';
-    const mode: StoryMode = params.mode === 'ENGLISH' ? 'ENGLISH' : 'BLENDED';
-    const level: StoryLevel
-      = params.level === 'A1' || params.level === 'B1' || params.level === 'B2'
-        ? params.level
-        : 'A2';
     const genre: StoryGenre
       = params.genre === 'FUNNY' || params.genre === 'OFFICE' || params.genre === 'TRAVEL'
         ? params.genre
@@ -80,8 +71,6 @@ export function StoryReaderScreen() {
         source,
         topicId: params.topicId ? Number(params.topicId) : undefined,
         words: parsedWords.length > 0 ? parsedWords : undefined,
-        mode,
-        level,
         genre,
       });
       setGeneratedStory(created);
@@ -93,7 +82,7 @@ export function StoryReaderScreen() {
           || translate('story.generate_error');
       setGenError(msg);
     }
-  }, [generateMutation, params.genre, params.level, params.mode, params.source, params.topicId, parsedWords]);
+  }, [generateMutation, params.genre, params.source, params.topicId, parsedWords]);
 
   React.useEffect(() => {
     if (isInstantNew && !triggeredRef.current) {
@@ -119,74 +108,76 @@ export function StoryReaderScreen() {
         style={{ flex: 1, backgroundColor: surface.background }}
         contentContainerClassName="px-4 pt-4 pb-12"
         showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
       >
         {isInstantNew && !activeStory ? (
           <StoryGeneratingView
-            words={parsedWords}
             topicName={params.topicName}
+            words={parsedWords}
             error={genError}
             onRetry={() => void runInstantGeneration()}
             onCancel={() => (router.canGoBack() ? router.back() : router.replace('/story' as Href))}
           />
-        ) : storyQuery.isLoading && !activeStory ? (
-          <ActivityIndicator className="my-12" />
+        ) : storyQuery.isLoading ? (
+          <View className="items-center justify-center py-20">
+            <ActivityIndicator size="large" color="#58CC02" />
+          </View>
         ) : !activeStory ? (
-          <View className="items-center gap-3 py-12">
-            <Text className="font-inter text-sm text-neutral-500">{translate('story.load_error')}</Text>
-            <Button label={translate('word_detail.retry')} fullWidth={false} onPress={() => void storyQuery.refetch()} />
+          <View className="items-center justify-center gap-4 py-20">
+            <Text className="font-inter text-sm text-neutral-500 dark:text-neutral-400">
+              {translate('story.load_error')}
+            </Text>
+            <Button
+              variant="outline"
+              label={translate('my_words.cancel')}
+              onPress={() => router.replace('/story' as Href)}
+            />
           </View>
         ) : (
-          <>
-            {/* Mode & Meta Subtitle */}
-            <View className="mb-3 flex-row flex-wrap items-center justify-between gap-2 px-1">
-              <View className="flex-row items-center gap-2">
-                <View className="rounded-lg bg-amber-100 px-2.5 py-1 dark:bg-amber-500/20">
-                  <Text className="font-nunito text-xs font-black text-amber-800 dark:text-amber-300">
-                    {activeStory.mode === 'BLENDED' ? translate('story.mode_blended') : translate('story.mode_english')}
-                  </Text>
-                </View>
-                <View className="rounded-lg bg-surface px-2.5 py-1">
-                  <Text className="font-nunito text-xs font-extrabold text-neutral-600 dark:text-neutral-300">
-                    {`${activeStory.level} · ${activeStory.targetWords.length} ${translate('story.words_unit')}`}
-                  </Text>
-                </View>
-              </View>
-              {activeStory.bestScore != null && (
-                <Text className="font-nunito text-xs font-black text-primary-700 dark:text-primary-300">
-                  {`Cloze: ${activeStory.bestScore}%`}
+          <View className="gap-4">
+            <View className="flex-row gap-2 rounded-2xl border-2 border-line bg-surface p-1.5">
+              <Pressable
+                onPress={() => setTab('READ')}
+                className={`min-h-11 flex-1 items-center justify-center rounded-xl ${
+                  tab === 'READ' ? 'bg-primary-500' : 'bg-transparent'
+                }`}
+              >
+                <Text
+                  className={`font-nunito text-sm font-black ${
+                    tab === 'READ' ? 'text-white' : 'text-neutral-600 dark:text-neutral-300'
+                  }`}
+                >
+                  {translate('story.tab_read')}
                 </Text>
-              )}
-            </View>
-
-            {/* Segmented Read / Cloze Switcher */}
-            <View className="mb-4 flex-row gap-1.5 rounded-2xl border border-line bg-surface p-1">
-              {([
-                { id: 'READ', label: translate('story.tab_read') },
-                { id: 'CLOZE', label: `${translate('story.tab_cloze')} (${activeStory.totalBlanks})` },
-              ] as const).map((item) => {
-                const active = tab === item.id;
-                return (
-                  <Pressable
-                    key={item.id}
-                    onPress={() => setTab(item.id)}
-                    className={`min-h-10 flex-1 items-center justify-center overflow-hidden rounded-xl ${
-                      active ? 'bg-brand' : 'bg-transparent'
-                    }`}
-                  >
-                    <Text className={`font-nunito text-xs font-black ${active ? 'text-on-brand' : 'text-neutral-500 dark:text-neutral-300'}`}>
-                      {item.label}
-                    </Text>
-                  </Pressable>
-                );
-              })}
+              </Pressable>
+              <Pressable
+                onPress={() => setTab('CLOZE')}
+                className={`min-h-11 flex-1 items-center justify-center rounded-xl ${
+                  tab === 'CLOZE' ? 'bg-primary-500' : 'bg-transparent'
+                }`}
+              >
+                <Text
+                  className={`font-nunito text-sm font-black ${
+                    tab === 'CLOZE' ? 'text-white' : 'text-neutral-600 dark:text-neutral-300'
+                  }`}
+                >
+                  {`${translate('story.tab_cloze')} (${activeStory.totalBlanks})`}
+                </Text>
+              </Pressable>
             </View>
 
             {tab === 'READ' ? (
-              <StoryReadPanel story={activeStory} onStartCloze={() => setTab('CLOZE')} />
+              <StoryReadPanel
+                story={activeStory}
+                onStartCloze={() => setTab('CLOZE')}
+              />
             ) : (
-              <StoryClozePanel story={activeStory} onBackToRead={() => setTab('READ')} />
+              <StoryClozePanel
+                story={activeStory}
+                onBackToRead={() => setTab('READ')}
+              />
             )}
-          </>
+          </View>
         )}
       </ScrollView>
     </SafeAreaView>

@@ -3,6 +3,8 @@ import type {
   GenerateStoryRequest,
   StoryDTO,
   StoryListResponse,
+  StoryTopicSummaryDTO,
+  StoryTopicWordsResponse,
   SubmitStoryClozeRequest,
   SubmitStoryClozeResponse,
 } from './types';
@@ -14,7 +16,32 @@ export const storyKeys = {
   all: ['stories'] as const,
   list: (page = 0) => ['stories', 'list', page] as const,
   detail: (id: number) => ['stories', 'detail', id] as const,
+  topics: ['stories', 'system-topics'] as const,
+  topicWords: (topicId: number) => ['stories', 'topic-words', topicId] as const,
 };
+
+export function useStoryTopics() {
+  return useQuery<StoryTopicSummaryDTO[], AxiosError>({
+    queryKey: storyKeys.topics,
+    queryFn: async () => {
+      const response = await client.get<ApiResponse<StoryTopicSummaryDTO[]>>('/api/stories/topics');
+      return response.data.data;
+    },
+  });
+}
+
+export function useStoryTopicWords(topicId?: number | null) {
+  return useQuery<StoryTopicWordsResponse, AxiosError>({
+    queryKey: storyKeys.topicWords(topicId ?? 0),
+    queryFn: async () => {
+      const response = await client.get<ApiResponse<StoryTopicWordsResponse>>(
+        `/api/stories/topics/${topicId}/words`,
+      );
+      return response.data.data;
+    },
+    enabled: Boolean(topicId && topicId > 0),
+  });
+}
 
 export function useStories(page = 0, size = 20) {
   return useQuery<StoryListResponse, AxiosError>({

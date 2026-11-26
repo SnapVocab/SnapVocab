@@ -21,6 +21,8 @@ type Props = {
 export function CollectionDetailContent({ detail }: Props) {
   const {
     id,
+    collectionData,
+    paramType,
     collectionTitle,
     currentParent,
     currentParentId,
@@ -74,15 +76,15 @@ export function CollectionDetailContent({ detail }: Props) {
     if (!currentParent)
       return;
     router.push({
-      pathname: '/story/[id]',
+      pathname: '/story',
       params: {
-        id: 'new',
-        source: 'TOPIC',
         topicId: String(currentParent.id),
         topicName: currentParent.name,
       },
     } as any);
   }, [router, currentParent]);
+
+  const isSystemCollection = (collectionData?.type ?? paramType) === 'SYSTEM';
 
   const ListHeader = React.useMemo(
     () => (
@@ -95,7 +97,7 @@ export function CollectionDetailContent({ detail }: Props) {
         onSelectTopic={handleTopicPress}
         onStudyTopic={handleStudyTopic}
         onStudyCollection={handleStudyCollection}
-        onStoryTopic={handleStoryTopic}
+        onStoryTopic={isSystemCollection ? handleStoryTopic : undefined}
         counts={currentCounts}
         topicCounts={overview.data?.topics}
         countsError={overview.isError}
@@ -106,6 +108,7 @@ export function CollectionDetailContent({ detail }: Props) {
       searchQuery,
       setSearchQuery,
       isInsideTopic,
+      isSystemCollection,
       topics,
       totalItemsCount,
       totalTopicsCount,

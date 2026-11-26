@@ -1,7 +1,5 @@
-export type StoryMode = 'BLENDED' | 'ENGLISH';
-export type StoryLevel = 'A1' | 'A2' | 'B1' | 'B2';
 export type StoryGenre = 'DAILY' | 'FUNNY' | 'OFFICE' | 'TRAVEL';
-export type StorySource = 'MY_WORDS' | 'TOPIC' | 'SCAN' | 'CUSTOM';
+export type StorySource = 'MY_WORDS' | 'TOPIC' | 'SCAN';
 
 export type TargetWordDTO = {
   word: string;
@@ -20,7 +18,6 @@ export type StorySentenceDTO = {
   index: number;
   paragraph: number;
   text: string;
-  translation: string;
   blanks: StoryBlankDTO[];
 };
 
@@ -28,8 +25,6 @@ export type StoryDTO = {
   id: number;
   topicId?: number | null;
   title: string;
-  mode: StoryMode;
-  level: StoryLevel;
   genre: StoryGenre;
   providerName?: string | null;
   modelName?: string | null;
@@ -59,14 +54,36 @@ export type StoryListResponse = {
   quota: StoryQuotaDTO;
 };
 
+export type StoryTopicSummaryDTO = {
+  id: number;
+  name: string;
+  translation?: string | null;
+  collectionId: number;
+  collectionName: string;
+  parentId?: number | null;
+  parentName?: string | null;
+  wordCount: number;
+};
+
+export type StoryTopicWordItem = {
+  itemId: number;
+  word: string;
+  translation: string;
+};
+
+export type StoryTopicWordsResponse = {
+  topicId: number;
+  topicName: string;
+  topicTranslation?: string | null;
+  words: StoryTopicWordItem[];
+};
+
 export type GenerateStoryRequest = {
   source: StorySource;
   topicId?: number;
   wordCount?: number;
   words?: string[];
-  mode: StoryMode;
-  level: StoryLevel;
-  genre: StoryGenre;
+  genre?: StoryGenre;
 };
 
 export type SubmitStoryClozeRequest = {

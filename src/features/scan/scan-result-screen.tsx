@@ -80,7 +80,9 @@ function ScanResultContent({ params }: { params: Params }) {
   const result = data?.status === 'DONE' ? data.result : null;
   const items = result?.items ?? [];
   const allLow = items.length > 0 && items.every(item => item.reliability === 'LOW');
-  const storyWords = sanitizeWordList(items.map(it => it.word?.word ?? it.label));
+  const storyWords = sanitizeWordList(
+    items.map(it => it.word?.word).filter((w): w is string => Boolean(w)),
+  );
 
   const header = (
     <View className="h-14 flex-row items-center border-b border-line bg-surface px-4">
@@ -148,8 +150,8 @@ function ScanResultContent({ params }: { params: Params }) {
           <Pressable
             onPress={() =>
               router.push({
-                pathname: '/story/[id]',
-                params: { id: 'new', source: 'SCAN', words: storyWords.slice(0, 8).join(',') },
+                pathname: '/story',
+                params: { source: 'SCAN', words: storyWords.slice(0, 12).join(',') },
               } as any)}
             className="mt-3 flex-row items-center justify-between rounded-2xl border-2 border-b-4 border-amber-300 border-b-amber-400 bg-amber-50 px-4 py-3 active:translate-y-px dark:border-amber-500/40 dark:border-b-amber-600/50 dark:bg-amber-500/15"
           >

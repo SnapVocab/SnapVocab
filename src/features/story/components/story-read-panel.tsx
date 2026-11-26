@@ -2,7 +2,7 @@ import type { StoryDTO, TargetWordDTO } from '../types';
 import * as React from 'react';
 import { ScrollView, View } from 'react-native';
 import { Button, Pressable, Text } from '@/components/ui';
-import { EyeIcon, EyeSlash, SparklesIcon, VolumeIcon } from '@/components/ui/icons';
+import { EyeIcon, SparklesIcon, VolumeIcon } from '@/components/ui/icons';
 import { useTts } from '@/lib/hooks/use-tts';
 import { translate } from '@/lib/i18n';
 import { buildStoryParagraphs } from '../utils';
@@ -21,7 +21,6 @@ export function StoryReadPanel({ story, onStartCloze }: Props) {
 
   const [selectedWord, setSelectedWord] = React.useState<TargetWordDTO | null>(null);
   const [revealMeaning, setRevealMeaning] = React.useState(false);
-  const [showTranslations, setShowTranslations] = React.useState(false);
 
   const findWordMeta = React.useCallback(
     (raw: string): TargetWordDTO => {
@@ -49,26 +48,10 @@ export function StoryReadPanel({ story, onStartCloze }: Props) {
 
   return (
     <View className="gap-4">
-      {story.mode === 'ENGLISH' && (
-        <View className="flex-row justify-end">
-          <Pressable
-            onPress={() => setShowTranslations(v => !v)}
-            className="min-h-10 flex-row items-center gap-1.5 rounded-xl border border-line bg-surface px-3.5"
-          >
-            {showTranslations
-              ? <EyeSlash width={15} height={15} color="#4E7A25" />
-              : <EyeIcon width={15} height={15} color="#4E7A25" />}
-            <Text className="font-nunito text-xs font-extrabold text-primary-700 dark:text-primary-300">
-              {showTranslations ? translate('story.hide_translation') : translate('story.show_translation')}
-            </Text>
-          </Pressable>
-        </View>
-      )}
-
-      {/* Editorial Story Page */}
+      {/* Editorial Blended Story Page */}
       <View className="gap-5 rounded-3xl border-2 border-b-4 border-line border-b-edge bg-surface p-5">
         {paragraphs.map(para => (
-          <View key={para.paragraph} className="gap-2">
+          <View key={para.paragraph}>
             <Text className="font-inter text-[16.5px]/8 text-mascot-navy dark:text-neutral-100">
               {para.sentences.map(({ sentence, segments }, sIdx) => (
                 <React.Fragment key={sentence.index}>
@@ -95,14 +78,6 @@ export function StoryReadPanel({ story, onStartCloze }: Props) {
                 </React.Fragment>
               ))}
             </Text>
-
-            {story.mode === 'ENGLISH' && showTranslations && (
-              <View className="rounded-xl border-l-2 border-primary-400 bg-neutral-50 py-1.5 pr-2 pl-3 dark:bg-neutral-800/60">
-                <Text className="font-inter text-xs/5 text-neutral-600 dark:text-neutral-300">
-                  {para.sentences.map(s => s.sentence.translation).filter(Boolean).join(' ')}
-                </Text>
-              </View>
-            )}
           </View>
         ))}
       </View>

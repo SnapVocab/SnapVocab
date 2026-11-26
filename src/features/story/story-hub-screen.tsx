@@ -1,11 +1,12 @@
 import type { BottomSheetModal } from '@gorhom/bottom-sheet';
 import type { Href } from 'expo-router';
-import type { StoryDTO, StoryGenre, StoryLevel, StoryMode } from './types';
+import type { StoryWordPickerTab } from './components/story-word-picker-sheet';
+import type { StoryDTO, StoryGenre } from './types';
 import type { QuizAvailableTopic } from '@/features/quiz/api/quiz-api';
 import { Image as ExpoImage } from 'expo-image';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import * as React from 'react';
-import { ActivityIndicator, ScrollView, TextInput, View } from 'react-native';
+import { ActivityIndicator, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   Button,
@@ -19,28 +20,30 @@ import {
 import {
   CheckCircleIcon,
   ChevronRightIcon,
-  CloseIcon,
   EditIcon,
   FolderIcon,
-  PlusIcon,
   RepeatIcon,
-  SlidersHorizontalIcon,
   TrashIcon,
 } from '@/components/ui/icons';
 import { useMyWords } from '@/features/my-words/api';
-import { useQuizAvailableTopics } from '@/features/quiz/api/quiz-api';
 import { TopicSelectBottomSheet } from '@/features/quiz/components/topic-select-bottom-sheet';
 import { translate } from '@/lib/i18n';
-import { useDeleteStory, useStories } from './api';
-import { StoryStyleSheet } from './components/story-style-sheet';
+import { useDeleteStory, useStories, useStoryTopics, useStoryTopicWords } from './api';
 import { StoryWordPickerSheet } from './components/story-word-picker-sheet';
 import {
   DEFAULT_SMART_PICK_COUNT,
   MAX_STORY_WORDS,
   MIN_STORY_WORDS,
+  pickRandomFromPool,
   sanitizeWordList,
-  WORD_TOKEN_REGEX,
 } from './utils';
+
+const GENRES: { id: StoryGenre; labelKey: string }[] = [
+  { id: 'DAILY', labelKey: 'story.genre_daily' },
+  { id: 'FUNNY', labelKey: 'story.genre_funny' },
+  { id: 'OFFICE', labelKey: 'story.genre_office' },
+  { id: 'TRAVEL', labelKey: 'story.genre_travel' },
+];
 
 const GENRE_LABELS: Record<StoryGenre, string> = {
   DAILY: 'story.genre_daily',
@@ -61,6 +64,7 @@ function StoryShelfRow({
   const surface = useSurface();
   const previewWords = story.targetWords.slice(0, 4).map(w => w.word).join(', ');
   const restCount = Math.max(0, story.targetWords.length - 4);
+  const genreLabel = translate((GENRE_LABELS[story.genre] ?? 'story.genre_daily') as any);
 
   return (
     <View className="mb-2.5 flex-row items-center overflow-hidden rounded-2xl border-2 border-b-4 border-line border-b-edge bg-surface">
@@ -87,7 +91,7 @@ function StoryShelfRow({
             )}
           </View>
           <Text className="mt-0.5 font-inter text-xs text-neutral-500 dark:text-neutral-300" numberOfLines={1}>
-            {`${story.mode === 'BLENDED' ? translate('story.mode_blended') : translate('story.mode_english')} · ${story.level}${previewWords ? ` · ${previewWords}${restCount > 0 ? ` +${restCount}` : ''}` : ''}`}
+            {`${genreLabel}${previewWords ? ` · ${previewWords}${restCount > 0 ? ` +${restCount}` : ''}` : ''}`}
           </Text>
         </View>
         <ChevronRightIcon color={surface.action} width={18} height={18} />
@@ -106,53 +110,40 @@ function StoryShelfRow({
 }
 
 function StoryHeroStage({
-  mode,
-  level,
   genre,
+  onChangeGenre,
+  sourceBadgeLabel,
   selectedTopic,
-  effectiveWords,
+  selectedWords,
+  translationMap,
+  topicPoolTotal,
+  isLoadingWords,
   canShuffle,
-  quickInput,
-  onQuickInputChange,
-  onQuickAdd,
-  onClearTopic,
+  onSwitchTopic,
   onShuffle,
   onOpenWords,
-  onOpenStyle,
   onStart,
 }: {
-  mode: StoryMode;
-  level: StoryLevel;
   genre: StoryGenre;
-  selectedTopic: { id: number; name: string } | null;
-  effectiveWords: string[];
+  onChangeGenre: (g: StoryGenre) => void;
+  sourceBadgeLabel: string;
+  selectedTopic: { id: number; name: string; translation?: string | null } | null;
+  selectedWords: string[];
+  translationMap: Map<string, string>;
+  topicPoolTotal: number;
+  isLoadingWords: boolean;
   canShuffle: boolean;
-  quickInput: string;
-  onQuickInputChange: (v: string) => void;
-  onQuickAdd: () => void;
-  onClearTopic: () => void;
+  onSwitchTopic: () => void;
   onShuffle: () => void;
   onOpenWords: () => void;
-  onOpenStyle: () => void;
   onStart: () => void;
 }) {
-  const surface = useSurface();
-  const canStart = Boolean(selectedTopic) || effectiveWords.length >= MIN_STORY_WORDS;
+  const canStart = selectedWords.length >= MIN_STORY_WORDS && !isLoadingWords;
 
   return (
     <View className="mb-4 overflow-hidden rounded-3xl border-2 border-b-4 border-amber-300/90 border-b-amber-400 bg-amber-50/85 p-5 dark:border-amber-500/35 dark:border-b-amber-600/50 dark:bg-amber-500/10">
       <View className="flex-row items-start justify-between gap-3">
         <View className="flex-1">
-          <Pressable
-            onPress={onOpenStyle}
-            className="mb-2.5 flex-row items-center gap-1.5 self-start rounded-full border border-amber-300 bg-white/90 px-3 py-1 dark:border-amber-500/40 dark:bg-neutral-900/80"
-          >
-            <SlidersHorizontalIcon width={12} height={12} color="#B45309" />
-            <Text className="font-nunito text-xs font-black text-amber-900 dark:text-amber-200">
-              {`${mode === 'BLENDED' ? translate('story.mode_blended') : translate('story.mode_english')} · ${level} · ${translate(GENRE_LABELS[genre] as any)}`}
-            </Text>
-          </Pressable>
-
           <Text className="font-nunito text-xl font-black text-mascot-navy dark:text-white">
             {selectedTopic ? selectedTopic.name : translate('story.hero_ready_title')}
           </Text>
@@ -166,48 +157,114 @@ function StoryHeroStage({
         <ExpoImage
           accessible={false}
           source={require('../../assets/images/snapy-reading.png')}
-          style={{ width: 76, height: 76 }}
+          style={{ width: 70, height: 70 }}
           contentFit="contain"
           cachePolicy="memory-disk"
         />
       </View>
 
-      {selectedTopic ? (
-        <View className="mt-3.5 flex-row items-center justify-between rounded-2xl border border-amber-300/70 bg-white/85 px-3.5 py-2.5 dark:border-amber-500/30 dark:bg-neutral-900/70">
-          <View className="flex-1 flex-row items-center gap-2 pr-2">
-            <FolderIcon width={16} height={16} color="#D97706" />
-            <Text className="flex-1 font-nunito text-xs font-extrabold text-mascot-navy dark:text-white" numberOfLines={1}>
-              {translate('story.using_topic_badge', { name: selectedTopic.name })}
-            </Text>
-          </View>
-          <Pressable
-            onPress={onClearTopic}
-            hitSlop={8}
-            className="size-7 items-center justify-center rounded-full bg-neutral-100 dark:bg-neutral-800"
-          >
-            <CloseIcon width={12} height={12} color={surface.textMuted} />
-          </Pressable>
-        </View>
-      ) : effectiveWords.length > 0 ? (
-        <View className="mt-3.5 gap-2.5">
-          <View className="flex-row flex-wrap gap-1.5">
-            {effectiveWords.map(w => (
-              <View
-                key={w}
-                className="rounded-xl border border-amber-300/80 bg-white/90 px-2.5 py-1 dark:border-amber-500/35 dark:bg-neutral-900/80"
+      {/* 1-tap Story Setting (Genre) Pills — Zero extra modal */}
+      <View className="mt-3 flex-row flex-wrap gap-1.5">
+        {GENRES.map((g) => {
+          const active = genre === g.id;
+          return (
+            <Pressable
+              key={g.id}
+              onPress={() => onChangeGenre(g.id)}
+              className={`min-h-8 items-center justify-center rounded-full border px-3 py-1 ${
+                active
+                  ? 'border-amber-600 bg-amber-500 dark:border-amber-400 dark:bg-amber-500'
+                  : 'border-amber-300/80 bg-white/80 dark:border-amber-500/30 dark:bg-neutral-900/70'
+              }`}
+            >
+              <Text
+                className={`font-nunito text-xs font-extrabold ${
+                  active ? 'text-white' : 'text-amber-900 dark:text-amber-200'
+                }`}
               >
-                <Text className="font-nunito text-xs font-black text-mascot-navy dark:text-amber-200">
-                  {w}
-                </Text>
-              </View>
-            ))}
-          </View>
+                {translate(g.labelKey as any)}
+              </Text>
+            </Pressable>
+          );
+        })}
+      </View>
 
-          <View className="flex-row items-center gap-2">
+      {/* Active Source Bar */}
+      <Pressable
+        onPress={onSwitchTopic}
+        className="mt-3 min-h-10 flex-row items-center justify-between rounded-2xl border border-amber-300/70 bg-white/85 px-3.5 py-2 dark:border-amber-500/30 dark:bg-neutral-900/70"
+      >
+        <View className="flex-1 flex-row items-center gap-2 pr-2">
+          <FolderIcon width={15} height={15} color="#D97706" />
+          <Text className="flex-1 font-nunito text-xs font-extrabold text-mascot-navy dark:text-white" numberOfLines={1}>
+            {sourceBadgeLabel}
+          </Text>
+        </View>
+        <View className="flex-row items-center gap-1">
+          <Text className="font-nunito text-xs font-extrabold text-amber-800 dark:text-amber-300">
+            {translate('story.change_topic')}
+          </Text>
+          <ChevronRightIcon width={14} height={14} color="#B45309" />
+        </View>
+      </Pressable>
+
+      {/* Visible Word Chips + Direct Pick / Shuffle Controls */}
+      {isLoadingWords ? (
+        <View className="mt-3.5 flex-row items-center gap-2.5 py-3">
+          <ActivityIndicator size="small" color="#D97706" />
+          <Text className="font-inter text-xs text-neutral-600 dark:text-neutral-300">
+            {translate('story.topic_loading_words')}
+          </Text>
+        </View>
+      ) : (
+        <View className="mt-3 gap-2.5">
+          {selectedWords.length > 0 && (
+            <View className="flex-row flex-wrap gap-1.5">
+              {selectedWords.map((w) => {
+                const meaning = translationMap.get(w.toLowerCase());
+                return (
+                  <Pressable
+                    key={w}
+                    onPress={onOpenWords}
+                    className="flex-row items-center gap-1 rounded-xl border border-amber-300/80 bg-white/95 px-2.5 py-1.5 dark:border-amber-500/35 dark:bg-neutral-900/85"
+                  >
+                    <Text className="font-nunito text-xs font-black text-mascot-navy dark:text-amber-200">
+                      {w}
+                    </Text>
+                    {Boolean(meaning) && (
+                      <Text
+                        className="max-w-28 font-inter text-[11px] text-neutral-500 dark:text-neutral-400"
+                        numberOfLines={1}
+                      >
+                        {`· ${meaning}`}
+                      </Text>
+                    )}
+                  </Pressable>
+                );
+              })}
+            </View>
+          )}
+
+          <View className="flex-row flex-wrap items-center gap-2">
+            <Pressable
+              onPress={onOpenWords}
+              className="min-h-10 flex-row items-center gap-1.5 rounded-xl border border-amber-400/80 bg-white px-3.5 py-2 dark:border-amber-500/40 dark:bg-neutral-900"
+            >
+              <EditIcon width={13} height={13} color="#B45309" />
+              <Text className="font-nunito text-xs font-black text-amber-950 dark:text-amber-200">
+                {selectedTopic && topicPoolTotal > 0
+                  ? translate('story.customize_in_topic', {
+                      selected: selectedWords.length,
+                      total: topicPoolTotal,
+                    })
+                  : translate('story.customize_words', { count: selectedWords.length })}
+              </Text>
+            </Pressable>
+
             {canShuffle && (
               <Pressable
                 onPress={onShuffle}
-                className="min-h-9 flex-row items-center gap-1.5 rounded-xl bg-white/80 px-3 py-1.5 dark:bg-neutral-900/70"
+                className="min-h-10 flex-row items-center gap-1.5 rounded-xl bg-white/75 px-3 py-2 dark:bg-neutral-900/70"
               >
                 <RepeatIcon width={13} height={13} color="#B45309" />
                 <Text className="font-nunito text-xs font-extrabold text-amber-900 dark:text-amber-200">
@@ -215,45 +272,15 @@ function StoryHeroStage({
                 </Text>
               </Pressable>
             )}
-            <Pressable
-              onPress={onOpenWords}
-              className="min-h-9 flex-row items-center gap-1.5 rounded-xl bg-white/80 px-3 py-1.5 dark:bg-neutral-900/70"
-            >
-              <EditIcon width={13} height={13} color="#B45309" />
-              <Text className="font-nunito text-xs font-extrabold text-amber-900 dark:text-amber-200">
-                {translate('story.customize_words')}
-              </Text>
-            </Pressable>
           </View>
-        </View>
-      ) : (
-        <View className="mt-3.5 flex-row gap-2">
-          <TextInput
-            value={quickInput}
-            onChangeText={onQuickInputChange}
-            onSubmitEditing={onQuickAdd}
-            placeholder={translate('story.custom_placeholder')}
-            placeholderTextColor={surface.textMuted}
-            returnKeyType="done"
-            style={{ color: surface.text }}
-            className="h-11 flex-1 rounded-xl border border-amber-300 bg-white px-3 font-inter text-sm dark:border-amber-500/40 dark:bg-neutral-900"
-          />
-          <Pressable
-            onPress={onQuickAdd}
-            className="h-11 items-center justify-center rounded-xl bg-amber-500 px-3.5"
-          >
-            <PlusIcon width={18} height={18} color="#FFFFFF" />
-          </Pressable>
         </View>
       )}
 
       <Button
         label={
-          selectedTopic
-            ? translate('story.read_topic_cta')
-            : canStart
-              ? translate('story.read_now_cta', { count: effectiveWords.length })
-              : translate('story.min_words_cta', { min: MIN_STORY_WORDS })
+          canStart
+            ? translate('story.read_now_cta', { count: selectedWords.length })
+            : translate('story.min_words_cta', { min: MIN_STORY_WORDS })
         }
         disabled={!canStart}
         onPress={onStart}
@@ -263,99 +290,238 @@ function StoryHeroStage({
   );
 }
 
+function StorySourceActions({
+  onOpenTopicSheet,
+  onOpenWordSheet,
+}: {
+  onOpenTopicSheet: () => void;
+  onOpenWordSheet: () => void;
+}) {
+  const surface = useSurface();
+  return (
+    <View className="mb-6 gap-2.5">
+      <Pressable
+        onPress={onOpenTopicSheet}
+        className="flex-row items-center justify-between rounded-2xl border-2 border-b-4 border-line border-b-edge bg-surface px-4 py-3.5 active:bg-pressed"
+      >
+        <View className="flex-1 flex-row items-center gap-3 pr-2">
+          <View className="size-10 items-center justify-center rounded-xl bg-sky-100 dark:bg-sky-500/20">
+            <FolderIcon width={20} height={20} color="#0284C7" />
+          </View>
+          <View className="flex-1">
+            <Text className="font-nunito text-sm font-black text-mascot-navy dark:text-white">
+              {translate('story.pick_from_topic_title')}
+            </Text>
+            <Text className="font-inter text-xs text-neutral-500 dark:text-neutral-400" numberOfLines={1}>
+              {translate('story.pick_from_topic_desc')}
+            </Text>
+          </View>
+        </View>
+        <ChevronRightIcon width={18} height={18} color={surface.action} />
+      </Pressable>
+
+      <Pressable
+        onPress={onOpenWordSheet}
+        className="flex-row items-center justify-between rounded-2xl border-2 border-b-4 border-line border-b-edge bg-surface px-4 py-3.5 active:bg-pressed"
+      >
+        <View className="flex-1 flex-row items-center gap-3 pr-2">
+          <View className="size-10 items-center justify-center rounded-xl bg-primary-50 dark:bg-primary-500/20">
+            <EditIcon width={18} height={18} color="#58CC02" />
+          </View>
+          <View className="flex-1">
+            <Text className="font-nunito text-sm font-black text-mascot-navy dark:text-white">
+              {translate('story.pick_custom_words_title')}
+            </Text>
+            <Text className="font-inter text-xs text-neutral-500 dark:text-neutral-400" numberOfLines={1}>
+              {translate('story.pick_custom_words_desc', { max: MAX_STORY_WORDS })}
+            </Text>
+          </View>
+        </View>
+        <ChevronRightIcon width={18} height={18} color={surface.action} />
+      </Pressable>
+    </View>
+  );
+}
+
+type HubParams = {
+  source?: string;
+  topicId?: string;
+  topicName?: string;
+  words?: string;
+};
+
 export function StoryHubScreen() {
+  const params = useLocalSearchParams<HubParams>();
+  const entryKey = `${params.source ?? ''}-${params.topicId ?? ''}-${params.words ?? ''}`;
+  return <StoryHubContent key={entryKey} params={params} />;
+}
+
+function StoryHubContent({ params }: { params: HubParams }) {
   const router = useRouter();
   const surface = useSurface();
-  const params = useLocalSearchParams<{ topicId?: string; topicName?: string; words?: string }>();
 
   const topicSheetRef = React.useRef<BottomSheetModal>(null);
   const wordSheetRef = React.useRef<BottomSheetModal>(null);
-  const styleSheetRef = React.useRef<BottomSheetModal>(null);
 
-  const [mode, setMode] = React.useState<StoryMode>('BLENDED');
-  const [level, setLevel] = React.useState<StoryLevel>('A2');
+  const initialWords = React.useMemo(
+    () => (params.words ? sanitizeWordList(params.words.split(',')) : []),
+    [params.words],
+  );
+  const isFromMyWords = params.source === 'MY_WORDS';
+  const [isScanOrigin, setIsScanOrigin] = React.useState(
+    () => params.source === 'SCAN' && initialWords.length > 0,
+  );
+
   const [genre, setGenre] = React.useState<StoryGenre>('DAILY');
-  const [selectedTopic, setSelectedTopic] = React.useState<{ id: number; name: string } | null>(
-    params.topicId ? { id: Number(params.topicId), name: params.topicName || 'Topic' } : null,
+  const [pickerTab, setPickerTab] = React.useState<StoryWordPickerTab>(() =>
+    isFromMyWords || initialWords.length > 0 ? 'MY_WORDS' : 'TOPIC',
   );
-  const [customWords, setCustomWords] = React.useState<string[] | null>(() =>
-    params.words ? sanitizeWordList(params.words.split(',')) : null,
+  const [explicitTopic, setExplicitTopic] = React.useState<
+    { id: number; name: string; translation?: string | null } | 'NONE' | undefined
+  >(() => {
+    if (params.topicId) {
+      return { id: Number(params.topicId), name: params.topicName || 'Topic' };
+    }
+    if (isFromMyWords || initialWords.length > 0) {
+      return 'NONE';
+    }
+    return undefined;
+  });
+  const [explicitWords, setExplicitWords] = React.useState<string[] | null>(() =>
+    initialWords.length > 0
+      ? initialWords.slice(0, DEFAULT_SMART_PICK_COUNT)
+      : null,
   );
-  const [quickInput, setQuickInput] = React.useState('');
-  const [shuffleCursor, setShuffleCursor] = React.useState(0);
 
   const storiesQuery = useStories();
   const deleteMutation = useDeleteStory();
   const myWordsQuery = useMyWords();
-  const topicsQuery = useQuizAvailableTopics();
+  const systemTopicsQuery = useStoryTopics();
 
   const savedWords = React.useMemo(
     () => sanitizeWordList(myWordsQuery.data?.pages.flatMap(p => p.data.map(w => w.word)) ?? []),
     [myWordsQuery.data],
   );
 
-  const effectiveWords = React.useMemo(() => {
-    if (customWords !== null)
-      return customWords;
-    if (savedWords.length < MIN_STORY_WORDS)
-      return [];
-    const count = Math.min(DEFAULT_SMART_PICK_COUNT, savedWords.length);
-    const picked: string[] = [];
-    for (let i = 0; i < count; i += 1) {
-      picked.push(savedWords[(shuffleCursor + i) % savedWords.length]);
+  const selectedTopic = React.useMemo(() => {
+    if (explicitTopic === 'NONE')
+      return null;
+    if (explicitTopic !== undefined)
+      return explicitTopic;
+    const first = systemTopicsQuery.data?.[0];
+    if (first) {
+      return { id: first.id, name: first.name, translation: first.translation };
     }
-    return picked;
-  }, [customWords, savedWords, shuffleCursor]);
+    return null;
+  }, [explicitTopic, systemTopicsQuery.data]);
 
-  const handleShuffleWords = () => {
-    if (savedWords.length <= DEFAULT_SMART_PICK_COUNT)
-      return;
-    setCustomWords(null);
-    setSelectedTopic(null);
-    setShuffleCursor(prev => (prev + DEFAULT_SMART_PICK_COUNT) % savedWords.length);
-  };
+  const topicWordsQuery = useStoryTopicWords(selectedTopic?.id);
+  const topicWords = React.useMemo(() => topicWordsQuery.data?.words ?? [], [topicWordsQuery.data]);
 
-  const handleQuickAddInline = () => {
-    const parts = quickInput.split(/[,\n]+/).map(s => s.trim()).filter(Boolean);
-    if (parts.length === 0)
-      return;
-    const next = [...effectiveWords];
-    for (const p of parts) {
-      if (!WORD_TOKEN_REGEX.test(p)) {
-        showErrorMessage(translate('story.invalid_word_error'));
-        continue;
-      }
-      if (next.length >= MAX_STORY_WORDS)
-        break;
-      if (!next.some(w => w.toLowerCase() === p.toLowerCase())) {
-        next.push(p);
+  const resolvedSelectedTopic = React.useMemo(() => {
+    if (!selectedTopic)
+      return null;
+    if (topicWordsQuery.data && topicWordsQuery.data.topicId === selectedTopic.id) {
+      return {
+        id: selectedTopic.id,
+        name: topicWordsQuery.data.topicName,
+        translation: topicWordsQuery.data.topicTranslation,
+      };
+    }
+    return selectedTopic;
+  }, [selectedTopic, topicWordsQuery.data]);
+
+  const selectedWords = React.useMemo(() => {
+    if (explicitWords !== null)
+      return explicitWords;
+    if (selectedTopic) {
+      return topicWords.slice(0, DEFAULT_SMART_PICK_COUNT).map(w => w.word);
+    }
+    return savedWords.slice(0, DEFAULT_SMART_PICK_COUNT);
+  }, [explicitWords, savedWords, selectedTopic, topicWords]);
+
+  const availableTopicsForSheet = React.useMemo<QuizAvailableTopic[]>(() => {
+    const list = systemTopicsQuery.data ?? [];
+    const unit = translate('story.words_unit');
+    return list.map((t) => {
+      const prefix = t.parentName ? `${t.collectionName} › ${t.parentName}` : t.collectionName;
+      return {
+        id: t.id,
+        name: t.name,
+        translation: t.translation ?? '',
+        parentId: t.parentId ?? null,
+        hasChildren: false,
+        createdAt: '',
+        updatedAt: '',
+        collectionName: `${prefix} · ${t.wordCount} ${unit}`,
+      };
+    });
+  }, [systemTopicsQuery.data]);
+
+  const translationMap = React.useMemo(() => {
+    const map = new Map<string, string>();
+    for (const item of topicWords) {
+      if (item.translation) {
+        map.set(item.word.toLowerCase(), item.translation);
       }
     }
-    setSelectedTopic(null);
-    setCustomWords(next);
-    setQuickInput('');
-  };
+    return map;
+  }, [topicWords]);
+
+  const activeShufflePool = React.useMemo(() => {
+    if (resolvedSelectedTopic)
+      return topicWords.map(w => w.word);
+    if (isScanOrigin && initialWords.length > 0)
+      return initialWords;
+    return savedWords;
+  }, [initialWords, isScanOrigin, resolvedSelectedTopic, savedWords, topicWords]);
+
+  const pickerSavedPool = React.useMemo(() => {
+    if (!isScanOrigin || initialWords.length === 0)
+      return savedWords;
+    return sanitizeWordList([...initialWords, ...savedWords]);
+  }, [initialWords, isScanOrigin, savedWords]);
+
+  const sourceBadgeLabel = resolvedSelectedTopic
+    ? translate('story.using_topic_badge', { name: resolvedSelectedTopic.name })
+    : isScanOrigin
+      ? translate('story.using_scan_badge')
+      : translate('story.using_my_words_badge');
 
   const handleSelectTopic = (topic: QuizAvailableTopic) => {
-    setSelectedTopic({ id: topic.id, name: topic.name });
+    setIsScanOrigin(false);
+    setExplicitTopic({ id: topic.id, name: topic.name, translation: topic.translation });
+    setExplicitWords(null);
+    setPickerTab('TOPIC');
+  };
+
+  const handleShuffleWords = () => {
+    if (activeShufflePool.length < MIN_STORY_WORDS)
+      return;
+    const next = pickRandomFromPool(
+      activeShufflePool,
+      DEFAULT_SMART_PICK_COUNT,
+      selectedWords,
+    );
+    setExplicitWords(next);
   };
 
   const handleStartStory = () => {
-    const canStart = Boolean(selectedTopic) || effectiveWords.length >= MIN_STORY_WORDS;
-    if (!canStart) {
+    if (selectedWords.length < MIN_STORY_WORDS) {
       showErrorMessage(translate('story.min_words_error', { min: MIN_STORY_WORDS }));
       return;
     }
+    const topicParams = resolvedSelectedTopic
+      ? { topicId: String(resolvedSelectedTopic.id), topicName: resolvedSelectedTopic.name }
+      : {};
+    const source = resolvedSelectedTopic ? 'TOPIC' : isScanOrigin ? 'SCAN' : 'MY_WORDS';
     router.push({
       pathname: '/story/[id]',
       params: {
         id: 'new',
-        source: selectedTopic ? 'TOPIC' : 'CUSTOM',
-        ...(selectedTopic
-          ? { topicId: String(selectedTopic.id), topicName: selectedTopic.name }
-          : { words: effectiveWords.join(',') }),
-        mode,
-        level,
+        source,
+        ...topicParams,
+        words: selectedWords.join(','),
         genre,
       },
     } as any);
@@ -385,67 +551,25 @@ export function StoryHubScreen() {
         keyboardShouldPersistTaps="handled"
       >
         <StoryHeroStage
-          mode={mode}
-          level={level}
           genre={genre}
-          selectedTopic={selectedTopic}
-          effectiveWords={effectiveWords}
-          canShuffle={savedWords.length > DEFAULT_SMART_PICK_COUNT}
-          quickInput={quickInput}
-          onQuickInputChange={setQuickInput}
-          onQuickAdd={handleQuickAddInline}
-          onClearTopic={() => setSelectedTopic(null)}
+          onChangeGenre={setGenre}
+          sourceBadgeLabel={sourceBadgeLabel}
+          selectedTopic={resolvedSelectedTopic}
+          selectedWords={selectedWords}
+          translationMap={translationMap}
+          topicPoolTotal={topicWords.length}
+          isLoadingWords={Boolean(resolvedSelectedTopic && topicWordsQuery.isLoading)}
+          canShuffle={activeShufflePool.length > DEFAULT_SMART_PICK_COUNT}
+          onSwitchTopic={() => requestAnimationFrame(() => topicSheetRef.current?.present())}
           onShuffle={handleShuffleWords}
           onOpenWords={() => requestAnimationFrame(() => wordSheetRef.current?.present())}
-          onOpenStyle={() => requestAnimationFrame(() => styleSheetRef.current?.present())}
           onStart={handleStartStory}
         />
 
-        {/* Source Pickers */}
-        <View className="mb-6 gap-2.5">
-          <Pressable
-            onPress={() => requestAnimationFrame(() => topicSheetRef.current?.present())}
-            className="flex-row items-center justify-between rounded-2xl border-2 border-b-4 border-line border-b-edge bg-surface px-4 py-3.5 active:bg-pressed"
-          >
-            <View className="flex-1 flex-row items-center gap-3 pr-2">
-              <View className="size-10 items-center justify-center rounded-xl bg-sky-100 dark:bg-sky-500/20">
-                <FolderIcon width={20} height={20} color="#0284C7" />
-              </View>
-              <View className="flex-1">
-                <Text className="font-nunito text-sm font-black text-mascot-navy dark:text-white">
-                  {translate('story.pick_from_topic_title')}
-                </Text>
-                <Text className="font-inter text-xs text-neutral-500 dark:text-neutral-400" numberOfLines={1}>
-                  {translate('story.pick_from_topic_desc')}
-                </Text>
-              </View>
-            </View>
-            <ChevronRightIcon width={18} height={18} color={surface.action} />
-          </Pressable>
-
-          <Pressable
-            onPress={() => {
-              setSelectedTopic(null);
-              requestAnimationFrame(() => wordSheetRef.current?.present());
-            }}
-            className="flex-row items-center justify-between rounded-2xl border-2 border-b-4 border-line border-b-edge bg-surface px-4 py-3.5 active:bg-pressed"
-          >
-            <View className="flex-1 flex-row items-center gap-3 pr-2">
-              <View className="size-10 items-center justify-center rounded-xl bg-primary-50 dark:bg-primary-500/20">
-                <EditIcon width={18} height={18} color="#58CC02" />
-              </View>
-              <View className="flex-1">
-                <Text className="font-nunito text-sm font-black text-mascot-navy dark:text-white">
-                  {translate('story.pick_custom_words_title')}
-                </Text>
-                <Text className="font-inter text-xs text-neutral-500 dark:text-neutral-400" numberOfLines={1}>
-                  {translate('story.pick_custom_words_desc', { max: MAX_STORY_WORDS })}
-                </Text>
-              </View>
-            </View>
-            <ChevronRightIcon width={18} height={18} color={surface.action} />
-          </Pressable>
-        </View>
+        <StorySourceActions
+          onOpenTopicSheet={() => requestAnimationFrame(() => topicSheetRef.current?.present())}
+          onOpenWordSheet={() => requestAnimationFrame(() => wordSheetRef.current?.present())}
+        />
 
         {/* Story Shelf */}
         <Text className="mb-2.5 font-nunito text-xs font-extrabold tracking-wider text-neutral-500 uppercase dark:text-neutral-300">
@@ -473,30 +597,32 @@ export function StoryHubScreen() {
 
       <TopicSelectBottomSheet
         bottomSheetRef={topicSheetRef}
-        selectedTopicId={selectedTopic?.id}
-        topics={topicsQuery.data ?? []}
-        isLoading={topicsQuery.isLoading}
+        selectedTopicId={resolvedSelectedTopic?.id}
+        topics={availableTopicsForSheet}
+        isLoading={systemTopicsQuery.isLoading}
         onSelectTopic={handleSelectTopic}
       />
 
       <StoryWordPickerSheet
         bottomSheetRef={wordSheetRef}
-        selectedWords={effectiveWords}
-        savedWords={savedWords}
-        onChangeWords={(words) => {
-          setSelectedTopic(null);
-          setCustomWords(words);
+        activeTab={pickerTab}
+        onChangeTab={(tab) => {
+          setPickerTab(tab);
+          if (tab === 'MY_WORDS') {
+            setExplicitTopic('NONE');
+            setExplicitWords(null);
+          }
         }}
-      />
-
-      <StoryStyleSheet
-        bottomSheetRef={styleSheetRef}
-        mode={mode}
-        level={level}
-        genre={genre}
-        onChangeMode={setMode}
-        onChangeLevel={setLevel}
-        onChangeGenre={setGenre}
+        selectedTopic={resolvedSelectedTopic}
+        topicWords={topicWords}
+        isLoadingTopicWords={topicWordsQuery.isLoading}
+        savedWords={pickerSavedPool}
+        selectedWords={selectedWords}
+        onChangeWords={setExplicitWords}
+        onRequestSwitchTopic={() => {
+          wordSheetRef.current?.dismiss();
+          setTimeout(() => topicSheetRef.current?.present(), 180);
+        }}
       />
     </SafeAreaView>
   );
