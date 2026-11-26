@@ -1,5 +1,6 @@
 import type { QueryClient } from '@tanstack/react-query';
 import type { AxiosError } from 'axios';
+import type { Mnemonic } from './mnemonic-api';
 import type { ApiResponse } from '@/features/auth/api';
 import type { TopicItemData } from '@/features/learn/types';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -14,6 +15,9 @@ export type StudyCard = {
   collectionName: string;
   state: 'NEW' | 'LEARNING' | 'REVIEW' | 'RELEARNING' | 'SUSPENDED';
   due: string | null;
+  /** Every "Quên" so far; from 2 the card offers an AI mnemonic. Absent on an older backend. */
+  forgetCount?: number;
+  mnemonic?: Mnemonic | null;
 };
 export type StudyQueue = {
   limit: number;
@@ -30,6 +34,7 @@ export type ReviewResult = {
   /** Booster included; 0 when the card was already reviewed today. */
   xpAwarded: number;
   becameMastered: boolean;
+  forgetCount?: number;
 };
 /** learn_ui.md §4.1: the one source for "hôm nay" on Learn and Home. */
 export type StudyToday = {

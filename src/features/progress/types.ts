@@ -70,3 +70,26 @@ export type XpOverviewDTO = {
   level: LevelInfo | null;
   recentEvents: XpEvent[];
 };
+
+/** GET /api/progress/forecast: the next 7 study days if nothing is reviewed. */
+export type ForecastDayDTO = {
+  date: string;
+  /** Cards falling due that day; day 0 also holds overdue ones. */
+  dueCount: number;
+  /** Average recall chance (0..1) at the end of the day; null without started cards. */
+  retention: number | null;
+};
+export type BestTimeSlotDTO = { startHour: number; reviews: number; recallRate: number | null };
+export type BestTimeDTO = {
+  enoughData: boolean;
+  pairs: number;
+  minPairs: number;
+  bestStartHour: number | null;
+  slots: BestTimeSlotDTO[];
+};
+export type ForecastDTO = {
+  days: ForecastDayDTO[];
+  retentionNow: number | null;
+  cardsTracked: number;
+  bestTime: BestTimeDTO;
+};

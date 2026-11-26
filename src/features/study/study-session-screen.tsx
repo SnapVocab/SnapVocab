@@ -1,4 +1,4 @@
-import type { FsrsRating } from './api';
+import type { FsrsRating, StudyCard } from './api';
 import type { CardSide } from '@/features/card-renderer/types';
 import type { TxKeyPath } from '@/lib/i18n';
 import { useQueryClient } from '@tanstack/react-query';
@@ -15,7 +15,10 @@ import { invalidateProgress, useStreak } from '@/features/progress';
 import { useSchema, useTopicSchema } from '@/features/template-builder/api';
 import { translate } from '@/lib/i18n';
 import { invalidateStudy, useStudyQueue, useStudyToday, useSubmitStudyRating } from './api';
+import { MnemonicSheet } from './components/mnemonic-sheet';
+import { LeechBanner, MnemonicStrip } from './components/mnemonic-strip';
 import { EXPLORE_HREF } from './today-state';
+import { useSessionMnemonics } from './use-session-mnemonics';
 
 const RATINGS: {
   value: FsrsRating;
@@ -85,6 +88,7 @@ export function StudySessionScreen() {
   // A framed card is 3:4 and shrinks to the height left between the header and the answer button.
   const [frameAreaHeight, setFrameAreaHeight] = React.useState(0);
   const [stats, setStats] = React.useState(NO_STATS);
+  const mnemonics = useSessionMnemonics();
 
   // Learn and Home refresh once when the learner leaves, not after every card.
   React.useEffect(() => () => {
@@ -124,6 +128,7 @@ export function StudySessionScreen() {
     const topicItemId = currentCard.item.topicItemId;
     try {
       const result = await submitRating.mutateAsync({ ...scope, topicItemId, rating });
+      mnemonics.onRated(currentCard, result);
       setStats(s => ({
         reviewed: s.reviewed + 1,
         mastered: s.mastered + (result.becameMastered ? 1 : 0),
@@ -225,6 +230,14 @@ export function StudySessionScreen() {
         )}
       </View>
 
+      {mnemonics.prompt && (
+        <LeechBanner
+          forgetCount={mnemonics.prompt.forgetCount}
+          onOpen={mnemonics.openPrompt}
+          onDismiss={mnemonics.dismissPrompt}
+        />
+      )}
+
       {currentCard
         ? (
             <>
@@ -287,12 +300,15 @@ export function StudySessionScreen() {
               <View className="bg-surface px-4 pt-3 pb-5">
                 {side === 'BACK'
                   ? (
-                      <StudyRatingControls
-                        isPending={submitRating.isPending}
-                        onRate={handleRate}
-                        showGuide={showRatingGuide}
-                        onToggleGuide={() => setShowRatingGuide(value => !value)}
-                      />
+                      <>
+                        <CardMnemonic card={currentCard} mnemonics={mnemonics} />
+                        <StudyRatingControls
+                          isPending={submitRating.isPending}
+                          onRate={handleRate}
+                          showGuide={showRatingGuide}
+                          onToggleGuide={() => setShowRatingGuide(value => !value)}
+                        />
+                      </>
                     )
                   : (
                       <Text className="text-center font-inter text-xs font-semibold text-neutral-400">
@@ -340,6 +356,7 @@ export function StudySessionScreen() {
                   <Button className="mt-6 px-8" label={translate('learn.session.done')} variant="primary" onPress={() => router.back()} />
                 </View>
               )}
+      <MnemonicSheet {...mnemonics.sheet} />
     </SafeAreaView>
   );
 }
@@ -388,6 +405,18 @@ function SessionSummary({ stats, next, onNext, onDone }: SummaryProps) {
           : <Button label={translate('learn.session.done')} variant="primary" onPress={onDone} />}
       </View>
     </View>
+  );
+}
+
+/** The back of a card: its mnemonic or, for a leech, the offer to make one. */
+function CardMnemonic({ card, mnemonics }: { card: StudyCard; mnemonics: ReturnType<typeof useSessionMnemonics> }) {
+  const strip = mnemonics.stripFor(card);
+  return (
+    <MnemonicStrip
+      mnemonic={strip.mnemonic}
+      offer={strip.offer}
+      onOpen={() => mnemonics.open(card.item.topicItemId, strip.forgetCount, { word: mnemonics.wordOf(card), fromQueue: card.mnemonic })}
+    />
   );
 }
 
