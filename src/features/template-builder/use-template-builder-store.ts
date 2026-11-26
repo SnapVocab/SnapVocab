@@ -36,8 +36,9 @@ export const useTemplateBuilderStore = create<TemplateBuilderState>((set, get, a
   initBuilder: ({ topicId, topicName, template, schema, force = false }: InitBuilderParams) => {
     const current = get();
 
-    // If already initialized for the same topic context and not forced, preserve modified state!
-    if (!force && current.isInitialized && current.topicId === topicId) {
+    // If already initialized for the same topic and template and not forced, preserve modified state!
+    // Two library templates share topicId undefined, so the template must match too.
+    if (!force && current.isInitialized && current.topicId === topicId && current.templateId === template?.id) {
       if (current.availableAttributes.length === 0 && schema?.groups) {
         const attributes = schema.groups.flatMap(g => g.attributes ?? []);
         set({ availableAttributes: attributes });
