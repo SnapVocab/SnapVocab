@@ -2,18 +2,23 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'expo-router';
 import * as React from 'react';
 import { Controller, useForm } from 'react-hook-form';
+import { Alert } from 'react-native';
 import { useUniwind } from 'uniwind';
-import * as z from 'zod';
 
-import { Button, Input, showErrorMessage, ThemedLink, View } from '@/components/ui';
+import * as z from 'zod';
+import { Button, Input, showErrorMessage, showSuccessMessage, ThemedLink, View } from '@/components/ui';
 import { FingerprintIcon, Lock, Mail } from '@/components/ui/icons';
 import { translate } from '@/lib/i18n/utils';
 import { useLogin } from '../api';
 import {
+  clearStoredPasskeyBinding,
   getLastLoginEmail,
   getStoredPasskeyBinding,
   isPasskeyCancelledError,
+  markBiometricOffered,
+  registerBiometricDevice,
   setLastLoginEmail,
+  shouldOfferBiometric,
   useBiometricSupported,
   usePasskeyLogin,
 } from '../passkey';
@@ -26,6 +31,30 @@ const loginSchema = z.object({
 
 type LoginFormValues = z.infer<typeof loginSchema>;
 
+/**
+ * Fingerprint sign-in used to be findable only in Settings → Security. Asked once, right after a password sign-in;
+ * plain functions, since this form unmounts as soon as the learner is signed in.
+ */
+async function offerBiometric(email: string) {
+  if (!(await shouldOfferBiometric(email)))
+    return;
+  markBiometricOffered(email);
+  Alert.alert(translate('login.biometric_offer_title'), translate('login.biometric_offer_body'), [
+    { text: translate('login.biometric_offer_later'), style: 'cancel' },
+    {
+      text: translate('login.biometric_offer_enable'),
+      onPress: () => {
+        registerBiometricDevice(email)
+          .then(() => showSuccessMessage(translate('settings.biometric_enabled')))
+          .catch((error) => {
+            if (!isPasskeyCancelledError(error))
+              showErrorMessage(translate('settings.biometric_error'));
+          });
+      },
+    },
+  ]);
+}
+
 export function LoginForm() {
   const router = useRouter();
   const { theme } = useUniwind();
@@ -33,7 +62,8 @@ export function LoginForm() {
   const { mutate: login, isPending } = useLogin();
   const { mutate: loginWithPasskey, isPending: isPasskeyPending } = usePasskeyLogin();
   const biometricSupported = useBiometricSupported();
-  const hasBiometricSetup = Boolean(getStoredPasskeyBinding());
+  // State, not a read per render: a revoked binding is cleared below and the button must go away.
+  const [hasBiometricSetup, setHasBiometricSetup] = React.useState(() => Boolean(getStoredPasskeyBinding()));
   const showBiometricButton = biometricSupported && hasBiometricSetup;
 
   const {
@@ -52,8 +82,10 @@ export function LoginForm() {
   const onSubmit = (value: LoginFormValues) => {
     login(value, {
       onSuccess: (data) => {
-        setLastLoginEmail(data.user?.email || value.email);
+        const email = data.user?.email || value.email;
+        setLastLoginEmail(email);
         setAuth(data);
+        void offerBiometric(email);
       },
       onError: (error) => {
         const body = error.response?.data as any;
@@ -86,9 +118,16 @@ export function LoginForm() {
         onError: (error) => {
           if (isPasskeyCancelledError(error))
             return;
-          const body = (error as { response?: { data?: { error?: string } } })?.response?.data;
-          if (body?.error === 'USER_BANNED') {
+          const response = (error as { response?: { status?: number; data?: { error?: string } } })?.response;
+          if (response?.data?.error === 'USER_BANNED') {
             showErrorMessage(translate('login.banned'));
+          }
+          // 400: the server no longer knows this device (turned off elsewhere, or the password changed). Retrying
+          // would fail forever, so forget it here and say how to turn it back on.
+          else if (response?.status === 400 || (error as Error)?.message === 'MISSING_BIOMETRIC_TOKEN') {
+            clearStoredPasskeyBinding();
+            setHasBiometricSetup(false);
+            showErrorMessage(translate('login.biometric_revoked'));
           }
           else {
             showErrorMessage(translate('login.biometric_error'));

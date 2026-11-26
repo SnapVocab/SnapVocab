@@ -52,9 +52,16 @@ export function ResetPasswordForm({ email, code }: ResetPasswordFormProps) {
       {
         onSuccess: () => {
           showSuccessMessage(translate('reset_password.success'));
-          router.push('/(auth)/login');
+          // Back to the Login already under the forgot-password screens, so Back does not reopen this form.
+          router.dismissTo('/(auth)/login');
         },
-        onError: () => {
+        onError: (error) => {
+          // The code was checked a screen ago but can still expire while the password is typed.
+          if (error.response?.status === 400 && (error.response.data as { error?: string } | undefined)?.error === 'INVALID_OR_EXPIRED_CODE') {
+            showErrorMessage(translate('verify_reset_code.wrong_or_expired'));
+            router.back();
+            return;
+          }
           showErrorMessage(translate('reset_password.error'));
         },
       },
