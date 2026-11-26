@@ -1,7 +1,7 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { ActivityIndicator, FlatList, RefreshControl } from 'react-native';
 import { BackButton, Button, FocusAwareStatusBar, Mascot, Pressable, SafeAreaView, Text, View } from '@/components/ui';
-import { SearchIcon } from '@/components/ui/icons';
+import { ChevronRightIcon, SearchIcon, SparklesIcon } from '@/components/ui/icons';
 import { useColorMode } from '@/components/ui/surface';
 import { translate } from '@/lib/i18n';
 import { useMyWords } from './api';
@@ -43,8 +43,31 @@ export function MyWordsScreen() {
         }}
         ListHeaderComponent={words.length > 0
           ? (
-              <View className="px-4 pt-3 pb-2">
-                {/* AI Story lives in the Learn tab (Story Lab), which can draw from these words. */}
+              <View className="gap-2.5 px-4 pt-3 pb-2">
+                {words.length >= 3 && (
+                  <Pressable
+                    onPress={() => {
+                      router.push({
+                        pathname: '/story',
+                        params: { source: 'MY_WORDS' },
+                      } as any);
+                    }}
+                    className="flex-row items-center justify-between rounded-2xl border-2 border-b-4 border-amber-300 border-b-amber-400 bg-amber-50 px-4 py-3 active:translate-y-px dark:border-amber-500/40 dark:border-b-amber-600/50 dark:bg-amber-500/15"
+                  >
+                    <View className="flex-1 flex-row items-center gap-2.5 pr-2">
+                      <SparklesIcon width={18} height={18} color="#D97706" />
+                      <View className="flex-1">
+                        <Text className="font-nunito text-sm font-black text-amber-900 dark:text-amber-200">
+                          {translate('story.my_words_1tap_title')}
+                        </Text>
+                        <Text className="font-inter text-xs text-amber-800/80 dark:text-amber-200/80" numberOfLines={1}>
+                          {translate('story.my_words_1tap_subtitle')}
+                        </Text>
+                      </View>
+                    </View>
+                    <ChevronRightIcon width={18} height={18} color="#B45309" />
+                  </Pressable>
+                )}
                 <Text className="text-sm/5 text-neutral-600 dark:text-neutral-300" tx="my_words.list_hint" />
               </View>
             )
