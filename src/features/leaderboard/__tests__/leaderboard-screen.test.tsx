@@ -7,10 +7,11 @@ import { HomeLeaderboardCard } from '../components/home-leaderboard-card';
 import { LeaderboardScreen } from '../leaderboard-screen';
 
 const mockPush = jest.fn();
+const mockDismissTo = jest.fn();
 jest.mock('expo-router', () => {
   const React = require('react');
   return {
-    useRouter: () => ({ push: mockPush, back: jest.fn() }),
+    useRouter: () => ({ push: mockPush, dismissTo: mockDismissTo, back: jest.fn() }),
     useFocusEffect: (effect: () => (() => void) | void) => {
       React.useEffect(() => effect() ?? undefined, []);
     },
@@ -129,7 +130,7 @@ it('invites an unranked learner to learn, and tells an admin they are not ranked
   const view = render(<LeaderboardScreen />);
   expect(screen.getByText('leaderboard.unranked_current')).toBeOnTheScreen();
   fireEvent.press(screen.getByText('leaderboard.learn'));
-  expect(mockPush).toHaveBeenCalledWith('/learn');
+  expect(mockDismissTo).toHaveBeenCalledWith('/learn');
   view.unmount();
 
   mockQuery(board({ me: { eligible: false, rank: null, score: 0, rankChange: null, xpToNextRank: null, nextRank: null } }));

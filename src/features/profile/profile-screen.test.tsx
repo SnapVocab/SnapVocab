@@ -12,7 +12,8 @@ let mockInventoryError = false;
 let mockBooster: { multiplier: number; expiresAt: string } | null = null;
 
 jest.mock('@react-navigation/native', () => ({ useIsFocused: () => true }));
-jest.mock('expo-router', () => ({ useRouter: () => ({ push: jest.fn() }) }));
+const mockPush = jest.fn();
+jest.mock('expo-router', () => ({ useRouter: () => ({ push: mockPush }) }));
 jest.mock('react-native-safe-area-context', () => ({ useSafeAreaInsets: () => ({ top: 0, bottom: 0, left: 0, right: 0 }) }));
 jest.mock('@/features/auth/use-auth-store', () => ({ useAuthStore: (select: (state: unknown) => unknown) => select({ user: mockUser }) }));
 jest.mock('./api', () => ({ useMe: () => ({ data: undefined, isError: mockMeError, refetch: mockMeRetry }) }));
@@ -84,4 +85,18 @@ it('removes the booster status when it expires without changing total XP', () =>
   expect(screen.getByText('120')).toBeTruthy();
   view.unmount();
   jest.useRealTimers();
+});
+
+it('reaches stats, level, leaderboard, quiz and scan history from Profile', () => {
+  render(<ProfileScreen />);
+  for (const [label, href] of [
+    ['profile.menu.stats', '/stats'],
+    ['profile.menu.level', '/level-progress'],
+    ['profile.menu.leaderboard', '/leaderboard'],
+    ['profile.menu.quiz_history', '/study/quiz-history'],
+    ['profile.menu.scan_history', '/scan-history'],
+  ] as const) {
+    fireEvent.press(screen.getByLabelText(require('@/lib/i18n').translate(label)));
+    expect(mockPush).toHaveBeenLastCalledWith(href);
+  }
 });

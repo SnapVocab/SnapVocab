@@ -168,7 +168,7 @@ export function OutOfCoinModal({
             <Pressable
               onPress={() => {
                 onClose();
-                router.push('/(tabs)/learn' as any);
+                router.dismissTo('/learn');
               }}
               style={{ borderRadius: 16, backgroundColor: s.surfaceMuted }}
               className="h-11 w-full flex-row items-center justify-center gap-2 active:opacity-70"

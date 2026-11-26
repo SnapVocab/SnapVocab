@@ -18,6 +18,7 @@ import {
   Text,
   useSurface,
 } from '@/components/ui';
+import { apiErrorMessage } from '@/lib/api/error-message';
 import { translate } from '@/lib/i18n';
 import { useGenerateStory, useStory } from './api';
 import { StoryClozePanel } from './components/story-cloze-panel';
@@ -87,11 +88,7 @@ export function StoryReaderScreen() {
       setGeneratedStory(created);
     }
     catch (err: any) {
-      const msg
-        = err?.response?.data?.message
-          || err?.response?.data?.error
-          || translate('story.generate_error');
-      setGenError(msg);
+      setGenError(apiErrorMessage(err, 'story.generate_error'));
     }
   }, [generateMutation, params.genre, params.level, params.mode, params.source, params.topicId, parsedWords]);
 

@@ -17,11 +17,23 @@ export function isReminder(type: NotificationType): boolean {
   return type === 'SRS_REMINDER' || type === 'STREAK_WARNING';
 }
 
+const SCAN_RESULT_ROUTE = /^\/scan-result\?requestId=[\w-]+$/;
+
+/**
+ * Rows that open their screen on the first tap: reminders (UI-NOTIF-03) and "scan done", whose whole message is
+ * "your result is ready", so expanding it first only adds a tap. Other messages expand in place.
+ */
+export function opensOnTap(item: Pick<NotificationItem, 'type' | 'route'>): boolean {
+  if (!routeLabel(item.route))
+    return false;
+  return isReminder(item.type) || SCAN_RESULT_ROUTE.test(item.route ?? '');
+}
+
 /** Null when the route is missing or not whitelisted: the row then never navigates. */
 export function routeLabel(route: string | null): TxKeyPath | null {
   if (!route)
     return null;
-  if (/^\/scan-result\?requestId=[\w-]+$/.test(route))
+  if (SCAN_RESULT_ROUTE.test(route))
     return 'notifications.open_scan_result';
   return ROUTE_LABELS.get(route) ?? null;
 }

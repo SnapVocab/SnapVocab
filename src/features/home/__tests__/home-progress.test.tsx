@@ -34,6 +34,7 @@ jest.mock('@/features/badges', () => ({ useBadges: () => ({ data: undefined }), 
 jest.mock('@/features/profile/use-icon-colors', () => ({
   useIconColors: () => new Proxy({}, { get: () => new Proxy({}, { get: () => '#000' }) }),
 }));
+jest.mock('@react-navigation/native', () => ({ ...jest.requireActual('@react-navigation/native'), useIsFocused: () => true }));
 jest.mock('expo-router', () => ({
   useRouter: () => ({ push: jest.fn(), back: jest.fn() }),
   useFocusEffect: jest.fn(),
