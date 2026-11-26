@@ -1,5 +1,6 @@
 export * from './accuracy-stats-card';
 export * from './activity-history-chart';
+export * from './adaptive-learning-section';
 export * from './learning-state-card';
 export * from './level-overview-card';
 export * from './mascot-advice-card';

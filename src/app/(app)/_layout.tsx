@@ -22,6 +22,7 @@ export default function AppLayout() {
         <Stack.Screen name="profile/wallet" />
         <Stack.Screen name="profile/achievements" />
         <Stack.Screen name="stats" />
+        <Stack.Screen name="leech-words" />
         <Stack.Screen name="level-progress" />
         <Stack.Screen name="leaderboard" />
         <Stack.Screen name="story/index" />
