@@ -18,10 +18,12 @@ export function weekdayLabel(date: string, index: number, language: string) {
   const parsed = new Date(`${date}T12:00:00Z`);
   if (Number.isNaN(parsed.getTime()))
     return date;
-  const raw = parsed.toLocaleDateString(language, { weekday: 'short', timeZone: 'UTC' });
-  if (!language.startsWith('vi'))
-    return raw;
-  return raw.toLowerCase().includes('chủ') || raw.toLowerCase().includes('cn') ? 'CN' : raw.replace(/^Th\s*/i, 'T');
+  // Vietnamese labels come from the day number: ICU builds disagree on "Th 6" vs "Thứ 6".
+  if (language.startsWith('vi')) {
+    const weekday = parsed.getUTCDay();
+    return weekday === 0 ? 'CN' : `T${weekday + 1}`;
+  }
+  return parsed.toLocaleDateString(language, { weekday: 'short', timeZone: 'UTC' });
 }
 
 const percent = (value: number | null | undefined) => Math.round((value ?? 0) * 100);

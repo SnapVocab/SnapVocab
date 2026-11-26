@@ -24,7 +24,8 @@ describe('forgetting forecast', () => {
   it('labels the first day "Hôm nay" and the rest by Vietnamese weekday', () => {
     expect(weekdayLabel('2026-11-26', 0, 'vi')).toBe('forecast.today');
     expect(weekdayLabel('2026-11-29', 3, 'vi')).toBe('CN');
-    expect(weekdayLabel('2026-11-27', 1, 'vi')).toMatch(/^T\d$/);
+    expect(weekdayLabel('2026-11-27', 1, 'vi')).toBe('T6');
+    expect(weekdayLabel('2026-11-30', 4, 'vi')).toBe('T2');
   });
 });
 
