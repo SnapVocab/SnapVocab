@@ -83,6 +83,9 @@ export function useQuiz(quizId?: number | null, options?: { enabled?: boolean })
     queryKey: ['quiz', quizId],
     queryFn: () => getQuiz(quizId as number),
     enabled: quizId !== undefined && quizId !== null && (options?.enabled ?? true),
+    // The session waits for a fetch made after it mounted. Creating a quiz seeds this cache, and with the app-wide
+    // staleTime that seed counted as fresh, so no fetch ran and the session stayed on "Đang chuẩn bị bài Quiz".
+    refetchOnMount: 'always',
   });
 }
 

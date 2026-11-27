@@ -6,7 +6,8 @@ import type {
   ScanRequestStatus,
   ScanSubmitResponse,
 } from './types';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import type { PaginateResponse } from '@/lib/api';
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { client } from '@/lib/api';
 import { putFileToStorage, UploadFailedError } from '@/lib/storage/upload';
 import { resolveContentType } from './content-type';
@@ -63,7 +64,10 @@ export function useStartScan() {
       return submitted.data.data;
     },
     // Accepted or refused, the remaining count may have changed.
-    onSettled: () => queryClient.invalidateQueries({ queryKey: scanQuotaKey }),
+    onSettled: () => {
+      void queryClient.invalidateQueries({ queryKey: scanQuotaKey });
+      void queryClient.invalidateQueries({ queryKey: ['scan-history'] });
+    },
   });
 }
 
@@ -97,5 +101,37 @@ export function useScanStatus(requestId?: string) {
     },
     // Keep polling while the user glances at another app; the job keeps running.
     refetchIntervalInBackground: true,
+  });
+}
+
+/** One row of "Lịch sử scan" (GET /api/scan/history). */
+export type ScanHistoryItem = {
+  requestId: string;
+  status: ScanRequestStatus['status'];
+  errorCode: ScanRequestStatus['errorCode'];
+  createdAt: string;
+  finishedAt: string | null;
+  detectionCount: number | null;
+  /** Up to 4 detected words, for the preview. */
+  words: string[];
+  /** Short-lived photo URL, only when DONE. */
+  imageUrl: string | null;
+};
+
+export const scanHistoryKey = ['scan-history'] as const;
+
+export function useScanHistory(pageSize = 20) {
+  return useInfiniteQuery<PaginateResponse<ScanHistoryItem>, AxiosError>({
+    queryKey: scanHistoryKey,
+    initialPageParam: 0,
+    queryFn: async ({ pageParam }) => {
+      const response = await client<ApiResponse<PaginateResponse<ScanHistoryItem>>>({
+        url: '/api/scan/history',
+        method: 'GET',
+        params: { page: pageParam, size: pageSize },
+      });
+      return response.data.data;
+    },
+    getNextPageParam: page => (page.meta.page + 1 < page.meta.pages ? page.meta.page + 1 : undefined),
   });
 }

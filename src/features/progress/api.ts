@@ -2,6 +2,7 @@ import type { QueryClient } from '@tanstack/react-query';
 import type { AxiosError } from 'axios';
 import type { ApiResponse } from '../auth/api';
 import type {
+  ForecastDTO,
   HistoryPeriod,
   HomeWidgetDTO,
   ProgressHistoryDTO,
@@ -132,5 +133,18 @@ export function useXpOverview() {
     queryFn: getXpOverview,
     staleTime: 30 * 1000,
     refetchOnWindowFocus: true,
+  });
+}
+
+/**
+ * GET /api/progress/forecast
+ * 7-day forgetting forecast and the time of day whose reviews stick best (adaptive learning)
+ */
+export function useForecast() {
+  return useQuery<ForecastDTO, AxiosError>({
+    queryKey: ['progress', 'forecast'],
+    queryFn: async () =>
+      (await client<ApiResponse<ForecastDTO>>({ url: '/api/progress/forecast', method: 'GET' })).data.data,
+    staleTime: 5 * 60 * 1000,
   });
 }

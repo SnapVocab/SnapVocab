@@ -1,10 +1,11 @@
-import type { BottomSheetBackdropProps } from '@gorhom/bottom-sheet';
+import type { BottomSheetBackdropProps, BottomSheetModal } from '@gorhom/bottom-sheet';
 import type { Collection, CollectionRef } from '../../types';
-import { BottomSheetBackdrop, BottomSheetModal, BottomSheetScrollView } from '@gorhom/bottom-sheet';
+import { BottomSheetBackdrop, BottomSheetScrollView } from '@gorhom/bottom-sheet';
 import { useRouter } from 'expo-router';
 import * as React from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useUniwind } from 'uniwind';
+import { AppBottomSheetModal } from '@/components/ui/app-bottom-sheet-modal';
 import colors from '@/components/ui/colors';
 import { CollectionCreateForm } from './collection-create-form';
 import { CollectionDeleteConfirm } from './collection-delete-confirm';
@@ -76,7 +77,7 @@ export function CollectionOptionsBottomSheet({
   };
 
   return (
-    <BottomSheetModal
+    <AppBottomSheetModal
       ref={bottomSheetRef}
       stackBehavior="replace"
       enableDynamicSizing={mode !== 'CREATE' && currentView !== 'EDIT'}
@@ -150,7 +151,7 @@ export function CollectionOptionsBottomSheet({
           </>
         )}
       </BottomSheetScrollView>
-    </BottomSheetModal>
+    </AppBottomSheetModal>
   );
 }
 

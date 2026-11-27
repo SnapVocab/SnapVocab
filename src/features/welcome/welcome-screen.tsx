@@ -1,6 +1,6 @@
-import { useRouter } from 'expo-router';
+import { Redirect, useRouter } from 'expo-router';
 import * as React from 'react';
-import { View } from 'react-native';
+import { Pressable, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { runOnJS } from 'react-native-reanimated';
 
@@ -12,8 +12,17 @@ import {
   Text,
 } from '@/components/ui';
 import { translate } from '@/lib/i18n/utils';
+import { hasSeenWelcome, markWelcomeSeen } from './seen';
 
 export function WelcomeScreen() {
+  // Read once on mount: marking it seen below must not redirect away mid-onboarding.
+  const [seenBefore] = React.useState(hasSeenWelcome);
+  if (seenBefore)
+    return <Redirect href="/(auth)/login" />;
+  return <Onboarding />;
+}
+
+function Onboarding() {
   const slides = [{
     image: require('@assets/images/snapy-welcome.png'),
     title: translate('welcome.title1'),
@@ -35,7 +44,13 @@ export function WelcomeScreen() {
   const [index, setIndex] = React.useState(0);
   const last = index === slides.length - 1;
   const slide = slides[index];
-  const next = () => (last ? router.replace('/(auth)/login') : setIndex(i => i + 1));
+  // Leaving the slides, by any button, marks them seen.
+  const finish = (to: '/(auth)/login' | '/(auth)/register') => {
+    markWelcomeSeen();
+    router.replace(to);
+  };
+  // A swipe past the last slide does nothing: the learner picks Register or Login there.
+  const next = () => setIndex(i => Math.min(slides.length - 1, i + 1));
   const prev = () => setIndex(i => Math.max(0, i - 1));
 
   const swipe = Gesture.Pan()
@@ -49,6 +64,20 @@ export function WelcomeScreen() {
   return (
     <SafeAreaView style={{ flex: 1 }} className="flex-1 bg-background">
       <FocusAwareStatusBar />
+
+      <View className="h-12 flex-row items-center justify-end px-4">
+        {!last && (
+          <Pressable
+            accessibilityRole="button"
+            onPress={() => finish('/(auth)/login')}
+            hitSlop={8}
+            testID="welcome-skip"
+            className="min-h-11 justify-center rounded-xl px-3 active:bg-pressed"
+          >
+            <Text className="font-nunito text-sm font-bold text-neutral-500 dark:text-neutral-300">{translate('welcome.skip')}</Text>
+          </Pressable>
+        )}
+      </View>
 
       <GestureDetector gesture={swipe}>
         <View className="flex-1 items-center justify-center px-6">
@@ -89,13 +118,37 @@ export function WelcomeScreen() {
           ))}
         </View>
 
-        <Button
-          label={last ? translate('welcome.login') : translate('welcome.next')}
-          size="lg"
-          variant="brand"
-          className="w-full rounded-2xl"
-          onPress={() => next()}
-        />
+        {last
+          ? (
+              <>
+                <Button
+                  label={translate('welcome.register')}
+                  size="lg"
+                  variant="brand"
+                  className="w-full rounded-2xl"
+                  onPress={() => finish('/(auth)/register')}
+                  testID="welcome-register"
+                />
+                <Button
+                  label={translate('welcome.have_account')}
+                  size="lg"
+                  variant="white"
+                  className="w-full rounded-2xl"
+                  onPress={() => finish('/(auth)/login')}
+                  testID="welcome-login"
+                />
+              </>
+            )
+          : (
+              <Button
+                label={translate('welcome.next')}
+                size="lg"
+                variant="brand"
+                className="w-full rounded-2xl"
+                onPress={next}
+                testID="welcome-next"
+              />
+            )}
       </View>
 
     </SafeAreaView>

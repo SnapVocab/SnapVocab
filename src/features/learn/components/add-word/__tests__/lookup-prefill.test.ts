@@ -140,3 +140,21 @@ it('never prefills fields named word, translation or ipa without explicit roles'
   }] };
   expect(prefillLookup(unbound, {}, { ...word, pronunciations: [{ ipa: '/mʌɡ/' }] })).toEqual({ main: {} });
 });
+
+it('adds a sentence repeated under several senses only once to an examples-only group', () => {
+  const examplesOnly: TopicSchemaDTO = {
+    topicId: 7,
+    groups: [{ groupId: 3, name: 'examples', label: 'Examples', multiple: true, position: 0, attributes: [
+      { attributeId: 9, name: 'sentence', label: 'Example', dataType: 'TEXT', required: false, position: 0, semanticRole: 'EXAMPLE_SENTENCE' },
+    ] }],
+  };
+  const result = prefillLookup(examplesOnly, {}, {
+    ...word,
+    meanings: [
+      { definition: 'a bottle', example: 'a bottle of water' },
+      { definition: 'courage', example: 'A bottle of water.' },
+      { definition: 'to bottle', example: 'they bottle wine' },
+    ],
+  });
+  expect(result.examples).toEqual([{ sentence: 'a bottle of water' }, { sentence: 'they bottle wine' }]);
+});

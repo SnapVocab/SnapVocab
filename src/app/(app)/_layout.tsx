@@ -18,11 +18,11 @@ export default function AppLayout() {
         <Stack.Screen name="scan-result" />
         <Stack.Screen name="scan-save" />
         <Stack.Screen name="template-builder" />
-        <Stack.Screen name="shop" />
         <Stack.Screen name="profile/inventory" />
         <Stack.Screen name="profile/wallet" />
         <Stack.Screen name="profile/achievements" />
         <Stack.Screen name="stats" />
+        <Stack.Screen name="leech-words" />
         <Stack.Screen name="level-progress" />
         <Stack.Screen name="leaderboard" />
         <Stack.Screen name="story/index" />

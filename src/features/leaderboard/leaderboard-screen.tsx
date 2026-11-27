@@ -257,7 +257,7 @@ export function LeaderboardScreen() {
     }
   }
 
-  const goLearn = () => router.push('/learn');
+  const goLearn = () => router.dismissTo('/learn');
   const pinned = data && shouldPinMe(data);
   const gap = data && gapOf(data, week);
   const gapLabel = gap ? translate(gap.key, { xp: gap.xp, rank: gap.rank }) : undefined;

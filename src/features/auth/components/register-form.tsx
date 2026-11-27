@@ -17,7 +17,7 @@ const registerSchema = z.object({
   password: z.string().min(5, translate('validation.password_min')),
   confirmPassword: z.string(),
 }).refine(data => data.password === data.confirmPassword, {
-  message: 'Passwords do not match',
+  message: translate('validation.password_mismatch'),
   path: ['confirmPassword'],
 });
 

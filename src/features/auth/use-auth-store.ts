@@ -2,6 +2,7 @@ import type { StateStorage } from 'zustand/middleware';
 import type { ActiveBoosterDTO } from '@/features/shop/types';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
+import { markWelcomeSeen } from '@/features/welcome/seen';
 import { removeToken, setToken } from '@/lib/auth/utils';
 import { storage } from '@/lib/storage';
 
@@ -65,6 +66,8 @@ const store = create<AuthState>()(
       status: 'idle' as Status,
 
       login: (data) => {
+        // Whoever has signed in knows the app: after sign-out, Login rather than the onboarding slides.
+        markWelcomeSeen();
         set({
           user: data.user,
           accessToken: data.access_token,
@@ -105,6 +108,8 @@ const store = create<AuthState>()(
       }),
       onRehydrateStorage: () => (state) => {
         if (state?.accessToken && state?.user) {
+          // Signed in from before the onboarding flag existed: they know the app too.
+          markWelcomeSeen();
           store.setState({ status: 'signIn' });
         }
         else {

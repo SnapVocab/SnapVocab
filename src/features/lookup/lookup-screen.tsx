@@ -25,7 +25,8 @@ import { useWordSuggestions } from './api';
 
 const RECENT_SEARCHES_STORAGE_KEY = 'lookup_recent_searches';
 const MAX_RECENT_SEARCHES = 10;
-const DEFAULT_RECENT_SEARCHES = ['abandon', 'curious', 'resilient', 'opportunity'];
+// A new learner has searched nothing yet: no made-up "recent" words (UX audit #7).
+const DEFAULT_RECENT_SEARCHES: string[] = [];
 
 export function LookupScreen() {
   const router = useRouter();

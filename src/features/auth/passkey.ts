@@ -154,32 +154,63 @@ export function usePasskeyCredentials(enabled = true) {
   });
 }
 
+/** Prompts for the fingerprint, then binds this device to the signed-in account. */
+export async function registerBiometricDevice(email: string): Promise<BiometricRegisterResponse> {
+  await promptBiometric(translate('settings.biometric_login'));
+
+  const response = await client<ApiResponse<BiometricRegisterResponse>>({
+    url: '/api/auth/biometric/register',
+    method: 'POST',
+    data: { deviceName: buildDeviceName() },
+  });
+
+  const saved = response.data.data;
+  await SecureStore.setItemAsync(BIOMETRIC_TOKEN_KEY, saved.biometricToken, {
+    keychainAccessible: SecureStore.WHEN_UNLOCKED_THIS_DEVICE_ONLY,
+  });
+
+  setStoredPasskeyBinding({
+    dbId: saved.id,
+    credentialId: saved.credentialId,
+    email: email.trim().toLowerCase(),
+  });
+  setLastLoginEmail(email);
+  return saved;
+}
+
+const OFFER_KEY_PREFIX = 'biometric_offer_seen_v1:';
+
+/**
+ * After a password sign-in, offer fingerprint sign-in once per account and device: only when the device has an
+ * enrolled fingerprint, this account is not bound yet, and the learner has not been asked before.
+ */
+export async function shouldOfferBiometric(email: string): Promise<boolean> {
+  const normalized = email.trim().toLowerCase();
+  if (!normalized || !isPasskeySupported() || storage.getBoolean(OFFER_KEY_PREFIX + normalized))
+    return false;
+  if (getStoredPasskeyBinding()?.email === normalized)
+    return false;
+  try {
+    const [hasHardware, isEnrolled] = await Promise.all([
+      LocalAuthentication.hasHardwareAsync(),
+      LocalAuthentication.isEnrolledAsync(),
+    ]);
+    return hasHardware && isEnrolled;
+  }
+  catch {
+    return false;
+  }
+}
+
+export function markBiometricOffered(email: string) {
+  storage.set(OFFER_KEY_PREFIX + email.trim().toLowerCase(), true);
+}
+
 export function useRegisterPasskey() {
   const queryClient = useQueryClient();
 
   return useMutation<BiometricRegisterResponse, unknown, { email: string }>({
-    mutationFn: async ({ email }) => {
-      await promptBiometric(translate('settings.biometric_login'));
-
-      const response = await client<ApiResponse<BiometricRegisterResponse>>({
-        url: '/api/auth/biometric/register',
-        method: 'POST',
-        data: { deviceName: buildDeviceName() },
-      });
-
-      const saved = response.data.data;
-      await SecureStore.setItemAsync(BIOMETRIC_TOKEN_KEY, saved.biometricToken, {
-        keychainAccessible: SecureStore.WHEN_UNLOCKED_THIS_DEVICE_ONLY,
-      });
-
-      setStoredPasskeyBinding({
-        dbId: saved.id,
-        credentialId: saved.credentialId,
-        email: email.trim().toLowerCase(),
-      });
-      setLastLoginEmail(email);
-      return saved;
-    },
+    mutationFn: ({ email }) => registerBiometricDevice(email),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: PASSKEY_CREDENTIALS_QUERY_KEY });
     },

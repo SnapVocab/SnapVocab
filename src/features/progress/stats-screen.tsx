@@ -13,6 +13,7 @@ import {
 import {
   AccuracyStatsCard,
   ActivityHistoryChart,
+  AdaptiveLearningSection,
   LearningStateCard,
   LevelOverviewCard,
   MascotAdviceCard,
@@ -74,6 +75,9 @@ export function StatsScreen() {
 
         {/* 4. Activity History (owns its loading/error/empty states) */}
         <ActivityHistoryChart />
+
+        {/* 4b. Adaptive learning: forgetting forecast, best study time, words often forgotten (AI mnemonics) */}
+        <AdaptiveLearningSection />
 
         {/* 5. Vocabulary (SRS note while SRS is off) */}
         {!summary.isError && (

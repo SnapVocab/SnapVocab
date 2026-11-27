@@ -3,6 +3,7 @@ export * from './builder-header';
 export * from './field-item-card';
 export * from './field-settings-bottom-sheet';
 export * from './flashcard-preview-modal';
+export * from './save-template-modal';
 export * from './section-card';
 export * from './section-settings-bottom-sheet';
 export * from './tab-segmented-bar';

@@ -3,6 +3,14 @@ export type WordSuggestionResponse = {
   word: string;
 };
 
+/** One row of "Từ của tôi" (GET /api/words/my): absent fields on an older backend mean "unknown". */
+export type MyWordResponse = WordSuggestionResponse & {
+  /** First Vietnamese translation, else definition. */
+  meaning?: string | null;
+  /** The learner's own topics already holding this word. */
+  topics?: { topicId: number; topicName: string; collectionId: number; collectionName: string }[];
+};
+
 export type WordSuggestionParams = {
   q: string;
   page?: number;

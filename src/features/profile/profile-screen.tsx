@@ -2,6 +2,7 @@ import type { Href } from 'expo-router';
 import type { ReactNode } from 'react';
 import type { User } from '../auth/api';
 import type { InventoryItemDTO } from '@/features/shop/types';
+import type { TxKeyPath } from '@/lib/i18n';
 import { useIsFocused } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
@@ -22,11 +23,15 @@ import {
 } from '@/components/ui';
 import {
   BoxIcon,
+  CameraIcon,
   ChevronRightIcon,
+  ClockRotateIcon,
+  CommunityIcon,
   EditIcon,
   FlameIcon,
   SettingsIcon,
   StarIcon,
+  StatisticIcon,
   TrophyIcon,
   WalletIcon,
 } from '@/components/ui/icons';
@@ -175,6 +180,52 @@ export function ProfileScreen() {
             </Text>
           </View>
         )}
+
+        {/* Progress screens used to be reachable only from Home cards or after a quiz (UX audit #13). */}
+        <Text className="mt-5 mb-2 px-1 font-nunito text-sm font-extrabold text-neutral-500 dark:text-neutral-400" tx="profile.progress_section" />
+        <View className="overflow-hidden rounded-2xl border-2 border-b-4 border-line border-b-edge bg-surface">
+          <ProfileMenuRow
+            icon={<StatisticIcon color={iconColor.stat.trophy} width={20} height={20} />}
+            tint="bg-primary-50 border-primary-100 dark:bg-primary-400/15 dark:border-primary-400/30"
+            tx="profile.menu.stats"
+            hintTx="profile.menu_hints.stats"
+            chevron={iconColor.muted}
+            onPress={() => router.push('/stats' as Href)}
+          />
+          <ProfileMenuRow
+            icon={<StarIcon color={iconColor.stat.trophy} width={20} height={20} />}
+            tint="bg-primary-50 border-primary-100 dark:bg-primary-400/15 dark:border-primary-400/30"
+            tx="profile.menu.level"
+            hintTx="profile.menu_hints.level"
+            chevron={iconColor.muted}
+            onPress={() => router.push('/level-progress' as Href)}
+          />
+          <ProfileMenuRow
+            icon={<CommunityIcon color={iconColor.stat.trophy} width={20} height={20} />}
+            tint="bg-reward-50 border-reward-100 dark:bg-reward-500/15 dark:border-reward-500/30"
+            tx="profile.menu.leaderboard"
+            hintTx="profile.menu_hints.leaderboard"
+            chevron={iconColor.muted}
+            onPress={() => router.push('/leaderboard' as Href)}
+          />
+          <ProfileMenuRow
+            icon={<ClockRotateIcon color={iconColor.stat.inventory} width={20} height={20} />}
+            tint="bg-purple-50 border-purple-100 dark:bg-purple-500/15 dark:border-purple-500/30"
+            tx="profile.menu.quiz_history"
+            hintTx="profile.menu_hints.quiz_history"
+            chevron={iconColor.muted}
+            onPress={() => router.push('/study/quiz-history' as Href)}
+          />
+          <ProfileMenuRow
+            icon={<CameraIcon color={iconColor.stat.inventory} width={20} height={20} />}
+            tint="bg-purple-50 border-purple-100 dark:bg-purple-500/15 dark:border-purple-500/30"
+            tx="profile.menu.scan_history"
+            hintTx="profile.menu_hints.scan_history"
+            chevron={iconColor.muted}
+            onPress={() => router.push('/scan-history' as Href)}
+            last
+          />
+        </View>
 
         <View className="mt-5 overflow-hidden rounded-2xl border-2 border-b-4 border-line border-b-edge bg-surface">
           <ProfileMenuRow
@@ -328,8 +379,8 @@ function ProfileMenuRow({
 }: {
   icon: ReactNode;
   tint: string;
-  tx: 'profile.menu.achievements' | 'profile.menu.wallet' | 'profile.menu.inventory';
-  hintTx: 'profile.menu_hints.achievements' | 'profile.menu_hints.wallet' | 'profile.menu_hints.inventory';
+  tx: TxKeyPath;
+  hintTx: TxKeyPath;
   chevron: string;
   last?: boolean;
   onPress: () => void;

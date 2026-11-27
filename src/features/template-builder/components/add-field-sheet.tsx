@@ -1,12 +1,14 @@
-import type { BottomSheetBackdropProps } from '@gorhom/bottom-sheet';
+import type { BottomSheetBackdropProps, BottomSheetModal } from '@gorhom/bottom-sheet';
 import type { AddFieldParams } from '../store-types';
 import type { CustomFieldInput, DataType, SchemaAttributeDTO, SemanticRole, TopicSchemaDTO } from '../types';
-import { BottomSheetBackdrop, BottomSheetModal, BottomSheetScrollView } from '@gorhom/bottom-sheet';
+import { BottomSheetBackdrop, BottomSheetScrollView } from '@gorhom/bottom-sheet';
 import * as React from 'react';
 import { TouchableOpacity, View } from 'react-native';
+import { AppBottomSheetModal } from '@/components/ui/app-bottom-sheet-modal';
 import { Button } from '@/components/ui/button';
 import { CloseIcon, PlusIcon } from '@/components/ui/icons';
 import { Input } from '@/components/ui/input';
+import { useSurface } from '@/components/ui/surface';
 import { Switch } from '@/components/ui/switch';
 import { Text } from '@/components/ui/text';
 import { translate } from '@/lib/i18n/utils';
@@ -29,6 +31,7 @@ export function AddFieldSheet({
   usedAttributeIds,
   onAddField,
 }: AddFieldSheetProps) {
+  const surface = useSurface();
   const [activeTab, setActiveTab] = React.useState<'PRESETS' | 'CUSTOM'>('PRESETS');
 
   // Custom Field Form State
@@ -87,7 +90,7 @@ export function AddFieldSheet({
   const snapPoints = React.useMemo(() => ['85%'], []);
 
   return (
-    <BottomSheetModal
+    <AppBottomSheetModal
       ref={bottomSheetRef}
       snapPoints={snapPoints}
       enableDynamicSizing={false}
@@ -96,6 +99,7 @@ export function AddFieldSheet({
       enableOverDrag={false}
       backdropComponent={renderBackdrop}
       handleIndicatorStyle={{ backgroundColor: '#D1D5DB', width: 40 }}
+      backgroundStyle={{ backgroundColor: surface.background }}
     >
       <View className="flex-1 bg-background px-5 pb-6">
         {/* Header */}
@@ -267,6 +271,6 @@ export function AddFieldSheet({
           )}
         </BottomSheetScrollView>
       </View>
-    </BottomSheetModal>
+    </AppBottomSheetModal>
   );
 }

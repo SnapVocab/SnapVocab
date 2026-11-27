@@ -9,9 +9,10 @@ import { actions, MissionsScreen, studyHref } from '../missions-screen';
 import { RENDERED_TRIGGERS } from '../types';
 
 const mockPush = jest.fn();
+const mockDismissTo = jest.fn();
 const mockBack = jest.fn();
 jest.mock('expo-router', () => ({
-  useRouter: () => ({ push: mockPush, back: mockBack }),
+  useRouter: () => ({ push: mockPush, dismissTo: mockDismissTo, back: mockBack }),
   useFocusEffect: jest.fn(),
 }));
 jest.mock('expo-crypto', () => ({ randomUUID: () => 'stable-uuid' }));
@@ -181,7 +182,7 @@ describe('daily Mission screen lifecycle (Snapy Stage)', () => {
     expect(screen.getByText('missions.victory_title')).toBeTruthy();
     expect(screen.queryByText('missions.claim')).toBeNull();
     fireEvent.press(screen.getByText('missions.next_day_cta'));
-    expect(mockPush).toHaveBeenCalledWith('/learn');
+    expect(mockDismissTo).toHaveBeenCalledWith('/learn');
   });
 
   it('refetches at the server deadline and when returning to foreground, and removes its subscription', () => {
@@ -218,7 +219,7 @@ describe('daily Mission screen lifecycle (Snapy Stage)', () => {
     mutateAsync.mockResolvedValueOnce({ rewardGranted: { coin: 5, xp: 10, itemCode: 'XP_BOOSTER_X2_15M', itemName: '×2 XP · 15 phút', itemQuantity: 1, fallbackCoin: 0 }, replayed: false });
     render(<MissionsScreen />);
     fireEvent.press(screen.getByText('missions.action.add_word'));
-    expect(mockPush).toHaveBeenCalledWith('/learn');
+    expect(mockDismissTo).toHaveBeenCalledWith('/learn');
     fireEvent.press(screen.getByText('missions.claim'));
     expect(await screen.findByText('missions.granted(missions.granted_coin(5), missions.granted_xp(10), ×2 XP · 15 phút)')).toBeTruthy();
   });

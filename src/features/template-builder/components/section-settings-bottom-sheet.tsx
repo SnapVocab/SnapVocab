@@ -1,11 +1,13 @@
-import type { BottomSheetBackdropProps } from '@gorhom/bottom-sheet';
+import type { BottomSheetBackdropProps, BottomSheetModal } from '@gorhom/bottom-sheet';
 import type { BuilderSection, ColumnLayout } from '../types';
-import { BottomSheetBackdrop, BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet';
+import { BottomSheetBackdrop, BottomSheetView } from '@gorhom/bottom-sheet';
 import * as React from 'react';
 import { TouchableOpacity, View } from 'react-native';
+import { AppBottomSheetModal } from '@/components/ui/app-bottom-sheet-modal';
 import { Button } from '@/components/ui/button';
 import { CloseIcon, TrashIcon } from '@/components/ui/icons';
 import { Input } from '@/components/ui/input';
+import { useSurface } from '@/components/ui/surface';
 import { Switch } from '@/components/ui/switch';
 import { Text } from '@/components/ui/text';
 import { translate } from '@/lib/i18n/utils';
@@ -23,6 +25,7 @@ export function SectionSettingsBottomSheet({
   onSave,
   onDelete,
 }: SectionSettingsBottomSheetProps) {
+  const surface = useSurface();
   const [name, setName] = React.useState('');
   const [columns, setColumns] = React.useState<ColumnLayout>(1);
   const [repeatable, setRepeatable] = React.useState(false);
@@ -66,12 +69,13 @@ export function SectionSettingsBottomSheet({
   }
 
   return (
-    <BottomSheetModal
+    <AppBottomSheetModal
       ref={bottomSheetRef}
       enableDynamicSizing
       enablePanDownToClose
       backdropComponent={renderBackdrop}
       handleIndicatorStyle={{ backgroundColor: '#D1D5DB', width: 40 }}
+      backgroundStyle={{ backgroundColor: surface.background }}
     >
       <BottomSheetView className="rounded-t-3xl bg-surface px-5 pt-1 pb-8">
         <View className="flex-row items-center justify-between border-b border-line pb-3">
@@ -132,7 +136,7 @@ export function SectionSettingsBottomSheet({
           </View>
         </View>
       </BottomSheetView>
-    </BottomSheetModal>
+    </AppBottomSheetModal>
   );
 }
 

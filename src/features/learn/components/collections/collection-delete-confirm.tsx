@@ -3,6 +3,7 @@ import * as React from 'react';
 import { View } from 'react-native';
 import { Button, showErrorMessage, Text } from '@/components/ui';
 import { CloseIcon } from '@/components/ui/icons';
+import { apiErrorMessage } from '@/lib/api/error-message';
 import { translate } from '@/lib/i18n';
 import { useDeleteCollection } from '../../api';
 
@@ -21,8 +22,7 @@ export function CollectionDeleteConfirm({ collection, onSuccess, onCancel }: Pro
         onSuccess();
       },
       onError: (error) => {
-        const message = error.response?.data?.error || translate('learn.collections.delete_error');
-        showErrorMessage(message);
+        showErrorMessage(apiErrorMessage(error, 'learn.collections.delete_error'));
       },
     });
   };

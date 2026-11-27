@@ -1,3 +1,4 @@
+import type { Href } from 'expo-router';
 import type { CreateTopicFormValues } from './components/topic/create-topic-validation';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -14,19 +15,18 @@ import {
   showErrorMessage,
   showSuccessMessage,
   Text,
-  useSurface,
 } from '@/components/ui';
-import { LayoutGridIcon, SlidersIcon } from '@/components/ui/icons';
 import { useTemplateBuilderStore } from '@/features/template-builder/use-template-builder-store';
+import { apiErrorMessage } from '@/lib/api/error-message';
 import { translate } from '@/lib/i18n';
 import { useCreateTopic } from './api';
 import { createTopicSchema } from './components/topic/create-topic-validation';
+import { TemplatePicker } from './components/topic/template-picker';
 
 const KeyboardAvoidingView = withUniwind(NativeKeyboardAvoidingView);
 
 export function CreateTopicScreen() {
   const router = useRouter();
-  const surface = useSurface();
   const {
     collectionId,
     collectionName = '',
@@ -84,9 +84,7 @@ export function CreateTopicScreen() {
           router.back();
         },
         onError: (error) => {
-          const message
-            = (error.response?.data as any)?.error || translate('learn.create_topic.create_error');
-          showErrorMessage(message);
+          showErrorMessage(apiErrorMessage(error, 'learn.create_topic.create_error'));
         },
       },
     );
@@ -200,46 +198,19 @@ export function CreateTopicScreen() {
               {translate('learn.create_topic.layout_section_title')}
             </Text>
 
-            <View className="rounded-2xl border-2 border-line bg-white p-4 shadow-sm dark:bg-neutral-800/80">
-              {/* Header row */}
-              <View className="flex-row items-center justify-between">
-                <View className="mr-2 flex-1 flex-row items-center">
-                  <View className="mr-3 size-11 items-center justify-center rounded-xl border border-success-300/50 bg-success-100/60 dark:bg-emerald-950/80">
-                    <LayoutGridIcon color="#16A34A" width={22} height={22} />
-                  </View>
-                  <View className="flex-1">
-                    <View className="flex-row flex-wrap items-center gap-1.5">
-                      <Text className="font-nunito text-sm font-black text-mascot-navy dark:text-white">
-                        {savedCustomTemplate?.name ?? translate('learn.create_topic.layout_name')}
-                      </Text>
-                      <View className="rounded-md bg-success-100 px-1.5 py-0.5 dark:bg-emerald-900/60">
-                        <Text className="font-inter text-[10px] font-extrabold text-success-700 dark:text-success-400">
-                          {savedCustomTemplate ? 'Custom' : translate('learn.create_topic.layout_badge_default')}
-                        </Text>
-                      </View>
-                    </View>
-                    <Text className="mt-0.5 font-inter text-xs font-semibold text-neutral-400 dark:text-neutral-400">
-                      {translate('learn.create_topic.layout_desc')}
-                    </Text>
-                  </View>
-                </View>
+            <TemplatePicker
+              selected={savedCustomTemplate}
+              onSelect={setSavedCustomTemplate}
+              onCreateNew={() => router.push({ pathname: '/template-builder', params: { from: 'create-topic' } })}
+              onEdit={template => router.push({
+                pathname: '/template-builder',
+                params: { from: 'create-topic', schemaId: String(template.schemaId), templateId: String(template.templateId) },
+              })}
+              onManage={() => router.push('/template-library' as Href)}
+            />
 
-              </View>
-              {/* Nút Tùy chỉnh */}
-              <Button
-                variant="white"
-                fullWidth={false}
-                label={translate('learn.create_topic.layout_customize')}
-                icon={<SlidersIcon color={surface.textMuted} width={18} height={18} />}
-                onPress={() => router.push('/template-builder')}
-                className="mt-3 h-auto min-h-12 self-end px-4 py-3"
-                textClassName="shrink text-xs"
-              />
-
-              {/* Divider */}
-              <View className="my-3 h-px bg-neutral-100 dark:bg-neutral-700" />
-
-              {/* Bottom preview boxes */}
+            <View className="mt-3 rounded-2xl border-2 border-line bg-surface p-4">
+              {/* Front / back of the chosen layout */}
               <View className="flex-row gap-2.5">
                 <View className="flex-1 rounded-xl bg-neutral-100/90 p-3 dark:bg-neutral-700/60">
                   <Text className="font-inter text-[10px] font-extrabold tracking-wider text-neutral-400 uppercase">
