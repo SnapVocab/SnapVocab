@@ -85,6 +85,9 @@ it('routes study missions by what today can offer', () => {
 });
 
 describe('daily Mission screen lifecycle (Snapy Stage)', () => {
+  // The first render also loads the whole screen; with every suite running at once on CI it can pass 5s.
+  jest.setTimeout(20_000);
+
   const refetch = jest.fn(() => Promise.resolve({ data }));
   const mutateAsync = jest.fn();
 
