@@ -23,6 +23,7 @@ import {
   EditIcon,
   LayersIcon,
   LayoutGridIcon,
+  VolumeIcon,
 } from '@/components/ui/icons';
 import { Snapy } from '@/components/ui/snapy';
 import { translate } from '@/lib/i18n';
@@ -38,6 +39,7 @@ const FILTER_TABS: { key: HistoryFilterMode; label: TxKeyPath }[] = [
   { key: 'MCQ', label: 'quiz.multiple_choice' },
   { key: 'MATCHING', label: 'quiz.matching' },
   { key: 'FILL_BLANK', label: 'quiz.fill_blank' },
+  { key: 'LISTENING', label: 'quiz.listening' },
 ];
 
 export function QuizHistoryScreen() {
@@ -98,6 +100,14 @@ export function QuizHistoryScreen() {
           bgClass: 'bg-amber-50 dark:bg-amber-950/40',
           textClass: 'text-amber-700 dark:text-amber-300',
           borderClass: 'border-amber-200 dark:border-amber-800',
+        };
+      case 'LISTENING':
+        return {
+          label: translate('quiz.listening'),
+          Icon: VolumeIcon,
+          bgClass: 'bg-teal-50 dark:bg-teal-950/40',
+          textClass: 'text-teal-700 dark:text-teal-300',
+          borderClass: 'border-teal-200 dark:border-teal-800',
         };
       default:
         return {

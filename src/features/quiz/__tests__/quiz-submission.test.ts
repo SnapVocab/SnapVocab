@@ -19,6 +19,7 @@ import {
   completeQuiz,
   createQuiz,
   fetchCollectionTopics,
+  fetchCollectionTopicTree,
   getQuizHistory,
 } from '../api/quiz-api';
 import { generateIdempotencyKey } from '../utils/idempotency';
@@ -109,6 +110,29 @@ describe('quiz v2 authoritative backend API contracts', () => {
       expect(topics.map(t => t.id)).toEqual([1, 2, 3]);
       expect(mockedClient).toHaveBeenCalledTimes(2);
       expect(mockedClient.mock.calls[1][0].params).toEqual({ page: 1, size: 100 });
+    });
+
+    it('lists subtopics under their parent, so "Body and Health" inside "Noun" can be picked', async () => {
+      const level = (topics: { id: number; name: string; hasChildren: boolean }[]) =>
+        ({ data: { data: { data: topics, meta: { pages: 1 } } } });
+      mockedClient.mockImplementation(async ({ params }: { params: { parentId?: number } }) => {
+        if (params.parentId === undefined)
+          return level([{ id: 18, name: 'Noun', hasChildren: true }, { id: 30, name: 'Pronoun', hasChildren: false }]);
+        if (params.parentId === 18)
+          return level([{ id: 21, name: 'Body and Health', hasChildren: false }]);
+        throw new Error(`unexpected parent ${params.parentId}`);
+      });
+
+      const topics = await fetchCollectionTopicTree(1);
+
+      expect(topics.map(t => [t.name, t.parentName])).toEqual([
+        ['Noun', null],
+        ['Body and Health', 'Noun'],
+        ['Pronoun', null],
+      ]);
+      // A leaf topic is not asked for children.
+      expect(mockedClient).toHaveBeenCalledTimes(2);
+      mockedClient.mockReset();
     });
   });
 

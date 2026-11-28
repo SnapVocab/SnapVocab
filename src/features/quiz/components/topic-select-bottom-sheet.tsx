@@ -70,7 +70,8 @@ export function TopicSelectBottomSheet({
       t =>
         t.name.toLowerCase().includes(q)
         || (t.translation && t.translation.toLowerCase().includes(q))
-        || (t.collectionName && t.collectionName.toLowerCase().includes(q)),
+        || (t.collectionName && t.collectionName.toLowerCase().includes(q))
+        || (t.parentName && t.parentName.toLowerCase().includes(q)),
     );
   }, [topics, searchQuery]);
 
@@ -198,12 +199,12 @@ export function TopicSelectBottomSheet({
                           {topic.name}
                         </Text>
                         <View className="flex-row items-center gap-1.5">
-                          <View className="max-w-[130px] rounded-md bg-neutral-100 px-1.5 py-0.5 dark:bg-neutral-800">
+                          <View className="max-w-[180px] shrink rounded-md bg-neutral-100 px-1.5 py-0.5 dark:bg-neutral-800">
                             <Text
                               className="font-inter text-[10.5px] font-medium text-neutral-500 dark:text-neutral-300"
                               numberOfLines={1}
                             >
-                              {topic.collectionName}
+                              {topic.parentName ? `${topic.collectionName} › ${topic.parentName}` : topic.collectionName}
                             </Text>
                           </View>
                           {topic.translation && (
@@ -223,7 +224,7 @@ export function TopicSelectBottomSheet({
                     <View className="size-6 shrink-0 items-center justify-center">
                       {isSelected ? (
                         <View className="size-6 items-center justify-center rounded-full bg-primary-500">
-                          <CheckCircleIcon size={14} className="text-white" />
+                          <CheckCircleIcon size={14} color="#FFFFFF" />
                         </View>
                       ) : (
                         <View className="size-5 rounded-full border-2 border-edge" />

@@ -407,9 +407,9 @@ export function FillBlankQuizView({ quiz, onExit, onResync }: FillBlankQuizViewP
               )}
             >
               {checkState === 'CORRECT' ? (
-                <CheckCircleIcon size={24} className="text-white" />
+                <CheckCircleIcon size={24} color="#FFFFFF" />
               ) : (
-                <XCircleIcon size={24} className="text-white" />
+                <XCircleIcon size={24} color="#FFFFFF" />
               )}
             </View>
 
@@ -450,7 +450,7 @@ export function FillBlankQuizView({ quiz, onExit, onResync }: FillBlankQuizViewP
                 <Text className="font-nunito text-[16px] font-extrabold text-white uppercase">
                   {nextIndex === -1 ? translate('quiz.completed') : translate('quiz.continue')}
                 </Text>
-                <ArrowRightIcon size={18} className="text-white" />
+                <ArrowRightIcon size={18} color="#FFFFFF" />
               </>
             )}
           </Pressable>

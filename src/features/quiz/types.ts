@@ -1,4 +1,5 @@
-export type QuizMode = 'MCQ' | 'MATCHING' | 'FILL_BLANK';
+/** LISTENING: hear the English word, pick its spelling among words that sound alike. */
+export type QuizMode = 'MCQ' | 'MATCHING' | 'FILL_BLANK' | 'LISTENING';
 
 export type QuizDirection = 'EN_VI' | 'VI_EN';
 
@@ -95,7 +96,7 @@ export type QuizPlayDTO = {
   quizId: number;
   status: QuizStatus;
   mode: QuizMode;
-  /** Null for FILL_BLANK, which has no direction. */
+  /** Null for FILL_BLANK and LISTENING, which have no direction. */
   direction: QuizDirection | null;
   topicId: number;
   topicName: string;
@@ -108,7 +109,7 @@ export type QuizPlayDTO = {
 export type QuizPlayDto = QuizPlayDTO;
 
 // ---------------------------------------------------------------------------
-// 3. Question Check (MCQ & FILL_BLANK)
+// 3. Question Check (MCQ, LISTENING & FILL_BLANK)
 // ---------------------------------------------------------------------------
 
 export type CheckQuestionRequest = {
@@ -122,6 +123,8 @@ export type QuestionCheckDTO = {
   correct: boolean;
   correctAnswer: string;
   correctOptionKey?: string;
+  /** LISTENING: the heard word's meaning, revealed only after answering. */
+  meaning?: string | null;
 };
 
 // ---------------------------------------------------------------------------
@@ -170,6 +173,8 @@ export type QuizResultItem = {
   outcome: QuizOutcome;
   resolved: boolean;
   attemptCount: number;
+  /** LISTENING: the word's meaning. */
+  meaning?: string | null;
 };
 
 export type QuizResultDTO = {

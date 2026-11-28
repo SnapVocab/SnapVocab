@@ -33,6 +33,7 @@ import { useExpiredSessionHandler } from '../hooks/use-expired-session-handler';
 import { useFinishQuiz } from '../hooks/use-finish-quiz';
 import { classifyQuizError, firstUnresolvedIndex } from '../utils';
 import { generateIdempotencyKey } from '../utils/idempotency';
+import { ListeningPrompt } from './listening-prompt';
 import { QuizExitModal } from './quiz-exit-modal';
 
 type CheckState = 'IDLE' | 'CORRECT' | 'INCORRECT';
@@ -44,8 +45,10 @@ export type MultipleChoiceQuizViewProps = {
   onResync: () => void;
 };
 
+/** Also plays LISTENING quizzes: the prompt is a sound to hear and the options are English spellings. */
 export function MultipleChoiceQuizView({ quiz, onExit, onResync }: MultipleChoiceQuizViewProps) {
   const questions = quiz.questions || [];
+  const listening = quiz.mode === 'LISTENING';
 
   // Resume at the first question the server has not graded (D18); the Session screen handles "all graded".
   const [currentIndex, setCurrentIndex] = useState(() => Math.max(0, firstUnresolvedIndex(questions)));
@@ -62,8 +65,12 @@ export function MultipleChoiceQuizView({ quiz, onExit, onResync }: MultipleChoic
 
   const [mascotPose, setMascotPose] = useState<SnapyPose>('tap_trung');
   const [mascotAnim, setMascotAnim] = useState<string>('idle');
-  const { speak, isPlaying: isSpeaking } = useTts();
+  const { speak, isPlaying: isSpeaking, failed: audioFailed } = useTts();
   const [showExitModal, setShowExitModal] = useState(false);
+  // LISTENING: the meaning arrives with the grade; "Hiện từ" is the way out when no sound plays.
+  const [meaning, setMeaning] = useState<string | null>(null);
+  const [wordShown, setWordShown] = useState(false);
+  const firstPlayRef = useRef(true);
 
   // Live Stopwatch State
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
@@ -140,6 +147,17 @@ export function MultipleChoiceQuizView({ quiz, onExit, onResync }: MultipleChoic
   const progressPercent = questions.length > 0 ? (currentIndex / questions.length) * 100 : 0;
 
   const nextIndex = firstUnresolvedIndex(questions, currentIndex);
+  const prompt = currentQ?.prompt ?? '';
+
+  // Every listening question starts by playing its word, once the entrance or slide-in has settled.
+  useEffect(() => {
+    if (!listening || !prompt)
+      return;
+    const delay = firstPlayRef.current ? 1300 : 400;
+    firstPlayRef.current = false;
+    const timer = setTimeout(() => speak(prompt, { lang: 'en' }), delay);
+    return () => clearTimeout(timer);
+  }, [listening, currentQ?.questionId, prompt, speak]);
 
   const checkMutation = useCheckQuestion();
   const finishQuiz = useFinishQuiz(quiz.quizId, onResync);
@@ -162,6 +180,7 @@ export function MultipleChoiceQuizView({ quiz, onExit, onResync }: MultipleChoic
           setCheckState(isCorrect ? 'CORRECT' : 'INCORRECT');
           setCorrectAnswerText(data.correctAnswer);
           setCorrectOptionKey(data.correctOptionKey || null);
+          setMeaning(data.meaning ?? null);
           setMascotPose(isCorrect ? 'nhay_len' : 'bat_ngo');
           setMascotAnim(isCorrect ? 'celebrate' : 'shake');
 
@@ -222,6 +241,8 @@ export function MultipleChoiceQuizView({ quiz, onExit, onResync }: MultipleChoic
       setCheckState('IDLE');
       setCorrectAnswerText('');
       setCorrectOptionKey(null);
+      setMeaning(null);
+      setWordShown(false);
       setIdempotencyKey(generateIdempotencyKey()); // New key for next question
       setMascotPose('tap_trung');
       setMascotAnim('idle');
@@ -323,37 +344,54 @@ export function MultipleChoiceQuizView({ quiz, onExit, onResync }: MultipleChoic
           <RNAnimated.View style={{ opacity: contentOpacity, transform: [{ translateY: contentTranslateY }] }}>
             <View className="mb-2 flex-row items-center justify-between">
               <Text className="font-inter text-[13px] font-bold tracking-wide text-neutral-400 uppercase">
-                {quiz.direction === 'VI_EN' ? translate('quiz.choose_english_word') : translate('quiz.choose_vietnamese_meaning')}
+                {listening
+                  ? translate('quiz.listening_prompt')
+                  : quiz.direction === 'VI_EN' ? translate('quiz.choose_english_word') : translate('quiz.choose_vietnamese_meaning')}
               </Text>
               <View className="rounded-md bg-muted px-2 py-0.5">
                 <Text className="font-inter text-[10px] font-bold text-neutral-500 dark:text-neutral-400">
-                  {quiz.direction === 'VI_EN' ? '🇻🇳 ➔ 🇬🇧' : '🇬🇧 ➔ 🇻🇳'}
+                  {listening ? '🎧 ➔ 🇬🇧' : quiz.direction === 'VI_EN' ? '🇻🇳 ➔ 🇬🇧' : '🇬🇧 ➔ 🇻🇳'}
                 </Text>
               </View>
             </View>
 
-            <View className="mb-1.5 flex-row items-center justify-between rounded-2xl border-2 border-line bg-surface p-4">
-              <View className="flex-1 pr-2">
-                <Text className="font-nunito text-[28px] leading-tight font-extrabold text-mascot-navy dark:text-neutral-50">
-                  {currentQ?.prompt}
-                </Text>
-              </View>
+            {listening
+              ? (
+                  <ListeningPrompt
+                    word={prompt}
+                    revealed={checkState !== 'IDLE' || wordShown}
+                    meaning={checkState !== 'IDLE' ? meaning : null}
+                    playing={isSpeaking}
+                    failed={audioFailed}
+                    onPlay={() => speak(prompt, { lang: 'en' })}
+                    onPlaySlow={() => speak(prompt, { lang: 'en', slow: true })}
+                    onShowWord={() => setWordShown(true)}
+                  />
+                )
+              : (
+                  <View className="mb-1.5 flex-row items-center justify-between rounded-2xl border-2 border-line bg-surface p-4">
+                    <View className="flex-1 pr-2">
+                      <Text className="font-nunito text-[28px] leading-tight font-extrabold text-mascot-navy dark:text-neutral-50">
+                        {currentQ?.prompt}
+                      </Text>
+                    </View>
 
-              <TouchableOpacity
-                onPress={() => speak(currentQ?.prompt || '', { lang: quiz.direction === 'VI_EN' ? 'vi' : 'en' })}
-                accessibilityRole="button"
-                accessibilityLabel={translate('quiz.listen_pronunciation')}
-                activeOpacity={0.7}
-                className={cn(
-                  'size-12 items-center justify-center rounded-2xl border',
-                  isSpeaking
-                    ? 'scale-105 border-primary-300 bg-primary-100 dark:border-primary-500/40 dark:bg-primary-500/15'
-                    : 'border-info-200 bg-info-50 dark:border-info-500/40 dark:bg-info-500/15',
+                    <TouchableOpacity
+                      onPress={() => speak(currentQ?.prompt || '', { lang: quiz.direction === 'VI_EN' ? 'vi' : 'en' })}
+                      accessibilityRole="button"
+                      accessibilityLabel={translate('quiz.listen_pronunciation')}
+                      activeOpacity={0.7}
+                      className={cn(
+                        'size-12 items-center justify-center rounded-2xl border',
+                        isSpeaking
+                          ? 'scale-105 border-primary-300 bg-primary-100 dark:border-primary-500/40 dark:bg-primary-500/15'
+                          : 'border-info-200 bg-info-50 dark:border-info-500/40 dark:bg-info-500/15',
+                      )}
+                    >
+                      <VolumeIcon size={24} className={isSpeaking ? 'text-primary-600 dark:text-primary-300' : 'text-info-500'} />
+                    </TouchableOpacity>
+                  </View>
                 )}
-              >
-                <VolumeIcon size={24} className={isSpeaking ? 'text-primary-600 dark:text-primary-300' : 'text-info-500'} />
-              </TouchableOpacity>
-            </View>
           </RNAnimated.View>
 
           {/* 3. ANSWER OPTIONS */}
@@ -424,16 +462,16 @@ export function MultipleChoiceQuizView({ quiz, onExit, onResync }: MultipleChoic
                       )}
                     >
                       {isSelected && !isSubmitted && (
-                        <CheckIcon size={14} className="text-white" />
+                        <CheckIcon size={14} color="#FFFFFF" />
                       )}
                       {isSubmitted && isSelected && checkState === 'CORRECT' && (
-                        <CheckCircleIcon size={16} className="text-white" />
+                        <CheckCircleIcon size={16} color="#FFFFFF" />
                       )}
                       {isSubmitted && isSelected && checkState === 'INCORRECT' && (
-                        <XCircleIcon size={16} className="text-white" />
+                        <XCircleIcon size={16} color="#FFFFFF" />
                       )}
                       {isSubmitted && !isSelected && isCorrectOption && checkState === 'INCORRECT' && (
-                        <CheckCircleIcon size={16} className="text-white" />
+                        <CheckCircleIcon size={16} color="#FFFFFF" />
                       )}
                       {!isSelected && !isSubmitted && (
                         <Text className="text-[12px] font-bold text-neutral-400">
@@ -513,9 +551,9 @@ export function MultipleChoiceQuizView({ quiz, onExit, onResync }: MultipleChoic
               )}
             >
               {checkState === 'CORRECT' ? (
-                <CheckCircleIcon size={24} className="text-white" />
+                <CheckCircleIcon size={24} color="#FFFFFF" />
               ) : (
-                <XCircleIcon size={24} className="text-white" />
+                <XCircleIcon size={24} color="#FFFFFF" />
               )}
             </View>
 
@@ -557,7 +595,7 @@ export function MultipleChoiceQuizView({ quiz, onExit, onResync }: MultipleChoic
                 <Text className="font-nunito text-[16px] font-extrabold text-white uppercase">
                   {nextIndex === -1 ? translate('quiz.completed') : translate('quiz.continue')}
                 </Text>
-                <ArrowRightIcon size={18} className="text-white" />
+                <ArrowRightIcon size={18} color="#FFFFFF" />
               </>
             )}
           </Pressable>

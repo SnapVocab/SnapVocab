@@ -48,8 +48,9 @@ export function createIcon({
             stroke: elStroke,
             ...svgProps
           } = el;
+          // An outline part (fill "none") stays hollow when a color is passed.
           const resolvedFill = elFill !== undefined
-            ? (color ?? elFill)
+            ? (elFill === 'none' ? 'none' : color ?? elFill)
             : undefined;
           const resolvedStroke = elStroke !== undefined
             ? (color ?? elStroke)
