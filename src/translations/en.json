@@ -844,6 +844,13 @@
     "title": "Notifications",
     "unread_a11y": "Unread"
   },
+  "popup": {
+    "close": "Close",
+    "error_title": "Something went wrong",
+    "generic_error": "Something went wrong. Please try again.",
+    "ok": "OK",
+    "tap_to_close": "Tap to close"
+  },
   "profile": {
     "account_data": "profile",
     "booster_active": "XP boost ×{{multiplier}} is active",

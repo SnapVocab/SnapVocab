@@ -1,6 +1,6 @@
 import { useNavigation, usePreventRemove } from '@react-navigation/native';
 import * as React from 'react';
-import { Alert } from 'react-native';
+import { showDialog } from '@/components/ui';
 import { translate } from '@/lib/i18n';
 
 /**
@@ -17,10 +17,10 @@ export function useUnsavedGuard(goBack: () => void) {
       navigation.dispatch(data.action);
       return;
     }
-    Alert.alert(translate('learn.add_word.discard_title'), translate('learn.add_word.discard_body'), [
+    showDialog({ title: translate('learn.add_word.discard_title'), message: translate('learn.add_word.discard_body'), buttons: [
       { text: translate('learn.add_word.keep_editing'), style: 'cancel' },
       { text: translate('learn.add_word.discard'), style: 'destructive', onPress: () => navigation.dispatch(data.action) },
-    ]);
+    ] });
   });
 
   const touch = React.useCallback(<A extends unknown[]>(change: (...args: A) => void) => (...args: A) => {

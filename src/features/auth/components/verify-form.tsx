@@ -1,8 +1,7 @@
 import { useEffect, useState } from 'react';
 import { View } from 'react-native';
-import { showMessage } from 'react-native-flash-message';
 
-import { Button, OtpInput, showErrorMessage, Text } from '@/components/ui';
+import { Button, OtpInput, showErrorMessage, showSuccessMessage, Text } from '@/components/ui';
 import { translate } from '@/lib/i18n/utils';
 import { useResendCode, useVerifyCode } from '../api';
 import { useAuthStore } from '../use-auth-store';
@@ -49,11 +48,7 @@ export function VerifyForm({ email }: Props) {
       { email },
       {
         onSuccess: () => {
-          showMessage({
-            message: translate('verify.code_resent'),
-            type: 'success',
-            duration: 3000,
-          });
+          showSuccessMessage(translate('verify.code_resent'));
         },
         onError: () => {
           showErrorMessage(translate('verify.resend_error'));

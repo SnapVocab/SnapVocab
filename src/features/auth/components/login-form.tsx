@@ -2,11 +2,10 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'expo-router';
 import * as React from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { Alert } from 'react-native';
 import { useUniwind } from 'uniwind';
 
 import * as z from 'zod';
-import { Button, Input, showErrorMessage, showSuccessMessage, ThemedLink, View } from '@/components/ui';
+import { Button, Input, showDialog, showErrorMessage, showSuccessMessage, ThemedLink, View } from '@/components/ui';
 import { FingerprintIcon, Lock, Mail } from '@/components/ui/icons';
 import { translate } from '@/lib/i18n/utils';
 import { useLogin } from '../api';
@@ -39,7 +38,7 @@ async function offerBiometric(email: string) {
   if (!(await shouldOfferBiometric(email)))
     return;
   markBiometricOffered(email);
-  Alert.alert(translate('login.biometric_offer_title'), translate('login.biometric_offer_body'), [
+  showDialog({ title: translate('login.biometric_offer_title'), message: translate('login.biometric_offer_body'), icon: FingerprintIcon, buttons: [
     { text: translate('login.biometric_offer_later'), style: 'cancel' },
     {
       text: translate('login.biometric_offer_enable'),
@@ -52,7 +51,7 @@ async function offerBiometric(email: string) {
           });
       },
     },
-  ]);
+  ] });
 }
 
 export function LoginForm() {

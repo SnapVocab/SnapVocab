@@ -4,8 +4,8 @@ import type { TxKeyPath } from '@/lib/i18n';
 import { useQueryClient } from '@tanstack/react-query';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import * as React from 'react';
-import { ActivityIndicator, Alert, View } from 'react-native';
-import { BackButton, BouncingDots, Button, Pressable, SafeAreaView, Text } from '@/components/ui';
+import { ActivityIndicator, View } from 'react-native';
+import { BackButton, BouncingDots, Button, Pressable, SafeAreaView, showDialog, Text } from '@/components/ui';
 import { FlameIcon, RotateCwIcon } from '@/components/ui/icons';
 import { Snapy } from '@/components/ui/snapy';
 import { useColorMode } from '@/components/ui/surface';
@@ -139,11 +139,11 @@ export function StudySessionScreen() {
     catch (error: any) {
       if (error?.response?.data?.error === 'DAILY_QUOTA_REACHED') {
         // A collection's allowance may have changed on another topic or device.
-        Alert.alert(translate('study_limits.quota_title'), translate('study_limits.quota_desc'));
+        showDialog({ title: translate('study_limits.quota_title'), message: translate('study_limits.quota_desc'), kind: 'warning' });
         dropCard(topicItemId);
       }
       else {
-        Alert.alert(translate('learn.session.save_error_title'), translate('learn.session.save_error_desc'));
+        showDialog({ title: translate('learn.session.save_error_title'), message: translate('learn.session.save_error_desc'), kind: 'error' });
       }
     }
   };

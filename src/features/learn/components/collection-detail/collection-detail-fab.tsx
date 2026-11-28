@@ -1,7 +1,6 @@
 import { useRouter } from 'expo-router';
 import * as React from 'react';
-import { showMessage } from 'react-native-flash-message';
-import { SpeedDialFAB } from '@/components/ui';
+import { showInfoMessage, SpeedDialFAB } from '@/components/ui';
 import { BookIcon, FolderIcon } from '@/components/ui/icons';
 import { translate } from '@/lib/i18n';
 
@@ -35,7 +34,7 @@ export function CollectionDetailFAB({
     const targetTopicName = currentParentName ?? '';
 
     if (!targetTopicId) {
-      showMessage({ message: translate('learn.topic.create_topic_first'), type: 'info' });
+      showInfoMessage(translate('learn.topic.create_topic_first'));
       router.push({
         pathname: '/(app)/collections/create-topic' as any,
         params: {

@@ -6,9 +6,9 @@ import type { TxKeyPath } from '@/lib/i18n';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import * as React from 'react';
 import { useMemo, useRef, useState } from 'react';
-import { Alert, Pressable, ScrollView, Text, View } from 'react-native';
+import { Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { BouncingDots, ScreenHeader } from '@/components/ui';
+import { BouncingDots, ScreenHeader, showDialog } from '@/components/ui';
 import {
   AlertTriangleIcon,
   ArrowRightIcon,
@@ -174,14 +174,14 @@ export function QuizSetupScreen() {
     request: CreateQuizRequest,
   ) => {
     const modeLabel = translate(QUIZ_MODES.find(m => m.id === unfinished.mode)?.label ?? 'quiz.title');
-    Alert.alert(
-      translate('quiz.unfinished_title'),
-      translate('quiz.unfinished_body', {
+    showDialog({
+      title: translate('quiz.unfinished_title'),
+      message: translate('quiz.unfinished_body', {
         mode: modeLabel,
         count: unfinished.questionCount,
         topic: selectedTopicName,
       }),
-      [
+      buttons: [
         { text: translate('quiz.cancel'), style: 'cancel' },
         { text: translate('quiz.continue_existing'), onPress: () => openSession(unfinished.quizId) },
         {
@@ -202,7 +202,7 @@ export function QuizSetupScreen() {
           ),
         },
       ],
-    );
+    });
   };
 
   const handleStartQuiz = async () => {

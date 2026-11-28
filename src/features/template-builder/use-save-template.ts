@@ -2,8 +2,7 @@ import type { BuilderSection, SchemaDTO, TopicSchemaDTO } from './types';
 import { useNavigation, usePreventRemove } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
 import * as React from 'react';
-import { Alert } from 'react-native';
-import { showErrorMessage, showSuccessMessage } from '@/components/ui';
+import { showDialog, showErrorMessage, showSuccessMessage } from '@/components/ui';
 import { useAuthStore } from '@/features/auth/use-auth-store';
 import { translate } from '@/lib/i18n/utils';
 import { useCreateTemplate, useForkTopicSchema, useMyTemplates, useSetActiveTemplate, useUpdateTemplate } from './api';
@@ -67,10 +66,10 @@ export function useSaveTemplate({ topicId, templateId, forCreateTopic, fullSchem
       navigation.dispatch(data.action);
       return;
     }
-    Alert.alert(translate('learn.add_word.discard_title'), translate('template_builder.discard_body'), [
+    showDialog({ title: translate('learn.add_word.discard_title'), message: translate('template_builder.discard_body'), buttons: [
       { text: translate('template_builder.keep_editing'), style: 'cancel' },
       { text: translate('learn.add_word.discard'), style: 'destructive', onPress: () => navigation.dispatch(data.action) },
-    ]);
+    ] });
   });
 
   const elements = () => builderSectionsToTemplateElements(frontSections, backSections);
