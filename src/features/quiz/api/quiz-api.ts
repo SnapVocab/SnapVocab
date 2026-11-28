@@ -307,21 +307,39 @@ export function useInfiniteQuizHistory(size = 20, mode?: QuizMode) {
 
 export type QuizAvailableTopic = TopicDTO & {
   collectionName: string;
+  /** "Noun" for "Body and Health": the path above a subtopic, null for a top-level topic. */
+  parentName?: string | null;
 };
 
-/** Every topic of a collection, page by page (the endpoint is paged). */
-export async function fetchCollectionTopics(collectionId: number): Promise<TopicDTO[]> {
+/** One level of a collection's topics (top level without `parentId`), page by page (the endpoint is paged). */
+export async function fetchCollectionTopics(collectionId: number, parentId?: number): Promise<TopicDTO[]> {
   const list: TopicDTO[] = [];
   for (let page = 0, pages = 1; page < pages; page++) {
     const res = await client<ApiResponse<PaginateResponse<TopicDTO>>>({
       url: `/api/collections/${collectionId}/topics`,
       method: 'GET',
-      params: { page, size: 100 },
+      params: parentId === undefined ? { page, size: 100 } : { page, size: 100, parentId },
     });
     list.push(...(res.data?.data?.data ?? []));
     pages = res.data?.data?.meta?.pages ?? 0;
   }
   return list;
+}
+
+/**
+ * Every topic of a collection, subtopics included right after their parent. The endpoint only lists one level,
+ * and most system words live in subtopics ("Noun" › "Body and Health"), so a top-level list alone hides them.
+ */
+export async function fetchCollectionTopicTree(collectionId: number, parentId?: number, parentName: string | null = null): Promise<(TopicDTO & { parentName: string | null })[]> {
+  const level = await fetchCollectionTopics(collectionId, parentId);
+  const branches = await Promise.all(level.map(async (topic) => {
+    const self = { ...topic, parentName };
+    if (!topic.hasChildren)
+      return [self];
+    const path = parentName ? `${parentName} › ${topic.name}` : topic.name;
+    return [self, ...await fetchCollectionTopicTree(collectionId, topic.id, path)];
+  }));
+  return branches.flat();
 }
 
 export function useQuizAvailableTopics() {
@@ -337,7 +355,7 @@ export function useQuizAvailableTopics() {
       const topicLists = await Promise.all(
         // A failed collection fails the query: a network error must not read as "no topics".
         collections.map(async (col) => {
-          const list = await fetchCollectionTopics(col.id);
+          const list = await fetchCollectionTopicTree(col.id);
           return list.map(t => ({
             ...t,
             collectionName: col.name,

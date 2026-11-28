@@ -24,6 +24,7 @@ import { RewardIcon } from '@/components/ui/rewards/reward-icon';
 import { Snapy } from '@/components/ui/snapy';
 import { QuizResultBadgeRow } from '@/features/badges';
 import { translate } from '@/lib/i18n';
+import { cn } from '@/lib/utils';
 import { useQuizResult } from '../api/quiz-api';
 import { formatQuizAccuracy, formatQuizDuration } from '../utils';
 
@@ -227,7 +228,12 @@ export function QuizResultScreen() {
             </View>
             <View className="rounded-full border border-primary-200 bg-primary-50 px-2.5 py-1 dark:border-primary-500/40 dark:bg-primary-500/15">
               <Text className="font-inter text-[11px] font-bold text-primary-700 dark:text-primary-300">
-                {direction === 'VI_EN' ? translate('quiz.direction_vi_en') : translate('quiz.direction_en_vi')}
+                {/* Listening and fill-blank have no EN/VI direction: the chip names the mode instead. */}
+                {result?.mode === 'LISTENING'
+                  ? translate('quiz.listening')
+                  : result?.mode === 'FILL_BLANK'
+                    ? translate('quiz.fill_blank')
+                    : direction === 'VI_EN' ? translate('quiz.direction_vi_en') : translate('quiz.direction_en_vi')}
               </Text>
             </View>
           </View>
@@ -327,9 +333,15 @@ export function QuizResultScreen() {
               <View className="gap-3">
                 {wrongAnswers.map((wrong, idx) => (
                   <View key={wrong.questionId || `w_${idx}`} className="rounded-2xl border-2 border-error-100 bg-surface p-4 shadow-sm shadow-black/5 dark:border-error-500/40">
-                    <Text className="mb-2.5 font-nunito text-[18px] font-extrabold text-mascot-navy dark:text-neutral-50">
+                    <Text className={cn('font-nunito text-[18px] font-extrabold text-mascot-navy dark:text-neutral-50', wrong.meaning ? 'mb-0.5' : 'mb-2.5')}>
                       {wrong.prompt}
                     </Text>
+                    {/* Listening: the heard word and the answer are the same, so its meaning says what it was. */}
+                    {!!wrong.meaning && (
+                      <Text className="mb-2.5 font-inter text-[13px] font-medium text-neutral-500 dark:text-neutral-400">
+                        {wrong.meaning}
+                      </Text>
+                    )}
                     <View className="gap-2">
                       <View className="flex-row items-start gap-2.5">
                         <View className="mt-0.5 size-5 items-center justify-center rounded-full border border-success-200 bg-success-100 dark:border-success-500/40 dark:bg-success-500/15">
@@ -361,7 +373,7 @@ export function QuizResultScreen() {
           ) : (
             <View className="mx-6 mb-8 items-center rounded-3xl border-2 border-success-200 bg-success-50/90 p-6 dark:border-success-500/40 dark:bg-success-500/15">
               <View className="mb-3 size-12 items-center justify-center rounded-2xl bg-success-500 shadow-md shadow-success-500/20">
-                <SparklesIcon size={24} className="text-white" />
+                <SparklesIcon size={24} color="#FFFFFF" />
               </View>
               <Text className="text-center font-nunito text-[19px] font-extrabold text-success-800 dark:text-success-300">
                 {translate('quiz.perfect_accuracy')}

@@ -17,6 +17,7 @@ import {
   EditIcon,
   LayersIcon,
   LayoutGridIcon,
+  VolumeIcon,
 } from '@/components/ui/icons';
 import { useColorMode } from '@/components/ui/surface';
 import { translate } from '@/lib/i18n';
@@ -60,6 +61,14 @@ export const QUIZ_MODES = [
     icon: EditIcon,
     available: true,
   },
+  {
+    id: 'LISTENING' as QuizMode,
+    label: 'quiz.listening',
+    desc: 'quiz.mode_listening_desc',
+    badge: 'quiz.new_badge',
+    icon: VolumeIcon,
+    available: true,
+  },
 ] as const satisfies readonly {
   id: QuizMode;
   label: TxKeyPath;
@@ -70,6 +79,11 @@ export const QUIZ_MODES = [
 }[];
 
 export const PRESET_COUNTS: (5 | 10 | 20)[] = [5, 10, 20];
+
+/** Fill-blank shows English sentences and listening plays English words: neither has an EN/VI choice. */
+export function hasDirection(mode: QuizMode) {
+  return mode === 'MCQ' || mode === 'MATCHING';
+}
 
 export function QuizSetupScreen() {
   const isDark = useColorMode() === 'dark';
@@ -217,7 +231,7 @@ export function QuizSetupScreen() {
     const request: CreateQuizRequest = {
       topicId: selectedTopicId,
       mode: quizMode,
-      direction: quizMode === 'FILL_BLANK' ? undefined : direction,
+      direction: hasDirection(quizMode) ? direction : undefined,
       requestedCount: questionCount,
     };
 
@@ -382,7 +396,7 @@ export function QuizSetupScreen() {
         </View>
 
         {/* SECTION 2: CHỌN HƯỚNG TRẮC NGHIỆM (Chỉ cho MCQ & MATCHING) */}
-        {quizMode !== 'FILL_BLANK' && (
+        {hasDirection(quizMode) && (
           <View className="mb-8">
             <Text className="mb-1 font-nunito text-[18px] font-extrabold text-mascot-navy dark:text-white">{translate('quiz.direction')}</Text>
             <Text className="mb-3 font-inter text-[13px] font-medium text-neutral-500 dark:text-neutral-400">
@@ -488,7 +502,8 @@ export function QuizSetupScreen() {
                         isSelected ? 'border-brand-edge bg-brand' : 'border-line bg-surface-raised',
                       )}
                     >
-                      <Icon size={22} className={isSelected ? 'text-on-brand' : 'text-neutral-500 dark:text-neutral-300'} />
+                      {/* Icons take their color from `color`, not className. */}
+                      <Icon size={22} color={isSelected ? '#1B2416' : isDark ? '#D4D4D8' : '#71717A'} />
                     </View>
                     <View className="flex-1">
                       {/* Wraps the badge under a long mode name (English) instead of pushing it off the card. */}
