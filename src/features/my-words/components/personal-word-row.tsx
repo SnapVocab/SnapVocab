@@ -1,6 +1,6 @@
 import type { MyWordResponse } from '@/features/lookup/types';
-import { ActivityIndicator, Alert } from 'react-native';
-import { Pressable, showErrorMessage, showSuccessMessage, Text, View } from '@/components/ui';
+import { ActivityIndicator } from 'react-native';
+import { Pressable, showDialog, showErrorMessage, showSuccessMessage, Text, View } from '@/components/ui';
 import { BookIcon, FolderIcon, MoreVerticalIcon } from '@/components/ui/icons';
 import { useColorMode } from '@/components/ui/surface';
 import { translate } from '@/lib/i18n';
@@ -15,7 +15,7 @@ type Props = {
 export function PersonalWordRow({ word, onOpen, onAdd }: Props) {
   const dark = useColorMode() === 'dark';
   const mutation = useSetMyWord();
-  const options = () => Alert.alert(word.word, translate('my_words.actions_hint'), [
+  const options = () => showDialog({ title: word.word, message: translate('my_words.actions_hint'), cancelable: true, buttons: [
     { text: translate('my_words.cancel'), style: 'cancel' },
     {
       text: translate('my_words.remove'),
@@ -25,7 +25,7 @@ export function PersonalWordRow({ word, onOpen, onAdd }: Props) {
         onError: () => showErrorMessage(translate('my_words.save_error')),
       }),
     },
-  ], { cancelable: true });
+  ] });
   return (
     <View className="min-h-20 flex-row items-center gap-1 border-b border-line bg-surface py-2 pr-2 pl-4">
       <Pressable

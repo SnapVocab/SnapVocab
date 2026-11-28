@@ -1,5 +1,5 @@
 import { useRouter } from 'expo-router';
-import { Alert } from 'react-native';
+import { showDialog } from '@/components/ui';
 import { translate } from '@/lib/i18n';
 import { useCompleteQuiz } from '../api/quiz-api';
 import { classifyQuizError } from '../utils';
@@ -34,11 +34,12 @@ export function useFinishQuiz(quizId: number, onResync?: () => void) {
           onResync();
           return;
         }
-        Alert.alert(
-          translate('quiz.finish_unconfirmed_title'),
-          translate('quiz.finish_unconfirmed_body'),
-          [{ text: translate('quiz.later'), style: 'cancel' }, { text: translate('quiz.retry'), onPress: finish }],
-        );
+        showDialog({
+          title: translate('quiz.finish_unconfirmed_title'),
+          message: translate('quiz.finish_unconfirmed_body'),
+          kind: 'warning',
+          buttons: [{ text: translate('quiz.later'), style: 'cancel' }, { text: translate('quiz.retry'), onPress: finish }],
+        });
       },
     });
   };

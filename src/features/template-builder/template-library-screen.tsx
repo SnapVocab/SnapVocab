@@ -1,8 +1,8 @@
 import type { MyTemplateDTO } from './api';
 import { useRouter } from 'expo-router';
-import { ActivityIndicator, Alert, FlatList, RefreshControl } from 'react-native';
-import { Button, FocusAwareStatusBar, Mascot, Pressable, SafeAreaView, ScreenHeader, showErrorMessage, showSuccessMessage, Text, View } from '@/components/ui';
-import { LayoutGridIcon } from '@/components/ui/icons';
+import { ActivityIndicator, FlatList, RefreshControl } from 'react-native';
+import { Button, FocusAwareStatusBar, Mascot, Pressable, SafeAreaView, ScreenHeader, showDialog, showErrorMessage, showSuccessMessage, Text, View } from '@/components/ui';
+import { LayoutGridIcon, TrashIcon } from '@/components/ui/icons';
 import { translate } from '@/lib/i18n';
 import { useDeleteTemplate, useMyTemplates } from './api';
 
@@ -19,10 +19,12 @@ export function TemplateLibraryScreen() {
     params: { schemaId: String(template.schemaId), templateId: String(template.id) },
   });
 
-  const confirmDelete = (template: MyTemplateDTO) => Alert.alert(
-    translate('template_builder.library.delete_title'),
-    translate('template_builder.library.delete_body', { name: template.name }),
-    [
+  const confirmDelete = (template: MyTemplateDTO) => showDialog({
+    title: translate('template_builder.library.delete_title'),
+    message: translate('template_builder.library.delete_body', { name: template.name }),
+    cancelable: true,
+    icon: TrashIcon,
+    buttons: [
       { text: translate('template_builder.save_sheet.cancel'), style: 'cancel' },
       {
         text: translate('template_builder.library.delete'),
@@ -35,8 +37,7 @@ export function TemplateLibraryScreen() {
         }),
       },
     ],
-    { cancelable: true },
-  );
+  });
 
   return (
     <SafeAreaView style={screenStyle} className="flex-1 bg-background" edges={['top', 'bottom']}>

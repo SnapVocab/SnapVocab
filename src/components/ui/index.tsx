@@ -10,6 +10,7 @@ export * from './input';
 export * from './link';
 export * from './mascot';
 export * from './otp-input';
+export * from './popup';
 export * from './pressable';
 export * from './screen-header';
 export * from './speed-dial';

@@ -6,7 +6,7 @@ import type { Language } from '@/lib/i18n/resources';
 import Env from 'env';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Alert, AppState, Linking, ScrollView } from 'react-native';
+import { AppState, Linking, ScrollView } from 'react-native';
 
 import {
   BackButton,
@@ -14,6 +14,7 @@ import {
   Mascot,
   Pressable,
   SafeAreaView,
+  showDialog,
   showErrorMessage,
   Text,
   View,
@@ -136,14 +137,15 @@ export function SettingsScreen() {
   };
 
   const confirmLogout = () => {
-    Alert.alert(
-      translate('settings.logout_confirm_title'),
-      translate('settings.logout_confirm_message'),
-      [
+    showDialog({
+      title: translate('settings.logout_confirm_title'),
+      message: translate('settings.logout_confirm_message'),
+      icon: LogOutIcon,
+      buttons: [
         { text: translate('settings.cancel'), style: 'cancel' },
         { text: translate('settings.logout'), style: 'destructive', onPress: () => logout.mutate() },
       ],
-    );
+    });
   };
 
   // OS permission is per device, pushEnabled per account (§3.9): seed from MMKV to avoid first-frame flicker,

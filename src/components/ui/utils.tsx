@@ -1,7 +1,8 @@
 /* eslint-disable react-refresh/only-export-components */
 import type { AxiosError } from 'axios';
 import { Dimensions, Platform } from 'react-native';
-import { showMessage } from 'react-native-flash-message';
+import { translate } from '@/lib/i18n';
+import { showToast } from './popup/popup-store';
 
 export const IS_IOS = Platform.OS === 'ios';
 const { width, height } = Dimensions.get('screen');
@@ -12,31 +13,21 @@ export const HEIGHT = height;
 // for onError react queries and mutations
 export function showError(error: AxiosError) {
   console.log(JSON.stringify(error?.response?.data));
-  const description = extractError(error?.response?.data).trimEnd();
-
-  showMessage({
-    message: 'Error',
-    description,
-    type: 'danger',
-    duration: 4000,
-    icon: 'danger',
-  });
+  const description = extractError(error?.response?.data).trim();
+  showToast('error', translate('popup.error_title'), description || undefined);
 }
 
+/** Popup after an action went through, e.g. "Cập nhật hồ sơ thành công". */
 export function showSuccessMessage(message: string) {
-  showMessage({
-    message,
-    type: 'success',
-    duration: 4000,
-  });
+  showToast('success', message);
 }
 
-export function showErrorMessage(message: string = 'Something went wrong ') {
-  showMessage({
-    message,
-    type: 'danger',
-    duration: 4000,
-  });
+export function showErrorMessage(message?: string) {
+  showToast('error', message || translate('popup.generic_error'));
+}
+
+export function showInfoMessage(message: string) {
+  showToast('info', message);
 }
 
 export function extractError(data: unknown): string {
@@ -60,5 +51,5 @@ export function extractError(data: unknown): string {
     });
     return `${messages.join('')} `;
   }
-  return 'Something went wrong ';
+  return translate('popup.generic_error');
 }

@@ -6,10 +6,10 @@ const mockPush = jest.fn();
 const mockMessage = jest.fn();
 let mockActions: { id: string; onPress: () => void }[] = [];
 jest.mock('expo-router', () => ({ useRouter: () => ({ push: mockPush }) }));
-jest.mock('react-native-flash-message', () => ({ showMessage: (m: unknown) => mockMessage(m) }));
 jest.mock('@/lib/i18n', () => ({ translate: (key: string) => key }));
 jest.mock('@/components/ui/icons', () => ({ BookIcon: () => null, FolderIcon: () => null }));
 jest.mock('@/components/ui', () => ({
+  showInfoMessage: (m: string) => mockMessage(m),
   SpeedDialFAB: ({ actions }: { actions: { id: string; onPress: () => void }[] }) => {
     mockActions = actions;
     return null;
@@ -39,6 +39,6 @@ it('inside a topic it adds straight to that topic', () => {
 it('a collection without topics explains that one is needed first', () => {
   render(<CollectionDetailFAB {...base} currentParentId={null} firstTopicId={null} />);
   addWord();
-  expect(mockMessage).toHaveBeenCalledWith(expect.objectContaining({ message: 'learn.topic.create_topic_first' }));
+  expect(mockMessage).toHaveBeenCalledWith('learn.topic.create_topic_first');
   expect(mockPush).toHaveBeenCalledWith(expect.objectContaining({ pathname: '/(app)/collections/create-topic' }));
 });

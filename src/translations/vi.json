@@ -844,6 +844,13 @@
     "title": "Thông báo",
     "unread_a11y": "Chưa đọc"
   },
+  "popup": {
+    "close": "Đóng",
+    "error_title": "Có lỗi xảy ra",
+    "generic_error": "Đã có lỗi xảy ra. Bạn thử lại nhé.",
+    "ok": "OK",
+    "tap_to_close": "Chạm để đóng"
+  },
   "profile": {
     "account_data": "hồ sơ",
     "booster_active": "Tăng XP ×{{multiplier}} đang hoạt động",

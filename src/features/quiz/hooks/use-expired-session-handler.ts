@@ -1,6 +1,6 @@
 import { useRouter } from 'expo-router';
 import { useCallback } from 'react';
-import { Alert } from 'react-native';
+import { showDialog } from '@/components/ui';
 import { translate } from '@/lib/i18n';
 import { isQuizSessionExpired } from '../utils';
 
@@ -16,14 +16,15 @@ export function useExpiredSessionHandler() {
     if (!isQuizSessionExpired(error))
       return false;
 
-    Alert.alert(
-      translate('quiz.error_expired_title'),
-      translate('quiz.error_expired_desc'),
-      [{
+    showDialog({
+      title: translate('quiz.error_expired_title'),
+      message: translate('quiz.error_expired_desc'),
+      kind: 'warning',
+      buttons: [{
         text: translate('quiz.btn_new_quiz'),
         onPress: () => router.replace('/(app)/study/quiz-setup' as any),
       }],
-    );
+    });
     return true;
   }, [router]);
 }
